@@ -25,11 +25,21 @@ function walkDir(
   }
 }
 
-export function packDir(dirPath: string, extraIgnore: string[] = []): Buffer {
+export function packDirs(dirPaths: string[], extraIgnore: string[] = []): Buffer {
   const ignore = new Set([...DEFAULT_IGNORE, ...extraIgnore])
+  const cwd = process.cwd()
   const files: { filePath: string; content: Buffer }[] = []
-  walkDir(dirPath, dirPath, ignore, files)
+  for (const dir of dirPaths) {
+    walkDir(cwd, path.resolve(dir), ignore, files)
+  }
+  return serializeFiles(files)
+}
 
+export function packDir(dirPath: string, extraIgnore: string[] = []): Buffer {
+  return packDirs([dirPath], extraIgnore)
+}
+
+function serializeFiles(files: { filePath: string; content: Buffer }[]): Buffer {
   const parts: Buffer[] = []
 
   const header = Buffer.alloc(8)
@@ -41,7 +51,6 @@ export function packDir(dirPath: string, extraIgnore: string[] = []): Buffer {
     const pathBuf    = Buffer.from(filePath, 'utf8')
     const pathLen    = Buffer.alloc(2); pathLen.writeUInt16BE(pathBuf.length)
     const contentLen = Buffer.alloc(4); contentLen.writeUInt32BE(content.length)
-    // Layout per entry: [pathLen:2][path:N][contentLen:4][content:M]
     parts.push(pathLen, pathBuf, contentLen, content)
   }
 
