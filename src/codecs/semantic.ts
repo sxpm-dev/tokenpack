@@ -63,6 +63,22 @@ export const semanticCodec: Codec = {
     return pixels
   },
 
+  estimateDataPixels(input: Buffer): number {
+    let pixels = 0
+    let i = 0
+    while (i < input.length) {
+      const kw = matchKeyword(input, i)
+      if (kw) {
+        pixels += 1 + kw.pixels
+        i += kw.text.length
+      } else {
+        pixels += 4  // 1 prefix + 3 data pixels (holds 9 bytes)
+        i = Math.min(i + 9, input.length)
+      }
+    }
+    return pixels + 1  // +1 safety margin
+  },
+
   decode(pixels: PixelBuffer, length: number, _w: number, _h: number): Buffer {
     const out: number[] = []
     let i = 0

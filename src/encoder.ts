@@ -4,9 +4,17 @@ import { writeHeader, HEADER_PIXELS } from './header.js'
 import { writePNG } from './image.js'
 import { applyStyle } from './style.js'
 import type { EncodeOptions } from './types.js'
+import type { Codec } from './codecs/types.js'
 
-export function calcDimensions(dataBytes: number, requestedWidth?: number): { width: number; height: number } {
-  const totalPixels = HEADER_PIXELS + Math.ceil(dataBytes / 3)
+export function calcDimensions(
+  input: Buffer,
+  codec: Codec,
+  requestedWidth?: number
+): { width: number; height: number } {
+  const dataPixelEst = codec.estimateDataPixels
+    ? codec.estimateDataPixels(input)
+    : Math.ceil(input.length / 3)
+  const totalPixels = HEADER_PIXELS + dataPixelEst
   const side = Math.ceil(Math.sqrt(Math.max(totalPixels, HEADER_PIXELS + 1)))
   const width = requestedWidth ?? side
   const height = Math.ceil(totalPixels / width)
@@ -15,7 +23,7 @@ export function calcDimensions(dataBytes: number, requestedWidth?: number): { wi
 
 export function encode(input: Buffer, options: EncodeOptions): void {
   const codec = getCodecByName(options.algo ?? 'linear')
-  const { width, height } = calcDimensions(input.length, options.width)
+  const { width, height } = calcDimensions(input, codec, options.width)
   const dataPixelCount = width * height - HEADER_PIXELS
   const totalPixels = width * height
 
