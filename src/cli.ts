@@ -7,7 +7,7 @@ import { PRESETS, getPreset } from './presets.js'
 import { packDirs, unpackDir, listArchive } from './archive.js'
 import { encode } from './encoder.js'
 import { decodeToBuffer } from './decoder.js'
-import { diffTokens } from './diff.js'
+import { diffTokens, diffBytes } from './diff.js'
 import './codecs/register-all.js'
 
 const program = new Command()
@@ -130,8 +130,20 @@ program
 program
   .command('diff <tokenA> <tokenB>')
   .description('Visual diff of two tokens — changed bytes as colored pixels')
-  .requiredOption('-o, --out <path>', 'output diff PNG path')
-  .action((tokenA: string, tokenB: string, opts: { out: string }) => {
+  .option('-o, --out <path>', 'output diff PNG path')
+  .option('--text', 'print byte-level diff as text instead of image')
+  .action((tokenA: string, tokenB: string, opts: { out?: string; text?: boolean }) => {
+    if (opts.text) {
+      const { diffs, stats } = diffBytes(tokenA, tokenB)
+      console.log(`offset      before  after   char`)
+      console.log(`─────────── ─────── ─────── ────`)
+      for (const d of diffs) {
+        console.log(`${String(d.offset).padEnd(11)} ${String(d.before).padEnd(7)} ${String(d.after).padEnd(7)} ${d.char}`)
+      }
+      console.log(`\n${diffs.length} bytes changed (${stats.changePercent}%)  ${stats.sizeA} → ${stats.sizeB} bytes`)
+      return
+    }
+    if (!opts.out) { console.error('error: -o / --out <path> required for image diff'); process.exit(1) }
     const stats = diffTokens(tokenA, tokenB, opts.out)
     console.log(`Diff → ${opts.out}`)
     console.log(`  changed:   ${stats.changedPixels} pixels / ${stats.changedBytes} bytes (${stats.changePercent}%)`)

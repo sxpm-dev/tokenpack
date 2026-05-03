@@ -72,6 +72,50 @@ function padPixels(pixels: Uint8Array, targetSize: number): Uint8Array {
   return padded
 }
 
+export interface ByteDiff {
+  offset: number
+  before: number
+  after: number
+  char: string
+}
+
+export function diffBytes(pathA: string, pathB: string): { diffs: ByteDiff[]; stats: DiffStats } {
+  const a = readPNG(pathA)
+  const b = readPNG(pathB)
+
+  const headerA = readHeader(a.pixels)
+  const headerB = readHeader(b.pixels)
+
+  const dataA = a.pixels.slice(HEADER_PIXELS * 3, HEADER_PIXELS * 3 + headerA.fileLength)
+  const dataB = b.pixels.slice(HEADER_PIXELS * 3, HEADER_PIXELS * 3 + headerB.fileLength)
+
+  const maxLen = Math.max(dataA.length, dataB.length)
+  const diffs: ByteDiff[] = []
+
+  for (let i = 0; i < maxLen; i++) {
+    const before = i < dataA.length ? dataA[i] : 0
+    const after  = i < dataB.length ? dataB[i] : 0
+    if (before !== after) {
+      const charBefore = before >= 32 && before < 127 ? String.fromCharCode(before) : '·'
+      const charAfter  = after  >= 32 && after  < 127 ? String.fromCharCode(after)  : '·'
+      diffs.push({ offset: i, before, after, char: `${charBefore}→${charAfter}` })
+    }
+  }
+
+  return {
+    diffs,
+    stats: {
+      totalPixels: Math.ceil(maxLen / 3),
+      changedPixels: Math.ceil(diffs.length / 3),
+      unchangedPixels: Math.ceil((maxLen - diffs.length) / 3),
+      changedBytes: diffs.length,
+      changePercent: ((diffs.length / maxLen) * 100).toFixed(2),
+      sizeA: headerA.fileLength,
+      sizeB: headerB.fileLength,
+    },
+  }
+}
+
 export interface DiffStats {
   totalPixels: number
   changedPixels: number
