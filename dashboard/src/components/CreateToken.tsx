@@ -2,9 +2,44 @@
 
 import { useState, useRef } from 'react'
 import { Button, Card } from '@heroui/react'
+import { UploadSimple, ArrowRight, ArrowDown, ArrowUp } from '@phosphor-icons/react'
 
 const PRESETS = ['none', 'sunset', 'aurora', 'candy', 'midnight', 'fire', 'matrix', 'spiral', 'shuffle', 'raw']
 const ALGOS   = ['linear', 'radial', 'interleaved', 'semantic']
+
+function formatBytes(b: number) {
+  if (b < 1024) return `${b} B`
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`
+  return `${(b / 1024 / 1024).toFixed(2)} MB`
+}
+
+interface SizeStats {
+  inputBytes: number
+  tokenBytes: number
+}
+
+function SizeBadge({ stats }: { stats: SizeStats }) {
+  const diff  = stats.tokenBytes - stats.inputBytes
+  const pct   = Math.abs((diff / stats.inputBytes) * 100).toFixed(1)
+  const smaller = diff < 0
+
+  return (
+    <div className="flex items-center gap-3 text-sm flex-wrap">
+      <span className="text-white/50 font-mono">{formatBytes(stats.inputBytes)}</span>
+      <ArrowRight size={14} className="text-white/20" />
+      <span className="text-white/80 font-mono font-semibold">{formatBytes(stats.tokenBytes)}</span>
+      <span className={`flex items-center gap-1 font-mono text-xs px-2 py-0.5 rounded-full ${
+        smaller ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'
+      }`}>
+        {smaller ? <ArrowDown size={11} /> : <ArrowUp size={11} />}
+        {pct}%
+      </span>
+      <span className="text-white/30 text-xs">
+        {smaller ? `${formatBytes(Math.abs(diff))} smaller` : `${formatBytes(Math.abs(diff))} larger`}
+      </span>
+    </div>
+  )
+}
 
 export function CreateToken() {
   const [mode, setMode]         = useState<'text' | 'file'>('text')
@@ -19,8 +54,13 @@ export function CreateToken() {
   const [loading, setLoading]   = useState(false)
   const [tokenUrl, setTokenUrl] = useState<string | null>(null)
   const [error, setError]       = useState<string | null>(null)
-  const [stats, setStats]       = useState<string | null>(null)
+  const [sizeStats, setSizeStats] = useState<SizeStats | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  function getInputBytes() {
+    if (mode === 'text') return new TextEncoder().encode(text).length
+    return file?.size ?? 0
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null
@@ -33,12 +73,14 @@ export function CreateToken() {
     setLoading(true)
     setError(null)
     setTokenUrl(null)
-    setStats(null)
+    setSizeStats(null)
+
+    const inputBytes = getInputBytes()
 
     try {
       let res: Response
 
-      if (mode === 'file' && file && (isZip && unzip)) {
+      if (mode === 'file' && file && isZip && unzip) {
         const form = new FormData()
         form.append('file', file)
         form.append('unzip', 'true')
@@ -63,7 +105,7 @@ export function CreateToken() {
 
       const blob = await res.blob()
       setTokenUrl(URL.createObjectURL(blob))
-      setStats(`${(blob.size / 1024).toFixed(1)} KB`)
+      setSizeStats({ inputBytes, tokenBytes: blob.size })
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -73,16 +115,14 @@ export function CreateToken() {
 
   return (
     <div className="space-y-4">
-      {/* Source mode */}
+      {/* Mode toggle */}
       <div className="flex gap-2">
         {(['text', 'file'] as const).map(m => (
           <button
             key={m}
             onClick={() => setMode(m)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              mode === m
-                ? 'bg-white text-black'
-                : 'bg-white/10 text-white/60 hover:bg-white/15'
+              mode === m ? 'bg-white text-black' : 'bg-white/10 text-white/60 hover:bg-white/15'
             }`}
           >
             {m === 'text' ? 'Text' : 'File'}
@@ -102,11 +142,15 @@ export function CreateToken() {
       ) : (
         <div
           onClick={() => fileRef.current?.click()}
-          className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center cursor-pointer hover:border-white/40 transition-colors"
+          className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center cursor-pointer hover:border-white/40 transition-colors flex flex-col items-center gap-2"
         >
-          <div className="text-white/40 text-sm">
+          <UploadSimple size={24} className="text-white/30" />
+          <div className="text-sm text-white/40">
             {file ? (
-              <span className="text-white/80 font-medium">{file.name} <span className="text-white/40">({(file.size / 1024).toFixed(1)} KB)</span></span>
+              <span className="text-white/80 font-medium">
+                {file.name}
+                <span className="text-white/40 ml-2">({formatBytes(file.size)})</span>
+              </span>
             ) : (
               'Click to upload a file or .zip'
             )}
@@ -115,7 +159,7 @@ export function CreateToken() {
         </div>
       )}
 
-      {/* Zip unpack checkbox */}
+      {/* Zip checkbox */}
       {isZip && (
         <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
           <input type="checkbox" checked={unzip} onChange={e => setUnzip(e.target.checked)} className="accent-white" />
@@ -137,36 +181,34 @@ export function CreateToken() {
         </div>
 
         {preset === 'none' && (
-          <div>
-            <label className="text-xs text-white/40 mb-1 block">Algorithm</label>
-            <select
-              value={algo}
-              onChange={e => setAlgo(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
-            >
-              {ALGOS.map(a => <option key={a} value={a} className="bg-zinc-900">{a}</option>)}
-            </select>
-          </div>
-        )}
+          <>
+            <div>
+              <label className="text-xs text-white/40 mb-1 block">Algorithm</label>
+              <select
+                value={algo}
+                onChange={e => setAlgo(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
+              >
+                {ALGOS.map(a => <option key={a} value={a} className="bg-zinc-900">{a}</option>)}
+              </select>
+            </div>
 
-        {preset === 'none' && (
-          <div>
-            <label className="text-xs text-white/40 mb-1 block">Cell size (1=dense, 5=dots)</label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={cellSize}
-              onChange={e => setCellSize(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
-            />
-          </div>
+            <div>
+              <label className="text-xs text-white/40 mb-1 block">Cell size (1=dense · 5=dots)</label>
+              <input
+                type="number" min={1} max={10}
+                value={cellSize}
+                onChange={e => setCellSize(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
+              />
+            </div>
+          </>
         )}
       </div>
 
       <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
         <input type="checkbox" checked={compress} onChange={e => setCompress(e.target.checked)} className="accent-white" />
-        Compress with brotli (smaller token)
+        Compress with brotli
       </label>
 
       <Button onPress={handleGenerate} isPending={loading} fullWidth>
@@ -179,24 +221,25 @@ export function CreateToken() {
         </div>
       )}
 
-      {tokenUrl && (
+      {tokenUrl && sizeStats && (
         <Card variant="secondary">
           <Card.Content className="p-4 space-y-3">
+            <SizeBadge stats={sizeStats} />
             <div className="flex items-center justify-between">
-              <span className="text-sm text-white/60">Token generated · {stats}</span>
+              <span className="text-xs text-white/30">token.png</span>
               <a
                 href={tokenUrl}
                 download="token.png"
                 className="text-sm text-blue-400 hover:text-blue-300 underline"
               >
-                Download token.png
+                Download
               </a>
             </div>
             <img
               src={tokenUrl}
               alt="Generated token"
               className="w-full rounded-lg border border-white/10"
-              style={{ imageRendering: 'pixelated' }}
+              style={{ imageRendering: 'pixelated', background: '#111' }}
             />
           </Card.Content>
         </Card>

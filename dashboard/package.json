@@ -8,15 +8,16 @@
     "start": "next start --port 3001"
   },
   "dependencies": {
+    "@heroui/react": "^3.0.0",
+    "@heroui/styles": "^3.0.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "@tailwindcss/postcss": "^4.1.5",
+    "adm-zip": "^0.5.16",
     "next": "^15.3.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "@heroui/react": "^3.0.0",
-    "@heroui/styles": "^3.0.0",
     "tailwind-variants": "^0.3.0",
-    "tailwindcss": "^4.1.5",
-    "@tailwindcss/postcss": "^4.1.5",
-    "adm-zip": "^0.5.16"
+    "tailwindcss": "^4.1.5"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
