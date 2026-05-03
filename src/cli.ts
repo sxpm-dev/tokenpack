@@ -4,6 +4,9 @@ import { encodeFile } from './encoder.js'
 import { decode } from './decoder.js'
 import { listCodecs } from './codecs/registry.js'
 import { PRESETS, getPreset } from './presets.js'
+import { packDir, unpackDir, listArchive } from './archive.js'
+import { encode } from './encoder.js'
+import { decodeToBuffer } from './decoder.js'
 import './codecs/register-all.js'
 
 const program = new Command()
@@ -62,6 +65,56 @@ program
   .action((input: string, opts: { out: string }) => {
     decode(input, { out: opts.out })
     console.log(`Decoded → ${opts.out}`)
+  })
+
+program
+  .command('pack <dir>')
+  .description('Pack a directory into a PNG image token')
+  .requiredOption('-o, --out <path>', 'output PNG path')
+  .option('--preset <name>', 'visual preset')
+  .option('--algo <name>', 'codec algorithm')
+  .option('--cell-size <n>', 'dot cell size (default 5)', (v) => parseInt(v, 10))
+  .option('--ignore <names>', 'comma-separated extra names to ignore', (v) => v.split(','))
+  .option('--no-compress', 'skip brotli compression')
+  .action((dir: string, opts: { out: string; preset?: string; algo?: string; cellSize?: number; ignore?: string[]; compress: boolean }) => {
+    let algo = opts.algo
+    let style
+    let cellSize = opts.cellSize
+    let compress = opts.compress
+
+    if (opts.preset) {
+      const preset = getPreset(opts.preset)
+      if (!preset) { console.error(`Unknown preset "${opts.preset}"`); process.exit(1) }
+      algo     ??= preset.algo
+      cellSize ??= preset.cellSize
+      compress   = compress ?? preset.compress ?? true
+      style = { ...preset.style }
+    }
+
+    algo     ??= 'linear'
+    cellSize ??= 5
+    if (compress === undefined) compress = true
+
+    const archive = packDir(dir, opts.ignore)
+    encode(archive, { out: opts.out, algo, style, cellSize, compress })
+    console.log(`Packed ${dir} → ${opts.out}`)
+  })
+
+program
+  .command('expand <image>')
+  .description('Expand a PNG image token into a directory')
+  .option('-o, --out <dir>', 'output directory (required unless --list)')
+  .option('--list', 'list files without extracting')
+  .action((image: string, opts: { out: string; list?: boolean }) => {
+    const data = decodeToBuffer(image)
+    if (opts.list) {
+      const entries = listArchive(data)
+      for (const e of entries) console.log(`  ${(e.size / 1024).toFixed(1)}K\t${e.filePath}`)
+      return
+    }
+    if (!opts.out) { console.error('error: -o / --out <dir> is required'); process.exit(1) }
+    const files = unpackDir(data, opts.out)
+    console.log(`Expanded ${files.length} files → ${opts.out}`)
   })
 
 program
