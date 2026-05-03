@@ -11,11 +11,13 @@ export interface Preset {
 
 export const PRESETS: Preset[] = [
   // ── Dot mode presets (sparse grid + gradient background — the reference look) ─
+  // All dot-mode presets use linear+brotli: semantic has no effect on compressed data
   {
     name: 'sunset',
-    description: 'Red→blue gradient canvas, colored dots  [semantic, dot mode]',
-    algo: 'semantic',
+    description: 'Red→blue diagonal, brotli+linear dots',
+    algo: 'linear',
     cellSize: 5,
+    compress: true,
     style: {
       gradient: { from: [255, 0, 80], to: [0, 80, 255], direction: 'diagonal' },
       opacity: 1.0,
@@ -23,9 +25,10 @@ export const PRESETS: Preset[] = [
   },
   {
     name: 'aurora',
-    description: 'Green→purple gradient canvas, colored dots  [semantic, dot mode]',
-    algo: 'semantic',
+    description: 'Green→purple diagonal, brotli+linear dots',
+    algo: 'linear',
     cellSize: 5,
+    compress: true,
     style: {
       gradient: { from: [0, 220, 160], to: [100, 0, 255], direction: 'diagonal' },
       opacity: 1.0,
@@ -33,9 +36,10 @@ export const PRESETS: Preset[] = [
   },
   {
     name: 'candy',
-    description: 'Pink→sky gradient canvas, colored dots  [semantic, dot mode]',
-    algo: 'semantic',
+    description: 'Pink→sky diagonal, brotli+linear dots',
+    algo: 'linear',
     cellSize: 5,
+    compress: true,
     style: {
       gradient: { from: [255, 80, 180], to: [80, 180, 255], direction: 'diagonal' },
       opacity: 1.0,
@@ -43,9 +47,10 @@ export const PRESETS: Preset[] = [
   },
   {
     name: 'midnight',
-    description: 'Navy→violet gradient, colored dots  [semantic, dot mode]',
-    algo: 'semantic',
+    description: 'Navy→violet vertical, brotli+linear dots',
+    algo: 'linear',
     cellSize: 5,
+    compress: true,
     style: {
       gradient: { from: [10, 10, 80], to: [120, 0, 180], direction: 'vertical' },
       opacity: 1.0,
@@ -53,7 +58,7 @@ export const PRESETS: Preset[] = [
   },
   {
     name: 'fire',
-    description: 'Red→gold gradient, compressed bright dots  [linear+brotli, dot mode]',
+    description: 'Red→gold diagonal, brotli+linear dots',
     algo: 'linear',
     cellSize: 5,
     compress: true,
@@ -64,12 +69,32 @@ export const PRESETS: Preset[] = [
   },
   {
     name: 'matrix',
-    description: 'Black→green gradient, compressed dots  [linear+brotli, dot mode]',
+    description: 'Black→green vertical, brotli+linear dots',
     algo: 'linear',
     cellSize: 5,
     compress: true,
     style: {
       gradient: { from: [0, 0, 0], to: [0, 200, 60], direction: 'vertical' },
+      opacity: 1.0,
+    },
+  },
+  // Semantic presets — only useful WITHOUT compression (keywords stay readable)
+  {
+    name: 'code',
+    description: 'Keyword colors, no gradient, no compression  [semantic, dense]',
+    algo: 'semantic',
+    cellSize: 1,
+    compress: false,
+    style: { opacity: 1.0 },
+  },
+  {
+    name: 'code-sunset',
+    description: 'Keyword colors on red→blue canvas, no compression  [semantic, dot mode]',
+    algo: 'semantic',
+    cellSize: 5,
+    compress: false,
+    style: {
+      gradient: { from: [255, 0, 80], to: [0, 80, 255], direction: 'diagonal' },
       opacity: 1.0,
     },
   },
