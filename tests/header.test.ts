@@ -18,6 +18,8 @@ const sample: HeaderData = {
   backgroundColor: [10, 20, 30],
   compressionLevel: 2,
   uncompressedLength: 999999,
+  cellSize: 5,
+  dataPixelCount: 12345,
 }
 
 describe('header', () => {

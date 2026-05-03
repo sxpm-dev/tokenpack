@@ -22,9 +22,12 @@ program
   .option('--width <n>', 'override image width', (v) => parseInt(v, 10))
   .option('--style <json>', 'style config as JSON string or path to .json file (overrides preset)')
   .option('--compress', 'compress with brotli before encoding (fewer pixels, exact decode)')
-  .action((input: string, opts: { out: string; algo?: string; preset?: string; width?: number; style?: string; compress?: boolean }) => {
+  .option('--cell-size <n>', 'dot cell size: 1=dense (default), 5=sparse dots like reference image', (v) => parseInt(v, 10))
+  .action((input: string, opts: { out: string; algo?: string; preset?: string; width?: number; style?: string; compress?: boolean; cellSize?: number }) => {
     let algo = opts.algo
     let style
+    let cellSize = opts.cellSize
+    let compress = opts.compress
 
     if (opts.preset) {
       const preset = getPreset(opts.preset)
@@ -32,7 +35,9 @@ program
         console.error(`Unknown preset "${opts.preset}". Run \`codeart presets\` to see available presets.`)
         process.exit(1)
       }
-      algo ??= preset.algo
+      algo     ??= preset.algo
+      cellSize ??= preset.cellSize
+      compress   = compress ?? preset.compress ?? false
       style = { ...preset.style }
     }
 
@@ -46,7 +51,7 @@ program
       }
     }
 
-    encodeFile(input, { out: opts.out, algo, width: opts.width, style, compress: opts.compress })
+    encodeFile(input, { out: opts.out, algo, width: opts.width, style, compress, cellSize })
     console.log(`Encoded → ${opts.out}`)
   })
 

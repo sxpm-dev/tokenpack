@@ -24,6 +24,8 @@ export interface HeaderData {
   backgroundColor: [number, number, number]
   compressionLevel: number   // 0=none, 1=deflate, 2=brotli
   uncompressedLength: number // original file byte count (0 when compressionLevel === 0)
+  cellSize: number           // 0|1=dense, 2+=dot mode (dots per cell side)
+  dataPixelCount: number     // actual pixels the codec used (stored for dot mode decode)
 }
 
 export interface EncodeOptions {
@@ -32,6 +34,7 @@ export interface EncodeOptions {
   width?: number
   out: string
   compress?: boolean  // true → brotli (best compression); falls back to uncompressed if larger
+  cellSize?: number   // 1=dense (default), 5=sparse dots (reference-image look)
 }
 
 export interface DecodeOptions {
