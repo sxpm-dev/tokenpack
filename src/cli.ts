@@ -7,6 +7,7 @@ import { PRESETS, getPreset } from './presets.js'
 import { packDirs, unpackDir, listArchive } from './archive.js'
 import { encode } from './encoder.js'
 import { decodeToBuffer } from './decoder.js'
+import { diffTokens } from './diff.js'
 import './codecs/register-all.js'
 
 const program = new Command()
@@ -124,6 +125,18 @@ program
     for (const codec of listCodecs()) {
       console.log(`  ${codec.id}  ${codec.name}`)
     }
+  })
+
+program
+  .command('diff <tokenA> <tokenB>')
+  .description('Visual diff of two tokens — changed bytes as colored pixels')
+  .requiredOption('-o, --out <path>', 'output diff PNG path')
+  .action((tokenA: string, tokenB: string, opts: { out: string }) => {
+    const stats = diffTokens(tokenA, tokenB, opts.out)
+    console.log(`Diff → ${opts.out}`)
+    console.log(`  changed:   ${stats.changedPixels} pixels / ${stats.changedBytes} bytes (${stats.changePercent}%)`)
+    console.log(`  unchanged: ${stats.unchangedPixels} pixels`)
+    console.log(`  size:      ${stats.sizeA} bytes → ${stats.sizeB} bytes`)
   })
 
 program
