@@ -12,7 +12,7 @@ import './codecs/register-all.js'
 const program = new Command()
 
 program
-  .name('codeart')
+  .name('tokenpack')
   .description('Encode source files into images and decode them back')
   .version('0.1.0')
 
@@ -21,7 +21,7 @@ program
   .description('Encode a source file into a PNG image')
   .requiredOption('-o, --out <path>', 'output PNG path')
   .option('--algo <name>', 'codec algorithm (overrides preset)')
-  .option('--preset <name>', 'visual preset (see: codeart presets)')
+  .option('--preset <name>', 'visual preset (see: tokenpack presets)')
   .option('--width <n>', 'override image width', (v) => parseInt(v, 10))
   .option('--style <json>', 'style config as JSON string or path to .json file (overrides preset)')
   .option('--compress', 'compress with brotli before encoding (fewer pixels, exact decode)')
@@ -35,7 +35,7 @@ program
     if (opts.preset) {
       const preset = getPreset(opts.preset)
       if (!preset) {
-        console.error(`Unknown preset "${opts.preset}". Run \`codeart presets\` to see available presets.`)
+        console.error(`Unknown preset "${opts.preset}". Run \`tokenpack presets\` to see available presets.`)
         process.exit(1)
       }
       algo     ??= preset.algo

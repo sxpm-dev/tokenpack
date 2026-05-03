@@ -534,20 +534,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"codeart@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "codeart@workspace:."
-  dependencies:
-    "@types/node": "npm:^25.6.0"
-    "@types/pngjs": "npm:^6.0.5"
-    commander: "npm:^14.0.3"
-    pngjs: "npm:^7.0.0"
-    tsx: "npm:^4.21.0"
-    typescript: "npm:^6.0.3"
-    vitest: "npm:^4.1.5"
-  languageName: unknown
-  linkType: soft
-
 "commander@npm:^14.0.3":
   version: 14.0.3
   resolution: "commander@npm:14.0.3"
@@ -1132,6 +1118,20 @@ __metadata:
   checksum: 10c0/f11cf387a26c5c9255bec141a90ac511b26172981b10c3e50053bc6700ea7d2336edcc4a3a21dbb8412fe7c013477d2ba4d7e4877800f3f8107be5105aad6511
   languageName: node
   linkType: hard
+
+"tokenpack@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "tokenpack@workspace:."
+  dependencies:
+    "@types/node": "npm:^25.6.0"
+    "@types/pngjs": "npm:^6.0.5"
+    commander: "npm:^14.0.3"
+    pngjs: "npm:^7.0.0"
+    tsx: "npm:^4.21.0"
+    typescript: "npm:^6.0.3"
+    vitest: "npm:^4.1.5"
+  languageName: unknown
+  linkType: soft
 
 "tslib@npm:^2.4.0":
   version: 2.8.1

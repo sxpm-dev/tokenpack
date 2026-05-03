@@ -37,7 +37,7 @@ export function writeHeader(pixels: Uint8Array, d: HeaderData): void {
 
 export function readHeader(pixels: Uint8Array): HeaderData {
   if (pixels[0] !== 0xC0 || pixels[1] !== 0xDE || pixels[2] !== 0xAE || pixels[3] !== 0x54) {
-    throw new Error('not a codeart image')
+    throw new Error('not a tokenpack image')
   }
   return {
     version: pixels[4],

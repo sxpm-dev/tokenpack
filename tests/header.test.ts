@@ -32,6 +32,6 @@ describe('header', () => {
 
   it('throws on invalid magic', () => {
     const buf = new Uint8Array(HEADER_BYTES)
-    expect(() => readHeader(buf)).toThrow('not a codeart image')
+    expect(() => readHeader(buf)).toThrow('not a tokenpack image')
   })
 })

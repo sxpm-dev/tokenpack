@@ -17,7 +17,7 @@ export function getCodecById(id: number): Codec {
 
 export function getCodecByName(name: string): Codec {
   const codec = byName.get(name)
-  if (!codec) throw new Error(`Unknown codec: "${name}". Run \`codeart list\` to see available codecs.`)
+  if (!codec) throw new Error(`Unknown codec: "${name}". Run \`tokenpack list\` to see available codecs.`)
   return codec
 }
 
