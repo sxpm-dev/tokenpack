@@ -7,7 +7,7 @@ import { PRESETS, getPreset } from './presets.js'
 import { packDirs, unpackDir, listArchive } from './archive.js'
 import { encode } from './encoder.js'
 import { decodeToBuffer } from './decoder.js'
-import { diffTokens, diffBytes } from './diff.js'
+import { diffTokens, diffText } from './diff.js'
 import './codecs/register-all.js'
 
 const program = new Command()
@@ -134,13 +134,23 @@ program
   .option('--text', 'print byte-level diff as text instead of image')
   .action((tokenA: string, tokenB: string, opts: { out?: string; text?: boolean }) => {
     if (opts.text) {
-      const { diffs, stats } = diffBytes(tokenA, tokenB)
-      console.log(`offset      before  after   char`)
-      console.log(`─────────── ─────── ─────── ────`)
-      for (const d of diffs) {
-        console.log(`${String(d.offset).padEnd(11)} ${String(d.before).padEnd(7)} ${String(d.after).padEnd(7)} ${d.char}`)
+      const fileDiffs = diffText(tokenA, tokenB)
+      if (!fileDiffs.length) { console.log('No differences found.'); return }
+      for (const fd of fileDiffs) {
+        console.log(`\n${'━'.repeat(60)}`)
+        console.log(`  ${fd.filePath}  (+${fd.added} -${fd.removed})`)
+        console.log(`${'━'.repeat(60)}`)
+        for (const hunk of fd.hunks) {
+          console.log(`  @@ line ${hunk.lineA} @@`)
+          for (const line of hunk.lines) {
+            const prefix = line.type === '+' ? '+ ' : line.type === '-' ? '- ' : '  '
+            console.log(`  ${prefix}${line.text}`)
+          }
+        }
       }
-      console.log(`\n${diffs.length} bytes changed (${stats.changePercent}%)  ${stats.sizeA} → ${stats.sizeB} bytes`)
+      const totalAdded   = fileDiffs.reduce((s, f) => s + f.added, 0)
+      const totalRemoved = fileDiffs.reduce((s, f) => s + f.removed, 0)
+      console.log(`\n${fileDiffs.length} file(s) changed  +${totalAdded} -${totalRemoved} lines`)
       return
     }
     if (!opts.out) { console.error('error: -o / --out <path> required for image diff'); process.exit(1) }

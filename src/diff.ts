@@ -1,5 +1,13 @@
 import { readPNG, writePNG } from './image.js'
 import { readHeader, HEADER_PIXELS } from './header.js'
+import { decodeToBuffer } from './decoder.js'
+import { listArchive, unpackDir } from './archive.js'
+import zlib from 'zlib'
+import os from 'os'
+import path from 'path'
+import fs from 'fs'
+
+// ── Visual pixel diff ─────────────────────────────────────────────────────────
 
 export function diffTokens(pathA: string, pathB: string, outPath: string): DiffStats {
   const a = readPNG(pathA)
@@ -8,112 +16,182 @@ export function diffTokens(pathA: string, pathB: string, outPath: string): DiffS
   const headerA = readHeader(a.pixels)
   const headerB = readHeader(b.pixels)
 
-  if (headerA.algorithmId !== headerB.algorithmId) {
-    throw new Error(`Codec mismatch: ${headerA.algorithmId} vs ${headerB.algorithmId} — tokens must use the same codec`)
-  }
-
-  // Work on the larger of the two (pad the smaller with zeros)
   const width  = Math.max(a.width,  b.width)
   const height = Math.max(a.height, b.height)
   const size   = width * height * 3
 
   const pa = padPixels(a.pixels, size)
   const pb = padPixels(b.pixels, size)
-
-  const out    = new Uint8Array(size)
-  let changed  = 0
-  let total    = 0
+  const out = new Uint8Array(size)
+  let changed = 0, total = 0
 
   for (let i = HEADER_PIXELS * 3; i < size; i += 3) {
-    const dr = Math.abs(pa[i]     - pb[i])
-    const dg = Math.abs(pa[i + 1] - pb[i + 1])
-    const db = Math.abs(pa[i + 2] - pb[i + 2])
-    const delta = dr + dg + db
-
+    const delta = Math.abs(pa[i] - pb[i]) + Math.abs(pa[i+1] - pb[i+1]) + Math.abs(pa[i+2] - pb[i+2])
     total++
-
     if (delta === 0) {
-      // Unchanged — dim grey so structure is visible
-      out[i] = 20; out[i + 1] = 20; out[i + 2] = 20
+      out[i] = 20; out[i+1] = 20; out[i+2] = 20
     } else {
       changed++
-      // Encode delta as color:
-      // small change  → blue
-      // medium change → orange
-      // large change  → red/white (full replacement)
       const intensity = Math.min(255, delta)
-      if (intensity < 80) {
-        out[i] = 0; out[i + 1] = 80; out[i + 2] = intensity * 3
-      } else if (intensity < 200) {
-        out[i] = intensity; out[i + 1] = intensity / 2; out[i + 2] = 0
-      } else {
-        out[i] = 255; out[i + 1] = intensity / 4; out[i + 2] = intensity / 4
-      }
+      if (intensity < 80)        { out[i] = 0;   out[i+1] = 80;             out[i+2] = intensity * 3 }
+      else if (intensity < 200)  { out[i] = intensity; out[i+1] = intensity/2; out[i+2] = 0 }
+      else                       { out[i] = 255; out[i+1] = intensity/4;    out[i+2] = intensity/4 }
     }
   }
 
   writePNG(outPath, out, width, height)
+  return { totalPixels: total, changedPixels: changed, unchangedPixels: total - changed,
+    changedBytes: changed * 3, changePercent: ((changed / total) * 100).toFixed(2),
+    sizeA: headerA.fileLength, sizeB: headerB.fileLength }
+}
 
-  return {
-    totalPixels: total,
-    changedPixels: changed,
-    unchangedPixels: total - changed,
-    changedBytes: changed * 3,
-    changePercent: ((changed / total) * 100).toFixed(2),
-    sizeA: headerA.fileLength,
-    sizeB: headerB.fileLength,
+// ── Line-level text diff ──────────────────────────────────────────────────────
+
+export interface FileDiff {
+  filePath: string
+  hunks: Hunk[]
+  added: number
+  removed: number
+}
+
+export interface Hunk {
+  lineA: number
+  lineB: number
+  lines: { type: '+' | '-' | ' '; text: string }[]
+}
+
+export function diffText(pathA: string, pathB: string): FileDiff[] {
+  const dataA = decodeToBuffer(pathA)
+  const dataB = decodeToBuffer(pathB)
+
+  // Detect if it's a CART archive (pack token) or a plain file token
+  const isCartA = dataA.slice(0, 4).toString('ascii') === 'CART'
+  const isCartB = dataB.slice(0, 4).toString('ascii') === 'CART'
+
+  if (isCartA && isCartB) {
+    return diffArchives(dataA, dataB)
   }
+
+  // Single file diff
+  const linesA = dataA.toString('utf8').split('\n')
+  const linesB = dataB.toString('utf8').split('\n')
+  const hunks  = computeHunks(linesA, linesB)
+  const added   = hunks.flatMap(h => h.lines).filter(l => l.type === '+').length
+  const removed = hunks.flatMap(h => h.lines).filter(l => l.type === '-').length
+  return hunks.length ? [{ filePath: '(file)', hunks, added, removed }] : []
+}
+
+function diffArchives(dataA: Buffer, dataB: Buffer): FileDiff[] {
+  const filesA = parseArchive(dataA)
+  const filesB = parseArchive(dataB)
+
+  const allPaths = new Set([...Object.keys(filesA), ...Object.keys(filesB)])
+  const results: FileDiff[] = []
+
+  for (const filePath of [...allPaths].sort()) {
+    const a = filesA[filePath]
+    const b = filesB[filePath]
+
+    if (!a) {
+      results.push({ filePath, hunks: [{ lineA: 0, lineB: 1, lines: [{ type: '+', text: '(new file)' }] }], added: 1, removed: 0 })
+      continue
+    }
+    if (!b) {
+      results.push({ filePath, hunks: [{ lineA: 1, lineB: 0, lines: [{ type: '-', text: '(deleted)' }] }], added: 0, removed: 1 })
+      continue
+    }
+
+    const strA = a.toString('utf8')
+    const strB = b.toString('utf8')
+    if (strA === strB) continue
+
+    const linesA = strA.split('\n')
+    const linesB = strB.split('\n')
+    const hunks  = computeHunks(linesA, linesB)
+    const added   = hunks.flatMap(h => h.lines).filter(l => l.type === '+').length
+    const removed = hunks.flatMap(h => h.lines).filter(l => l.type === '-').length
+    results.push({ filePath, hunks, added, removed })
+  }
+
+  return results
+}
+
+function parseArchive(data: Buffer): Record<string, Buffer> {
+  const files: Record<string, Buffer> = {}
+  const fileCount = data.readUInt32BE(4)
+  let offset = 8
+  for (let i = 0; i < fileCount; i++) {
+    const pathLen    = data.readUInt16BE(offset); offset += 2
+    const filePath   = data.slice(offset, offset + pathLen).toString('utf8'); offset += pathLen
+    const contentLen = data.readUInt32BE(offset); offset += 4
+    files[filePath]  = data.slice(offset, offset + contentLen); offset += contentLen
+  }
+  return files
+}
+
+// Simple LCS-based line diff
+function lcs(a: string[], b: string[]): boolean[][] {
+  const m = a.length, n = b.length
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0))
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] + 1 : Math.max(dp[i-1][j], dp[i][j-1])
+
+  const inLCS: boolean[][] = Array.from({ length: m }, () => new Array(n).fill(false))
+  let i = m, j = n
+  while (i > 0 && j > 0) {
+    if (a[i-1] === b[j-1]) { inLCS[i-1][j-1] = true; i--; j-- }
+    else if (dp[i-1][j] > dp[i][j-1]) i--
+    else j--
+  }
+  return inLCS
+}
+
+const CONTEXT = 3
+
+function computeHunks(a: string[], b: string[]): Hunk[] {
+  const match = lcs(a, b)
+  const ops: { type: '+' | '-' | ' '; text: string; lineA: number; lineB: number }[] = []
+
+  let i = 0, j = 0
+  while (i < a.length || j < b.length) {
+    if (i < a.length && j < b.length && match[i]?.[j]) {
+      ops.push({ type: ' ', text: a[i], lineA: i + 1, lineB: j + 1 }); i++; j++
+    } else if (j < b.length && (i >= a.length || !match[i]?.[j])) {
+      ops.push({ type: '+', text: b[j], lineA: i + 1, lineB: j + 1 }); j++
+    } else {
+      ops.push({ type: '-', text: a[i], lineA: i + 1, lineB: i + 1 }); i++
+    }
+  }
+
+  // Group into hunks with context
+  const changed = ops.map((o, idx) => o.type !== ' ' ? idx : -1).filter(x => x >= 0)
+  if (!changed.length) return []
+
+  const ranges: [number, number][] = []
+  let start = Math.max(0, changed[0] - CONTEXT)
+  let end   = Math.min(ops.length - 1, changed[0] + CONTEXT)
+
+  for (let k = 1; k < changed.length; k++) {
+    const next = Math.min(ops.length - 1, changed[k] + CONTEXT)
+    if (changed[k] - CONTEXT <= end + 1) { end = next }
+    else { ranges.push([start, end]); start = Math.max(0, changed[k] - CONTEXT); end = next }
+  }
+  ranges.push([start, end])
+
+  return ranges.map(([s, e]) => {
+    const lines = ops.slice(s, e + 1)
+    return {
+      lineA: ops[s].lineA,
+      lineB: ops[s].lineB,
+      lines: lines.map(o => ({ type: o.type, text: o.text })),
+    }
+  })
 }
 
 function padPixels(pixels: Uint8Array, targetSize: number): Uint8Array {
   if (pixels.length >= targetSize) return pixels
-  const padded = new Uint8Array(targetSize)
-  padded.set(pixels)
-  return padded
-}
-
-export interface ByteDiff {
-  offset: number
-  before: number
-  after: number
-  char: string
-}
-
-export function diffBytes(pathA: string, pathB: string): { diffs: ByteDiff[]; stats: DiffStats } {
-  const a = readPNG(pathA)
-  const b = readPNG(pathB)
-
-  const headerA = readHeader(a.pixels)
-  const headerB = readHeader(b.pixels)
-
-  const dataA = a.pixels.slice(HEADER_PIXELS * 3, HEADER_PIXELS * 3 + headerA.fileLength)
-  const dataB = b.pixels.slice(HEADER_PIXELS * 3, HEADER_PIXELS * 3 + headerB.fileLength)
-
-  const maxLen = Math.max(dataA.length, dataB.length)
-  const diffs: ByteDiff[] = []
-
-  for (let i = 0; i < maxLen; i++) {
-    const before = i < dataA.length ? dataA[i] : 0
-    const after  = i < dataB.length ? dataB[i] : 0
-    if (before !== after) {
-      const charBefore = before >= 32 && before < 127 ? String.fromCharCode(before) : '·'
-      const charAfter  = after  >= 32 && after  < 127 ? String.fromCharCode(after)  : '·'
-      diffs.push({ offset: i, before, after, char: `${charBefore}→${charAfter}` })
-    }
-  }
-
-  return {
-    diffs,
-    stats: {
-      totalPixels: Math.ceil(maxLen / 3),
-      changedPixels: Math.ceil(diffs.length / 3),
-      unchangedPixels: Math.ceil((maxLen - diffs.length) / 3),
-      changedBytes: diffs.length,
-      changePercent: ((diffs.length / maxLen) * 100).toFixed(2),
-      sizeA: headerA.fileLength,
-      sizeB: headerB.fileLength,
-    },
-  }
+  const padded = new Uint8Array(targetSize); padded.set(pixels); return padded
 }
 
 export interface DiffStats {
