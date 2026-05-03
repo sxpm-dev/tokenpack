@@ -21,7 +21,8 @@ program
   .option('--preset <name>', 'visual preset (see: codeart presets)')
   .option('--width <n>', 'override image width', (v) => parseInt(v, 10))
   .option('--style <json>', 'style config as JSON string or path to .json file (overrides preset)')
-  .action((input: string, opts: { out: string; algo?: string; preset?: string; width?: number; style?: string }) => {
+  .option('--compress', 'compress with brotli before encoding (fewer pixels, exact decode)')
+  .action((input: string, opts: { out: string; algo?: string; preset?: string; width?: number; style?: string; compress?: boolean }) => {
     let algo = opts.algo
     let style
 
@@ -45,7 +46,7 @@ program
       }
     }
 
-    encodeFile(input, { out: opts.out, algo, width: opts.width, style })
+    encodeFile(input, { out: opts.out, algo, width: opts.width, style, compress: opts.compress })
     console.log(`Encoded → ${opts.out}`)
   })
 

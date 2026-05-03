@@ -1,4 +1,5 @@
 import fs from 'fs'
+import zlib from 'zlib'
 import { getCodecByName } from './codecs/registry.js'
 import { writeHeader, HEADER_PIXELS } from './header.js'
 import { writePNG } from './image.js'
@@ -23,12 +24,34 @@ export function calcDimensions(
 
 export function encode(input: Buffer, options: EncodeOptions): void {
   const codec = getCodecByName(options.algo ?? 'linear')
-  const { width, height } = calcDimensions(input, codec, options.width)
+
+  // Compress if requested. Brotli (quality 11) gives the best ratio for source code.
+  // Fall back to uncompressed if compression doesn't reduce size.
+  let dataToEncode = input
+  let compressionLevel = 0
+  let uncompressedLength = 0
+
+  if (options.compress) {
+    const compressed = zlib.brotliCompressSync(input, {
+      params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 },
+    })
+    if (compressed.length < input.length) {
+      dataToEncode = compressed
+      compressionLevel = 2
+      uncompressedLength = input.length
+      const ratio = ((1 - compressed.length / input.length) * 100).toFixed(1)
+      console.log(`Compressed ${input.length} → ${compressed.length} bytes (${ratio}% smaller)`)
+    } else {
+      console.log(`Compression skipped (file too small to benefit)`)
+    }
+  }
+
+  const { width, height } = calcDimensions(dataToEncode, codec, options.width)
   const dataPixelCount = width * height - HEADER_PIXELS
   const totalPixels = width * height
 
   const pixels = new Uint8Array(totalPixels * 3)
-  const dataRgb = codec.encode(input, dataPixelCount, width, height)
+  const dataRgb = codec.encode(dataToEncode, dataPixelCount, width, height)
   pixels.set(dataRgb, HEADER_PIXELS * 3)
 
   const style = options.style
@@ -39,7 +62,6 @@ export function encode(input: Buffer, options: EncodeOptions): void {
   const gradDir = style?.gradient ? (dirMap[style.gradient.direction] ?? 0) : 0
   const bgColor = style?.background ?? [0, 0, 0]
 
-  // Quantize opacity to 8-bit so apply and reverse use the exact same value
   const rawOpacity = style?.opacity ?? 1.0
   const blendAmount = hasGradient ? Math.round((1 - rawOpacity) * 255) : 0
   const opacity = 1 - blendAmount / 255
@@ -47,7 +69,7 @@ export function encode(input: Buffer, options: EncodeOptions): void {
   const headerData = {
     version: 1,
     algorithmId: codec.id,
-    fileLength: input.length,
+    fileLength: dataToEncode.length,
     width,
     height,
     styleFlags: (hasGradient ? 0b01 : 0) | (style?.background ? 0b10 : 0),
@@ -58,6 +80,8 @@ export function encode(input: Buffer, options: EncodeOptions): void {
     gradientDirection: gradDir,
     backgroundOpacity: blendAmount,
     backgroundColor: bgColor as [number, number, number],
+    compressionLevel,
+    uncompressedLength,
   }
 
   writeHeader(pixels, headerData)

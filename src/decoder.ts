@@ -1,4 +1,5 @@
 import fs from 'fs'
+import zlib from 'zlib'
 import { readHeader, HEADER_PIXELS } from './header.js'
 import { readPNG } from './image.js'
 import { getCodecById } from './codecs/registry.js'
@@ -11,12 +12,18 @@ export function decode(inputPath: string, options: DecodeOptions): void {
   const codec = getCodecById(header.algorithmId)
 
   if (header.styleFlags & 0b01) {
-    // backgroundOpacity stores (1 - opacity) * 255
     const opacity = header.backgroundOpacity === 0 ? 1.0 : 1 - (header.backgroundOpacity / 255)
     reverseStyle(pixels, width, height, header, opacity)
   }
 
   const dataPixels = pixels.slice(HEADER_PIXELS * 3)
-  const output = codec.decode(dataPixels, header.fileLength, width, height)
+  let output = codec.decode(dataPixels, header.fileLength, width, height)
+
+  if (header.compressionLevel === 1) {
+    output = zlib.inflateSync(output)
+  } else if (header.compressionLevel === 2) {
+    output = zlib.brotliDecompressSync(output)
+  }
+
   fs.writeFileSync(options.out, output)
 }

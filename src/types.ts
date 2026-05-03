@@ -11,7 +11,7 @@ export interface Style {
 export interface HeaderData {
   version: number
   algorithmId: number
-  fileLength: number
+  fileLength: number       // bytes the codec encodes (compressed length when compressionLevel > 0)
   width: number
   height: number
   styleFlags: number
@@ -22,6 +22,8 @@ export interface HeaderData {
   gradientDirection: number
   backgroundOpacity: number
   backgroundColor: [number, number, number]
+  compressionLevel: number   // 0=none, 1=deflate, 2=brotli
+  uncompressedLength: number // original file byte count (0 when compressionLevel === 0)
 }
 
 export interface EncodeOptions {
@@ -29,6 +31,7 @@ export interface EncodeOptions {
   style?: Partial<Style>
   width?: number
   out: string
+  compress?: boolean  // true → brotli (best compression); falls back to uncompressed if larger
 }
 
 export interface DecodeOptions {

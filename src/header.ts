@@ -23,6 +23,11 @@ export function writeHeader(pixels: Uint8Array, d: HeaderData): void {
   pixels[38] = d.gradientDirection
   pixels[39] = d.backgroundOpacity
   pixels[40] = d.backgroundColor[0]; pixels[41] = d.backgroundColor[1]; pixels[42] = d.backgroundColor[2]
+  pixels[43] = d.compressionLevel
+  pixels[44] = (d.uncompressedLength >>> 24) & 0xFF
+  pixels[45] = (d.uncompressedLength >>> 16) & 0xFF
+  pixels[46] = (d.uncompressedLength >>> 8)  & 0xFF
+  pixels[47] =  d.uncompressedLength         & 0xFF
 }
 
 export function readHeader(pixels: Uint8Array): HeaderData {
@@ -44,5 +49,7 @@ export function readHeader(pixels: Uint8Array): HeaderData {
     gradientDirection: pixels[38],
     backgroundOpacity: pixels[39],
     backgroundColor: [pixels[40], pixels[41], pixels[42]],
+    compressionLevel: pixels[43],
+    uncompressedLength: ((pixels[44] << 24) | (pixels[45] << 16) | (pixels[46] << 8) | pixels[47]) >>> 0,
   }
 }

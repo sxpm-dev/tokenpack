@@ -16,6 +16,8 @@ const sample: HeaderData = {
   gradientDirection: 3,
   backgroundOpacity: 128,
   backgroundColor: [10, 20, 30],
+  compressionLevel: 2,
+  uncompressedLength: 999999,
 }
 
 describe('header', () => {
