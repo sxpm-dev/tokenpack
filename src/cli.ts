@@ -4,7 +4,7 @@ import { encodeFile } from './encoder.js'
 import { decode } from './decoder.js'
 import { listCodecs } from './codecs/registry.js'
 import { PRESETS, getPreset } from './presets.js'
-import { packDir, unpackDir, listArchive } from './archive.js'
+import { packDirs, unpackDir, listArchive } from './archive.js'
 import { encode } from './encoder.js'
 import { decodeToBuffer } from './decoder.js'
 import './codecs/register-all.js'
@@ -68,7 +68,7 @@ program
   })
 
 program
-  .command('pack <dir>')
+  .command('pack <dirs...>')
   .description('Pack a directory into a PNG image token')
   .requiredOption('-o, --out <path>', 'output PNG path')
   .option('--preset <name>', 'visual preset')
@@ -76,7 +76,7 @@ program
   .option('--cell-size <n>', 'dot cell size (default 5)', (v) => parseInt(v, 10))
   .option('--ignore <names>', 'comma-separated extra names to ignore', (v) => v.split(','))
   .option('--no-compress', 'skip brotli compression')
-  .action((dir: string, opts: { out: string; preset?: string; algo?: string; cellSize?: number; ignore?: string[]; compress: boolean }) => {
+  .action((dirs: string[], opts: { out: string; preset?: string; algo?: string; cellSize?: number; ignore?: string[]; compress: boolean }) => {
     let algo = opts.algo
     let style
     let cellSize = opts.cellSize
@@ -92,12 +92,12 @@ program
     }
 
     algo     ??= 'linear'
-    cellSize ??= 5
+    cellSize ??= 1
     if (compress === undefined) compress = true
 
-    const archive = packDir(dir, opts.ignore)
+    const archive = packDirs(dirs, opts.ignore)
     encode(archive, { out: opts.out, algo, style, cellSize, compress })
-    console.log(`Packed ${dir} → ${opts.out}`)
+    console.log(`Packed [${dirs.join(', ')}] → ${opts.out}`)
   })
 
 program
