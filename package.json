@@ -7,8 +7,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "tokenpack": "tsx src/cli.ts",
-    "start": "npm --prefix dashboard start",
-    "dashboard": "npm --prefix dashboard run dev"
+    "start": "cd dashboard && npm start",
+    "dashboard": "cd dashboard && npm run dev"
   },
   "dependencies": {
     "commander": "^14.0.3",
