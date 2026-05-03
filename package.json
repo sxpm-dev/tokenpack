@@ -1,4 +1,22 @@
 {
   "name": "codeart",
-  "packageManager": "yarn@4.3.1"
+  "version": "1.0.0",
+  "type": "module",
+  "packageManager": "yarn@4.3.1",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "codeart": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/pngjs": "^6.0.5",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  }
 }
