@@ -5,7 +5,11 @@ import { Button } from '@heroui/react'
 import { ImageSquare, ArrowsClockwise, GitDiff } from '@phosphor-icons/react'
 
 function TokenSlot({
-  label, file, previewUrl, onFile, onReset,
+  label,
+  file,
+  previewUrl,
+  onFile,
+  onReset,
 }: {
   label: string
   file: File | null
@@ -24,7 +28,12 @@ function TokenSlot({
             src={previewUrl}
             alt={label}
             className="w-full rounded-xl border border-white/10"
-            style={{ imageRendering: 'pixelated', maxHeight: '220px', objectFit: 'contain', background: '#111' }}
+            style={{
+              imageRendering: 'pixelated',
+              maxHeight: '220px',
+              objectFit: 'contain',
+              background: '#111',
+            }}
           />
           <button
             onClick={onReset}
@@ -47,28 +56,54 @@ function TokenSlot({
         </div>
       )}
       <input
-        ref={ref} type="file" accept="image/png" className="hidden"
-        onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f) }}
+        ref={ref}
+        type="file"
+        accept="image/png,image/avif,image/webp"
+        className="hidden"
+        onChange={e => {
+          const f = e.target.files?.[0]
+          if (f) onFile(f)
+        }}
       />
     </div>
   )
 }
 
 export function DiffTokens() {
-  const [fileA, setFileA]     = useState<File | null>(null)
-  const [fileB, setFileB]     = useState<File | null>(null)
-  const [urlA, setUrlA]       = useState<string | null>(null)
-  const [urlB, setUrlB]       = useState<string | null>(null)
-  const [mode, setMode]       = useState<'image' | 'text'>('image')
+  const [fileA, setFileA] = useState<File | null>(null)
+  const [fileB, setFileB] = useState<File | null>(null)
+  const [urlA, setUrlA] = useState<string | null>(null)
+  const [urlB, setUrlB] = useState<string | null>(null)
+  const [mode, setMode] = useState<'image' | 'text'>('image')
   const [loading, setLoading] = useState(false)
   const [diffUrl, setDiffUrl] = useState<string | null>(null)
   const [textDiff, setTextDiff] = useState<string | null>(null)
-  const [error, setError]     = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  function setA(f: File) { setFileA(f); setUrlA(URL.createObjectURL(f)); setDiffUrl(null); setTextDiff(null) }
-  function setB(f: File) { setFileB(f); setUrlB(URL.createObjectURL(f)); setDiffUrl(null); setTextDiff(null) }
-  function resetA() { setFileA(null); setUrlA(null); setDiffUrl(null); setTextDiff(null) }
-  function resetB() { setFileB(null); setUrlB(null); setDiffUrl(null); setTextDiff(null) }
+  function setA(f: File) {
+    setFileA(f)
+    setUrlA(URL.createObjectURL(f))
+    setDiffUrl(null)
+    setTextDiff(null)
+  }
+  function setB(f: File) {
+    setFileB(f)
+    setUrlB(URL.createObjectURL(f))
+    setDiffUrl(null)
+    setTextDiff(null)
+  }
+  function resetA() {
+    setFileA(null)
+    setUrlA(null)
+    setDiffUrl(null)
+    setTextDiff(null)
+  }
+  function resetB() {
+    setFileB(null)
+    setUrlB(null)
+    setDiffUrl(null)
+    setTextDiff(null)
+  }
 
   async function handleDiff() {
     if (!fileA || !fileB) return
@@ -86,7 +121,10 @@ export function DiffTokens() {
       const res = await fetch('/api/diff', { method: 'POST', body: form })
 
       if (mode === 'image') {
-        if (!res.ok) { const j = await res.json(); throw new Error(j.error) }
+        if (!res.ok) {
+          const j = await res.json()
+          throw new Error(j.error)
+        }
         const blob = await res.blob()
         setDiffUrl(URL.createObjectURL(blob))
       } else {
@@ -105,8 +143,20 @@ export function DiffTokens() {
     <div className="space-y-5">
       {/* Two token slots */}
       <div className="flex gap-4">
-        <TokenSlot label="Token A (before)" file={fileA} previewUrl={urlA} onFile={setA} onReset={resetA} />
-        <TokenSlot label="Token B (after)"  file={fileB} previewUrl={urlB} onFile={setB} onReset={resetB} />
+        <TokenSlot
+          label="Token A (before)"
+          file={fileA}
+          previewUrl={urlA}
+          onFile={setA}
+          onReset={resetA}
+        />
+        <TokenSlot
+          label="Token B (after)"
+          file={fileB}
+          previewUrl={urlB}
+          onFile={setB}
+          onReset={resetB}
+        />
       </div>
 
       {/* Mode + action */}
@@ -146,7 +196,10 @@ export function DiffTokens() {
       {diffUrl && (
         <div className="space-y-2">
           <div className="text-xs text-white/40 uppercase tracking-wider">
-            Diff · <span className="text-white/60">dark = unchanged · blue/orange/red = changed bytes</span>
+            Diff ·{' '}
+            <span className="text-white/60">
+              dark = unchanged · blue/orange/red = changed bytes
+            </span>
           </div>
           <img
             src={diffUrl}
@@ -170,12 +223,18 @@ export function DiffTokens() {
           <div className="text-xs text-white/40 uppercase tracking-wider">Line diff</div>
           <pre className="text-xs font-mono leading-relaxed max-h-[500px] overflow-auto bg-[#0f0f0f] border border-white/10 rounded-xl p-4 whitespace-pre-wrap">
             {textDiff.split('\n').map((line, i) => {
-              const color =
-                line.startsWith('+ ') ? 'text-green-400' :
-                line.startsWith('- ') ? 'text-red-400' :
-                line.startsWith('━') || line.startsWith('@@') ? 'text-blue-400/80' :
-                'text-white/50'
-              return <span key={i} className={`block ${color}`}>{line}</span>
+              const color = line.startsWith('+ ')
+                ? 'text-green-400'
+                : line.startsWith('- ')
+                  ? 'text-red-400'
+                  : line.startsWith('━') || line.startsWith('@@')
+                    ? 'text-blue-400/80'
+                    : 'text-white/50'
+              return (
+                <span key={i} className={`block ${color}`}>
+                  {line}
+                </span>
+              )
             })}
           </pre>
         </div>

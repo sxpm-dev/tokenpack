@@ -4,19 +4,31 @@
   "type": "module",
   "packageManager": "yarn@4.3.1",
   "scripts": {
+    "lint": "eslint src tests",
+    "format": "prettier --write src tests",
     "test": "vitest run",
     "test:watch": "vitest",
     "tokenpack": "tsx src/cli.ts",
-    "start": "cd dashboard && npm start",
-    "dashboard": "cd dashboard && npm run dev"
+    "start": "NODE_OPTIONS='' npm --prefix dashboard start",
+    "dashboard": "NODE_OPTIONS='' npm --prefix dashboard run dev",
+    "benchmark:generate": "tsx benchmark/generate.ts",
+    "benchmark:run": "tsx benchmark/run.ts"
   },
   "dependencies": {
+    "adm-zip": "^0.5.17",
     "commander": "^14.0.3",
-    "pngjs": "^7.0.0"
+    "pngjs": "^7.0.0",
+    "sharp": "^0.34.2"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0",
     "@types/node": "^25.6.0",
     "@types/pngjs": "^6.0.5",
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
+    "@typescript-eslint/parser": "^8.59.1",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.3",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"

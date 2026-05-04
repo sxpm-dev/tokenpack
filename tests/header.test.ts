@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { writeHeader, readHeader, HEADER_BYTES } from '../src/header.js'
-import type { HeaderData } from '../src/types.js'
+import { writeHeader, readHeader, HEADER_BYTES } from '../src/header'
+import type { HeaderData } from '../src/types'
 
 const sample: HeaderData = {
   version: 1,
@@ -10,7 +10,7 @@ const sample: HeaderData = {
   height: 200,
   styleFlags: 0b00000011,
   ecLevel: 0,
-  codecMeta: new Uint8Array(16).fill(0xAB),
+  codecMeta: new Uint8Array(16).fill(0xab),
   gradientFrom: [255, 0, 128],
   gradientTo: [0, 128, 255],
   gradientDirection: 3,
@@ -20,6 +20,10 @@ const sample: HeaderData = {
   uncompressedLength: 999999,
   cellSize: 5,
   dataPixelCount: 12345,
+  chunkIndex: 2,
+  chunkTotal: 5,
+  streamId: 0xdeadbeef,
+  channels: 4,
 }
 
 describe('header', () => {

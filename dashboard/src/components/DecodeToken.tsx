@@ -3,28 +3,42 @@
 import { useState, useRef } from 'react'
 import { Button, Card } from '@heroui/react'
 import {
-  Folder, FolderOpen, File, FileCode, FileText,
-  FileCss, FileTs, FileJs, CaretRight, CaretDown,
-  Image as ImageIcon, ArrowsClockwise,
+  Folder,
+  FolderOpen,
+  File,
+  FileCode,
+  FileText,
+  FileCss,
+  FileTs,
+  FileJs,
+  CaretRight,
+  CaretDown,
+  Image as ImageIcon,
+  ArrowsClockwise,
 } from '@phosphor-icons/react'
 import type { FileEntry } from '@/app/api/decode/route'
 
 type DecodeResult =
-  | { type: 'text';       content: string }
+  | { type: 'text'; content: string }
   | { type: 'filesystem'; files: FileEntry[] }
-  | { type: 'binary';     size: number }
+  | { type: 'binary'; size: number }
 
 // ── File icon by extension ────────────────────────────────────────────────────
 
 function FileIcon({ name, className }: { name: string; className?: string }) {
   const ext = name.split('.').pop()?.toLowerCase() ?? ''
-  const props = { size: 14, className }
-  if (['ts', 'tsx'].includes(ext)) return <FileTs {...props} className={`${className} text-blue-400`} />
-  if (['js', 'jsx', 'mjs'].includes(ext)) return <FileJs {...props} className={`${className} text-yellow-400`} />
-  if (['css', 'scss', 'sass'].includes(ext)) return <FileCss {...props} className={`${className} text-pink-400`} />
-  if (['md', 'mdx', 'txt'].includes(ext)) return <FileText {...props} className={`${className} text-white/50`} />
-  if (['json', 'yaml', 'yml', 'toml'].includes(ext)) return <FileCode {...props} className={`${className} text-orange-400`} />
-  return <File {...props} className={`${className} text-white/40`} />
+  const base = `shrink-0 ${className ?? ''}`
+  const p = { size: 14, weight: 'fill' as const }
+  if (['ts', 'tsx'].includes(ext)) return <FileTs {...p} className={`${base} text-blue-400`} />
+  if (['js', 'jsx', 'mjs'].includes(ext))
+    return <FileJs {...p} className={`${base} text-yellow-400`} />
+  if (['css', 'scss', 'sass'].includes(ext))
+    return <FileCss {...p} className={`${base} text-pink-400`} />
+  if (['md', 'mdx', 'txt'].includes(ext))
+    return <FileText {...p} className={`${base} text-white/50`} />
+  if (['json', 'yaml', 'yml', 'toml'].includes(ext))
+    return <FileCode {...p} className={`${base} text-orange-400`} />
+  return <File {...p} className={`${base} text-white/40`} />
 }
 
 // ── Tree node types ───────────────────────────────────────────────────────────
@@ -64,7 +78,12 @@ function buildTree(files: FileEntry[]): TreeNode[] {
 // ── VSCode-like tree node ─────────────────────────────────────────────────────
 
 function TreeNodeRow({
-  node, depth, selected, onSelect, expanded, onToggle,
+  node,
+  depth,
+  selected,
+  onSelect,
+  expanded,
+  onToggle,
 }: {
   node: TreeNode
   depth: number
@@ -79,7 +98,9 @@ function TreeNodeRow({
   return (
     <>
       <button
-        onClick={() => node.type === 'dir' ? onToggle(node.path) : node.entry && onSelect(node.entry)}
+        onClick={() =>
+          node.type === 'dir' ? onToggle(node.path) : node.entry && onSelect(node.entry)
+        }
         className={`w-full flex items-center gap-1.5 px-2 py-[3px] text-xs font-mono transition-colors text-left select-none group ${
           isSelected
             ? 'bg-blue-600/30 text-white'
@@ -89,17 +110,19 @@ function TreeNodeRow({
       >
         {node.type === 'dir' ? (
           <>
-            <span className="text-white/30 w-3 shrink-0">
+            <span className="w-3 shrink-0 flex items-center justify-center text-white/30">
               {isExpanded ? <CaretDown size={10} /> : <CaretRight size={10} />}
             </span>
-            {isExpanded
-              ? <FolderOpen size={14} className="shrink-0 text-yellow-300/80" />
-              : <Folder     size={14} className="shrink-0 text-yellow-300/60" />}
+            {isExpanded ? (
+              <FolderOpen size={14} weight="fill" className="shrink-0 text-yellow-300/80" />
+            ) : (
+              <Folder size={14} weight="fill" className="shrink-0 text-yellow-300/60" />
+            )}
           </>
         ) : (
           <>
             <span className="w-3 shrink-0" />
-            <FileIcon name={node.name} />
+            <FileIcon name={node.name} className="shrink-0" />
           </>
         )}
         <span className="truncate">{node.name}</span>
@@ -110,7 +133,8 @@ function TreeNodeRow({
         )}
       </button>
 
-      {node.type === 'dir' && isExpanded &&
+      {node.type === 'dir' &&
+        isExpanded &&
         node.children.map(child => (
           <TreeNodeRow
             key={child.path}
@@ -150,9 +174,9 @@ function FileTree({ files }: { files: FileEntry[] }) {
   }
 
   return (
-    <div className="flex h-[480px] rounded-xl overflow-hidden border border-white/10">
+    <div className="flex h-[70vh] min-h-[560px] rounded-xl overflow-hidden border border-white/10">
       {/* Sidebar */}
-      <div className="w-52 shrink-0 bg-[#1e1e1e] border-r border-white/10 overflow-y-auto">
+      <div className="w-72 shrink-0 bg-[#1e1e1e] border-r border-white/10 overflow-y-auto">
         <div className="px-3 py-2 text-[10px] text-white/25 uppercase tracking-wider font-semibold border-b border-white/5">
           Explorer
         </div>
@@ -194,11 +218,11 @@ function FileTree({ files }: { files: FileEntry[] }) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function DecodeToken() {
-  const [file, setFile]         = useState<File | null>(null)
+  const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [loading, setLoading]   = useState(false)
-  const [result, setResult]     = useState<DecodeResult | null>(null)
-  const [error, setError]       = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<DecodeResult | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -227,7 +251,7 @@ export function DecodeToken() {
     try {
       const form = new FormData()
       form.append('token', file)
-      const res  = await fetch('/api/decode', { method: 'POST', body: form })
+      const res = await fetch('/api/decode', { method: 'POST', body: form })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setResult(data)
@@ -247,7 +271,12 @@ export function DecodeToken() {
             src={previewUrl}
             alt="Token preview"
             className="w-full rounded-xl border border-white/10"
-            style={{ imageRendering: 'pixelated', maxHeight: '320px', objectFit: 'contain', background: '#111' }}
+            style={{
+              imageRendering: 'pixelated',
+              maxHeight: '320px',
+              objectFit: 'contain',
+              background: '#111',
+            }}
           />
           <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
@@ -267,14 +296,23 @@ export function DecodeToken() {
           onClick={() => fileRef.current?.click()}
           className="border-2 border-dashed border-white/15 rounded-xl p-10 flex flex-col items-center gap-3 cursor-pointer hover:border-white/30 transition-colors group"
         >
-          <ImageIcon size={32} className="text-white/20 group-hover:text-white/40 transition-colors" />
+          <ImageIcon
+            size={32}
+            className="text-white/20 group-hover:text-white/40 transition-colors"
+          />
           <div className="text-sm text-white/40 group-hover:text-white/60 transition-colors">
             Click to upload a token.png
           </div>
         </div>
       )}
 
-      <input ref={fileRef} type="file" accept="image/png" className="hidden" onChange={handleFileChange} />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/png,image/avif,image/webp"
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
       {file && (
         <Button onPress={handleDecode} isPending={loading} fullWidth>
@@ -292,9 +330,9 @@ export function DecodeToken() {
         <Card variant="secondary">
           <Card.Header className="px-4 pt-4 pb-2">
             <Card.Title className="text-sm font-medium text-white/60">
-              {result.type === 'text'       && 'Text content'}
+              {result.type === 'text' && 'Text content'}
               {result.type === 'filesystem' && `Filesystem · ${result.files.length} files`}
-              {result.type === 'binary'     && 'Binary content'}
+              {result.type === 'binary' && 'Binary content'}
             </Card.Title>
           </Card.Header>
           <Card.Content className="px-4 pb-4">

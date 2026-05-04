@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { semanticCodec } from '../../src/codecs/semantic.js'
+import { semanticCodec } from '../../src/codecs/semantic'
 
 describe('semanticCodec', () => {
   it('roundtrips plain text with no keywords', () => {
@@ -21,11 +21,11 @@ describe('semanticCodec', () => {
   it('roundtrips a more complex snippet', () => {
     const input = Buffer.from(
       'class Animal {\n' +
-      '  constructor(name) { this.name = name; }\n' +
-      '  speak() { return `${this.name} makes a sound.`; }\n' +
-      '}\n' +
-      "const dog = new Animal('Dog');\n" +
-      'for (let i = 0; i < 3; i++) { console.log(dog.speak()); }'
+        '  constructor(name) { this.name = name; }\n' +
+        '  speak() { return `${this.name} makes a sound.`; }\n' +
+        '}\n' +
+        "const dog = new Animal('Dog');\n" +
+        'for (let i = 0; i < 3; i++) { console.log(dog.speak()); }',
     )
     const dataPixelCount = 1000
     const encoded = semanticCodec.encode(input, dataPixelCount, 40, 40)

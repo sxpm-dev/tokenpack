@@ -1,4 +1,4 @@
-import type { Style } from './types.js'
+import type { Style } from './types'
 
 export interface Preset {
   name: string
