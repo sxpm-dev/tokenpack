@@ -11,7 +11,6 @@ export interface Preset {
 
 export const PRESETS: Preset[] = [
   // ── Dot mode presets (sparse grid + gradient background — the reference look) ─
-  // All dot-mode presets use linear+brotli: semantic has no effect on compressed data
   {
     name: 'sunset',
     description: 'Red→blue diagonal, brotli+linear dots',
@@ -78,34 +77,7 @@ export const PRESETS: Preset[] = [
       opacity: 1.0,
     },
   },
-  // Semantic presets — only useful WITHOUT compression (keywords stay readable)
-  {
-    name: 'code',
-    description: 'Keyword colors, no gradient, no compression  [semantic, dense]',
-    algo: 'semantic',
-    cellSize: 1,
-    compress: false,
-    style: { opacity: 1.0 },
-  },
-  {
-    name: 'code-sunset',
-    description: 'Keyword colors on red→blue canvas, no compression  [semantic, dot mode]',
-    algo: 'semantic',
-    cellSize: 5,
-    compress: false,
-    style: {
-      gradient: { from: [255, 0, 80], to: [0, 80, 255], direction: 'diagonal' },
-      opacity: 1.0,
-    },
-  },
   // ── Dense mode presets ────────────────────────────────────────────────────────
-  {
-    name: 'spiral',
-    description: 'Data radiates outward from image center  [radial, dense]',
-    algo: 'radial',
-    cellSize: 1,
-    style: { opacity: 1.0 },
-  },
   {
     name: 'shuffle',
     description: 'Every 3rd pixel swapped — scrambled look  [interleaved, dense]',

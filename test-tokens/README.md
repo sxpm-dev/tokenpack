@@ -1,113 +1,123 @@
 # Test Tokens
 
-Benchmark fixtures for comparing token encoding vs traditional archives across different configurations and source types.
+Benchmark fixtures for comparing codec performance across sources and configurations.
 
 ## Directory structure
 
 ```
 test-tokens/
-  sources/          # Original source files (inputs)
-  tokens/           # Encoded token images
-  archives/         # Traditional archives (zip, tar.gz, brotli)
+  sources/            # Original input files (committed to repo)
+  tokens/             # Generated token images (git-ignored)
+  archives/           # Traditional archives for comparison (git-ignored)
+  encode-times.json   # Encode timings recorded during generate (git-ignored)
 ```
 
-## Source files
+---
 
-| File | Size | Type | Compressibility |
-|------|------|------|-----------------|
-| `react-dom-client.development.js` | 976KB | JS source (unminified) | Very high (~87% with brotli-11) |
-| `react-dom-client.production.js` | 520KB | JS source (minified) | High (~86% with brotli-11) |
-| `screenshot.jpg` | 2.6MB | PNG image | Very low (~5% — already compressed) |
-| `fs-src-tests-docs` | 308KB | Filesystem (src+tests+docs dirs) | High (~80% with brotli-11) |
+## Benchmark sources
 
-## Token naming convention
+Every benchmark runs over **all 4 sources**. Each source represents a different
+content type with different compressibility characteristics.
+
+| Source name | File / origin | Size | Content type | Compressibility |
+|---|---|---|---|---|
+| `react-dom-client.development` | `sources/react-dom-client.development.js` | ~976 KB | Unminified JS | Very high (~87% brotli-11) |
+| `react-dom-client.production`  | `sources/react-dom-client.production.js`  | ~520 KB | Minified JS   | High (~86% brotli-11) |
+| `screenshot`                   | `sources/screenshot.jpg`                  | ~2.6 MB | JPEG image    | Very low (~5% — already compressed) |
+| `fs-src-tests-docs`            | `src/ + tests/ + docs/` packed with CART  | ~300 KB | Filesystem archive | High (~80% brotli-11) |
+
+The `fs-src-tests-docs` source is assembled at generate time from the live project
+directories (`packDirs`), so its size will vary as the codebase grows.
+
+---
+
+## Token naming conventions
+
+### Network benchmark tokens (`benchmark/run.ts` / `run-extended.ts`)
 
 ```
-{preset}__{source}.webp
+<preset>__<source>.<ext>
 
-max    — brotli-11, linear, bpp=4, webp  (best compression, not streamable)
-stream — brotli-6,  linear, bpp=4, webp  (streamable, ~15% larger than max)
+max-webp3   — linear · brotli-11 · webp · ch=3
+max-png3    — linear · brotli-11 · png  · ch=3
+max-png4    — linear · brotli-11 · png  · ch=4
+stream-png3 — linear · brotli-6  · png  · ch=3  (streaming: true)
+stream-png4 — linear · brotli-6  · png  · ch=4  (streaming: true)
+stream-def3 — linear · deflate-6 · png  · ch=3  (streaming: true)
+stream-def4 — linear · deflate-6 · png  · ch=4  (streaming: true)
 ```
 
-Both use WebP with bpp=4 (falls back to bpp=3 internally — WebP alpha premultiplication makes bpp=4 unsafe, so bpp=3 is used automatically).
+Archives:
+```
+zip__<source>.zip
+targz__<source>.tar.gz
+br11__<source>.br        (or .tar.br for fs-src-tests-docs)
+br6__<source>.br
+```
 
-## Regenerating
+### Extended benchmark tokens (`benchmark/generate.ts`)
+
+```
+ext-<codec>-<compression>-c<channels>__<source>.png
+
+Examples:
+  ext-linear-none-c3__react-dom-client.development.png
+  ext-bitshuffle-deflate-6-c3__screenshot.png
+  ext-zstdpix-none-c3__fs-src-tests-docs.png
+  ext-delta-chain-brotli-6-c3__react-dom-client.production.png
+```
+
+**10 codecs × 4 compression modes × 4 sources = 160 token files.**
+
+Codecs: linear, interleaved, bitplane, delta, xor, delta-chain, rle, predict,
+bitshuffle, zstdpix.
+
+Compression modes: `none`, `deflate-1`, `deflate-6`, `brotli-6`.
+
+### `encode-times.json`
+
+Written by `generate.ts` alongside the token files. Contains one entry per token:
+
+```jsonc
+[
+  {
+    "source": "react-dom-client.development",
+    "codec": "bitshuffle",
+    "compression": "deflate-6",
+    "channels": 3,
+    "encodeMs": 19.9,
+    "tokenBytes": 148320,
+    "originalBytes": 999489,
+    "tokenFile": "test-tokens/tokens/ext-bitshuffle-deflate-6-c3__react-dom-client.development.png"
+  },
+  ...
+]
+```
+
+`run-extended.ts` reads this file to get encode timings, then measures decode
+timings by loading and decoding the pre-generated token files.
+
+---
+
+## Workflow
 
 ```bash
-# From project root — regenerate all tokens
-cd /path/to/codeart
+# Step 1 — generate all token files + record encode times (run once, or after codec changes)
+yarn tsx benchmark/generate.ts
 
-# Single file token
-yarn tokenpack encode test-tokens/sources/react-dom-client.production.js \
-  -o test-tokens/tokens/brotli11-linear-bpp3-webp__react-dom-client.production.webp \
-  --algo linear --compression brotli-11 --bpp 3
-
-# Filesystem token
-yarn tokenpack pack src tests docs \
-  -o test-tokens/tokens/brotli11-linear-bpp3-webp__fs-src-tests-docs.webp \
-  --algo linear --compression brotli-11 --bpp 3
-
-# Archives
-zip -j test-tokens/archives/zip__react-dom-client.production.zip \
-  test-tokens/sources/react-dom-client.production.js
-
-tar -czf test-tokens/archives/targz__react-dom-client.production.tar.gz \
-  -C test-tokens/sources react-dom-client.production.js
-
-brotli -k -q 11 -o test-tokens/archives/br11__react-dom-client.production.br \
-  test-tokens/sources/react-dom-client.production.js
+# Step 2 — measure decode times + run network simulation
+yarn tsx benchmark/run-extended.ts
 ```
 
-## Size comparison (tokens vs archives)
+`generate.ts` must be run before `run-extended.ts`.  
+Re-run `generate.ts` whenever codecs change or new source files are added.
 
-### react-dom-client.development.js (976KB source)
+---
 
-| Format | Size |
-|--------|------|
-| Source | 976KB |
-| zip / tar.gz | 176KB |
-| brotli-11 raw | 132KB |
-| **token brotli-11 webp** | **132KB** |
-| token brotli-6 webp | 156KB |
-| token deflate-6 png | 176KB |
-| token none png | 760KB |
+## Codec families
 
-### react-dom-client.production.js (520KB source)
-
-| Format | Size |
-|--------|------|
-| Source | 520KB |
-| zip / tar.gz | 96KB |
-| brotli-11 raw | 76KB |
-| **token brotli-11 webp** | **76KB** |
-| token brotli-6 webp | 88KB |
-| token deflate-6 png | 96KB |
-
-### screenshot.jpg (2.6MB PNG — already compressed)
-
-| Format | Size |
-|--------|------|
-| Source | 2.6MB |
-| zip / tar.gz | 2.5MB |
-| **token brotli-11** | **2.5MB** |
-
-### fs: src+tests+docs (308KB source)
-
-| Format | Size |
-|--------|------|
-| Source (uncompressed) | 308KB |
-| zip | 68KB |
-| tar.gz | 52KB |
-| tar.br (brotli-11) | 40KB |
-| **token brotli-11 webp** | **36KB** |
-| token brotli-6 webp | 40KB |
-
-## Benchmark scenarios
-
-These fixtures are designed for three benchmark scenarios:
-
-1. **Fetch + decode (non-streaming)**: fetch full token/archive → decode in memory → measure total time
-2. **Fetch + decode (streaming)**: pipe HTTP response bytes through pixel decoder + decompressor → measure TTFB and total time
-3. **Size comparison**: token vs archive file size across content types and compression configs
-
-See `benchmark/` for the benchmark scripts.
+| Family | IDs | Description |
+|---|---|---|
+| Legacy | 0, 2, 4, 5, 6, 8, 9, 10 | Benchmark-qualified legacy codecs |
+| A — Pixel Packers | 15 | Benchmark-qualified entropy-friendly transform |
+| C — High-Ratio Node-Only | 21 | Benchmark-qualified Node.js codec |

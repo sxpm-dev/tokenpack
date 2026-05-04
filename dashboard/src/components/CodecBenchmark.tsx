@@ -1,46 +1,30 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 
-// ── Configs ───────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────
 
-interface Config {
-  id: string
-  label: string
-  short: string
-  algo: string
-  compressionMode: string
-  format: 'webp' | 'png' | 'avif'
-  channels: 1 | 2 | 3 | 4
-  streaming?: boolean
+interface ExtBenchRow {
+  codecId: number
+  codecName: string
+  family: 'legacy' | 'A' | 'B' | 'C'
+  outerCompression: string
+  channels: number
+  source: string
+  encodeMs: number
+  decodeMs: number
+  roundTripMs: number
+  tokenBytes: number
+  originalBytes: number
+  ratio: number
+  throughputMBps: number
+  isStreaming: boolean
+  isBrowserSafe: boolean
+  error?: string
 }
-
-const CONFIGS: Config[] = [
-  { id: 'linear',               label: 'linear (raw)',                    short: 'linear',       algo: 'linear',        compressionMode: 'none',      format: 'webp', channels: 3 },
-  { id: 'linear-br6',          label: 'linear + brotli-6',               short: '+br6',          algo: 'linear',        compressionMode: 'brotli-6',  format: 'webp', channels: 3 },
-  { id: 'linear-br11',         label: 'linear + brotli-11',              short: '+br11',         algo: 'linear',        compressionMode: 'brotli-11', format: 'webp', channels: 3 },
-  { id: 'linear-def6',         label: 'linear + deflate-6',              short: '+def6',         algo: 'linear',        compressionMode: 'deflate-6', format: 'webp', channels: 3 },
-  { id: 'interleaved-br6',     label: 'interleaved + brotli-6',          short: 'intlv+br6',     algo: 'interleaved',   compressionMode: 'brotli-6',  format: 'webp', channels: 3 },
-  { id: 'delta-br6',           label: 'delta + brotli-6',                short: 'delta+br6',     algo: 'delta',         compressionMode: 'brotli-6',  format: 'webp', channels: 3 },
-  { id: 'predict-br6',         label: 'predict + brotli-6',              short: 'pred+br6',      algo: 'predict',       compressionMode: 'brotli-6',  format: 'webp', channels: 3 },
-  { id: 'xor-br6',             label: 'xor + brotli-6',                  short: 'xor+br6',       algo: 'xor',           compressionMode: 'brotli-6',  format: 'webp', channels: 3 },
-  { id: 'nibble-br6',          label: 'nibble + brotli-6',               short: 'nibl+br6',      algo: 'nibble',        compressionMode: 'brotli-6',  format: 'webp', channels: 3 },
-  { id: 'rle',                 label: 'rle (raw)',                        short: 'rle',           algo: 'rle',           compressionMode: 'none',      format: 'webp', channels: 3 },
-  { id: 'rle-br6',             label: 'rle + brotli-6',                  short: 'rle+br6',       algo: 'rle',           compressionMode: 'brotli-6',  format: 'webp', channels: 3 },
-  { id: 'palette',             label: 'palette-pixel (raw)',              short: 'pal-px',        algo: 'palette-pixel', compressionMode: 'none',      format: 'webp', channels: 3 },
-  { id: 'semantic',            label: 'semantic (raw)',                   short: 'sem',           algo: 'semantic',      compressionMode: 'none',      format: 'webp', channels: 3 },
-  { id: 'semantic-br6',       label: 'semantic + brotli-6',             short: 'sem+br6',       algo: 'semantic',      compressionMode: 'brotli-6',  format: 'webp', channels: 3 },
-  { id: 'radial-br6',         label: 'radial + brotli-6',               short: 'rad+br6',       algo: 'radial',        compressionMode: 'brotli-6',  format: 'webp', channels: 3 },
-  { id: 'linear-br6-png',     label: 'linear + brotli-6 (png)',          short: '+br6[png]',     algo: 'linear',        compressionMode: 'brotli-6',  format: 'png',  channels: 3 },
-  { id: 'linear-bpp1',        label: 'linear bpp=1 + brotli-6',         short: 'bpp1+br6',      algo: 'linear',        compressionMode: 'brotli-6',  format: 'webp', channels: 1 },
-  { id: 'stream-br6-png3',    label: 'stream png/brotli-6/bpp=3',       short: 's+br6[3]',      algo: 'linear',        compressionMode: 'brotli-6',  format: 'png',  channels: 3, streaming: true },
-  { id: 'stream-br6-png4',    label: 'stream png/brotli-6/bpp=4',       short: 's+br6[4]',      algo: 'linear',        compressionMode: 'brotli-6',  format: 'png',  channels: 4, streaming: true },
-  { id: 'stream-def6-png3',   label: 'stream png/deflate-6/bpp=3',      short: 's+def6[3]',     algo: 'linear',        compressionMode: 'deflate-6', format: 'png',  channels: 3, streaming: true },
-  { id: 'stream-def6-png4',   label: 'stream png/deflate-6/bpp=4',      short: 's+def6[4]',     algo: 'linear',        compressionMode: 'deflate-6', format: 'png',  channels: 4, streaming: true },
-]
 
 const SOURCES = [
   { id: 'react-dom-dev',  label: 'react-dom dev' },
@@ -48,31 +32,15 @@ const SOURCES = [
   { id: 'screenshot',     label: 'screenshot' },
 ]
 
-// ── Types ─────────────────────────────────────────────────────────────────
-
-interface BenchResult {
-  configId: string
-  source: string
-  encodeMs: number
-  decodeMs: number
-  tokenBytes: number
-  originalBytes: number
-  error?: string
-}
-
-interface Progress {
-  current: number
-  total: number
-  label: string
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────
 
-const fmtMs   = (ms: number)    => `${ms.toFixed(1)}ms`
-const fmtKB   = (b: number)     => `${(b / 1024).toFixed(0)}KB`
-const fmtRatio = (r: BenchResult) => `${Math.round((r.tokenBytes / r.originalBytes) * 100)}%`
+const fmtMs    = (ms: number) => `${ms.toFixed(1)}ms`
+const fmtKB    = (b: number)  => `${(b / 1024).toFixed(0)}KB`
+const fmtRatio = (r: number)  => `${Math.round(r * 100)}%`
+const shortKey = (r: ExtBenchRow) =>
+  r.outerCompression === 'none' ? r.codecName : `${r.codecName}+${r.outerCompression.replace('brotli-', 'br').replace('deflate-', 'def')}`
 
-function minBy<T>(arr: T[], key: (v: T) => number): T | undefined {
+function minByField<T>(arr: T[], key: (v: T) => number): T | undefined {
   return arr.reduce<T | undefined>((m, v) => m === undefined || key(v) < key(m) ? v : m, undefined)
 }
 
@@ -120,23 +88,18 @@ function Tip({ active, payload, label, unit }: {
 
 // ── Charts ────────────────────────────────────────────────────────────────
 
-function TimingChart({ results }: { results: BenchResult[] }) {
-  const data = results
-    .filter(r => !r.error)
-    .map(r => ({
-      name: CONFIGS.find(c => c.id === r.configId)?.short ?? r.configId,
-      encode: r.encodeMs,
-      decode: r.decodeMs,
-    }))
-
+function TimingChart({ rows }: { rows: ExtBenchRow[] }) {
+  const data = rows.filter(r => !r.error).map(r => ({
+    name: shortKey(r),
+    encode: r.encodeMs,
+    decode: r.decodeMs,
+  }))
   return (
     <ResponsiveContainer width="100%" height={Math.max(400, data.length * 38)}>
       <BarChart layout="vertical" data={data} margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
-        <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }}
-          tickFormatter={v => fmtMs(v as number)} />
-        <YAxis type="category" dataKey="name" width={80}
-          tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10, fontFamily: 'monospace' }} />
+        <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} tickFormatter={v => fmtMs(v as number)} />
+        <YAxis type="category" dataKey="name" width={96} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9, fontFamily: 'monospace' }} />
         <Tooltip content={<Tip unit="ms" />} />
         <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }} />
         <Bar dataKey="encode" name="encode" stackId="a" fill="#6366f1" maxBarSize={28} />
@@ -146,22 +109,17 @@ function TimingChart({ results }: { results: BenchResult[] }) {
   )
 }
 
-function SizeChart({ results }: { results: BenchResult[] }) {
-  const data = results
-    .filter(r => !r.error)
-    .map(r => ({
-      name: CONFIGS.find(c => c.id === r.configId)?.short ?? r.configId,
-      size: Math.round(r.tokenBytes / 1024),
-    }))
-
+function SizeChart({ rows }: { rows: ExtBenchRow[] }) {
+  const data = rows.filter(r => !r.error).map(r => ({
+    name: shortKey(r),
+    size: Math.round(r.tokenBytes / 1024),
+  }))
   return (
     <ResponsiveContainer width="100%" height={Math.max(400, data.length * 38)}>
       <BarChart layout="vertical" data={data} margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
-        <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }}
-          tickFormatter={v => `${v}KB`} />
-        <YAxis type="category" dataKey="name" width={80}
-          tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10, fontFamily: 'monospace' }} />
+        <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} tickFormatter={v => `${v}KB`} />
+        <YAxis type="category" dataKey="name" width={96} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9, fontFamily: 'monospace' }} />
         <Tooltip content={<Tip unit="KB" />} />
         <Bar dataKey="size" name="token size" fill="#10b981" maxBarSize={28} radius={[0, 3, 3, 0]} />
       </BarChart>
@@ -171,83 +129,62 @@ function SizeChart({ results }: { results: BenchResult[] }) {
 
 // ── Result table ──────────────────────────────────────────────────────────
 
-function ResultTable({ results, running }: { results: BenchResult[]; running: boolean }) {
-  const done = results.filter(r => !r.error)
-  const bestSize    = minBy(done, r => r.tokenBytes)
-  const bestEncode  = minBy(done, r => r.encodeMs)
-  const bestDecode  = minBy(done, r => r.decodeMs)
-  const bestTrip    = minBy(done, r => r.encodeMs + r.decodeMs)
-
-  // Show all configs; completed ones have data, pending ones show a loading row
-  const completedIds = new Set(results.map(r => r.configId))
+function ResultTable({ rows }: { rows: ExtBenchRow[] }) {
+  const ok = rows.filter(r => !r.error)
+  const bestSize   = minByField(ok, r => r.tokenBytes)
+  const bestEncode = minByField(ok, r => r.encodeMs)
+  const bestDecode = minByField(ok, r => r.decodeMs)
+  const bestTrip   = minByField(ok, r => r.roundTripMs)
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-xs font-mono">
         <thead>
           <tr className="text-white/25 border-b border-white/10">
-            {['Config', 'Fmt', 'Encode', 'Decode', 'Round-trip', 'Size', 'Ratio'].map(h => (
+            {['Config', 'Compress', 'Encode', 'Decode', 'Round-trip', 'Size', 'Ratio'].map(h => (
               <th key={h} className="text-left py-2 pr-6 font-medium whitespace-nowrap">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {CONFIGS.map(cfg => {
-            const r = results.find(x => x.configId === cfg.id)
-            const isPending = running && !completedIds.has(cfg.id)
-
-            if (!r) {
-              return (
-                <tr key={cfg.id} className="border-b border-white/5">
-                  <td className="py-2 pr-6 text-white/20">{cfg.label}</td>
-                  <td className="py-2 pr-6 text-white/15">{cfg.format}</td>
-                  {isPending
-                    ? <td colSpan={5} className="py-2 pr-6 text-white/20 animate-pulse">waiting…</td>
-                    : <td colSpan={5} className="py-2 pr-6 text-white/15">—</td>
-                  }
-                </tr>
-              )
-            }
-
+          {rows.map((r, i) => {
             if (r.error) {
+              const isTimeout = r.error.startsWith('timeout after')
               return (
-                <tr key={cfg.id} className="border-b border-white/5">
-                  <td className="py-2 pr-6 text-white/40">{cfg.label}</td>
-                  <td className="py-2 pr-6 text-white/25">{cfg.format}</td>
-                  <td colSpan={5} className="py-2 pr-6 text-red-400/70 truncate max-w-xs">{r.error}</td>
+                <tr key={i} className="border-b border-white/5 opacity-60">
+                  <td className="py-2 pr-6 text-white/40">{r.codecName}</td>
+                  <td className="py-2 pr-6 text-white/25">{r.outerCompression}</td>
+                  <td colSpan={5} className="py-2 pr-6">
+                    {isTimeout
+                      ? <span className="text-amber-400/80 text-[10px] border border-amber-400/30 rounded px-1.5 py-0.5">⏱ too slow (&gt;2s)</span>
+                      : <span className="text-red-400/70 truncate">{r.error}</span>
+                    }
+                  </td>
                 </tr>
               )
             }
-
-            const trip = r.encodeMs + r.decodeMs
             const isBestSize   = r === bestSize
             const isBestEncode = r === bestEncode
             const isBestDecode = r === bestDecode
             const isBestTrip   = r === bestTrip
-
             return (
-              <tr key={cfg.id} className={`border-b border-white/5 ${isBestSize ? 'text-green-400' : 'text-white/60'}`}>
+              <tr key={i} className={`border-b border-white/5 hover:bg-white/3 ${isBestSize ? 'text-green-400' : 'text-white/60'}`}>
                 <td className="py-2 pr-6 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    {cfg.label}
-                    {isBestSize && <span className="text-[9px] text-green-400/60 border border-green-400/30 rounded px-1">smallest</span>}
-                  </div>
+                  {r.codecName}
+                  {isBestSize && <span className="text-[9px] text-green-400/60 border border-green-400/30 rounded px-1 ml-1">smallest</span>}
                 </td>
-                <td className="py-2 pr-6 text-white/30">{cfg.format}</td>
+                <td className="py-2 pr-6 text-white/35">{r.outerCompression}</td>
                 <td className={`py-2 pr-6 ${isBestEncode ? 'text-blue-400' : ''}`}>
-                  {fmtMs(r.encodeMs)}
-                  {isBestEncode && <span className="text-[9px] text-blue-400/50 ml-1">↑</span>}
+                  {fmtMs(r.encodeMs)}{isBestEncode && <span className="text-[9px] text-blue-400/50 ml-1">↑</span>}
                 </td>
                 <td className={`py-2 pr-6 ${isBestDecode ? 'text-teal-400' : ''}`}>
-                  {fmtMs(r.decodeMs)}
-                  {isBestDecode && <span className="text-[9px] text-teal-400/50 ml-1">↑</span>}
+                  {fmtMs(r.decodeMs)}{isBestDecode && <span className="text-[9px] text-teal-400/50 ml-1">↑</span>}
                 </td>
                 <td className={`py-2 pr-6 font-semibold ${isBestTrip ? 'text-amber-400' : ''}`}>
-                  {fmtMs(trip)}
-                  {isBestTrip && <span className="text-[9px] text-amber-400/50 ml-1">↑</span>}
+                  {fmtMs(r.roundTripMs)}{isBestTrip && <span className="text-[9px] text-amber-400/50 ml-1">↑</span>}
                 </td>
                 <td className="py-2 pr-6">{fmtKB(r.tokenBytes)}</td>
-                <td className="py-2 pr-6">{fmtRatio(r)}</td>
+                <td className="py-2 pr-6">{fmtRatio(r.ratio)}</td>
               </tr>
             )
           })}
@@ -261,108 +198,83 @@ function ResultTable({ results, running }: { results: BenchResult[]; running: bo
 
 export function CodecBenchmark() {
   const [selectedSource, setSelectedSource] = useState('react-dom-dev')
-  const [running, setRunning] = useState(false)
-  const [progress, setProgress] = useState<Progress | null>(null)
-  const [results, setResults] = useState<BenchResult[]>([])
+  const [allRows, setAllRows]   = useState<ExtBenchRow[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState<string | null>(null)
 
-  const run = useCallback(async () => {
-    setRunning(true)
-    setResults([])
+  useEffect(() => {
+    fetch('/api/benchmark/perf')
+      .then(r => r.json())
+      .then((data: ExtBenchRow[] | { error: string }) => {
+        if ('error' in data) { setError(data.error); setLoading(false); return }
+        setAllRows(data)
+        setLoading(false)
+      })
+      .catch(e => { setError(String(e)); setLoading(false) })
+  }, [])
 
-    for (let i = 0; i < CONFIGS.length; i++) {
-      const cfg = CONFIGS[i]
-      setProgress({ current: i + 1, total: CONFIGS.length, label: cfg.label })
+  const rows = useMemo(
+    () => allRows.filter(r => r.source === selectedSource),
+    [allRows, selectedSource],
+  )
 
-      try {
-        const res = await fetch('/api/benchmark/perf', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            source: selectedSource,
-            algo: cfg.algo,
-            compressionMode: cfg.compressionMode,
-            format: cfg.format,
-            channels: cfg.channels,
-            streaming: cfg.streaming,
-          }),
-        })
-        const data = await res.json()
-        setResults(prev => [...prev, { configId: cfg.id, source: selectedSource, ...data }])
-      } catch (e) {
-        setResults(prev => [...prev, {
-          configId: cfg.id, source: selectedSource,
-          encodeMs: 0, decodeMs: 0, tokenBytes: 0, originalBytes: 0,
-          error: String(e),
-        }])
-      }
-    }
+  const availableSources = useMemo(
+    () => SOURCES.filter(s => allRows.some(r => r.source === s.id)),
+    [allRows],
+  )
 
-    setRunning(false)
-    setProgress(null)
-  }, [selectedSource])
+  const completedRows = rows.filter(r => !r.error)
 
-  const completedResults = results.filter(r => !r.error)
-  const hasResults = results.length > 0
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40 text-white/30 text-sm font-mono">
+        Loading results…
+      </div>
+    )
+  }
+
+  if (error || allRows.length === 0) {
+    return (
+      <div className="bg-white/3 border border-white/8 rounded-2xl p-8 text-center space-y-3">
+        <p className="text-white/40 text-sm">No benchmark results found.</p>
+        <p className="text-white/25 text-xs font-mono">Run: yarn tsx benchmark/run-extended.ts</p>
+        {error && <p className="text-red-400/60 text-xs">{error}</p>}
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
 
-      {/* Controls */}
-      <div className="bg-white/3 border border-white/8 rounded-2xl p-5 flex items-center gap-8 flex-wrap">
-        <div className="space-y-2">
-          <div className="text-[10px] text-white/30 uppercase tracking-widest">Source</div>
-          <div className="flex gap-1.5">
-            {SOURCES.map(s => (
-              <FilterBtn key={s.id} active={selectedSource === s.id} onClick={() => setSelectedSource(s.id)}>
-                {s.label}
-              </FilterBtn>
-            ))}
-          </div>
+      {/* Source filter */}
+      <div className="bg-white/3 border border-white/8 rounded-2xl p-5 flex items-center gap-4 flex-wrap">
+        <div className="text-[10px] text-white/30 uppercase tracking-widest">Source</div>
+        <div className="flex gap-1.5">
+          {availableSources.map(s => (
+            <FilterBtn key={s.id} active={selectedSource === s.id} onClick={() => setSelectedSource(s.id)}>
+              {s.label}
+            </FilterBtn>
+          ))}
         </div>
-
-        <div className="flex items-center gap-4 ml-auto">
-          {running && progress && (
-            <div className="text-xs text-white/40 font-mono">
-              <span className="text-white/70">{progress.current}</span>/{progress.total}
-              <span className="text-white/30 ml-2 max-w-[180px] truncate inline-block align-middle">
-                {progress.label}
-              </span>
-            </div>
-          )}
-          <button
-            onClick={run}
-            disabled={running}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              running
-                ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                : 'bg-white text-black hover:bg-white/90 active:scale-95'
-            }`}
-          >
-            {running ? 'Running…' : 'Run Benchmark'}
-          </button>
-        </div>
+        <div className="ml-auto text-xs text-white/25 font-mono">{rows.length} configurations</div>
       </div>
 
       {/* Table */}
       <div className="bg-white/3 border border-white/8 rounded-2xl p-6">
-        <SectionTitle>
-          {hasResults
-            ? `Results — ${SOURCES.find(s => s.id === results[0]?.source)?.label ?? ''} · ${results.length}/${CONFIGS.length} done`
-            : 'Results'}
-        </SectionTitle>
-        <ResultTable results={results} running={running} />
+        <SectionTitle>Results — {availableSources.find(s => s.id === selectedSource)?.label}</SectionTitle>
+        <ResultTable rows={rows} />
       </div>
 
       {/* Charts */}
-      {completedResults.length > 0 && (
+      {completedRows.length > 0 && (
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-white/3 border border-white/8 rounded-2xl p-6">
             <SectionTitle>Encode + Decode time (stacked)</SectionTitle>
-            <TimingChart results={completedResults} />
+            <TimingChart rows={completedRows} />
           </div>
           <div className="bg-white/3 border border-white/8 rounded-2xl p-6">
             <SectionTitle>Token size</SectionTitle>
-            <SizeChart results={completedResults} />
+            <SizeChart rows={completedRows} />
           </div>
         </div>
       )}

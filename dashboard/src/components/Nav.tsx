@@ -4,9 +4,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const LINKS = [
-  { href: '/',           label: 'Dashboard' },
-  { href: '/benchmark',  label: 'Benchmark' },
-  { href: '/perf',       label: 'Codec Perf' },
+  { href: '/',                    label: 'Dashboard' },
+  { href: '/algorithms',          label: 'Algorithms' },
+  { href: '/benchmark-extended',  label: 'Extended Bench' },
+  { href: '/benchmark',           label: 'Benchmark' },
+  { href: '/perf',                label: 'Codec Perf' },
 ]
 
 export function Nav() {

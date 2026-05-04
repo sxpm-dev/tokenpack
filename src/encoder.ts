@@ -166,10 +166,8 @@ export async function encode(input: Buffer, options: EncodeOptions): Promise<str
   const cellSize = Math.max(1, options.cellSize ?? 1)
   const format: ImageFormat = options.format ?? 'png'
 
-  // bpp: bytes of data per pixel. Semantic codec always forces bpp=3.
-  // WebP lossless premultiplies alpha before encoding — alpha=0 zeros RGB, destroying data.
+  // WebP lossless premultiplies alpha before encoding: alpha=0 zeros RGB, destroying data.
   let bpp: 1 | 2 | 3 | 4 = options.channels ?? 3
-  if (codec.name === 'semantic') bpp = 3
   if (format === 'webp' && bpp === 4) bpp = 3
 
   const fc = fileChannels(bpp)
@@ -219,13 +217,11 @@ export async function encode(input: Buffer, options: EncodeOptions): Promise<str
   const opacity = 1 - blendAmount / 255
 
   // ── Compact mode: 2-pixel header, no style, wide-strip layout ───────────────
-  // Semantic is intentionally visual — skip compact so patterns are readable.
   // Skip compact if chunking will be needed (compact has no chunk metadata).
   // Skip compact for bpp=1 or bpp=2 (compact header needs 6 bytes = 2 pixels × 3 channels,
   //   but bpp=1,2 don't cleanly fit the 6-byte header in 2 pixels).
   const dataPixelEstCheck = estimatePixels(codec, dataToEncode, bpp)
   const useCompact = cellSize === 1 && !hasGradient && !(style?.background)
-    && codec.name !== 'semantic'
     && bpp !== 1 && bpp !== 2
     && dataPixelEstCheck <= MAX_PIXELS_PER_CHUNK
     && !forceFullHeader

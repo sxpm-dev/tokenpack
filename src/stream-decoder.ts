@@ -6,10 +6,12 @@
  *   → PNGChunkParser (parses PNG structure, decompresses IDAT via inflate)
  *   → scanline bytes (with filter bytes)
  *   → TokenPixelDecoder (strips filter, reads header, routes to codec)
- *   → streaming brotli/deflate decompressor
+ *   → codec.decodeChunk() if codec implements StreamingCodec, else linear pass-through
+ *   → streaming brotli/deflate decompressor (if outer compression is set)
  *   → original bytes
  *
- * Only linear codec tokens are streamable (other codecs need all pixels).
+ * Codecs that implement StreamingCodec are decoded incrementally as rows arrive.
+ * Non-streaming codecs fall back to the linear pass-through path (pixels = data bytes).
  * Only PNG format (WebP/AVIF have no streaming decoder in Node.js).
  */
 
@@ -18,6 +20,8 @@ import { Duplex, Readable } from 'stream'
 import { isCompactToken, readCompactHeader, readHeader, COMPACT_HEADER_PIXELS, HEADER_PIXELS } from './header'
 import { getCodecById } from './codecs/registry'
 import { fromFileChannels } from './image'
+import type { Codec, StreamCodecState } from './codecs/types'
+import { isStreamingCodec } from './codecs/types'
 
 // ── PNG filter reconstruction ─────────────────────────────────────────────
 
@@ -69,6 +73,10 @@ export function createTokenDecodeStream(_key?: string): Duplex {
   let compressionLevel = 0
   let fedToDecomp = 0
   let decompressor: zlib.BrotliDecompress | zlib.Inflate | null = null
+
+  // Streaming codec state (null = linear/pass-through path)
+  let activeCodec: Codec | null = null
+  let codecState: StreamCodecState | null = null
 
   let inputEnded = false
   let outputEnded = false
@@ -177,6 +185,7 @@ export function createTokenDecodeStream(_key?: string): Duplex {
         compressionLevel = (ch.flags & 0b10) ? 2 : 0
         dataLength = ch.dataLength
         headerBytes = needed
+        activeCodec = getCodecById(ch.algoId) ?? null
         finishHeader()
       } else if (pixelBuf.length >= HEADER_PIXELS * fileChannels) {
         const needed = HEADER_PIXELS * fileChannels
@@ -186,6 +195,7 @@ export function createTokenDecodeStream(_key?: string): Duplex {
         compressionLevel = h.compressionLevel
         dataLength = h.fileLength
         headerBytes = needed
+        activeCodec = getCodecById(h.algorithmId) ?? null
         finishHeader()
       }
       return
@@ -196,6 +206,9 @@ export function createTokenDecodeStream(_key?: string): Duplex {
 
   function finishHeader() {
     headerParsed = true
+    if (activeCodec && isStreamingCodec(activeCodec)) {
+      codecState = activeCodec.createDecodeState()
+    }
     initDecompressor()
     const dataPixels = pixelBuf.slice(headerBytes)
     pixelBuf = Buffer.alloc(0)
@@ -224,8 +237,18 @@ export function createTokenDecodeStream(_key?: string): Duplex {
     const fcBytes = pixels.slice(0, pixelCount * fileChannels)
     const bppBytes = fromFileChannels(fcBytes, pixelCount, fileChannels, bpp)
 
+    // Route through codec.decodeChunk for StreamingCodec, otherwise treat bpp bytes as data directly
+    let dataBytes: Buffer
+    if (activeCodec && isStreamingCodec(activeCodec) && codecState !== null) {
+      const result = activeCodec.decodeChunk(bppBytes, codecState)
+      codecState = result.state
+      dataBytes = result.bytes
+    } else {
+      dataBytes = Buffer.from(bppBytes)
+    }
+
     const remaining = dataLength - fedToDecomp
-    const toFeed = bppBytes.slice(0, Math.min(remaining, bppBytes.length))
+    const toFeed = dataBytes.slice(0, Math.min(remaining, dataBytes.length))
     fedToDecomp += toFeed.length
 
     if (compressionLevel === 0) {

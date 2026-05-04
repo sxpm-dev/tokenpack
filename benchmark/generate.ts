@@ -1,10 +1,12 @@
 /**
- * Generates all fixture files required by benchmark/run.ts.
- * Run: yarn benchmark:generate
+ * Generates all fixture files required by all benchmarks.
+ * Run: yarn tsx benchmark/generate.ts
  *
  * Outputs:
- *   test-tokens/tokens/   max__*.webp, stream-png__*.png
+ *   test-tokens/tokens/   max__*.webp, stream-png__*.png  (network benchmark)
+ *   test-tokens/tokens/   ext-<codec>-<compression>-c<ch>__<source>.png  (extended benchmark)
  *   test-tokens/archives/ zip__*, targz__*, br11__*, br6__*
+ *   test-tokens/encode-times.json  (encode timings for run-extended.ts)
  */
 
 import fs from 'fs'
@@ -14,6 +16,7 @@ import AdmZip from 'adm-zip'
 import '../src/codecs/register-all'
 import { encodeToBuffer } from '../src/encoder'
 import { packDirs } from '../src/archive'
+import { listCodecs } from '../src/codecs/registry'
 
 const ROOT       = path.join(import.meta.dirname, '..')
 const SOURCES    = path.join(ROOT, 'test-tokens/sources')
@@ -52,7 +55,17 @@ const FILE_SOURCES: { name: string; file: string }[] = [
   { name: 'screenshot',                   file: 'screenshot.jpg' },
 ]
 
-async function generateFromBuffer(name: string, src: Buffer, brExt: '.br' | '.tar.br') {
+export interface ArchiveTimeEntry {
+  source: string
+  format: string
+  encodeMs: number
+  decodeMs: number
+  bytes: number
+  originalBytes: number
+}
+
+async function generateFromBuffer(name: string, src: Buffer, brExt: '.br' | '.tar.br'): Promise<ArchiveTimeEntry[]> {
+  const archiveTimes: ArchiveTimeEntry[] = []
   // max — webp / brotli-11 / bpp=3
   const maxWebp3 = await encodeQuiet(src, { algo: 'linear', compressionMode: 'brotli-11', format: 'webp', channels: 3 })
   fs.writeFileSync(path.join(TOKENS, `max-webp3__${name}.webp`), maxWebp3[0])
@@ -91,27 +104,58 @@ async function generateFromBuffer(name: string, src: Buffer, brExt: '.br' | '.ta
   fs.writeFileSync(path.join(TOKENS, `stream-def4__${name}.png`), streamDef4[0])
   row('stream-def4 (deflate-6, png,  bpp=4)', streamDef4[0].length, src.length)
 
-  // zip
-  const zip = new AdmZip()
-  zip.addFile(path.basename(name), src)
-  const zipBuf = zip.toBuffer()
-  fs.writeFileSync(path.join(ARCHIVES, `zip__${name}.zip`), zipBuf)
-  row('zip', zipBuf.length, src.length)
+  function timeArchive(
+    format: string,
+    encode: () => Buffer,
+    decode: (buf: Buffer) => void,
+    filePath: string,
+  ) {
+    const t0 = now(); const buf = encode(); const encodeMs = now() - t0
+    fs.writeFileSync(filePath, buf)
+    const t1 = now(); decode(buf); const decodeMs = now() - t1
+    row(format, buf.length, src.length)
+    archiveTimes.push({
+      source: name, format,
+      encodeMs: Math.round(encodeMs * 10) / 10,
+      decodeMs: Math.round(decodeMs * 10) / 10,
+      bytes: buf.length,
+      originalBytes: src.length,
+    })
+  }
 
-  // tar.gz — gzip of raw data (benchmark measures decompression, not tar parsing)
-  const gzBuf = zlib.gzipSync(src, { level: 6 })
-  fs.writeFileSync(path.join(ARCHIVES, `targz__${name}.tar.gz`), gzBuf)
-  row('tar.gz', gzBuf.length, src.length)
+  // zip
+  timeArchive(
+    'zip',
+    () => { const z = new AdmZip(); z.addFile(path.basename(name), src); return z.toBuffer() },
+    buf => { const z = new AdmZip(buf); for (const e of z.getEntries()) if (!e.isDirectory) e.getData() },
+    path.join(ARCHIVES, `zip__${name}.zip`),
+  )
+
+  // tar.gz
+  timeArchive(
+    'tar.gz',
+    () => zlib.gzipSync(src, { level: 6 }),
+    buf => zlib.gunzipSync(buf),
+    path.join(ARCHIVES, `targz__${name}.tar.gz`),
+  )
 
   // brotli-11
-  const br11 = zlib.brotliCompressSync(src, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } })
-  fs.writeFileSync(path.join(ARCHIVES, `br11__${name}${brExt}`), br11)
-  row(`brotli-11 (${brExt})`, br11.length, src.length)
+  timeArchive(
+    'brotli-11',
+    () => zlib.brotliCompressSync(src, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }),
+    buf => zlib.brotliDecompressSync(buf),
+    path.join(ARCHIVES, `br11__${name}${brExt}`),
+  )
 
   // brotli-6
-  const br6 = zlib.brotliCompressSync(src, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 6 } })
-  fs.writeFileSync(path.join(ARCHIVES, `br6__${name}${brExt}`), br6)
-  row(`brotli-6  (${brExt})`, br6.length, src.length)
+  timeArchive(
+    'brotli-6',
+    () => zlib.brotliCompressSync(src, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 6 } }),
+    buf => zlib.brotliDecompressSync(buf),
+    path.join(ARCHIVES, `br6__${name}${brExt}`),
+  )
+
+  return archiveTimes
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────
@@ -122,6 +166,11 @@ async function main() {
   console.log(`  ${'format'.padEnd(LABEL_W)}${'size'.padStart(SIZE_W)}   vs original`)
   console.log(`  ${'─'.repeat(LABEL_W + SIZE_W + 12)}`)
 
+  // Collect all source buffers (file sources + packed dir) in one pass so the
+  // extended section can iterate over all of them including fs-src-tests-docs.
+  const allSources: { name: string; buf: Buffer }[] = []
+  const allArchiveTimes: ArchiveTimeEntry[] = []
+
   for (const { name, file } of FILE_SOURCES) {
     const srcPath = path.join(SOURCES, file)
     if (!fs.existsSync(srcPath)) {
@@ -129,21 +178,113 @@ async function main() {
       continue
     }
     const src = fs.readFileSync(srcPath)
+    allSources.push({ name, buf: src })
     console.log(`\n[${name}]  ${fmtBytes(src.length)}`)
-    await generateFromBuffer(name, src, '.br')
+    allArchiveTimes.push(...await generateFromBuffer(name, src, '.br'))
   }
 
   const fsDirs = ['src', 'tests', 'docs'].map(d => path.join(ROOT, d)).filter(d => fs.existsSync(d))
   if (fsDirs.length) {
     const name = 'fs-src-tests-docs'
     const cart = packDirs(fsDirs, [], ROOT)
+    allSources.push({ name, buf: cart })
     console.log(`\n[${name}]  ${fmtBytes(cart.length)} (packed: ${fsDirs.map(d => path.basename(d)).join(' + ')})`)
-    await generateFromBuffer(name, cart, '.tar.br')
+    allArchiveTimes.push(...await generateFromBuffer(name, cart, '.tar.br'))
   } else {
     console.log('\n[fs-src-tests-docs] SKIP — no src/tests/docs dirs found')
   }
 
-  console.log('\nDone. Run `yarn benchmark:run` to measure timing.')
+  // ── Extended tokens (all codecs × all compression modes) ────────────────
+
+  const COMPRESSION_MODES = ['none', 'deflate-1', 'deflate-6', 'brotli-6'] as const
+  type CompressionMode = typeof COMPRESSION_MODES[number]
+
+  interface EncodeTimeEntry {
+    source: string
+    codec: string
+    compression: string
+    channels: number
+    encodeMs: number
+    tokenBytes: number
+    originalBytes: number
+    tokenFile: string   // relative path under test-tokens/
+  }
+
+  const now = () => performance.now()
+  const encodeTimes: EncodeTimeEntry[] = []
+  const codecs = listCodecs()
+
+  const extTotal = codecs.length * COMPRESSION_MODES.length * allSources.length
+  let extDone = 0
+
+  console.log(`\n\n═══ Extended tokens: ${codecs.length} codecs × ${COMPRESSION_MODES.length} modes × ${allSources.length} sources = ${extTotal} files ═══\n`)
+
+  for (const { name: sourceName, buf: src } of allSources) {
+    console.log(`── ${sourceName} (${fmtBytes(src.length)}) ──`)
+
+    for (const codec of codecs) {
+      const channels = 3
+
+      for (const compression of COMPRESSION_MODES) {
+        extDone++
+        const compress = compression !== 'none'
+        const label = `[${extDone}/${extTotal}] ${codec.name} + ${compression}`
+        process.stdout.write(`  ${label.padEnd(46)}`)
+
+        const tokenFile = `ext-${codec.name}-${compression}-c${channels}__${sourceName}.png`
+        const tokenPath = path.join(TOKENS, tokenFile)
+
+        try {
+          const TIMEOUT_MS = 2_000
+          const t0 = now()
+          const encodePromise = encodeQuiet(src, {
+            algo: codec.name,
+            compress,
+            compressionMode: compress ? compression as CompressionMode : undefined,
+            channels: channels as 1 | 2 | 3 | 4,
+            format: 'png',
+          })
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`timeout after ${TIMEOUT_MS}ms`)), TIMEOUT_MS)
+          )
+          const tokens = await Promise.race([encodePromise, timeoutPromise])
+          const encodeMs = now() - t0
+          const tokenBytes = tokens.reduce((s, b) => s + b.length, 0)
+
+          fs.writeFileSync(tokenPath, tokens[0])
+
+          encodeTimes.push({
+            source: sourceName, codec: codec.name, compression,
+            channels, encodeMs: Math.round(encodeMs * 10) / 10,
+            tokenBytes, originalBytes: src.length,
+            tokenFile: path.join('test-tokens', 'tokens', tokenFile),
+          })
+
+          const ratio = ((1 - tokenBytes / src.length) * 100).toFixed(1)
+          console.log(`${fmtBytes(tokenBytes).padStart(8)}  ${ratio.padStart(5)}% smaller  ${encodeMs.toFixed(0)}ms`)
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e)
+          encodeTimes.push({
+            source: sourceName, codec: codec.name, compression,
+            channels, encodeMs: 0, tokenBytes: 0,
+            originalBytes: src.length, tokenFile: '',
+          })
+          console.log(`ERROR: ${msg}`)
+        }
+      }
+    }
+    console.log()
+  }
+
+  const encodeTimesPath = path.join(ROOT, 'test-tokens', 'encode-times.json')
+  fs.writeFileSync(encodeTimesPath, JSON.stringify(encodeTimes, null, 2))
+  console.log(`Encode times saved → ${encodeTimesPath}  (${encodeTimes.length} entries)`)
+
+  const archiveTimesPath = path.join(ROOT, 'test-tokens', 'archive-times.json')
+  fs.writeFileSync(archiveTimesPath, JSON.stringify(allArchiveTimes, null, 2))
+  console.log(`Archive times saved → ${archiveTimesPath}  (${allArchiveTimes.length} entries)`)
+
+  console.log('\nDone. Run `yarn tsx benchmark/run-extended.ts` to measure decode timing.')
 }
 
 main().catch(e => { console.error(e); process.exit(1) })

@@ -23,7 +23,7 @@ const config: NextConfig = {
     ]
     // Sharp uses native binaries — exclude from webpack bundling on server
     if (isServer) {
-      cfg.externals = [...(Array.isArray(cfg.externals) ? cfg.externals : [cfg.externals ?? {}]), 'sharp']
+      cfg.externals = [...(Array.isArray(cfg.externals) ? cfg.externals : [cfg.externals ?? {}]), 'sharp', '@mongodb-js/zstd']
     }
     return cfg
   },

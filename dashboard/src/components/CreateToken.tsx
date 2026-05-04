@@ -12,11 +12,10 @@ const PRESETS = [
   'midnight',
   'fire',
   'matrix',
-  'spiral',
   'shuffle',
   'raw',
 ]
-const ALGOS = ['linear', 'radial', 'interleaved', 'semantic', 'bitplane', 'delta', 'xor', 'nibble', 'delta-chain', 'rle', 'predict', 'palette-pixel']
+const ALGOS = ['linear', 'interleaved', 'bitplane', 'delta', 'xor', 'delta-chain', 'rle', 'predict', 'bitshuffle', 'zstdpix']
 
 const COMPRESSION_MODES = [
   { value: 'none', label: 'none', stream: true },
@@ -137,10 +136,9 @@ export function CreateToken() {
     setError(null)
   }
 
-  // Semantic codec forces bpp=3; WebP alpha premultiplication makes bpp=4 unsafe
-  const isSemanticPreset = preset === 'semantic' || algo === 'semantic'
+  // WebP alpha premultiplication makes bpp=4 unsafe.
   const isWebP = imgFormat === 'webp'
-  const effectiveBpp = isSemanticPreset || (isWebP && bpp === 4) ? 3 : bpp
+  const effectiveBpp = isWebP && bpp === 4 ? 3 : bpp
 
   async function handleGenerate() {
     setLoading(true)
@@ -381,7 +379,7 @@ export function CreateToken() {
                     {/* BPP selector */}
                     <div>
                       <label className="text-xs text-white/40 mb-1 block">
-                        Bytes per pixel{isSemanticPreset ? ' (forced 3 for semantic)' : ''}
+                        Bytes per pixel
                       </label>
                       <div className="flex gap-1.5">
                         {([1, 2, 3, 4] as const).map(n => (
