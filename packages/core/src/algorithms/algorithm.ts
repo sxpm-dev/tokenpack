@@ -1,16 +1,14 @@
-import path from 'path'
-import { PassThrough, type Readable } from 'stream'
-
 import type { AbstractCodec } from '../codecs/types'
 import { isStreamingCodec } from '../codecs/types'
 import { compressorRegistry } from '../compressors/registry'
 import type { AbstractCompressor } from '../compressors/types'
 import { encryptData } from '../crypto'
-import { DenseDrawer, pickDrawerForOptions } from '../drawers'
-import type { AbstractDrawer, DrawContext } from '../drawers/types'
+import { DenseDrawer, pickDrawerForOptions, pickDrawerForPixels } from '../drawers'
+import type { AbstractDrawer, DrawContext, DrawnChunk } from '../drawers/types'
 import { fecRegistry } from '../fec/registry'
+import { finalizeChunks } from '../finalize-chunks'
 import { surfaceRegistry } from '../surfaces/registry'
-import type { AbstractSurface } from '../surfaces/types'
+import type { AbstractSurface, SurfacePixels } from '../surfaces/types'
 import type { DecodeOptions, EncodeOptions } from '../types'
 import {
   AbstractAlgorithm,
@@ -66,8 +64,11 @@ const DEFAULT_OPTIONS: AlgorithmOption[] = [
 
 function chunkPaths(out: string, total: number): string[] {
   if (total === 1) return [out]
-  const ext = path.extname(out)
-  const base = out.slice(0, -ext.length)
+  // Pure string op (no Node `path.extname`) so this stays browser-safe.
+  const dot = out.lastIndexOf('.')
+  const slash = out.lastIndexOf('/')
+  const ext = dot > slash ? out.slice(dot) : ''
+  const base = ext ? out.slice(0, -ext.length) : out
 
   return Array.from({ length: total }, (_, i) => `${base}_${i + 1}of${total}${ext}`)
 }
@@ -92,15 +93,16 @@ export class Algorithm extends AbstractAlgorithm {
   readonly options: AlgorithmOption[]
   readonly defaults: Partial<Omit<EncodeOptions, 'algo'>>
 
+  // Stream decode lives in a Node-only adapter (`@tokenpack/node` after Phase 2)
+  // because it requires Node `stream.PassThrough`. Browser callers use the
+  // Web Streams variant from `@tokenpack/browser` (Phase 3 / Phase 1 stream-decoder rewrite).
   readonly stream = {
-    decode: (input: Readable, key?: string): Readable => {
+    decode: async (input: unknown, key?: string): Promise<unknown> => {
+      const { createTokenDecodeStream } = await import('../stream-decoder')
+      const { PassThrough } = await import('stream')
       const out = new PassThrough()
-
-      import('../stream-decoder')
-        .then(({ createTokenDecodeStream }) => {
-          input.pipe(createTokenDecodeStream(key)).pipe(out)
-        })
-        .catch(err => out.destroy(err))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(input as any).pipe(createTokenDecodeStream(key)).pipe(out)
 
       return out
     },
@@ -133,12 +135,13 @@ export class Algorithm extends AbstractAlgorithm {
     }
   }
 
-  async encode(input: Buffer, options: Omit<EncodeOptions, 'algo'>): Promise<string[]> {
-    const merged: Omit<EncodeOptions, 'algo'> = {
-      ...this.defaults,
-      ...options,
-      out: options.out ?? this.defaults.out!,
-    }
+  // Pure browser-safe encode: returns raw pixel chunks. No fs, no surface.write.
+  // Consumers wrap chunks into PNG/WebP bytes (canvas/upng-js in browser, sharp/pngjs in node).
+  async encodeBytes(
+    input: Uint8Array,
+    options: Omit<EncodeOptions, 'algo' | 'out'>,
+  ): Promise<DrawnChunk[]> {
+    const merged: Omit<EncodeOptions, 'algo' | 'out'> = { ...this.defaults, ...options }
     const compressor = compressorRegistry.byMode(resolveCompressionMode(merged))
     const surface = surfaceRegistry.byFormat(
       merged.format ?? this.surface.format,
@@ -158,31 +161,32 @@ export class Algorithm extends AbstractAlgorithm {
     const codecBpp: 1 | 2 | 3 | 4 = required ?? requested
     const bpp: 1 | 2 | 3 | 4 = surface.coerceBpp(codecBpp)
 
-    let dataToEncode = input
+    // Buffer.from(uint8) is a zero-copy view when input is Uint8Array — keeps
+    // the existing compressor/drawer Buffer-typed signatures working.
+    let dataToEncode: Buffer = Buffer.from(input.buffer, input.byteOffset, input.byteLength)
     let compressionLevel = 0
     let uncompressedLength = 0
 
     if (compressor.id !== 'none') {
-      const result = compressor.compress(input)
+      const result = compressor.compress(dataToEncode)
 
-      if (result.data.length < input.length) {
+      if (result.data.length < dataToEncode.length) {
+        const inputLen = dataToEncode.length
         dataToEncode = result.data
         compressionLevel = result.level
-        uncompressedLength = input.length
-        const ratio = ((1 - result.data.length / input.length) * 100).toFixed(1)
+        uncompressedLength = inputLen
+        const ratio = ((1 - result.data.length / inputLen) * 100).toFixed(1)
 
-        console.log(
-          `Compressed [${compressor.id}] ${input.length} → ${result.data.length} bytes (${ratio}% smaller)`,
-        )
+        console.log(`Compressed [${compressor.id}] ${inputLen} → ${result.data.length} bytes (${ratio}% smaller)`)
       } else {
-        console.log(`Compression skipped (file too small to benefit)`)
+        console.log('Compression skipped (file too small to benefit)')
       }
     }
 
     let encrypted = false
 
     if (merged.key) {
-      dataToEncode = encryptData(dataToEncode, merged.key)
+      dataToEncode = Buffer.from(await encryptData(dataToEncode, merged.key))
       encrypted = true
       console.log(`Encrypted → ${dataToEncode.length} bytes`)
     }
@@ -194,9 +198,7 @@ export class Algorithm extends AbstractAlgorithm {
       const fecResult = fec.encode(dataToEncode)
 
       dataToEncode = fecResult.data
-      console.log(
-        `FEC [${fec.id}] ${preFecLength} → ${dataToEncode.length} bytes (+${dataToEncode.length - preFecLength})`,
-      )
+      console.log(`FEC [${fec.id}] ${preFecLength} → ${dataToEncode.length} bytes (+${dataToEncode.length - preFecLength})`)
     }
 
     const ctx: DrawContext = {
@@ -209,17 +211,40 @@ export class Algorithm extends AbstractAlgorithm {
       encrypted,
       cellSize: merged.cellSize ?? 1,
       width: merged.width,
-      // FEC requires full header (compact has no room for fecLevel + preFecLength).
       requiresFullHeader: compressor.requiresFullHeader || fec.headerLevel > 0,
       fecLevel: fec.headerLevel,
       preFecLength,
     }
 
     const { chunks } = drawer.write(dataToEncode, ctx)
-    const paths = chunkPaths(merged.out, chunks.length)
 
     if (chunks.length > 1)
       console.log(`Chunking into ${chunks.length} images (${DenseDrawer.MAX_WIDTH}px max width)`)
+
+    return chunks
+  }
+
+  // Pure browser-safe decode: takes already-extracted pixel buffers and returns
+  // the original payload. Browser callers feed `<img>`/canvas-decoded pixels here.
+  async decodeBytes(images: SurfacePixels[], key?: string): Promise<Buffer> {
+    const reads = images.map(image => {
+      const drawer = pickDrawerForPixels(image.pixels)
+
+      return drawer.read(image, { codec: this.codec })
+    })
+
+    return finalizeChunks(reads, key)
+  }
+
+  // fs convenience wrapper — Node-only; relocates to `@tokenpack/node` in Phase 2.
+  async encode(input: Buffer, options: Omit<EncodeOptions, 'algo'>): Promise<string[]> {
+    const out = options.out ?? this.defaults.out!
+    const surface = surfaceRegistry.byFormat(
+      options.format ?? this.defaults.format ?? this.surface.format,
+      options.streaming ?? this.defaults.streaming ?? false,
+    )
+    const chunks = await this.encodeBytes(input, options)
+    const paths = chunkPaths(out, chunks.length)
 
     for (let i = 0; i < chunks.length; i++) {
       await surface.write(paths[i], chunks[i])

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>@tokenpack/browser — standalone round-trip</title>
+  <style>
+    body { font-family: system-ui; background: #0a0a0a; color: #fff; padding: 2rem; max-width: 720px; margin: auto; }
+    pre { background: #111; padding: 0.75rem; border-radius: 6px; border: 1px solid #222; overflow: auto; white-space: pre-wrap; }
+    button { background: #4ade80; color: #000; border: 0; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+    .ok { color: #4ade80; } .err { color: #f87171; }
+  </style>
+</head>
+<body>
+  <h1>@tokenpack/browser — round-trip smoke test</h1>
+  <p>Encodes a string to a TokenPack PNG, displays the image, decodes it back, asserts equality. No bundler — direct ESM.</p>
+  <button id="run">Run round-trip</button>
+  <pre id="out"></pre>
+  <h3>Encoded image:</h3>
+  <img id="result" alt="encoded token" style="border: 1px solid #333; max-width: 320px; image-rendering: pixelated;" />
+
+  <script type="module">
+    // For local dev: import via the bundler's resolved module path.
+    // This page is a smoke test; the import URL depends on how you serve @tokenpack/browser.
+    import { encode, decode } from '/_next/static/@tokenpack/browser/index.js'
+
+    const out = document.getElementById('out')
+    const img = document.getElementById('result')
+    const status = document.createElement('span')
+
+    document.getElementById('run').addEventListener('click', async () => {
+      out.textContent = 'Running…'
+      try {
+        const message = 'Hello from a standalone test! ' + new Date().toISOString()
+        const result = await encode(message)
+        img.src = result.objectURL
+
+        const decoded = await decode(result.blobs[0])
+        const decodedText = new TextDecoder().decode(decoded)
+
+        if (decodedText !== message) throw new Error('Mismatch: got "' + decodedText + '"')
+
+        out.textContent = ''
+        status.className = 'ok'
+        status.textContent = 'OK'
+        out.appendChild(status)
+        out.appendChild(document.createTextNode(' — round-trip succeeded.\n\nOriginal: ' + message + '\nDecoded:  ' + decodedText + '\n\nPNG size: ' + result.blobs[0].size + ' bytes'))
+      } catch (e) {
+        out.textContent = ''
+        status.className = 'err'
+        status.textContent = 'FAIL'
+        out.appendChild(status)
+        out.appendChild(document.createTextNode('\n\n' + (e.stack || String(e))))
+      }
+    })
+  </script>
+
+  <p style="color: #888; font-size: 12px; margin-top: 2rem;">
+    Note: this page expects <code>@tokenpack/browser</code> at <code>/_next/static/@tokenpack/browser/</code>.
+    In a packaged build, replace the import path with your bundler's output. The point of this file is to demonstrate
+    the API works end-to-end with no bundler magic — just <code>&lt;script type="module"&gt;</code>.
+  </p>
+</body>
+</html>

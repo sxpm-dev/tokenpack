@@ -1,9 +1,8 @@
-import type { Readable } from 'stream'
-
 import type { AbstractCodec, Friendliness } from '../codecs/types'
 import type { AbstractCompressor } from '../compressors/types'
+import type { DrawnChunk } from '../drawers/types'
 import type { AbstractDrawer } from '../drawers/types'
-import type { AbstractSurface } from '../surfaces/types'
+import type { AbstractSurface, SurfacePixels } from '../surfaces/types'
 import type { DecodeOptions, EncodeOptions } from '../types'
 
 export type AlgorithmOptionType = 'select' | 'number' | 'boolean' | 'color' | 'gradient'
@@ -54,12 +53,28 @@ export abstract class AbstractAlgorithm {
   abstract readonly capabilities: AlgorithmCapabilities
   abstract readonly options: AlgorithmOption[]
 
+  // Pure browser-safe encode: returns raw pixel chunks. Consumers wrap these
+  // into PNG/WebP via canvas/upng-js (browser) or sharp/pngjs (node).
+  abstract encodeBytes(
+    input: Uint8Array,
+    options: Omit<EncodeOptions, 'algo' | 'out'>,
+  ): Promise<DrawnChunk[]>
+
+  // Pure browser-safe decode: takes already-extracted pixel buffers
+  // (from canvas getImageData / sharp / etc.) and returns the original payload.
+  abstract decodeBytes(images: SurfacePixels[], key?: string): Promise<Buffer>
+
+  // fs/file convenience wrappers — Node-only. Will physically relocate to
+  // `@tokenpack/node` in Phase 2.
   abstract encode(input: Buffer, options: Omit<EncodeOptions, 'algo'>): Promise<string[]>
   abstract decode(inputPath: string, options: DecodeOptions): Promise<void>
   abstract decodeToBuffer(inputPath: string, key?: string): Promise<Buffer>
   abstract decodeFromBuffer(imageBuffer: Buffer, key?: string, ext?: string): Promise<Buffer>
+
+  // Stream decode (Node Readable in / Readable out). Lazy-loaded internally;
+  // the `unknown` here keeps `@tokenpack/core` from importing `node:stream`.
   abstract stream: {
-    decode(input: Readable, key?: string): Readable
+    decode(input: unknown, key?: string): Promise<unknown>
   }
 
   abstract toCatalogEntry(): AlgorithmCatalogEntry

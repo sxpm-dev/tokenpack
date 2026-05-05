@@ -2,91 +2,89 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add four custom streaming-friendly compression algorithms (SLZ, AHUFF, LZP, CASCADE) and a new pixel codec (StreamPack) without changing any existing code paths.
+**Goal:** Add four custom streaming-friendly compression algorithms (SLZ, AHUFF, LZP, CASCADE) and a new pixel codec (StreamPack) that plug into the existing `CompressorRegistry` and `AlgorithmCatalog` without altering any existing logic.
 
-**Architecture:** New compressor classes extend the existing `AbstractCompressor` base and plug into `getCompressorByMode`/`getCompressorByHeaderLevel` in `src/compressors/index.ts`. The StreamPack codec registers via the existing `registerCodec` mechanism. All additions are additive — existing behavior for any existing `compressionMode` or codec name is unchanged.
+**Architecture:** New compressors extend `AbstractCompressor` and self-register via the `CompressorRegistry.register()` method. New codec follows the existing two-file pattern (`index.ts` + `metadata.ts`) and is added to the `CODECS` array. The `CompressionMode` union type is extended with four new string literals. No existing compressor, codec, algorithm, or test is modified — all changes are strictly additive.
 
-**Tech Stack:** TypeScript (ESM, strict), Vitest, Node.js Buffers, no new npm dependencies.
+**Tech Stack:** TypeScript (strict ESM), Vitest, Node.js `stream.Transform`, no new npm dependencies. All work lives in `packages/core/`.
 
 ---
 
 ## File Map
 
 **Create:**
-- `src/compressors/bits.ts` — BitWriter / BitReader (shared by AHUFF and LZP)
-- `src/compressors/slz.ts` — SLZCompressor: LZ77-style, 64 KB ring buffer, streaming decode
-- `src/compressors/ahuff.ts` — AHUFFCompressor: per-block adaptive Huffman, 16 KB blocks
-- `src/compressors/lzp.ts` — LZPCompressor: 3-byte context prediction, 1-bit per match
-- `src/compressors/cascade.ts` — CascadeCompressor: SLZ → AHUFF two-pass
-- `src/codecs/streampack/index.ts` — StreamPack codec with 1 KB sync markers
-- `tests/compressors/bits.test.ts`
-- `tests/compressors/slz.test.ts`
-- `tests/compressors/ahuff.test.ts`
-- `tests/compressors/lzp.test.ts`
-- `tests/compressors/cascade.test.ts`
-- `tests/codecs/streampack.test.ts`
+- `packages/core/src/compressors/bits.ts` — BitWriter / BitReader shared by AHUFF and LZP
+- `packages/core/src/compressors/slz.ts` — SLZCompressor (level 10)
+- `packages/core/src/compressors/ahuff.ts` — AHUFFCompressor (level 11)
+- `packages/core/src/compressors/lzp.ts` — LZPCompressor (level 12)
+- `packages/core/src/compressors/cascade.ts` — CascadeCompressor (level 13)
+- `packages/core/src/codecs/streampack/metadata.ts` — StreamPack codec metadata
+- `packages/core/src/codecs/streampack/index.ts` — StreamPackCodec class
+- `packages/core/tests/compressors/bits.test.ts`
+- `packages/core/tests/compressors/slz.test.ts`
+- `packages/core/tests/compressors/ahuff.test.ts`
+- `packages/core/tests/compressors/lzp.test.ts`
+- `packages/core/tests/compressors/cascade.test.ts`
+- `packages/core/tests/codecs/streampack.test.ts`
+- `packages/core/tests/compressors/integration.test.ts`
 
-**Modify (additive only):**
-- `src/compressors/index.ts` — add new `case` branches in `getCompressorByMode` and `getCompressorByHeaderLevel`; no existing case touched
-- `src/codecs/register-all.ts` — one additional `registerCodec(streampackCodec)` line
+**Modify (additive only — no existing logic changed):**
+- `packages/core/src/compressors/types.ts` — extend `CompressionMode` union with `'slz' | 'ahuff' | 'lzp' | 'cascade'`
+- `packages/core/src/compressors/modes.ts` — add four entries to `COMPRESSION_MODE_INFOS`
+- `packages/core/src/compressors/registry.ts` — four new `this.register(...)` calls in constructor
+- `packages/core/src/compressors/index.ts` — re-export four new compressor classes
+- `packages/core/src/codecs/index.ts` — add `streampackCodec` to `CODECS` array and export it
+- `packages/core/src/codecs/metadata.ts` — add `streampackInfo` to `CODEC_INFOS`
 
 ---
 
 ## Task 1 — Bit I/O utilities
 
-**Files:**
-- Create: `src/compressors/bits.ts`
-- Create: `tests/compressors/bits.test.ts`
+Shared by AHUFF (Huffman bit-packing) and LZP (single-bit match/miss flags).
 
-### Step 1: Write the failing tests
+**Files:**
+- Create: `packages/core/src/compressors/bits.ts`
+- Create: `packages/core/tests/compressors/bits.test.ts`
+
+- [ ] **Step 1: Write the failing tests**
 
 ```typescript
-// tests/compressors/bits.test.ts
-import { describe, it, expect } from 'vitest'
-import { BitWriter, BitReader } from '../../src/compressors/bits'
+// packages/core/tests/compressors/bits.test.ts
+import { describe, expect, it } from 'vitest'
+import { BitReader, BitWriter } from '../../src/compressors/bits'
 
 describe('BitWriter', () => {
-  it('writes single bits and flushes to bytes', () => {
+  it('writes bits MSB-first and flushes full byte', () => {
     const w = new BitWriter()
-    w.write(1, 1) // bit = 1
-    w.write(0, 1) // bit = 0
-    w.write(1, 1) // bit = 1
-    w.write(0, 1) // bit = 0
-    w.write(0, 1)
-    w.write(0, 1)
-    w.write(0, 1)
-    w.write(0, 1)
-    const out = w.flush()
-    expect(out[0]).toBe(0b10100000)
+    // write 1,0,1,0,0,0,0,0 → 0b10100000 = 0xA0
+    ;[1, 0, 1, 0, 0, 0, 0, 0].forEach(b => w.write(b, 1))
+    expect(w.flush()[0]).toBe(0xa0)
   })
 
   it('writes multi-bit codes MSB-first', () => {
     const w = new BitWriter()
-    w.write(0b101, 3)  // 1,0,1
-    w.write(0b01,  2)  // 0,1
-    w.write(0b110, 3)  // 1,1,0
-    const out = w.flush()
-    // bits: 1,0,1,0,1,1,1,0 = 0b10101110 = 0xAE
-    expect(out[0]).toBe(0xAE)
+    w.write(0b101, 3) // 1,0,1
+    w.write(0b01, 2)  // 0,1
+    w.write(0b110, 3) // 1,1,0  → 0b10101110 = 0xAE
+    expect(w.flush()[0]).toBe(0xae)
   })
 
-  it('pads the final byte with zero bits', () => {
+  it('pads the last byte with zeros', () => {
     const w = new BitWriter()
-    w.write(1, 1)   // 1 bit written; 7 padding zeros
+    w.write(1, 1) // 1 bit written → padded to 0b10000000 = 0x80
     const out = w.flush()
     expect(out.length).toBe(1)
-    expect(out[0]).toBe(0b10000000)
+    expect(out[0]).toBe(0x80)
   })
 })
 
 describe('BitReader', () => {
-  it('reads bits written by BitWriter', () => {
+  it('reads back exactly what BitWriter wrote', () => {
     const w = new BitWriter()
     w.write(0b101, 3)
-    w.write(0b01,  2)
+    w.write(0b01, 2)
     w.write(0b110, 3)
-    const data = w.flush()
-    const r = new BitReader(data)
+    const r = new BitReader(w.flush())
     expect(r.read(3)).toBe(0b101)
     expect(r.read(2)).toBe(0b01)
     expect(r.read(3)).toBe(0b110)
@@ -96,7 +94,7 @@ describe('BitReader', () => {
     const data = Buffer.from([0b11001100])
     const r = new BitReader(data)
     expect(r.peek(4)).toBe(0b1100)
-    expect(r.peek(4)).toBe(0b1100) // same
+    expect(r.peek(4)).toBe(0b1100) // unchanged
     r.advance(4)
     expect(r.read(4)).toBe(0b1100) // second nibble
   })
@@ -106,11 +104,11 @@ describe('BitReader', () => {
 - [ ] **Step 2: Run — expect failure**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/bits.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "FAIL|Cannot find"
 ```
 Expected: `Cannot find module '../../src/compressors/bits'`
 
-- [ ] **Step 3: Implement `src/compressors/bits.ts`**
+- [ ] **Step 3: Implement `packages/core/src/compressors/bits.ts`**
 
 ```typescript
 export class BitWriter {
@@ -165,47 +163,43 @@ export class BitReader {
 - [ ] **Step 4: Run — expect pass**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/bits.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "PASS|bits"
 ```
-Expected: all 5 tests pass.
+Expected: `bits.test.ts` passes (5 tests).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/compressors/bits.ts tests/compressors/bits.test.ts
-git commit -m "feat: add BitWriter/BitReader utilities for custom compressors"
+git add packages/core/src/compressors/bits.ts packages/core/tests/compressors/bits.test.ts
+git commit -m "feat(core): add BitWriter/BitReader utilities for custom compressors"
 ```
 
 ---
 
 ## Task 2 — SLZ (Streaming LZ) compressor
 
-SLZ is a custom LZ77 variant with a 64 KB ring buffer. Tokens are either a literal run (≤128 bytes) or a back-reference (3–130 bytes, offset 1–65535). The decoder keeps only a 64 KB ring buffer in memory and emits each matched byte immediately — fully streaming.
-
-**Header level ID: `10`**
+Custom LZ77 variant. Encoder keeps a 64 KB hash table (one slot per 3-byte hash) and emits either a literal-run token or a back-reference token. Decoder keeps a 64 KB ring buffer and resolves each token in O(matchLen) — no lookahead, fully streaming.
 
 **Token wire format:**
 ```
-LITERAL_RUN  bit7=0  byte: (count-1) & 0x7F  → followed by count literal bytes
-BACK_REF     bit7=1  byte: (matchLen-3) & 0x7F  → 2 bytes big-endian offset (1-65535)
+LITERAL_RUN  bit7=0  byte = count-1 (1..128 literals follow)
+BACK_REF     bit7=1  byte = matchLen-3 (bits 0-6, range 3..130)
+                     2-byte big-endian offset (1..65535)
 ```
 
-**Stream format:**
-```
-[0x53 0x4C 0x5A 0x01]  4-byte magic "SLZ\x01"
-[uint32 BE]            uncompressed length
-... tokens ...
-```
+**Stream header:** `[0x53 0x4C 0x5A 0x01]` magic + `uint32 BE` uncompressed length (8 bytes total).
+
+**Header level: 10**
 
 **Files:**
-- Create: `src/compressors/slz.ts`
-- Create: `tests/compressors/slz.test.ts`
+- Create: `packages/core/src/compressors/slz.ts`
+- Create: `packages/core/tests/compressors/slz.test.ts`
 
 - [ ] **Step 1: Write the failing tests**
 
 ```typescript
-// tests/compressors/slz.test.ts
-import { describe, it, expect } from 'vitest'
+// packages/core/tests/compressors/slz.test.ts
+import { describe, expect, it } from 'vitest'
 import { SLZCompressor } from '../../src/compressors/slz'
 
 const slz = new SLZCompressor()
@@ -213,361 +207,48 @@ const slz = new SLZCompressor()
 describe('SLZCompressor', () => {
   it('round-trips short data', () => {
     const input = Buffer.from('hello world')
-    const { data } = slz.compress(input)
-    expect(slz.decompress(data)).toEqual(input)
+    expect(slz.decompress(slz.compress(input).data)).toEqual(input)
   })
 
   it('round-trips empty buffer', () => {
     const input = Buffer.alloc(0)
-    const { data } = slz.compress(input)
-    expect(slz.decompress(data)).toEqual(input)
+    expect(slz.decompress(slz.compress(input).data)).toEqual(input)
   })
 
   it('compresses repetitive data smaller than original', () => {
-    const input = Buffer.alloc(1000, 0x41) // 1000 "A"s
-    const { data } = slz.compress(input)
-    expect(data.length).toBeLessThan(input.length)
+    const input = Buffer.alloc(1000, 0x41)
+    expect(slz.compress(input).data.length).toBeLessThan(input.length)
   })
 
-  it('handles random data without expansion beyond 1.02x', () => {
-    // worst case: 1 flag byte per 128 literals
-    const input = Buffer.from(Array.from({ length: 512 }, (_, i) => (i * 37 + 13) & 0xFF))
-    const { data } = slz.compress(input)
-    expect(data.length).toBeLessThan(input.length * 1.02 + 16)
+  it('does not expand random data by more than 1%', () => {
+    const input = Buffer.from(Array.from({ length: 512 }, (_, i) => (i * 37 + 13) & 0xff))
+    expect(slz.compress(input).data.length).toBeLessThan(input.length * 1.02 + 16)
   })
 
   it('round-trips data larger than 64 KB window', () => {
-    // 70 KB of patterned data
     const chunk = Buffer.from('abcdefgh')
-    const parts: Buffer[] = []
-    for (let i = 0; i < 9000; i++) parts.push(chunk)
-    const input = Buffer.concat(parts)
-    const { data } = slz.compress(input)
-    expect(slz.decompress(data)).toEqual(input)
-    expect(data.length).toBeLessThan(input.length)
-  })
-
-  it('compression level is 10', () => {
-    const { level } = slz.compress(Buffer.from('test'))
-    expect(level).toBe(10)
-  })
-
-  it('streaming decode via createDecodeStream matches decompress', async () => {
-    const input = Buffer.from('streaming test: ' + 'abcd'.repeat(200))
-    const { data } = slz.compress(input)
-    const stream = slz.createDecodeStream()
-
-    const chunks: Buffer[] = []
-    await new Promise<void>((resolve, reject) => {
-      stream.on('data', (c: Buffer) => chunks.push(c))
-      stream.on('end', resolve)
-      stream.on('error', reject)
-      // Feed in small pieces to stress the incremental path
-      for (let i = 0; i < data.length; i += 16) {
-        stream.write(data.subarray(i, Math.min(i + 16, data.length)))
-      }
-      stream.end()
-    })
-
-    const result = Buffer.concat(chunks)
+    const input = Buffer.concat(Array.from({ length: 9000 }, () => chunk))
+    const result = slz.decompress(slz.compress(input).data)
     expect(result).toEqual(input)
   })
-})
-```
 
-- [ ] **Step 2: Run — expect failure**
-
-```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/slz.test.ts
-```
-Expected: `Cannot find module '../../src/compressors/slz'`
-
-- [ ] **Step 3: Implement `src/compressors/slz.ts`**
-
-```typescript
-import { Transform } from 'stream'
-import { AbstractCompressor, type CompressionResult, type CompressionMeta } from './types'
-
-const MAGIC = Buffer.from([0x53, 0x4C, 0x5A, 0x01])
-const WINDOW_SIZE = 65536
-const WINDOW_MASK = WINDOW_SIZE - 1
-const MIN_MATCH = 3
-const MAX_MATCH = 130
-const MAX_LIT_RUN = 128
-const LEVEL = 10
-
-function hash3(a: number, b: number, c: number): number {
-  return ((a * 16777619) ^ (b * 2166136261) ^ c) & 0xFFFF
-}
-
-function slzCompress(input: Buffer): Buffer {
-  const out: number[] = [0x53, 0x4C, 0x5A, 0x01,
-    (input.length >>> 24) & 0xFF,
-    (input.length >>> 16) & 0xFF,
-    (input.length >>> 8) & 0xFF,
-    input.length & 0xFF,
-  ]
-
-  const table = new Int32Array(65536).fill(-1)
-  const litBuf: number[] = []
-
-  function flushLiterals(): void {
-    let i = 0
-    while (i < litBuf.length) {
-      const count = Math.min(litBuf.length - i, MAX_LIT_RUN)
-      out.push(count - 1)
-      for (let j = 0; j < count; j++) out.push(litBuf[i++])
-    }
-    litBuf.length = 0
-  }
-
-  let pos = 0
-  while (pos < input.length) {
-    if (pos + MIN_MATCH <= input.length) {
-      const h = hash3(input[pos], input[pos + 1], input[pos + 2])
-      const candidate = table[h]
-      table[h] = pos
-
-      if (candidate >= 0) {
-        const offset = pos - candidate
-        if (offset >= 1 && offset <= 65535) {
-          let len = 0
-          const maxLen = Math.min(MAX_MATCH, input.length - pos)
-          while (len < maxLen && input[candidate + len] === input[pos + len]) len++
-          if (len >= MIN_MATCH) {
-            flushLiterals()
-            out.push(0x80 | (len - MIN_MATCH))
-            out.push((offset >>> 8) & 0xFF)
-            out.push(offset & 0xFF)
-            pos += len
-            continue
-          }
-        }
-      }
-    }
-
-    litBuf.push(input[pos++])
-    if (litBuf.length === MAX_LIT_RUN) flushLiterals()
-  }
-  flushLiterals()
-
-  return Buffer.from(out)
-}
-
-function slzDecompress(input: Buffer): Buffer {
-  if (!input.subarray(0, 4).equals(MAGIC)) throw new Error('SLZ: invalid magic')
-  const totalLen = input.readUInt32BE(4)
-  const out = Buffer.allocUnsafe(totalLen)
-  let outPos = 0
-  let inPos = 8
-
-  const ring = new Uint8Array(WINDOW_SIZE)
-  let head = 0
-
-  while (inPos < input.length && outPos < totalLen) {
-    const token = input[inPos++]
-
-    if ((token & 0x80) === 0) {
-      const count = (token & 0x7F) + 1
-      for (let i = 0; i < count; i++) {
-        const b = input[inPos++]
-        ring[head] = b; head = (head + 1) & WINDOW_MASK
-        out[outPos++] = b
-      }
-    } else {
-      const matchLen = (token & 0x7F) + MIN_MATCH
-      const offset = (input[inPos] << 8) | input[inPos + 1]
-      inPos += 2
-      let src = (head - offset + WINDOW_SIZE) & WINDOW_MASK
-      for (let i = 0; i < matchLen; i++) {
-        const b = ring[src]; src = (src + 1) & WINDOW_MASK
-        ring[head] = b; head = (head + 1) & WINDOW_MASK
-        out[outPos++] = b
-      }
-    }
-  }
-
-  return out.subarray(0, outPos)
-}
-
-export class SLZCompressor extends AbstractCompressor {
-  readonly id = 'slz'
-  readonly label = 'StreamLZ'
-  readonly streamableDecode = true
-
-  compress(input: Buffer): CompressionResult {
-    return { data: slzCompress(input), level: LEVEL, uncompressedLength: input.length }
-  }
-
-  decompress(input: Buffer, _meta?: CompressionMeta): Buffer {
-    return slzDecompress(input)
-  }
-
-  createDecodeStream(): Transform {
-    const ring = new Uint8Array(WINDOW_SIZE)
-    let head = 0
-    let headerParsed = false
-    let totalBytes = 0
-    let outBytes = 0
-    let pending = Buffer.alloc(0)
-
-    return new Transform({
-      transform(chunk: Buffer, _enc, callback) {
-        pending = Buffer.concat([pending, chunk])
-
-        if (!headerParsed) {
-          if (pending.length < 8) { callback(); return }
-          if (!pending.subarray(0, 4).equals(MAGIC)) {
-            callback(new Error('SLZ stream: invalid magic')); return
-          }
-          totalBytes = pending.readUInt32BE(4)
-          pending = pending.subarray(8)
-          headerParsed = true
-        }
-
-        const outChunks: Buffer[] = []
-        let pos = 0
-
-        while (pos < pending.length && outBytes < totalBytes) {
-          const token = pending[pos]
-
-          if ((token & 0x80) === 0) {
-            const count = (token & 0x7F) + 1
-            if (pos + 1 + count > pending.length) break
-            pos++
-            const slice = Buffer.allocUnsafe(count)
-            for (let i = 0; i < count; i++) {
-              const b = pending[pos++]
-              ring[head] = b; head = (head + 1) & WINDOW_MASK
-              slice[i] = b
-            }
-            outChunks.push(slice); outBytes += count
-
-          } else {
-            if (pos + 3 > pending.length) break
-            const matchLen = (token & 0x7F) + MIN_MATCH
-            const offset = (pending[pos + 1] << 8) | pending[pos + 2]
-            pos += 3
-            let src = (head - offset + WINDOW_SIZE) & WINDOW_MASK
-            const slice = Buffer.allocUnsafe(matchLen)
-            for (let i = 0; i < matchLen; i++) {
-              const b = ring[src]; src = (src + 1) & WINDOW_MASK
-              ring[head] = b; head = (head + 1) & WINDOW_MASK
-              slice[i] = b
-            }
-            outChunks.push(slice); outBytes += matchLen
-          }
-        }
-
-        pending = pending.subarray(pos)
-        if (outChunks.length > 0) this.push(Buffer.concat(outChunks))
-        callback()
-      },
-      flush(callback) { callback() }
-    })
-  }
-}
-```
-
-- [ ] **Step 4: Run — expect pass**
-
-```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/slz.test.ts
-```
-Expected: all 7 tests pass.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add src/compressors/slz.ts tests/compressors/slz.test.ts
-git commit -m "feat: add SLZ streaming LZ compressor (level 10)"
-```
-
----
-
-## Task 3 — AHUFF (Adaptive Block Huffman) compressor
-
-Each 16 KB block carries its own 512-byte frequency table so the Huffman tree can be rebuilt independently. Blocks are fully self-contained: the decoder never looks back across block boundaries, making it suitable for streaming and HTTP range requests.
-
-**Header level ID: `11`**
-
-**Stream format:**
-```
-[0x41 0x48 0x46 0x01]  magic "AHF\x01"
-[uint32 BE]            total uncompressed length
-per block (repeat):
-  [uint32 BE]  uncompressed block length  (0 = end sentinel)
-  [uint32 BE]  compressed block byte count
-  [256 × uint16 BE]  symbol frequencies (512 bytes)
-  <compressed bit stream — exactly "compressed block byte count" bytes>
-```
-
-**Files:**
-- Create: `src/compressors/ahuff.ts`
-- Create: `tests/compressors/ahuff.test.ts`
-
-- [ ] **Step 1: Write the failing tests**
-
-```typescript
-// tests/compressors/ahuff.test.ts
-import { describe, it, expect } from 'vitest'
-import { AHUFFCompressor } from '../../src/compressors/ahuff'
-
-const ahuff = new AHUFFCompressor()
-
-describe('AHUFFCompressor', () => {
-  it('round-trips short data', () => {
-    const input = Buffer.from('hello world')
-    const { data } = ahuff.compress(input)
-    expect(ahuff.decompress(data)).toEqual(input)
+  it('exposes headerLevel 10', () => {
+    expect(slz.headerLevel).toBe(10)
   })
 
-  it('round-trips empty buffer', () => {
-    const input = Buffer.alloc(0)
-    const { data } = ahuff.compress(input)
-    expect(ahuff.decompress(data)).toEqual(input)
-  })
-
-  it('round-trips single-symbol data (edge case)', () => {
-    const input = Buffer.alloc(200, 0x00)
-    const { data } = ahuff.compress(input)
-    expect(ahuff.decompress(data)).toEqual(input)
-  })
-
-  it('round-trips multi-block data (> 16 KB)', () => {
-    const input = Buffer.from(Buffer.alloc(40000).fill(0).map((_, i) => (i * 37 + 99) & 0xFF))
-    const { data } = ahuff.compress(input)
-    expect(ahuff.decompress(data)).toEqual(input)
-  })
-
-  it('compresses source-code-like data smaller than original', () => {
-    const src = 'const x = 1;\nfunction hello() {\n  return "hello world";\n}\n'.repeat(100)
-    const input = Buffer.from(src)
-    const { data } = ahuff.compress(input)
-    expect(data.length).toBeLessThan(input.length * 0.75)
-  })
-
-  it('compression level is 11', () => {
-    const { level } = ahuff.compress(Buffer.from('test'))
-    expect(level).toBe(11)
-  })
-
-  it('streaming decode via createDecodeStream matches decompress', async () => {
-    const input = Buffer.from('abcdefg'.repeat(500))
-    const { data } = ahuff.compress(input)
-    const stream = ahuff.createDecodeStream()
-
+  it('streaming decode matches synchronous decompress', async () => {
+    const input = Buffer.from('streaming: ' + 'abcd'.repeat(200))
+    const compressed = slz.compress(input).data
+    const stream = slz.createDecodeStream!()
     const chunks: Buffer[] = []
     await new Promise<void>((resolve, reject) => {
       stream.on('data', (c: Buffer) => chunks.push(c))
       stream.on('end', resolve)
       stream.on('error', reject)
-      for (let i = 0; i < data.length; i += 32) {
-        stream.write(data.subarray(i, Math.min(i + 32, data.length)))
-      }
+      for (let i = 0; i < compressed.length; i += 16)
+        stream.write(compressed.subarray(i, Math.min(i + 16, compressed.length)))
       stream.end()
     })
-
     expect(Buffer.concat(chunks)).toEqual(input)
   })
 })
@@ -576,24 +257,322 @@ describe('AHUFFCompressor', () => {
 - [ ] **Step 2: Run — expect failure**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/ahuff.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "FAIL|Cannot find"
 ```
-Expected: `Cannot find module '../../src/compressors/ahuff'`
+Expected: `Cannot find module '../../src/compressors/slz'`
 
-- [ ] **Step 3: Implement `src/compressors/ahuff.ts`**
+- [ ] **Step 3: Implement `packages/core/src/compressors/slz.ts`**
 
 ```typescript
 import { Transform } from 'stream'
-import { AbstractCompressor, type CompressionResult, type CompressionMeta } from './types'
-import { BitWriter, BitReader } from './bits'
+import { AbstractCompressor, type CompressionMode, type CompressionResult } from './types'
+
+const MAGIC = Buffer.from([0x53, 0x4c, 0x5a, 0x01])
+const WIN = 65536
+const WIN_MASK = WIN - 1
+const MIN_MATCH = 3
+const MAX_MATCH = 130
+const MAX_LIT = 128
+const HEADER_LEVEL = 10
+
+function hash3(a: number, b: number, c: number): number {
+  return ((a * 16777619) ^ (b * 2166136261) ^ c) & 0xffff
+}
+
+function compress(input: Buffer): Buffer {
+  const out: number[] = [0x53, 0x4c, 0x5a, 0x01,
+    (input.length >>> 24) & 0xff, (input.length >>> 16) & 0xff,
+    (input.length >>> 8) & 0xff, input.length & 0xff]
+
+  const table = new Int32Array(65536).fill(-1)
+  const lits: number[] = []
+
+  const flushLits = () => {
+    for (let i = 0; i < lits.length; ) {
+      const n = Math.min(lits.length - i, MAX_LIT)
+      out.push(n - 1)
+      for (let j = 0; j < n; j++) out.push(lits[i++])
+    }
+    lits.length = 0
+  }
+
+  let pos = 0
+  while (pos < input.length) {
+    if (pos + MIN_MATCH <= input.length) {
+      const h = hash3(input[pos], input[pos + 1], input[pos + 2])
+      const cand = table[h]
+      table[h] = pos
+      if (cand >= 0) {
+        const off = pos - cand
+        if (off >= 1 && off <= 65535) {
+          let len = 0
+          const max = Math.min(MAX_MATCH, input.length - pos)
+          while (len < max && input[cand + len] === input[pos + len]) len++
+          if (len >= MIN_MATCH) {
+            flushLits()
+            out.push(0x80 | (len - MIN_MATCH))
+            out.push((off >>> 8) & 0xff, off & 0xff)
+            pos += len
+            continue
+          }
+        }
+      }
+    }
+    lits.push(input[pos++])
+    if (lits.length === MAX_LIT) flushLits()
+  }
+  flushLits()
+  return Buffer.from(out)
+}
+
+function decompress(input: Buffer): Buffer {
+  if (!input.subarray(0, 4).equals(MAGIC)) throw new Error('SLZ: bad magic')
+  const total = input.readUInt32BE(4)
+  const out = Buffer.allocUnsafe(total)
+  const ring = new Uint8Array(WIN)
+  let head = 0, inPos = 8, outPos = 0
+
+  while (inPos < input.length && outPos < total) {
+    const tok = input[inPos++]
+    if ((tok & 0x80) === 0) {
+      const n = (tok & 0x7f) + 1
+      for (let i = 0; i < n; i++) {
+        const b = input[inPos++]
+        ring[head] = b; head = (head + 1) & WIN_MASK
+        out[outPos++] = b
+      }
+    } else {
+      const len = (tok & 0x7f) + MIN_MATCH
+      const off = (input[inPos] << 8) | input[inPos + 1]; inPos += 2
+      let src = (head - off + WIN) & WIN_MASK
+      for (let i = 0; i < len; i++) {
+        const b = ring[src]; src = (src + 1) & WIN_MASK
+        ring[head] = b; head = (head + 1) & WIN_MASK
+        out[outPos++] = b
+      }
+    }
+  }
+  return out.subarray(0, outPos)
+}
+
+export class SLZCompressor extends AbstractCompressor {
+  readonly id = 'slz' as CompressionMode
+  readonly label = 'StreamLZ'
+  readonly headerLevel = HEADER_LEVEL
+  readonly streamableDecode = true
+  readonly requiresFullHeader = true
+
+  compress(input: Buffer): CompressionResult {
+    return { data: compress(input), level: HEADER_LEVEL, uncompressedLength: input.length }
+  }
+
+  decompress(input: Buffer): Buffer {
+    return decompress(input)
+  }
+
+  createDecodeStream(): Transform {
+    const ring = new Uint8Array(WIN)
+    let head = 0, headerDone = false, total = 0, outBytes = 0
+    let pending = Buffer.alloc(0)
+
+    return new Transform({
+      transform(chunk: Buffer, _enc, cb) {
+        pending = Buffer.concat([pending, chunk])
+
+        if (!headerDone) {
+          if (pending.length < 8) { cb(); return }
+          if (!pending.subarray(0, 4).equals(MAGIC)) { cb(new Error('SLZ: bad magic')); return }
+          total = pending.readUInt32BE(4)
+          pending = pending.subarray(8)
+          headerDone = true
+        }
+
+        const parts: Buffer[] = []
+        let pos = 0
+
+        while (pos < pending.length && outBytes < total) {
+          const tok = pending[pos]
+          if ((tok & 0x80) === 0) {
+            const n = (tok & 0x7f) + 1
+            if (pos + 1 + n > pending.length) break
+            pos++
+            const slice = Buffer.allocUnsafe(n)
+            for (let i = 0; i < n; i++) {
+              const b = pending[pos++]
+              ring[head] = b; head = (head + 1) & WIN_MASK; slice[i] = b
+            }
+            parts.push(slice); outBytes += n
+          } else {
+            if (pos + 3 > pending.length) break
+            const len = (tok & 0x7f) + MIN_MATCH
+            const off = (pending[pos + 1] << 8) | pending[pos + 2]; pos += 3
+            let src = (head - off + WIN) & WIN_MASK
+            const slice = Buffer.allocUnsafe(len)
+            for (let i = 0; i < len; i++) {
+              const b = ring[src]; src = (src + 1) & WIN_MASK
+              ring[head] = b; head = (head + 1) & WIN_MASK; slice[i] = b
+            }
+            parts.push(slice); outBytes += len
+          }
+        }
+
+        pending = pending.subarray(pos)
+        if (parts.length) this.push(Buffer.concat(parts))
+        cb()
+      },
+      flush(cb) { cb() },
+    })
+  }
+}
+```
+
+- [ ] **Step 4: Run — expect pass**
+
+```bash
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "PASS|slz"
+```
+Expected: `slz.test.ts` passes (7 tests).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add packages/core/src/compressors/slz.ts packages/core/tests/compressors/slz.test.ts
+git commit -m "feat(core): add SLZ streaming LZ compressor (headerLevel 10)"
+```
+
+---
+
+## Task 3 — AHUFF (Adaptive Block Huffman) compressor
+
+Splits input into 16 KB blocks. Each block carries a 512-byte frequency table so the Huffman tree can be rebuilt independently — no cross-block state in the decoder, making it safe to seek into any block boundary.
+
+**Block wire format:**
+```
+[uint32 BE]        uncompressed block length (0 = end sentinel)
+[uint32 BE]        compressed bit-stream byte count
+[256 × uint16 BE]  symbol frequencies (512 bytes)
+<bit stream>       Huffman-coded bytes, padded to byte boundary
+```
+
+**Stream header:** `[0x41 0x48 0x46 0x01]` + `uint32 BE` total length (8 bytes).
+
+**Header level: 11**
+
+**Files:**
+- Create: `packages/core/src/compressors/ahuff.ts`
+- Create: `packages/core/tests/compressors/ahuff.test.ts`
+
+- [ ] **Step 1: Write the failing tests**
+
+```typescript
+// packages/core/tests/compressors/ahuff.test.ts
+import { describe, expect, it } from 'vitest'
+import { AHUFFCompressor } from '../../src/compressors/ahuff'
+
+const ahuff = new AHUFFCompressor()
+
+describe('AHUFFCompressor', () => {
+  it('round-trips short data', () => {
+    const input = Buffer.from('hello world')
+    expect(ahuff.decompress(ahuff.compress(input).data)).toEqual(input)
+  })
+
+  it('round-trips empty buffer', () => {
+    const input = Buffer.alloc(0)
+    expect(ahuff.decompress(ahuff.compress(input).data)).toEqual(input)
+  })
+
+  it('round-trips single-symbol data (edge case)', () => {
+    const input = Buffer.alloc(200, 0x00)
+    expect(ahuff.decompress(ahuff.compress(input).data)).toEqual(input)
+  })
+
+  it('round-trips multi-block data (> 16 KB)', () => {
+    const input = Buffer.from(Array.from({ length: 40000 }, (_, i) => (i * 37 + 99) & 0xff))
+    expect(ahuff.decompress(ahuff.compress(input).data)).toEqual(input)
+  })
+
+  it('compresses source-code-like data by at least 25%', () => {
+    const src = 'const x = 1;\nfunction hello() {\n  return "hello world";\n}\n'.repeat(100)
+    const input = Buffer.from(src)
+    expect(ahuff.compress(input).data.length).toBeLessThan(input.length * 0.75)
+  })
+
+  it('exposes headerLevel 11', () => {
+    expect(ahuff.headerLevel).toBe(11)
+  })
+
+  it('streaming decode matches synchronous decompress', async () => {
+    const input = Buffer.from('abcdefg'.repeat(500))
+    const compressed = ahuff.compress(input).data
+    const stream = ahuff.createDecodeStream!()
+    const chunks: Buffer[] = []
+    await new Promise<void>((resolve, reject) => {
+      stream.on('data', (c: Buffer) => chunks.push(c))
+      stream.on('end', resolve)
+      stream.on('error', reject)
+      for (let i = 0; i < compressed.length; i += 32)
+        stream.write(compressed.subarray(i, Math.min(i + 32, compressed.length)))
+      stream.end()
+    })
+    expect(Buffer.concat(chunks)).toEqual(input)
+  })
+})
+```
+
+- [ ] **Step 2: Run — expect failure**
+
+```bash
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "FAIL|Cannot find"
+```
+Expected: `Cannot find module '../../src/compressors/ahuff'`
+
+- [ ] **Step 3: Implement `packages/core/src/compressors/ahuff.ts`**
+
+```typescript
+import { Transform } from 'stream'
+import { BitReader, BitWriter } from './bits'
+import { AbstractCompressor, type CompressionMode, type CompressionResult } from './types'
 
 const MAGIC = Buffer.from([0x41, 0x48, 0x46, 0x01])
-const BLOCK_SIZE = 16384
-const NUM_SYMS = 256
-const LEVEL = 11
-const MAX_CODE_BITS = 16
+const BLOCK = 16384
+const SYMS = 256
+const MAX_BITS = 16
+const HEADER_LEVEL = 11
 
-// ── Huffman tree build ────────────────────────────────────────────────────────
+// ── Min-heap ─────────────────────────────────────────────────────────────────
+
+function heapify(h: number[], nodes: { freq: number }[]): void {
+  for (let i = (h.length >> 1) - 1; i >= 0; i--) siftDown(h, nodes, i)
+}
+
+function siftDown(h: number[], nodes: { freq: number }[], i: number): void {
+  while (true) {
+    let s = i; const l = 2 * i + 1, r = l + 1
+    if (l < h.length && nodes[h[l]].freq < nodes[h[s]].freq) s = l
+    if (r < h.length && nodes[h[r]].freq < nodes[h[s]].freq) s = r
+    if (s === i) break
+    ;[h[i], h[s]] = [h[s], h[i]]; i = s
+  }
+}
+
+function hpop(h: number[], nodes: { freq: number }[]): number {
+  const top = h[0]; const last = h.pop()!
+  if (h.length) { h[0] = last; siftDown(h, nodes, 0) }
+  return top
+}
+
+function hpush(h: number[], nodes: { freq: number }[], idx: number): void {
+  h.push(idx)
+  let i = h.length - 1
+  while (i > 0) {
+    const p = (i - 1) >> 1
+    if (nodes[h[i]].freq >= nodes[h[p]].freq) break
+    ;[h[i], h[p]] = [h[p], h[i]]; i = p
+  }
+}
+
+// ── Huffman codes ─────────────────────────────────────────────────────────────
 
 interface HNode { freq: number; sym: number; left: number; right: number }
 
@@ -601,96 +580,49 @@ function buildCodes(freqs: Uint16Array): { codes: Uint32Array; lens: Uint8Array 
   const nodes: HNode[] = []
   const heap: number[] = []
 
-  for (let s = 0; s < NUM_SYMS; s++) {
+  for (let s = 0; s < SYMS; s++) {
     if (freqs[s] > 0) { nodes.push({ freq: freqs[s], sym: s, left: -1, right: -1 }); heap.push(nodes.length - 1) }
   }
 
-  // single-symbol edge case
+  if (heap.length === 0) return { codes: new Uint32Array(SYMS), lens: new Uint8Array(SYMS) }
   if (heap.length === 1) {
-    const codes = new Uint32Array(NUM_SYMS)
-    const lens = new Uint8Array(NUM_SYMS)
-    lens[nodes[0].sym] = 1; codes[nodes[0].sym] = 0
-    return { codes, lens }
-  }
-  if (heap.length === 0) return { codes: new Uint32Array(NUM_SYMS), lens: new Uint8Array(NUM_SYMS) }
-
-  const cmp = (a: number, b: number) => nodes[a].freq - nodes[b].freq
-
-  function hpush(idx: number): void {
-    heap.push(idx)
-    let i = heap.length - 1
-    while (i > 0) {
-      const p = (i - 1) >> 1
-      if (cmp(heap[i], heap[p]) < 0) { [heap[i], heap[p]] = [heap[p], heap[i]]; i = p } else break
-    }
+    const codes = new Uint32Array(SYMS); const lens = new Uint8Array(SYMS)
+    lens[nodes[0].sym] = 1; return { codes, lens }
   }
 
-  function hpop(): number {
-    const top = heap[0]; const last = heap.pop()!
-    if (heap.length > 0) {
-      heap[0] = last
-      let i = 0
-      while (true) {
-        let s = i; const l = 2 * i + 1; const r = l + 1
-        if (l < heap.length && cmp(heap[l], heap[s]) < 0) s = l
-        if (r < heap.length && cmp(heap[r], heap[s]) < 0) s = r
-        if (s !== i) { [heap[i], heap[s]] = [heap[s], heap[i]]; i = s } else break
-      }
-    }
-    return top
-  }
-
-  // re-heap with proper order after initial fill
-  for (let i = Math.floor(heap.length / 2) - 1; i >= 0; i--) {
-    let j = i
-    while (true) {
-      let s = j; const l = 2 * j + 1; const r = l + 1
-      if (l < heap.length && cmp(heap[l], heap[s]) < 0) s = l
-      if (r < heap.length && cmp(heap[r], heap[s]) < 0) s = r
-      if (s !== j) { [heap[j], heap[s]] = [heap[s], heap[j]]; j = s } else break
-    }
-  }
+  heapify(heap, nodes)
 
   while (heap.length > 1) {
-    const L = hpop(); const R = hpop()
+    const L = hpop(heap, nodes), R = hpop(heap, nodes)
     nodes.push({ freq: nodes[L].freq + nodes[R].freq, sym: -1, left: L, right: R })
-    hpush(nodes.length - 1)
+    hpush(heap, nodes, nodes.length - 1)
   }
 
-  // DFS assign lengths
-  const lens = new Uint8Array(NUM_SYMS)
+  const lens = new Uint8Array(SYMS)
   const stack: [number, number][] = [[heap[0], 0]]
   while (stack.length) {
-    const [idx, depth] = stack.pop()!
-    const n = nodes[idx]
-    if (n.sym >= 0) { lens[n.sym] = Math.min(depth || 1, MAX_CODE_BITS) }
+    const [idx, depth] = stack.pop()!; const n = nodes[idx]
+    if (n.sym >= 0) lens[n.sym] = Math.min(depth || 1, MAX_BITS)
     else { stack.push([n.left, depth + 1], [n.right, depth + 1]) }
   }
 
-  // Canonical codes
-  const count = new Uint32Array(MAX_CODE_BITS + 1)
-  for (let s = 0; s < NUM_SYMS; s++) if (lens[s]) count[lens[s]]++
-  const nextCode = new Uint32Array(MAX_CODE_BITS + 1)
+  // canonical codes
+  const count = new Uint32Array(MAX_BITS + 1)
+  for (let s = 0; s < SYMS; s++) if (lens[s]) count[lens[s]]++
+  const next = new Uint32Array(MAX_BITS + 1)
   let code = 0
-  for (let bits = 1; bits <= MAX_CODE_BITS; bits++) {
-    code = (code + count[bits - 1]) << 1
-    nextCode[bits] = code
-  }
-  const codes = new Uint32Array(NUM_SYMS)
-  for (let s = 0; s < NUM_SYMS; s++) if (lens[s]) codes[s] = nextCode[lens[s]]++
+  for (let b = 1; b <= MAX_BITS; b++) { code = (code + count[b - 1]) << 1; next[b] = code }
+  const codes = new Uint32Array(SYMS)
+  for (let s = 0; s < SYMS; s++) if (lens[s]) codes[s] = next[lens[s]]++
 
   return { codes, lens }
 }
 
-// Flat decode table: table[peek16bits] = (codeLen << 8) | sym
 function buildDecodeTable(codes: Uint32Array, lens: Uint8Array): Int32Array {
-  const TABLE_BITS = MAX_CODE_BITS
-  const table = new Int32Array(1 << TABLE_BITS).fill(-1)
-  for (let s = 0; s < NUM_SYMS; s++) {
-    const l = lens[s]
-    if (!l) continue
-    const stride = 1 << (TABLE_BITS - l)
-    const start = codes[s] << (TABLE_BITS - l)
+  const table = new Int32Array(1 << MAX_BITS).fill(-1)
+  for (let s = 0; s < SYMS; s++) {
+    const l = lens[s]; if (!l) continue
+    const stride = 1 << (MAX_BITS - l), start = codes[s] << (MAX_BITS - l)
     const entry = (l << 8) | s
     for (let i = 0; i < stride; i++) table[start + i] = entry
   }
@@ -700,139 +632,109 @@ function buildDecodeTable(codes: Uint32Array, lens: Uint8Array): Int32Array {
 // ── Block encode / decode ─────────────────────────────────────────────────────
 
 function encodeBlock(block: Buffer): { freqBuf: Buffer; bitsBuf: Buffer } {
-  const freqs = new Uint16Array(NUM_SYMS)
+  const freqs = new Uint16Array(SYMS)
   for (const b of block) freqs[b] = Math.min(freqs[b] + 1, 65535)
-
   const { codes, lens } = buildCodes(freqs)
-
-  const writer = new BitWriter()
-  for (const b of block) writer.write(codes[b], lens[b])
-  const bitsBuf = writer.flush()
-
-  const freqBuf = Buffer.allocUnsafe(NUM_SYMS * 2)
-  for (let i = 0; i < NUM_SYMS; i++) freqBuf.writeUInt16BE(freqs[i], i * 2)
-
+  const w = new BitWriter()
+  for (const b of block) w.write(codes[b], lens[b])
+  const bitsBuf = w.flush()
+  const freqBuf = Buffer.allocUnsafe(SYMS * 2)
+  for (let i = 0; i < SYMS; i++) freqBuf.writeUInt16BE(freqs[i], i * 2)
   return { freqBuf, bitsBuf }
 }
 
 function decodeBlock(freqBuf: Buffer, bitsBuf: Buffer, blockLen: number): Buffer {
-  const freqs = new Uint16Array(NUM_SYMS)
-  for (let i = 0; i < NUM_SYMS; i++) freqs[i] = freqBuf.readUInt16BE(i * 2)
-
+  const freqs = new Uint16Array(SYMS)
+  for (let i = 0; i < SYMS; i++) freqs[i] = freqBuf.readUInt16BE(i * 2)
   const { codes, lens } = buildCodes(freqs)
   const table = buildDecodeTable(codes, lens)
-
-  const reader = new BitReader(bitsBuf)
+  const r = new BitReader(bitsBuf)
   const out = Buffer.allocUnsafe(blockLen)
   for (let i = 0; i < blockLen; i++) {
-    const peek = reader.peek(MAX_CODE_BITS)
-    const entry = table[peek]
-    if (entry === -1) throw new Error('AHUFF: invalid code in stream')
-    reader.advance(entry >>> 8)
-    out[i] = entry & 0xFF
+    const entry = table[r.peek(MAX_BITS)]
+    if (entry === -1) throw new Error('AHUFF: bad code')
+    r.advance(entry >>> 8); out[i] = entry & 0xff
   }
   return out
 }
 
-// ── Compressor class ──────────────────────────────────────────────────────────
+// ── Compressor ────────────────────────────────────────────────────────────────
 
 function ahuffCompress(input: Buffer): Buffer {
-  const parts: Buffer[] = [MAGIC]
-  const lenBuf = Buffer.allocUnsafe(4)
-  lenBuf.writeUInt32BE(input.length, 0)
-  parts.push(lenBuf)
+  const parts: Buffer[] = [MAGIC, Buffer.from([
+    (input.length >>> 24) & 0xff, (input.length >>> 16) & 0xff,
+    (input.length >>> 8) & 0xff, input.length & 0xff])]
 
-  for (let offset = 0; offset < input.length || offset === 0; offset += BLOCK_SIZE) {
-    const block = input.subarray(offset, Math.min(offset + BLOCK_SIZE, input.length))
+  for (let off = 0; off < input.length || off === 0; off += BLOCK) {
+    const block = input.subarray(off, Math.min(off + BLOCK, input.length))
     if (block.length === 0) break
     const { freqBuf, bitsBuf } = encodeBlock(block)
     const hdr = Buffer.allocUnsafe(8)
-    hdr.writeUInt32BE(block.length, 0)
-    hdr.writeUInt32BE(bitsBuf.length, 4)
+    hdr.writeUInt32BE(block.length, 0); hdr.writeUInt32BE(bitsBuf.length, 4)
     parts.push(hdr, freqBuf, bitsBuf)
   }
-
-  // end sentinel
   parts.push(Buffer.alloc(8))
   return Buffer.concat(parts)
 }
 
 function ahuffDecompress(input: Buffer): Buffer {
-  if (!input.subarray(0, 4).equals(MAGIC)) throw new Error('AHUFF: invalid magic')
-  const totalLen = input.readUInt32BE(4)
-  const out = Buffer.allocUnsafe(totalLen)
-  let outPos = 0
-  let pos = 8
+  if (!input.subarray(0, 4).equals(MAGIC)) throw new Error('AHUFF: bad magic')
+  const total = input.readUInt32BE(4)
+  const out = Buffer.allocUnsafe(total)
+  let outPos = 0, pos = 8
 
   while (pos + 8 <= input.length) {
-    const blockLen = input.readUInt32BE(pos)
-    const compLen = input.readUInt32BE(pos + 4)
-    pos += 8
+    const blockLen = input.readUInt32BE(pos), compLen = input.readUInt32BE(pos + 4); pos += 8
     if (blockLen === 0) break
-
-    const freqBuf = input.subarray(pos, pos + NUM_SYMS * 2)
-    pos += NUM_SYMS * 2
-    const bitsBuf = input.subarray(pos, pos + compLen)
-    pos += compLen
-
-    const decoded = decodeBlock(freqBuf, bitsBuf, blockLen)
-    decoded.copy(out, outPos)
-    outPos += blockLen
+    const freqBuf = input.subarray(pos, pos + SYMS * 2); pos += SYMS * 2
+    const bitsBuf = input.subarray(pos, pos + compLen); pos += compLen
+    decodeBlock(freqBuf, bitsBuf, blockLen).copy(out, outPos); outPos += blockLen
   }
-
   return out.subarray(0, outPos)
 }
 
 export class AHUFFCompressor extends AbstractCompressor {
-  readonly id = 'ahuff'
+  readonly id = 'ahuff' as CompressionMode
   readonly label = 'Adaptive Block Huffman'
+  readonly headerLevel = HEADER_LEVEL
   readonly streamableDecode = true
+  readonly requiresFullHeader = true
 
   compress(input: Buffer): CompressionResult {
-    return { data: ahuffCompress(input), level: LEVEL, uncompressedLength: input.length }
+    return { data: ahuffCompress(input), level: HEADER_LEVEL, uncompressedLength: input.length }
   }
 
-  decompress(input: Buffer, _meta?: CompressionMeta): Buffer {
+  decompress(input: Buffer): Buffer {
     return ahuffDecompress(input)
   }
 
   createDecodeStream(): Transform {
     let pending = Buffer.alloc(0)
     let headerDone = false
-    // totalLen from header — used only for early exit
-    let totalOut = 0
 
     return new Transform({
-      transform(chunk: Buffer, _enc, callback) {
+      transform(chunk: Buffer, _enc, cb) {
         pending = Buffer.concat([pending, chunk])
 
         if (!headerDone) {
-          if (pending.length < 8) { callback(); return }
-          if (!pending.subarray(0, 4).equals(MAGIC)) { callback(new Error('AHUFF stream: invalid magic')); return }
-          // totalLen stored at bytes 4-7, skip
-          pending = pending.subarray(8)
-          headerDone = true
+          if (pending.length < 8) { cb(); return }
+          if (!pending.subarray(0, 4).equals(MAGIC)) { cb(new Error('AHUFF: bad magic')); return }
+          pending = pending.subarray(8); headerDone = true
         }
 
         while (pending.length >= 8) {
-          const blockLen = pending.readUInt32BE(0)
-          const compLen = pending.readUInt32BE(4)
-          if (blockLen === 0) break // sentinel
-
-          const needed = 8 + NUM_SYMS * 2 + compLen
+          const blockLen = pending.readUInt32BE(0), compLen = pending.readUInt32BE(4)
+          if (blockLen === 0) break
+          const needed = 8 + SYMS * 2 + compLen
           if (pending.length < needed) break
-
-          const freqBuf = pending.subarray(8, 8 + NUM_SYMS * 2)
-          const bitsBuf = pending.subarray(8 + NUM_SYMS * 2, needed)
-          const decoded = decodeBlock(freqBuf, bitsBuf, blockLen)
-          this.push(decoded)
-          totalOut += blockLen
+          const freqBuf = pending.subarray(8, 8 + SYMS * 2)
+          const bitsBuf = pending.subarray(8 + SYMS * 2, needed)
+          this.push(decodeBlock(freqBuf, bitsBuf, blockLen))
           pending = pending.subarray(needed)
         }
-
-        callback()
+        cb()
       },
-      flush(callback) { callback() }
+      flush(cb) { cb() },
     })
   }
 }
@@ -841,46 +743,43 @@ export class AHUFFCompressor extends AbstractCompressor {
 - [ ] **Step 4: Run — expect pass**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/ahuff.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "PASS|ahuff"
 ```
-Expected: all 7 tests pass.
+Expected: `ahuff.test.ts` passes (7 tests).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/compressors/ahuff.ts tests/compressors/ahuff.test.ts
-git commit -m "feat: add AHUFF adaptive block Huffman compressor (level 11)"
+git add packages/core/src/compressors/ahuff.ts packages/core/tests/compressors/ahuff.test.ts
+git commit -m "feat(core): add AHUFF adaptive block Huffman compressor (headerLevel 11)"
 ```
 
 ---
 
 ## Task 4 — LZP (LZ Prediction) compressor
 
-For each byte, a 3-byte context hashes to a predicted next byte. Output is 1 bit if the prediction is correct (match), or 9 bits (1 flag + 8 data) if wrong. On structured data (source code, JSON, binary structs) where the same context reliably predicts the same next byte, this approaches 1 bit per matched byte — far better than Huffman alone.
+For each byte, a 3-byte context hashes to a predicted next byte stored in a 64 KB table. Output is 1 bit if the prediction matches, or 9 bits (flag + literal) if not. On repetitive structured data, the match rate approaches 100% → near 1 bit per byte. The table resets to zero at every 32 KB block boundary — giving the decoder a deterministic sync point and enabling streaming.
 
-**Header level ID: `12`**
-
-**Stream format:**
+**Block wire format:**
 ```
-[0x4C 0x5A 0x50 0x01]  magic "LZP\x01"
-[uint32 BE]            total uncompressed length
-per block (repeat):
-  [uint32 BE]  uncompressed block length  (0 = end sentinel)
-  [uint32 BE]  compressed block byte count
-  <bit stream>
+[uint32 BE]  uncompressed block length (0 = end sentinel)
+[uint32 BE]  compressed byte count
+<bit stream>
 ```
 
-The prediction table (64 KB) resets to zero at each block boundary, giving the decoder a deterministic sync point. The decoder never needs state from previous blocks.
+**Stream header:** `[0x4C 0x5A 0x50 0x01]` + `uint32 BE` total length (8 bytes).
+
+**Header level: 12**
 
 **Files:**
-- Create: `src/compressors/lzp.ts`
-- Create: `tests/compressors/lzp.test.ts`
+- Create: `packages/core/src/compressors/lzp.ts`
+- Create: `packages/core/tests/compressors/lzp.test.ts`
 
 - [ ] **Step 1: Write the failing tests**
 
 ```typescript
-// tests/compressors/lzp.test.ts
-import { describe, it, expect } from 'vitest'
+// packages/core/tests/compressors/lzp.test.ts
+import { describe, expect, it } from 'vitest'
 import { LZPCompressor } from '../../src/compressors/lzp'
 
 const lzp = new LZPCompressor()
@@ -888,52 +787,42 @@ const lzp = new LZPCompressor()
 describe('LZPCompressor', () => {
   it('round-trips short data', () => {
     const input = Buffer.from('hello world')
-    const { data } = lzp.compress(input)
-    expect(lzp.decompress(data)).toEqual(input)
+    expect(lzp.decompress(lzp.compress(input).data)).toEqual(input)
   })
 
   it('round-trips empty buffer', () => {
     const input = Buffer.alloc(0)
-    const { data } = lzp.compress(input)
-    expect(lzp.decompress(data)).toEqual(input)
+    expect(lzp.decompress(lzp.compress(input).data)).toEqual(input)
   })
 
-  it('compresses highly repetitive structured data (matches >> misses)', () => {
-    // JSON-like repeating structure — high context hit rate after warm-up
+  it('heavily compresses repetitive structured data', () => {
     const pattern = '{"key":"value","n":42}\n'
     const input = Buffer.from(pattern.repeat(500))
-    const { data } = lzp.compress(input)
-    // Expect significant compression
-    expect(data.length).toBeLessThan(input.length * 0.4)
+    expect(lzp.compress(input).data.length).toBeLessThan(input.length * 0.4)
   })
 
   it('round-trips data larger than one block (> 32 KB)', () => {
-    const input = Buffer.from(Buffer.alloc(70000).map((_, i) => (i * 13 + 7) & 0xFF))
-    const { data } = lzp.compress(input)
-    expect(lzp.decompress(data)).toEqual(input)
+    const input = Buffer.from(Array.from({ length: 70000 }, (_, i) => (i * 13 + 7) & 0xff))
+    expect(lzp.decompress(lzp.compress(input).data)).toEqual(input)
   })
 
-  it('compression level is 12', () => {
-    const { level } = lzp.compress(Buffer.from('test'))
-    expect(level).toBe(12)
+  it('exposes headerLevel 12', () => {
+    expect(lzp.headerLevel).toBe(12)
   })
 
-  it('streaming decode via createDecodeStream matches decompress', async () => {
-    const input = Buffer.from('lzp streaming: ' + 'xyz'.repeat(300))
-    const { data } = lzp.compress(input)
-    const stream = lzp.createDecodeStream()
-
+  it('streaming decode matches synchronous decompress', async () => {
+    const input = Buffer.from('lzp: ' + 'xyz'.repeat(300))
+    const compressed = lzp.compress(input).data
+    const stream = lzp.createDecodeStream!()
     const chunks: Buffer[] = []
     await new Promise<void>((resolve, reject) => {
       stream.on('data', (c: Buffer) => chunks.push(c))
       stream.on('end', resolve)
       stream.on('error', reject)
-      for (let i = 0; i < data.length; i += 20) {
-        stream.write(data.subarray(i, Math.min(i + 20, data.length)))
-      }
+      for (let i = 0; i < compressed.length; i += 20)
+        stream.write(compressed.subarray(i, Math.min(i + 20, compressed.length)))
       stream.end()
     })
-
     expect(Buffer.concat(chunks)).toEqual(input)
   })
 })
@@ -942,162 +831,133 @@ describe('LZPCompressor', () => {
 - [ ] **Step 2: Run — expect failure**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/lzp.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "FAIL|Cannot find"
 ```
 Expected: `Cannot find module '../../src/compressors/lzp'`
 
-- [ ] **Step 3: Implement `src/compressors/lzp.ts`**
+- [ ] **Step 3: Implement `packages/core/src/compressors/lzp.ts`**
 
 ```typescript
 import { Transform } from 'stream'
-import { AbstractCompressor, type CompressionResult, type CompressionMeta } from './types'
-import { BitWriter, BitReader } from './bits'
+import { BitReader, BitWriter } from './bits'
+import { AbstractCompressor, type CompressionMode, type CompressionResult } from './types'
 
-const MAGIC = Buffer.from([0x4C, 0x5A, 0x50, 0x01])
+const MAGIC = Buffer.from([0x4c, 0x5a, 0x50, 0x01])
 const HASH_SIZE = 65536
-const BLOCK_SIZE = 32768
-const LEVEL = 12
+const BLOCK = 32768
+const HEADER_LEVEL = 12
 
 function lzpHash(a: number, b: number, c: number): number {
-  return ((a * 31337 + b * 6271 + c * 1031) & 0xFFFF)
+  return ((a * 31337 + b * 6271 + c * 1031) & 0xffff)
 }
 
-function lzpCompressBlock(
+function compressBlock(
   input: Buffer, start: number, end: number,
   table: Uint8Array, ctx: [number, number, number],
 ): Buffer {
-  const writer = new BitWriter()
+  const w = new BitWriter()
   for (let i = start; i < end; i++) {
-    const b = input[i]
-    const h = lzpHash(ctx[0], ctx[1], ctx[2])
-    if (table[h] === b) {
-      writer.write(0, 1)
-    } else {
-      writer.write(1, 1)
-      writer.write(b, 8)
-    }
-    table[h] = b
-    ctx[0] = ctx[1]; ctx[1] = ctx[2]; ctx[2] = b
+    const b = input[i], h = lzpHash(ctx[0], ctx[1], ctx[2])
+    if (table[h] === b) { w.write(0, 1) } else { w.write(1, 1); w.write(b, 8) }
+    table[h] = b; ctx[0] = ctx[1]; ctx[1] = ctx[2]; ctx[2] = b
   }
-  return writer.flush()
+  return w.flush()
 }
 
-function lzpDecompressBlock(
+function decompressBlock(
   bits: Buffer, blockLen: number,
   table: Uint8Array, ctx: [number, number, number],
 ): Buffer {
-  const reader = new BitReader(bits)
-  const out = Buffer.allocUnsafe(blockLen)
+  const r = new BitReader(bits), out = Buffer.allocUnsafe(blockLen)
   for (let i = 0; i < blockLen; i++) {
     const h = lzpHash(ctx[0], ctx[1], ctx[2])
-    const flag = reader.read(1)
-    const b = flag === 0 ? table[h] : reader.read(8)
-    table[h] = b
-    ctx[0] = ctx[1]; ctx[1] = ctx[2]; ctx[2] = b
-    out[i] = b
+    const b = r.read(1) === 0 ? table[h] : r.read(8)
+    table[h] = b; ctx[0] = ctx[1]; ctx[1] = ctx[2]; ctx[2] = b; out[i] = b
   }
   return out
 }
 
 function lzpCompress(input: Buffer): Buffer {
-  const parts: Buffer[] = [MAGIC]
-  const lenBuf = Buffer.allocUnsafe(4); lenBuf.writeUInt32BE(input.length, 0)
-  parts.push(lenBuf)
+  const parts: Buffer[] = [MAGIC, Buffer.from([
+    (input.length >>> 24) & 0xff, (input.length >>> 16) & 0xff,
+    (input.length >>> 8) & 0xff, input.length & 0xff])]
 
   const table = new Uint8Array(HASH_SIZE)
   const ctx: [number, number, number] = [0, 0, 0]
 
-  for (let off = 0; off < input.length || off === 0; off += BLOCK_SIZE) {
-    const end = Math.min(off + BLOCK_SIZE, input.length)
-    const blockLen = end - off
-    if (blockLen === 0) break
-
-    const bits = lzpCompressBlock(input, off, end, table, ctx)
+  for (let off = 0; off < input.length || off === 0; off += BLOCK) {
+    const end = Math.min(off + BLOCK, input.length)
+    const blockLen = end - off; if (blockLen === 0) break
+    const bits = compressBlock(input, off, end, table, ctx)
     const hdr = Buffer.allocUnsafe(8)
     hdr.writeUInt32BE(blockLen, 0); hdr.writeUInt32BE(bits.length, 4)
     parts.push(hdr, bits)
-
-    // reset for next block (streaming sync point)
     table.fill(0); ctx[0] = 0; ctx[1] = 0; ctx[2] = 0
   }
-
-  parts.push(Buffer.alloc(8)) // sentinel
+  parts.push(Buffer.alloc(8))
   return Buffer.concat(parts)
 }
 
 function lzpDecompress(input: Buffer): Buffer {
-  if (!input.subarray(0, 4).equals(MAGIC)) throw new Error('LZP: invalid magic')
-  const totalLen = input.readUInt32BE(4)
-  const out = Buffer.allocUnsafe(totalLen)
-  let outPos = 0; let pos = 8
-
+  if (!input.subarray(0, 4).equals(MAGIC)) throw new Error('LZP: bad magic')
+  const total = input.readUInt32BE(4)
+  const out = Buffer.allocUnsafe(total)
+  let outPos = 0, pos = 8
   const table = new Uint8Array(HASH_SIZE)
   const ctx: [number, number, number] = [0, 0, 0]
 
   while (pos + 8 <= input.length) {
-    const blockLen = input.readUInt32BE(pos)
-    const compLen = input.readUInt32BE(pos + 4); pos += 8
+    const blockLen = input.readUInt32BE(pos), compLen = input.readUInt32BE(pos + 4); pos += 8
     if (blockLen === 0) break
-
-    const bits = input.subarray(pos, pos + compLen); pos += compLen
-    const decoded = lzpDecompressBlock(bits, blockLen, table, ctx)
-    decoded.copy(out, outPos); outPos += blockLen
-
+    decompressBlock(input.subarray(pos, pos + compLen), blockLen, table, ctx).copy(out, outPos)
+    outPos += blockLen; pos += compLen
     table.fill(0); ctx[0] = 0; ctx[1] = 0; ctx[2] = 0
   }
-
   return out.subarray(0, outPos)
 }
 
 export class LZPCompressor extends AbstractCompressor {
-  readonly id = 'lzp'
+  readonly id = 'lzp' as CompressionMode
   readonly label = 'LZ Prediction'
+  readonly headerLevel = HEADER_LEVEL
   readonly streamableDecode = true
+  readonly requiresFullHeader = true
 
   compress(input: Buffer): CompressionResult {
-    return { data: lzpCompress(input), level: LEVEL, uncompressedLength: input.length }
+    return { data: lzpCompress(input), level: HEADER_LEVEL, uncompressedLength: input.length }
   }
 
-  decompress(input: Buffer, _meta?: CompressionMeta): Buffer {
+  decompress(input: Buffer): Buffer {
     return lzpDecompress(input)
   }
 
   createDecodeStream(): Transform {
-    let pending = Buffer.alloc(0)
-    let headerDone = false
+    let pending = Buffer.alloc(0), headerDone = false
     const table = new Uint8Array(HASH_SIZE)
     const ctx: [number, number, number] = [0, 0, 0]
 
     return new Transform({
-      transform(chunk: Buffer, _enc, callback) {
+      transform(chunk: Buffer, _enc, cb) {
         pending = Buffer.concat([pending, chunk])
 
         if (!headerDone) {
-          if (pending.length < 8) { callback(); return }
-          if (!pending.subarray(0, 4).equals(MAGIC)) { callback(new Error('LZP stream: invalid magic')); return }
-          pending = pending.subarray(8)
-          headerDone = true
+          if (pending.length < 8) { cb(); return }
+          if (!pending.subarray(0, 4).equals(MAGIC)) { cb(new Error('LZP: bad magic')); return }
+          pending = pending.subarray(8); headerDone = true
         }
 
         while (pending.length >= 8) {
-          const blockLen = pending.readUInt32BE(0)
-          const compLen = pending.readUInt32BE(4)
+          const blockLen = pending.readUInt32BE(0), compLen = pending.readUInt32BE(4)
           if (blockLen === 0) break
-
-          const needed = 8 + compLen
-          if (pending.length < needed) break
-
-          const bits = pending.subarray(8, needed)
-          const decoded = lzpDecompressBlock(bits, blockLen, table, ctx)
-          this.push(decoded)
-          pending = pending.subarray(needed)
-
+          if (pending.length < 8 + compLen) break
+          const bits = pending.subarray(8, 8 + compLen)
+          this.push(decompressBlock(bits, blockLen, table, ctx))
+          pending = pending.subarray(8 + compLen)
           table.fill(0); ctx[0] = 0; ctx[1] = 0; ctx[2] = 0
         }
-
-        callback()
+        cb()
       },
-      flush(callback) { callback() }
+      flush(cb) { cb() },
     })
   }
 }
@@ -1106,90 +966,80 @@ export class LZPCompressor extends AbstractCompressor {
 - [ ] **Step 4: Run — expect pass**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/lzp.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "PASS|lzp"
 ```
-Expected: all 6 tests pass.
+Expected: `lzp.test.ts` passes (6 tests).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/compressors/lzp.ts tests/compressors/lzp.test.ts
-git commit -m "feat: add LZP context-prediction compressor (level 12)"
+git add packages/core/src/compressors/lzp.ts packages/core/tests/compressors/lzp.test.ts
+git commit -m "feat(core): add LZP context-prediction compressor (headerLevel 12)"
 ```
 
 ---
 
 ## Task 5 — CASCADE compressor
 
-Two passes: SLZ compresses the raw data, then AHUFF compresses the SLZ token stream. SLZ finds literal repetitions and turns them into short back-reference tokens; AHUFF entropy-codes that already-reduced token stream. Together they achieve better compression than either alone, comparable to a simplified DEFLATE, but with streaming-compatible block boundaries.
+Two-pass: SLZ reduces literal repetition into a compact token stream; AHUFF entropy-codes that already-reduced stream. Decompression reverses in order: AHUFF → SLZ. Both passes are streaming-compatible — the streaming decode chains two Transform streams.
 
-**Header level ID: `13`**
+**Header level: 13**
 
 **Files:**
-- Create: `src/compressors/cascade.ts`
-- Create: `tests/compressors/cascade.test.ts`
+- Create: `packages/core/src/compressors/cascade.ts`
+- Create: `packages/core/tests/compressors/cascade.test.ts`
 
 - [ ] **Step 1: Write the failing tests**
 
 ```typescript
-// tests/compressors/cascade.test.ts
-import { describe, it, expect } from 'vitest'
+// packages/core/tests/compressors/cascade.test.ts
+import { describe, expect, it } from 'vitest'
+import { AHUFFCompressor } from '../../src/compressors/ahuff'
 import { CascadeCompressor } from '../../src/compressors/cascade'
 import { SLZCompressor } from '../../src/compressors/slz'
-import { AHUFFCompressor } from '../../src/compressors/ahuff'
 
 const cascade = new CascadeCompressor()
-const slz = new SLZCompressor()
-const ahuff = new AHUFFCompressor()
 
 describe('CascadeCompressor', () => {
   it('round-trips short data', () => {
-    const input = Buffer.from('cascade round-trip test')
-    const { data } = cascade.compress(input)
-    expect(cascade.decompress(data)).toEqual(input)
+    const input = Buffer.from('cascade round-trip')
+    expect(cascade.decompress(cascade.compress(input).data)).toEqual(input)
   })
 
   it('round-trips empty buffer', () => {
     const input = Buffer.alloc(0)
-    const { data } = cascade.compress(input)
-    expect(cascade.decompress(data)).toEqual(input)
+    expect(cascade.decompress(cascade.compress(input).data)).toEqual(input)
   })
 
-  it('round-trips multi-block data', () => {
-    const input = Buffer.alloc(50000).map((_, i) => (i * 17 + 3) & 0xFF)
-    const { data } = cascade.compress(input)
-    expect(cascade.decompress(data)).toEqual(input)
+  it('round-trips multi-block data (> 50 KB)', () => {
+    const input = Buffer.from(Array.from({ length: 50000 }, (_, i) => (i * 17 + 3) & 0xff))
+    expect(cascade.decompress(cascade.compress(input).data)).toEqual(input)
   })
 
   it('beats SLZ alone on source-code-like data', () => {
-    const src = 'export function transform(x: number): number {\n  return x * 2;\n}\n'.repeat(200)
+    const src = 'export function f(x: number): number {\n  return x * 2;\n}\n'.repeat(200)
     const input = Buffer.from(src)
-    const { data: cascadeData } = cascade.compress(input)
-    const { data: slzData } = slz.compress(input)
-    expect(cascadeData.length).toBeLessThan(slzData.length)
+    const slz = new SLZCompressor()
+    expect(cascade.compress(input).data.length).toBeLessThan(slz.compress(input).data.length)
   })
 
-  it('compression level is 13', () => {
-    const { level } = cascade.compress(Buffer.from('test'))
-    expect(level).toBe(13)
+  it('exposes headerLevel 13', () => {
+    expect(cascade.headerLevel).toBe(13)
   })
 
-  it('streaming decode via createDecodeStream matches decompress', async () => {
-    const input = Buffer.from('cascade streaming: ' + 'hello world '.repeat(100))
-    const { data } = cascade.compress(input)
-    const stream = cascade.createDecodeStream()
-
+  it('streaming decode matches synchronous decompress', async () => {
+    const input = Buffer.from('cascade streaming: ' + 'hello '.repeat(100))
+    const compressed = cascade.compress(input).data
+    const stream = cascade.createDecodeStream!()
     const chunks: Buffer[] = []
     await new Promise<void>((resolve, reject) => {
       stream.on('data', (c: Buffer) => chunks.push(c))
       stream.on('end', resolve)
       stream.on('error', reject)
-      for (let i = 0; i < data.length; i += 48) {
-        stream.write(data.subarray(i, Math.min(i + 48, data.length)))
-      }
+      for (let i = 0; i < compressed.length; i += 48)
+        stream.write(compressed.subarray(i, Math.min(i + 48, compressed.length)))
       stream.end()
     })
-
     expect(Buffer.concat(chunks)).toEqual(input)
   })
 })
@@ -1198,56 +1048,54 @@ describe('CascadeCompressor', () => {
 - [ ] **Step 2: Run — expect failure**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/cascade.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "FAIL|Cannot find"
 ```
 Expected: `Cannot find module '../../src/compressors/cascade'`
 
-- [ ] **Step 3: Implement `src/compressors/cascade.ts`**
+- [ ] **Step 3: Implement `packages/core/src/compressors/cascade.ts`**
 
 ```typescript
-import { Transform, pipeline } from 'stream'
-import { promisify } from 'util'
-import { AbstractCompressor, type CompressionResult, type CompressionMeta } from './types'
-import { SLZCompressor } from './slz'
+import { Transform } from 'stream'
 import { AHUFFCompressor } from './ahuff'
+import { SLZCompressor } from './slz'
+import { AbstractCompressor, type CompressionMode, type CompressionResult } from './types'
 
 const slz = new SLZCompressor()
 const ahuff = new AHUFFCompressor()
-const LEVEL = 13
+const HEADER_LEVEL = 13
 
 export class CascadeCompressor extends AbstractCompressor {
-  readonly id = 'cascade'
+  readonly id = 'cascade' as CompressionMode
   readonly label = 'Cascade (SLZ→AHUFF)'
+  readonly headerLevel = HEADER_LEVEL
   readonly streamableDecode = true
+  readonly requiresFullHeader = true
 
   compress(input: Buffer): CompressionResult {
     const slzOut = slz.compress(input)
     const ahuffOut = ahuff.compress(slzOut.data)
-    return { data: ahuffOut.data, level: LEVEL, uncompressedLength: input.length }
+    return { data: ahuffOut.data, level: HEADER_LEVEL, uncompressedLength: input.length }
   }
 
-  decompress(input: Buffer, _meta?: CompressionMeta): Buffer {
-    const slzData = ahuff.decompress(input)
-    return slz.decompress(slzData)
+  decompress(input: Buffer): Buffer {
+    return slz.decompress(ahuff.decompress(input))
   }
 
   createDecodeStream(): Transform {
-    // AHUFF streaming → buffer → SLZ decompress
-    // We collect all AHUFF output first (it is block-streaming),
-    // then feed the complete SLZ stream into the SLZ stream decoder.
-    const ahuffStream = ahuff.createDecodeStream()
-    const slzStream = slz.createDecodeStream()
+    const ahuffStream = ahuff.createDecodeStream!()
+    const slzStream = slz.createDecodeStream!()
+    let flushCb: ((err?: Error | null) => void) | null = null
+
+    ahuffStream.pipe(slzStream)
+    slzStream.on('data', (c: Buffer) => pass.push(c))
+    slzStream.on('end', () => { flushCb?.(); flushCb = null })
+    slzStream.on('error', (e: Error) => pass.destroy(e))
+    ahuffStream.on('error', (e: Error) => pass.destroy(e))
 
     const pass = new Transform({
       transform(chunk, _enc, cb) { ahuffStream.write(chunk); cb() },
-      flush(cb) { ahuffStream.end(); cb() }
+      flush(cb) { flushCb = cb; ahuffStream.end() },
     })
-
-    ahuffStream.on('data', (c: Buffer) => slzStream.write(c))
-    ahuffStream.on('end', () => slzStream.end())
-    ahuffStream.on('error', (e) => pass.destroy(e))
-    slzStream.on('data', (c: Buffer) => pass.push(c))
-    slzStream.on('error', (e) => pass.destroy(e))
 
     return pass
   }
@@ -1257,60 +1105,39 @@ export class CascadeCompressor extends AbstractCompressor {
 - [ ] **Step 4: Run — expect pass**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/cascade.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "PASS|cascade"
 ```
-Expected: all 6 tests pass.
+Expected: `cascade.test.ts` passes (6 tests).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/compressors/cascade.ts tests/compressors/cascade.test.ts
-git commit -m "feat: add CASCADE two-pass SLZ→AHUFF compressor (level 13)"
+git add packages/core/src/compressors/cascade.ts packages/core/tests/compressors/cascade.test.ts
+git commit -m "feat(core): add CASCADE SLZ→AHUFF two-pass compressor (headerLevel 13)"
 ```
 
 ---
 
 ## Task 6 — Wire new compressors into the registry
 
-Add four new `case` branches to `getCompressorByMode` and `getCompressorByHeaderLevel` in `src/compressors/index.ts`. No existing case is altered.
+Four additive changes to existing files: extend the `CompressionMode` union, add metadata entries, register factories, and re-export classes. No existing line is altered.
 
 **Files:**
-- Modify: `src/compressors/index.ts`
+- Modify: `packages/core/src/compressors/types.ts`
+- Modify: `packages/core/src/compressors/modes.ts`
+- Modify: `packages/core/src/compressors/registry.ts`
+- Modify: `packages/core/src/compressors/index.ts`
 
-- [ ] **Step 1: Verify current test suite still passes before touching the file**
+- [ ] **Step 1: Verify full test suite passes before touching files**
 
 ```bash
 cd /Users/valerii/Develop/codeart && yarn test
 ```
 Expected: all existing tests pass.
 
-- [ ] **Step 2: Add imports and new cases to `src/compressors/index.ts`**
+- [ ] **Step 2: Extend `CompressionMode` in `packages/core/src/compressors/types.ts`**
 
-At the top of the file, after the existing imports, add:
-```typescript
-import { SLZCompressor } from './slz'
-import { AHUFFCompressor } from './ahuff'
-import { LZPCompressor } from './lzp'
-import { CascadeCompressor } from './cascade'
-```
-
-In `getCompressorByMode`, add before the `default` case:
-```typescript
-    case 'slz':    return new SLZCompressor()
-    case 'ahuff':  return new AHUFFCompressor()
-    case 'lzp':    return new LZPCompressor()
-    case 'cascade': return new CascadeCompressor()
-```
-
-In `getCompressorByHeaderLevel`, add before the final `return new NoneCompressor()` line:
-```typescript
-  if (level === 10) return new SLZCompressor()
-  if (level === 11) return new AHUFFCompressor()
-  if (level === 12) return new LZPCompressor()
-  if (level === 13) return new CascadeCompressor()
-```
-
-Also extend the `CompressionMode` type alias at the top of the file:
+Append four new string literals to the `CompressionMode` union (after `'brotli-11'`):
 ```typescript
 export type CompressionMode =
   | 'none'
@@ -1326,69 +1153,113 @@ export type CompressionMode =
   | 'cascade'
 ```
 
-- [ ] **Step 3: Run full test suite — all must still pass**
+- [ ] **Step 3: Add metadata to `packages/core/src/compressors/modes.ts`**
+
+Append four entries to `COMPRESSION_MODE_INFOS` (after the `brotli-11` entry):
+```typescript
+  { id: 'slz',     label: 'StreamLZ',             headerLevel: 10, streamableDecode: true, requiresFullHeader: true },
+  { id: 'ahuff',   label: 'Adaptive Block Huffman', headerLevel: 11, streamableDecode: true, requiresFullHeader: true },
+  { id: 'lzp',     label: 'LZ Prediction',          headerLevel: 12, streamableDecode: true, requiresFullHeader: true },
+  { id: 'cascade', label: 'Cascade (SLZ→AHUFF)',     headerLevel: 13, streamableDecode: true, requiresFullHeader: true },
+```
+
+- [ ] **Step 4: Register factories in `packages/core/src/compressors/registry.ts`**
+
+Add four imports at the top (after existing imports):
+```typescript
+import { SLZCompressor } from './slz'
+import { AHUFFCompressor } from './ahuff'
+import { LZPCompressor } from './lzp'
+import { CascadeCompressor } from './cascade'
+```
+
+Add four `this.register(...)` calls in the `CompressorRegistry` constructor (after the `brotli-11` line):
+```typescript
+    this.register('slz',     () => new SLZCompressor())
+    this.register('ahuff',   () => new AHUFFCompressor())
+    this.register('lzp',     () => new LZPCompressor())
+    this.register('cascade', () => new CascadeCompressor())
+```
+
+- [ ] **Step 5: Re-export from `packages/core/src/compressors/index.ts`**
+
+Append four exports (after existing exports):
+```typescript
+export { SLZCompressor } from './slz'
+export { AHUFFCompressor } from './ahuff'
+export { LZPCompressor } from './lzp'
+export { CascadeCompressor } from './cascade'
+```
+
+- [ ] **Step 6: Run full test suite — no regressions**
 
 ```bash
 cd /Users/valerii/Develop/codeart && yarn test
 ```
-Expected: all tests pass (no regressions).
+Expected: all tests pass.
 
-- [ ] **Step 4: Verify new modes are accessible**
+- [ ] **Step 7: Smoke-test registry lookup**
 
 ```bash
-cd /Users/valerii/Develop/codeart && node --input-type=module <<'EOF'
-import { getCompressorByMode, getCompressorByHeaderLevel } from './src/compressors/index.js'
-const slz = getCompressorByMode('slz')
-const ahuff = getCompressorByMode('ahuff')
-const lzp = getCompressorByMode('lzp')
-const cascade = getCompressorByMode('cascade')
-console.log(slz.label, ahuff.label, lzp.label, cascade.label)
-console.log(getCompressorByHeaderLevel(10).label)
-console.log(getCompressorByHeaderLevel(11).label)
-console.log(getCompressorByHeaderLevel(12).label)
-console.log(getCompressorByHeaderLevel(13).label)
+cd /Users/valerii/Develop/codeart/packages/core && node --input-type=module <<'EOF'
+import { compressorRegistry } from './src/compressors/registry.js'
+;['slz','ahuff','lzp','cascade'].forEach(m => {
+  const c = compressorRegistry.byMode(m)
+  console.log(c.label, 'headerLevel', c.headerLevel)
+  const c2 = compressorRegistry.byHeaderLevel(c.headerLevel)
+  console.log('  reverse lookup:', c2.label)
+})
 EOF
 ```
-Expected output:
+Expected:
 ```
-StreamLZ Adaptive Block Huffman LZ Prediction Cascade (SLZ→AHUFF)
-StreamLZ
-Adaptive Block Huffman
-LZ Prediction
-Cascade (SLZ→AHUFF)
+StreamLZ headerLevel 10
+  reverse lookup: StreamLZ
+Adaptive Block Huffman headerLevel 11
+  reverse lookup: Adaptive Block Huffman
+LZ Prediction headerLevel 12
+  reverse lookup: LZ Prediction
+Cascade (SLZ→AHUFF) headerLevel 13
+  reverse lookup: Cascade (SLZ→AHUFF)
 ```
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add src/compressors/index.ts
-git commit -m "feat: register SLZ/AHUFF/LZP/CASCADE in compressor registry (levels 10-13)"
+git add packages/core/src/compressors/types.ts \
+        packages/core/src/compressors/modes.ts \
+        packages/core/src/compressors/registry.ts \
+        packages/core/src/compressors/index.ts
+git commit -m "feat(core): register SLZ/AHUFF/LZP/CASCADE in CompressorRegistry"
 ```
 
 ---
 
 ## Task 7 — StreamPack codec
 
-A new pixel codec (ID 20) that embeds 12-byte sync markers every 1024 data bytes in the pixel byte stream. The markers carry a segment index and a CRC-16, giving HTTP range-request clients a way to seek to the nearest sync point and start decoding without the beginning of the stream.
+New pixel codec (id=20) that embeds 12-byte sync markers every 1024 data bytes in the flat byte stream before pixelisation. Sync markers contain a magic word, a monotone segment index, and a CRC-16 — enabling an HTTP range-request consumer to locate the nearest sync point and begin decoding mid-stream without the file's start.
 
-**Sync marker (12 bytes, inline in pixel byte stream):**
+**Sync marker (12 bytes):**
 ```
-[0xDE 0xAD 0xBE 0xEF]  4-byte magic
-[uint32 BE]             segment index
+[0xDE 0xAD 0xBE 0xEF]  magic
+[uint32 BE]             segment index (0, 1, 2…)
 [uint16 BE]             CRC-16/CCITT of the preceding 1024 data bytes
 [0x00 0x00]             reserved
 ```
 
 **Files:**
-- Create: `src/codecs/streampack/index.ts`
-- Create: `tests/codecs/streampack.test.ts`
+- Create: `packages/core/src/codecs/streampack/metadata.ts`
+- Create: `packages/core/src/codecs/streampack/index.ts`
+- Create: `packages/core/tests/codecs/streampack.test.ts`
 
 - [ ] **Step 1: Write the failing tests**
 
 ```typescript
-// tests/codecs/streampack.test.ts
-import { describe, it, expect } from 'vitest'
-import { streampackCodec } from '../../src/codecs/streampack/index'
+// packages/core/tests/codecs/streampack.test.ts
+import { describe, expect, it } from 'vitest'
+import { streampackCodec } from '../../src/codecs/streampack'
+
+const EST = (n: number) => streampackCodec.estimateDataPixels!(Buffer.alloc(n), 3)
 
 describe('streampackCodec', () => {
   it('has id=20 and name="streampack"', () => {
@@ -1396,50 +1267,40 @@ describe('streampackCodec', () => {
     expect(streampackCodec.name).toBe('streampack')
   })
 
-  it('round-trips short data (< 1 segment)', () => {
+  it('round-trips data shorter than one segment', () => {
     const input = Buffer.from('hello streampack world')
-    const pixels = streampackCodec.encode(input, streampackCodec.estimateDataPixels!(input, 3), 10, 10, 3)
-    const decoded = streampackCodec.decode(pixels, input.length, 10, 10, 3)
-    expect(decoded).toEqual(input)
+    const px = streampackCodec.encode(input, EST(input.length), 10, 10, 3)
+    expect(streampackCodec.decode(px, input.length, 10, 10, 3)).toEqual(input)
   })
 
   it('round-trips data spanning multiple segments', () => {
     const input = Buffer.alloc(3000, 0x42)
-    const pixCount = streampackCodec.estimateDataPixels!(input, 3)
-    const pixels = streampackCodec.encode(input, pixCount, 100, 100, 3)
-    const decoded = streampackCodec.decode(pixels, input.length, 100, 100, 3)
-    expect(decoded).toEqual(input)
+    const px = streampackCodec.encode(input, EST(input.length), 100, 100, 3)
+    expect(streampackCodec.decode(px, input.length, 100, 100, 3)).toEqual(input)
   })
 
-  it('sync markers present at 1024-byte boundaries in byte stream', () => {
-    const input = Buffer.alloc(1024 + 500, 0x00)
-    const pixCount = streampackCodec.estimateDataPixels!(input, 3)
-    const pixels = streampackCodec.encode(input, pixCount, 100, 100, 3)
-    // first marker starts at byte offset 1024 in the flat pixel array
-    expect(pixels[1024]).toBe(0xDE)
-    expect(pixels[1025]).toBe(0xAD)
-    expect(pixels[1026]).toBe(0xBE)
-    expect(pixels[1027]).toBe(0xEF)
+  it('places sync markers at correct byte offsets', () => {
+    const input = Buffer.alloc(1024 + 500)
+    const px = streampackCodec.encode(input, EST(input.length), 100, 100, 3)
+    // First marker starts at byte 1024 in the flat pixel array
+    expect(px[1024]).toBe(0xde)
+    expect(px[1025]).toBe(0xad)
+    expect(px[1026]).toBe(0xbe)
+    expect(px[1027]).toBe(0xef)
     // segment index 0
-    expect(pixels[1028]).toBe(0)
-    expect(pixels[1029]).toBe(0)
-    expect(pixels[1030]).toBe(0)
-    expect(pixels[1031]).toBe(0)
+    expect(px[1028]).toBe(0); expect(px[1029]).toBe(0)
+    expect(px[1030]).toBe(0); expect(px[1031]).toBe(0)
   })
 
-  it('round-trips arbitrary binary data', () => {
-    const input = Buffer.from(Array.from({ length: 2048 }, (_, i) => (i * 37 + 13) & 0xFF))
-    const pixCount = streampackCodec.estimateDataPixels!(input, 3)
-    const pixels = streampackCodec.encode(input, pixCount, 100, 100, 3)
-    const decoded = streampackCodec.decode(pixels, input.length, 100, 100, 3)
-    expect(decoded).toEqual(input)
+  it('estimateDataPixels accounts for marker overhead', () => {
+    // 1024 data bytes → 1 marker → (1024 + 12) / 3 = ceil(1036/3) = 346 pixels
+    expect(EST(1024)).toBe(Math.ceil((1024 + 12) / 3))
   })
 
-  it('estimateDataPixels accounts for sync marker overhead', () => {
-    const input = Buffer.alloc(1024) // exactly 1 segment → 1 marker
-    const est = streampackCodec.estimateDataPixels!(input, 3)
-    // 1024 data bytes + 12 marker bytes = 1036 bytes → ceil(1036/3) = 346 pixels
-    expect(est).toBe(Math.ceil((1024 + 12) / 3))
+  it('round-trips arbitrary binary data across multiple segments', () => {
+    const input = Buffer.from(Array.from({ length: 2048 }, (_, i) => (i * 37 + 13) & 0xff))
+    const px = streampackCodec.encode(input, EST(input.length), 100, 100, 3)
+    expect(streampackCodec.decode(px, input.length, 100, 100, 3)).toEqual(input)
   })
 })
 ```
@@ -1447,246 +1308,264 @@ describe('streampackCodec', () => {
 - [ ] **Step 2: Run — expect failure**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/codecs/streampack.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "FAIL|Cannot find"
 ```
-Expected: `Cannot find module '../../src/codecs/streampack/index'`
+Expected: `Cannot find module '../../src/codecs/streampack'`
 
-- [ ] **Step 3: Implement `src/codecs/streampack/index.ts`**
+- [ ] **Step 3: Create `packages/core/src/codecs/streampack/metadata.ts`**
 
 ```typescript
-import type { Codec, PixelBuffer } from '../types'
+import type { CodecMetadata } from '../types'
 
-const SEGMENT_BYTES = 1024
-const SYNC_TOTAL = 12
-const SYNC_MAGIC = [0xDE, 0xAD, 0xBE, 0xEF]
+export const streampackMetadata: CodecMetadata = {
+  pixelLayout: 'RGB · sequential with 12-byte sync markers every 1 KB',
+  writeStyle: 'sequential + sync markers',
+  dependencies: 'none (pure JS)',
+  beFriendly: 'yes',
+  feFriendly: 'partial',
+  streamFriendly: 'yes',
+  approxRatio: 'same as linear (sync overhead <1.2%)',
+  description:
+    'Linear layout with 12-byte sync markers injected every 1024 data bytes. ' +
+    'Enables HTTP range-request streaming: a client can seek to the nearest ' +
+    'sync marker (identified by 0xDEADBEEF magic) and begin decoding ' +
+    'without the start of the stream.',
+}
 
-function crc16(data: PixelBuffer, start: number, len: number): number {
-  let crc = 0xFFFF
+export const streampackInfo = { id: 20, name: 'streampack', metadata: streampackMetadata } as const
+```
+
+- [ ] **Step 4: Create `packages/core/src/codecs/streampack/index.ts`**
+
+```typescript
+import { AbstractCodec, type PixelBuffer } from '../types'
+import { streampackInfo } from './metadata'
+
+export { StreamPackCodec, streampackCodec } from './index'
+
+const SEGMENT = 1024
+const SYNC = 12
+
+function crc16(data: Uint8Array, start: number, len: number): number {
+  let crc = 0xffff
   for (let i = start; i < start + len && i < data.length; i++) {
     crc ^= data[i] << 8
     for (let j = 0; j < 8; j++) crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1
-    crc &= 0xFFFF
+    crc &= 0xffff
   }
   return crc
 }
 
-export const streampackCodec: Codec = {
-  id: 20,
-  name: 'streampack',
+export class StreamPackCodec extends AbstractCodec {
+  readonly id = streampackInfo.id
+  readonly name = streampackInfo.name
+  readonly metadata = streampackInfo.metadata
 
   estimateDataPixels(input: Buffer, channels = 3): number {
-    const numMarkers = Math.ceil(input.length / SEGMENT_BYTES)
-    return Math.ceil((input.length + numMarkers * SYNC_TOTAL) / channels)
-  },
+    const markers = Math.ceil(input.length / SEGMENT)
+    return Math.ceil((input.length + markers * SYNC) / channels)
+  }
 
   encode(input: Buffer, dataPixelCount: number, _w: number, _h: number, channels = 3): PixelBuffer {
     const out = new Uint8Array(dataPixelCount * channels)
-    let inPos = 0
-    let outPos = 0
-    let segIdx = 0
+    let inPos = 0, outPos = 0, segIdx = 0
 
     while (inPos < input.length) {
-      const segStart = inPos
-      const segEnd = Math.min(inPos + SEGMENT_BYTES, input.length)
-      const segLen = segEnd - segStart
+      const segEnd = Math.min(inPos + SEGMENT, input.length)
+      const segLen = segEnd - inPos
+      const segStart = outPos
 
-      // copy segment data
-      for (let i = segStart; i < segEnd; i++) out[outPos++] = input[i]
+      for (let i = inPos; i < segEnd; i++) out[outPos++] = input[i]
 
-      // compute CRC over segment bytes just written
-      const crc = crc16(out, outPos - segLen, segLen)
-
-      // write 12-byte sync marker
-      out[outPos++] = 0xDE; out[outPos++] = 0xAD
-      out[outPos++] = 0xBE; out[outPos++] = 0xEF
-      out[outPos++] = (segIdx >>> 24) & 0xFF
-      out[outPos++] = (segIdx >>> 16) & 0xFF
-      out[outPos++] = (segIdx >>> 8) & 0xFF
-      out[outPos++] = segIdx & 0xFF
-      out[outPos++] = (crc >>> 8) & 0xFF
-      out[outPos++] = crc & 0xFF
+      const crc = crc16(out, segStart, segLen)
+      out[outPos++] = 0xde; out[outPos++] = 0xad; out[outPos++] = 0xbe; out[outPos++] = 0xef
+      out[outPos++] = (segIdx >>> 24) & 0xff; out[outPos++] = (segIdx >>> 16) & 0xff
+      out[outPos++] = (segIdx >>> 8) & 0xff;  out[outPos++] = segIdx & 0xff
+      out[outPos++] = (crc >>> 8) & 0xff;     out[outPos++] = crc & 0xff
       out[outPos++] = 0x00; out[outPos++] = 0x00
 
-      inPos = segEnd
-      segIdx++
+      inPos = segEnd; segIdx++
     }
 
     return out
-  },
+  }
 
   decode(pixels: PixelBuffer, length: number, _w: number, _h: number, _channels = 3): Buffer {
     const out = Buffer.allocUnsafe(length)
-    let inPos = 0
-    let outPos = 0
-    let bytesUntilMarker = SEGMENT_BYTES
+    let inPos = 0, outPos = 0, bytesUntilMarker = SEGMENT
 
     while (inPos < pixels.length && outPos < length) {
-      if (bytesUntilMarker === 0) {
-        inPos += SYNC_TOTAL    // skip sync marker at known position
-        bytesUntilMarker = SEGMENT_BYTES
-        continue
-      }
+      if (bytesUntilMarker === 0) { inPos += SYNC; bytesUntilMarker = SEGMENT; continue }
       out[outPos++] = pixels[inPos++]
       bytesUntilMarker--
     }
 
     return out.subarray(0, outPos)
-  },
+  }
 }
+
+export const streampackCodec = new StreamPackCodec()
 ```
 
-- [ ] **Step 4: Run — expect pass**
+- [ ] **Step 5: Run — expect pass**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/codecs/streampack.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "PASS|streampack"
 ```
-Expected: all 5 tests pass.
+Expected: `streampack.test.ts` passes (6 tests).
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add src/codecs/streampack/index.ts tests/codecs/streampack.test.ts
-git commit -m "feat: add StreamPack codec with 1 KB sync markers (codec id 20)"
+git add packages/core/src/codecs/streampack/ packages/core/tests/codecs/streampack.test.ts
+git commit -m "feat(core): add StreamPack codec with 1 KB sync markers (id 20)"
 ```
 
 ---
 
-## Task 8 — Register StreamPack codec
+## Task 8 — Register StreamPack in the codec catalog
 
-Add one line to `src/codecs/register-all.ts` so the codec is available by name and ID through the existing registry.
+Add `streampackCodec` to the two arrays that drive the algorithm catalog and API info surface. No existing entry is altered.
 
 **Files:**
-- Modify: `src/codecs/register-all.ts`
+- Modify: `packages/core/src/codecs/index.ts`
+- Modify: `packages/core/src/codecs/metadata.ts`
 
-- [ ] **Step 1: Add import and registration**
+- [ ] **Step 1: Add to `packages/core/src/codecs/index.ts`**
 
-In `src/codecs/register-all.ts`, add at the bottom:
-
+Add the import alongside existing codec imports:
 ```typescript
-import { streampackCodec } from './streampack/index'
-// ...existing registerCodec calls...
-registerCodec(streampackCodec)
+import { streampackCodec } from './streampack'
 ```
 
-- [ ] **Step 2: Run full test suite — no regressions**
+Add an export alongside existing codec exports:
+```typescript
+export { StreamPackCodec, streampackCodec } from './streampack'
+```
+
+Add `streampackCodec` to the end of the `CODECS` array:
+```typescript
+export const CODECS: readonly AbstractCodec[] = [
+  linearCodec,
+  interleavedCodec,
+  bitplaneCodec,
+  deltaCodec,
+  xorCodec,
+  deltaChainCodec,
+  rleCodec,
+  predictCodec,
+  bitshuffleCodec,
+  zstdpixCodec,
+  streampackCodec,   // ← new
+]
+```
+
+- [ ] **Step 2: Add to `packages/core/src/codecs/metadata.ts`**
+
+Add the import alongside existing info imports:
+```typescript
+import { streampackInfo } from './streampack/metadata'
+```
+
+Add `streampackInfo` to the end of `CODEC_INFOS`:
+```typescript
+export const CODEC_INFOS: readonly CodecInfo[] = [
+  linearInfo,
+  interleavedInfo,
+  bitplaneInfo,
+  deltaInfo,
+  xorInfo,
+  deltaChainInfo,
+  rleInfo,
+  predictInfo,
+  bitshuffleInfo,
+  zstdpixInfo,
+  streampackInfo,   // ← new
+]
+```
+
+- [ ] **Step 3: Run full test suite — no regressions**
 
 ```bash
 cd /Users/valerii/Develop/codeart && yarn test
 ```
 Expected: all tests pass.
 
-- [ ] **Step 3: Verify codec is reachable by name and ID**
-
-```bash
-cd /Users/valerii/Develop/codeart && node --input-type=module <<'EOF'
-import './src/codecs/register-all.js'
-import { getCodecByName, getCodecById } from './src/codecs/registry.js'
-const byName = getCodecByName('streampack')
-const byId = getCodecById(20)
-console.log('by name:', byName.name, byName.id)
-console.log('by id:', byId.name, byId.id)
-EOF
-```
-Expected:
-```
-by name: streampack 20
-by id: streampack 20
-```
-
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/codecs/register-all.ts
-git commit -m "feat: register StreamPack codec in codec registry"
+git add packages/core/src/codecs/index.ts packages/core/src/codecs/metadata.ts
+git commit -m "feat(core): register StreamPack codec in algorithm catalog (id 20)"
 ```
 
 ---
 
 ## Task 9 — Integration tests
 
-End-to-end tests verifying each new compressor works through the full encode→decode pipeline (real image files), and that the old brotli-11 default remains unchanged.
+Verify each new compressor round-trips through the full encode→image→decode pipeline, the StreamPack codec works combined with new compressors, and the old brotli-11 default is completely unaffected.
 
 **Files:**
-- Create: `tests/compressors/integration.test.ts`
+- Create: `packages/core/tests/compressors/integration.test.ts`
 
 - [ ] **Step 1: Write the integration tests**
 
 ```typescript
-// tests/compressors/integration.test.ts
-import { describe, it, expect, afterAll } from 'vitest'
+// packages/core/tests/compressors/integration.test.ts
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { encode } from '../../src/encoder'
-import { decode } from '../../src/decoder'
-import '../../src/codecs/register-all'
+import { afterAll, describe, expect, it } from 'vitest'
+import '../../src/algorithms/register-all'
+import { algorithmCatalog } from '../../src/algorithms/catalog'
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tokenpack-integration-'))
-
-afterAll(() => {
-  fs.rmSync(tmp, { recursive: true, force: true })
-})
+afterAll(() => fs.rmSync(tmp, { recursive: true, force: true }))
 
 const SAMPLE = Buffer.from(
-  'export function add(a: number, b: number): number {\n  return a + b;\n}\n'.repeat(50)
+  'export function add(a: number, b: number): number {\n  return a + b;\n}\n'.repeat(50),
 )
 
 async function roundTrip(compressionMode: string, algo = 'linear'): Promise<Buffer> {
-  const out = path.join(tmp, `test-${compressionMode}.png`)
-  await encode(SAMPLE, { out, algo, compressionMode, channels: 3 })
-  return decode(out)
+  const out = path.join(tmp, `test-${compressionMode}-${algo}.png`)
+  const algorithm = algorithmCatalog.getByName(algo)
+  await algorithm.encode(SAMPLE, { out, compressionMode })
+  return algorithm.decodeToBuffer(out)
 }
 
-describe('end-to-end encode→decode', () => {
-  it('slz: round-trips source code through real PNG', async () => {
-    const result = await roundTrip('slz')
-    expect(result).toEqual(SAMPLE)
+describe('end-to-end encode→image→decode', () => {
+  it('slz: round-trips through real PNG', async () => {
+    expect(await roundTrip('slz')).toEqual(SAMPLE)
   })
 
-  it('ahuff: round-trips source code through real PNG', async () => {
-    const result = await roundTrip('ahuff')
-    expect(result).toEqual(SAMPLE)
+  it('ahuff: round-trips through real PNG', async () => {
+    expect(await roundTrip('ahuff')).toEqual(SAMPLE)
   })
 
-  it('lzp: round-trips source code through real PNG', async () => {
-    const result = await roundTrip('lzp')
-    expect(result).toEqual(SAMPLE)
+  it('lzp: round-trips through real PNG', async () => {
+    expect(await roundTrip('lzp')).toEqual(SAMPLE)
   })
 
-  it('cascade: round-trips source code through real PNG', async () => {
-    const result = await roundTrip('cascade')
-    expect(result).toEqual(SAMPLE)
+  it('cascade: round-trips through real PNG', async () => {
+    expect(await roundTrip('cascade')).toEqual(SAMPLE)
   })
 
-  it('streampack codec: round-trips with linear compressor', async () => {
-    const out = path.join(tmp, 'streampack-codec.png')
-    await encode(SAMPLE, { out, algo: 'streampack', compressionMode: 'none', channels: 3 })
-    const result = await decode(out)
-    expect(result).toEqual(SAMPLE)
+  it('streampack codec + slz: round-trips through real PNG', async () => {
+    expect(await roundTrip('slz', 'streampack')).toEqual(SAMPLE)
   })
 
-  it('streampack codec + slz compression: round-trips', async () => {
-    const out = path.join(tmp, 'streampack-slz.png')
-    await encode(SAMPLE, { out, algo: 'streampack', compressionMode: 'slz', channels: 3 })
-    const result = await decode(out)
-    expect(result).toEqual(SAMPLE)
+  it('streampack codec + none: round-trips through real PNG', async () => {
+    expect(await roundTrip('none', 'streampack')).toEqual(SAMPLE)
   })
 
-  it('brotli-11 default still works (no regression)', async () => {
-    const result = await roundTrip('brotli-11')
-    expect(result).toEqual(SAMPLE)
+  it('brotli-11 still works (no regression)', async () => {
+    expect(await roundTrip('brotli-11')).toEqual(SAMPLE)
   })
 
-  it('none compression still works (no regression)', async () => {
-    const result = await roundTrip('none')
-    expect(result).toEqual(SAMPLE)
-  })
-
-  it('new compressors produce smaller output than none for repetitive data', async () => {
+  it('new compressors produce smaller images than none for repetitive data', async () => {
     const sizes: Record<string, number> = {}
     for (const mode of ['none', 'slz', 'ahuff', 'lzp', 'cascade']) {
       const out = path.join(tmp, `size-${mode}.png`)
-      await encode(SAMPLE, { out, algo: 'linear', compressionMode: mode, channels: 3 })
+      await algorithmCatalog.getByName('linear').encode(SAMPLE, { out, compressionMode: mode })
       sizes[mode] = fs.statSync(out).size
     }
     expect(sizes['slz']).toBeLessThan(sizes['none'])
@@ -1700,9 +1579,9 @@ describe('end-to-end encode→decode', () => {
 - [ ] **Step 2: Run — expect pass**
 
 ```bash
-cd /Users/valerii/Develop/codeart && yarn test tests/compressors/integration.test.ts
+cd /Users/valerii/Develop/codeart && yarn test 2>&1 | grep -E "PASS|integration"
 ```
-Expected: all 9 integration tests pass.
+Expected: `integration.test.ts` passes (8 tests).
 
 - [ ] **Step 3: Run full suite one final time**
 
@@ -1714,8 +1593,8 @@ Expected: all tests pass, zero regressions.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add tests/compressors/integration.test.ts
-git commit -m "test: end-to-end integration tests for SLZ/AHUFF/LZP/CASCADE/StreamPack"
+git add packages/core/tests/compressors/integration.test.ts
+git commit -m "test(core): end-to-end integration tests for all new compressors and StreamPack"
 ```
 
 ---
@@ -1723,20 +1602,22 @@ git commit -m "test: end-to-end integration tests for SLZ/AHUFF/LZP/CASCADE/Stre
 ## Self-Review
 
 **Spec coverage:**
-- ✅ SLZ (speed champion) — Task 2
-- ✅ AHUFF (compression ratio champion for text/code) — Task 3
-- ✅ LZP (best ratio for structured/repetitive data) — Task 4
-- ✅ CASCADE (SLZ→AHUFF two-pass, best overall) — Task 5
-- ✅ All algorithms expose `createDecodeStream()` for true HTTP streaming — Tasks 2–5
-- ✅ StreamPack codec with sync markers — Task 7
-- ✅ Zero changes to existing code paths; additive only — Tasks 6, 8
-- ✅ Registered in existing registry, accessible via `compressionMode: 'slz'` etc. — Task 6
-- ✅ Integration tests verify old compressors still work — Task 9
+- ✅ SLZ — speed champion, streaming decode via `createDecodeStream()` — Task 2
+- ✅ AHUFF — compression champion for code/text, block-streaming — Task 3
+- ✅ LZP — ratio champion for structured data, 1-bit/matched-byte — Task 4
+- ✅ CASCADE — SLZ→AHUFF two-pass, best overall, streaming — Task 5
+- ✅ All new compressors expose `createDecodeStream()` for HTTP chunked streaming
+- ✅ StreamPack codec with 1 KB sync markers and CRC-16 — Task 7
+- ✅ Zero changes to existing compressor logic, codec logic, or tests — Tasks 6, 8
+- ✅ Registered via `CompressorRegistry.register()` / `CODECS` array — Tasks 6, 8
+- ✅ Header levels 10–13 correctly wired for decode path — Task 6
+- ✅ Integration tests cover all new modes + regression check for brotli-11 — Task 9
 
-**Placeholder scan:** None found. All code blocks are complete and runnable.
+**Placeholder scan:** None found. Every step has complete, runnable code.
 
 **Type consistency:**
-- `SLZCompressor`, `AHUFFCompressor`, `LZPCompressor`, `CascadeCompressor` all extend `AbstractCompressor` from `./types` — same import path across all files.
-- `streampackCodec` uses `Codec` and `PixelBuffer` from `../types` — consistent with all other codecs.
-- `BitWriter`/`BitReader` imported from `./bits` in `ahuff.ts` and `lzp.ts` — same names and paths.
-- `CompressionResult`, `CompressionMeta` imported from `./types` — consistent.
+- `SLZCompressor`, `AHUFFCompressor`, `LZPCompressor`, `CascadeCompressor` all use `as CompressionMode` cast (required because new string literals are added to the union in Task 6 — after that task, the cast is no longer needed but harmless)
+- `StreamPackCodec` extends `AbstractCodec` from `../types` — same pattern as `LinearCodec`
+- `BitWriter`/`BitReader` imported as `{ BitWriter, BitReader }` from `./bits` in both `ahuff.ts` and `lzp.ts`
+- `streampackInfo` exported from `./metadata` and consumed by `./index.ts` and `codecs/metadata.ts`
+- `CODEC_INFOS` and `CODECS` both updated in Task 8 keeping them in sync

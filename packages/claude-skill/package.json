@@ -1,0 +1,19 @@
+{
+  "name": "tokenpack-claude-skill",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Claude Code skill exposing virtual-mount API over TokenPack Context Packs",
+  "license": "MIT",
+  "files": [
+    "SKILL.md",
+    "README.md"
+  ],
+  "scripts": {
+    "lint": "echo 'no source files'",
+    "format": "prettier --write SKILL.md README.md"
+  },
+  "dependencies": {
+    "@tokenpack/node": "workspace:*"
+  }
+}

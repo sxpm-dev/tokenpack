@@ -1,16 +1,13 @@
 import './algorithms/register-all'
 
-import { randomUUID } from 'crypto'
 import fs from 'fs'
 import { tmpdir } from 'os'
 import path from 'path'
 
 import { algorithmCatalog } from './algorithms/catalog'
-import { compressorRegistry } from './compressors/registry'
-import { decryptData } from './crypto'
 import { pickDrawerForPixels } from './drawers'
 import type { ChunkReadResult } from './drawers/types'
-import { fecRegistry } from './fec/registry'
+import { finalizeChunks } from './finalize-chunks'
 import { isCompactToken, readCompactHeader, readHeader } from './header'
 import { surfaceRegistry } from './surfaces/registry'
 import type { SurfacePixels } from './surfaces/types'
@@ -56,35 +53,6 @@ function discoverChunks(firstPath: string, total: number): string[] {
   )
 }
 
-function finalizeChunks(chunks: ChunkReadResult[], key?: string): Buffer {
-  chunks.sort((a, b) => a.chunkIndex - b.chunkIndex)
-  if (chunks.length > 1) {
-    const sid = chunks[0].streamId
-
-    for (const c of chunks) {
-      if (c.streamId !== sid)
-        throw new Error(`Stream ID mismatch — chunks are from different tokens`)
-    }
-  }
-
-  const { compressionLevel, encrypted, fecLevel, preFecLength } = chunks[0]
-  let combined: Buffer = Buffer.concat(chunks.map(c => c.bytes))
-
-  // FEC runs first (outermost layer on encode → first to undo on decode).
-  if (fecLevel > 0) {
-    const fec = fecRegistry.byHeaderLevel(fecLevel)
-
-    combined = fec.decode(combined, preFecLength)
-  }
-
-  if (encrypted) {
-    if (!key) throw new Error('Token is encrypted — provide --key to decode')
-    combined = decryptData(combined, key)
-  }
-
-  return compressorRegistry.byHeaderLevel(compressionLevel).decompress(combined)
-}
-
 export async function decode(inputPath: string, options: DecodeOptions): Promise<void> {
   const first = await readChunkFromFile(inputPath)
   const paths = first.chunkTotal > 1 ? discoverChunks(inputPath, first.chunkTotal) : [inputPath]
@@ -97,7 +65,7 @@ export async function decode(inputPath: string, options: DecodeOptions): Promise
       ? [first, ...(await Promise.all(paths.slice(1).map(p => readChunkFromFile(p))))]
       : [first]
 
-  fs.writeFileSync(options.out, finalizeChunks(chunks, options.key))
+  fs.writeFileSync(options.out, await finalizeChunks(chunks, options.key))
 }
 
 export const decodeFile = decode
@@ -105,11 +73,11 @@ export const decodeFile = decode
 export async function decodeToBuffer(inputPath: string, key?: string): Promise<Buffer> {
   const first = await readChunkFromFile(inputPath)
 
-  if (first.chunkTotal === 1) return finalizeChunks([first], key)
+  if (first.chunkTotal === 1) return await finalizeChunks([first], key)
   const paths = discoverChunks(inputPath, first.chunkTotal)
   const rest = await Promise.all(paths.slice(1).map(p => readChunkFromFile(p)))
 
-  return finalizeChunks([first, ...rest], key)
+  return await finalizeChunks([first, ...rest], key)
 }
 
 export async function decodeFromBuffer(
@@ -120,15 +88,15 @@ export async function decodeFromBuffer(
   const resolvedExt = ext ?? '.png'
   const first = await readChunkFromBuffer(imageBuffer, resolvedExt)
 
-  if (first.chunkTotal === 1) return finalizeChunks([first], key)
-  const tmpPath = path.join(tmpdir(), `tp-dec-${randomUUID()}${resolvedExt}`)
+  if (first.chunkTotal === 1) return await finalizeChunks([first], key)
+  const tmpPath = path.join(tmpdir(), `tp-dec-${globalThis.crypto.randomUUID()}${resolvedExt}`)
 
   fs.writeFileSync(tmpPath, imageBuffer)
   try {
     const paths = discoverChunks(tmpPath, first.chunkTotal)
     const rest = await Promise.all(paths.slice(1).map(p => readChunkFromFile(p)))
 
-    return finalizeChunks([first, ...rest], key)
+    return await finalizeChunks([first, ...rest], key)
   } finally {
     try {
       fs.unlinkSync(tmpPath)

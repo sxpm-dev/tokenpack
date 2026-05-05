@@ -9,6 +9,9 @@ export class SurfaceRegistry {
   private readonly factories = new Map<SurfaceId, () => AbstractSurface>()
 
   constructor() {
+    // TODO Phase 2: AVIF and WebP surfaces relocate to `@tokenpack/node`
+    // (they pull sharp's native binary). The pluggable `register()` API below
+    // is the migration target — `@tokenpack/node` will register them at import.
     this.register('png', () => new PngSurface())
     this.register('png-stream', () => new StreamingPngSurface())
     this.register('webp', () => new WebpSurface())

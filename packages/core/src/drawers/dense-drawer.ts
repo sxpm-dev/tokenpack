@@ -1,5 +1,3 @@
-import { createHash } from 'crypto'
-
 import {
   COMPACT_HEADER_PIXELS,
   decodeEcByte,
@@ -40,8 +38,18 @@ function fileChannelsForBpp(bpp: number): 3 | 4 {
   return bpp === 4 ? 4 : 3
 }
 
-function streamId(data: Buffer): number {
-  return createHash('sha256').update(data).digest().readUInt32BE(0)
+// FNV-1a 32-bit hash. Used only as a stream identifier to verify multi-chunk
+// tokens belong together (decoder cross-checks but never recomputes), so a
+// non-cryptographic hash is sufficient and avoids a Web Crypto async cascade
+// through the encode pipeline.
+function streamId(data: Uint8Array): number {
+  let h = 0x811c9dc5
+  for (let i = 0; i < data.length; i++) {
+    h ^= data[i]
+    h = Math.imul(h, 0x01000193)
+  }
+  // Force unsigned 32-bit result so consumers reading via UInt32BE get the same value back.
+  return h >>> 0
 }
 
 function dirCode(direction: string | undefined): number {
