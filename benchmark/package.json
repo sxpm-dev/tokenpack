@@ -1,0 +1,28 @@
+{
+  "name": "tokenpack-benchmark",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Benchmark scripts and fixtures for tokenpack codecs",
+  "scripts": {
+    "generate": "tsx generate.ts",
+    "run": "tsx run.ts",
+    "run:extended": "tsx run-extended.ts",
+    "lint": "eslint *.ts",
+    "lint:fix": "eslint *.ts --fix",
+    "format": "prettier --write *.ts"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "tokenpack": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0",
+    "@types/node": "^25.6.0",
+    "eslint": "^9.39.0",
+    "prettier": "^3.8.3",
+    "tokenpack-eslint-config": "workspace:*",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.3"
+  }
+}

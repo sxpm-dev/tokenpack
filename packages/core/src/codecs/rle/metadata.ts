@@ -10,8 +10,6 @@ export const rleMetadata: CodecMetadata = {
   approxRatio: '15-18% with brotli',
   description:
     'Run-length preprocessing that stays within the encode, decode, and ratio gate with brotli.',
-  family: 'legacy',
-  familyLabel: 'Legacy',
 }
 
 export const rleInfo = { id: 9, name: 'rle', metadata: rleMetadata } as const

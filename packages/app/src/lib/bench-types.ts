@@ -1,7 +1,6 @@
 export interface ExtBenchRow {
   codecId: number
   codecName: string
-  family: 'legacy' | 'A' | 'B' | 'C'
   outerCompression: string
   channels: number
   source: string

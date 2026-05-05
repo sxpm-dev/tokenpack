@@ -10,8 +10,6 @@ export const zstdpixMetadata: CodecMetadata = {
   approxRatio: '15-19% across passing modes',
   description:
     'Node-oriented compression codec that passed the react-dom dev gate, including an uncompressed outer mode.',
-  family: 'C',
-  familyLabel: 'High-Ratio Node-Only',
   requiredChannels: 3,
 }
 

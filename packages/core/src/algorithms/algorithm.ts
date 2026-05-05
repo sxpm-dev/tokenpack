@@ -2,7 +2,6 @@ import path from 'path'
 import { PassThrough, type Readable } from 'stream'
 
 import type { AbstractCodec } from '../codecs/types'
-import type { CodecMetadata } from '../codecs/types'
 import { isStreamingCodec } from '../codecs/types'
 import { compressorRegistry } from '../compressors/registry'
 import type { AbstractCompressor } from '../compressors/types'
@@ -28,8 +27,6 @@ export interface AlgorithmInit {
   defaults?: Partial<Omit<EncodeOptions, 'algo'>>
   title?: string
   description?: string
-  family?: CodecMetadata['family']
-  familyLabel?: string
   browserFriendly?: boolean
   nodeOnly?: boolean
   options?: AlgorithmOption[]
@@ -79,8 +76,6 @@ export class Algorithm extends AbstractAlgorithm {
   readonly name: string
   readonly title: string
   readonly description: string
-  readonly family: CodecMetadata['family']
-  readonly familyLabel: string
   readonly codec: AbstractCodec
   readonly compressor: AbstractCompressor
   readonly drawer: AbstractDrawer
@@ -115,8 +110,6 @@ export class Algorithm extends AbstractAlgorithm {
 
     this.title = init.title ?? meta?.description?.split('.')[0] ?? this.name
     this.description = init.description ?? meta?.description ?? `${init.codec.name} algorithm`
-    this.family = init.family ?? meta?.family ?? 'legacy'
-    this.familyLabel = init.familyLabel ?? meta?.familyLabel ?? 'Legacy'
     this.options = init.options ?? DEFAULT_OPTIONS
     this.defaults = init.defaults ?? {}
     this.validateCompatibility()
@@ -231,8 +224,6 @@ export class Algorithm extends AbstractAlgorithm {
       id: this.id,
       name: this.name,
       title: this.title,
-      family: this.family,
-      familyLabel: this.familyLabel,
       description: this.description,
       composition: `${this.codec.name} + ${this.compressor.id} + ${this.drawer.id} + ${this.surface.id}`,
       pixelLayout: meta?.pixelLayout ?? 'RGB · 3 bytes/px',

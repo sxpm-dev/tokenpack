@@ -5,7 +5,8 @@
   "type": "module",
   "packageManager": "yarn@4.3.1",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "benchmark"
   ],
   "scripts": {
     "lint": "yarn workspaces foreach -A --exclude codeart-monorepo run lint",
@@ -14,8 +15,8 @@
     "test": "yarn workspace tokenpack test",
     "test:watch": "yarn workspace tokenpack test:watch",
     "tokenpack": "yarn workspace tokenpack tokenpack",
-    "benchmark:generate": "yarn workspace tokenpack benchmark:generate",
-    "benchmark:run": "yarn workspace tokenpack benchmark:run",
+    "benchmark:generate": "yarn workspace tokenpack-benchmark generate",
+    "benchmark:run:extended": "yarn workspace tokenpack-benchmark run:extended",
     "app": "yarn workspace tokenpack-app dev",
     "app:build": "yarn workspace tokenpack-app build",
     "start": "yarn workspace tokenpack-app start"

@@ -15,10 +15,13 @@ node_modules
 **/.next
 **/dist
 **/tsconfig.tsbuildinfo
-benchmark/encode-times.json
-benchmark/results-extended.json
-benchmark/results.json
-benchmark/archive-times.json
-benchmark/tokens/
-benchmark/archives/
 
+# Benchmark generated tokens (large)
+benchmark/tokens/
+
+# encode-times.json is an intermediate (consumed only by run-extended.ts, not the dashboard)
+packages/app/benchmark-results/encode-times.json
+
+# results.json, results-extended.json, archive-times.json under
+# packages/app/benchmark-results/ ARE committed so they ship to Vercel.
+# To reset: delete and re-run `yarn benchmark:run`.

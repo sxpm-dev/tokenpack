@@ -9,8 +9,6 @@ export const xorMetadata: CodecMetadata = {
   streamFriendly: 'yes',
   approxRatio: '15-18% with deflate/brotli',
   description: 'Stores XOR deltas between neighboring bytes for fast reversible preprocessing.',
-  family: 'legacy',
-  familyLabel: 'Legacy',
 }
 
 export const xorInfo = { id: 6, name: 'xor', metadata: xorMetadata } as const

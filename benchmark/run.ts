@@ -7,20 +7,21 @@
  * Network: throttled local HTTP server simulating 4 conditions
  */
 
-import '../src/algorithms/register-all'
+import 'tokenpack/algorithms/register-all'
 
 import AdmZip from 'adm-zip'
 import fs from 'fs'
 import http from 'http'
 import path from 'path'
+import { decodeFromBuffer } from 'tokenpack/decoder'
+import { createTokenDecodeStream } from 'tokenpack/stream-decoder'
 import zlib from 'zlib'
 
-import { decodeFromBuffer } from '../src/decoder'
-import { createTokenDecodeStream } from '../src/stream-decoder'
+const HERE = import.meta.dirname
+const TOKENS_DIR = path.join(HERE, 'tokens')
+const RESULTS_DIR = path.join(HERE, '..', 'packages', 'app', 'benchmark-results')
 
-const ROOT = path.join(import.meta.dirname, '..', '..', '..')
-const TOKENS_DIR = path.join(ROOT, 'benchmark/tokens')
-const ARCHIVES_DIR = path.join(ROOT, 'benchmark/archives')
+fs.mkdirSync(RESULTS_DIR, { recursive: true })
 const RUNS = 3
 const COL = 14 // summary table column width
 
@@ -37,7 +38,7 @@ const SOURCES = [
   'react-dom-client.development',
   'react-dom-client.production',
   'screenshot',
-  'fs-src-tests-docs',
+  'fs-app-core',
 ]
 
 // ── Throttled HTTP server ─────────────────────────────────────────────────
@@ -219,8 +220,7 @@ type Scenario = { name: string; file: string; run: (url: string) => Promise<RunR
 
 function getScenarios(source: string): Scenario[] {
   const brExt = source.startsWith('fs-') ? '.tar.br' : '.br'
-
-  return [
+  const scenarios: Scenario[] = [
     {
       name: 'max-webp3',
       file: path.join(TOKENS_DIR, `max-webp3__${source}.webp`),
@@ -256,11 +256,13 @@ function getScenarios(source: string): Scenario[] {
       file: path.join(TOKENS_DIR, `stream-def4__${source}.png`),
       run: runTokenStream,
     },
-    { name: 'zip', file: path.join(ARCHIVES_DIR, `zip__${source}.zip`), run: runZip },
-    { name: 'tar.gz', file: path.join(ARCHIVES_DIR, `targz__${source}.tar.gz`), run: runTarGz },
-    { name: 'brotli-11', file: path.join(ARCHIVES_DIR, `br11__${source}${brExt}`), run: runBrotli },
-    { name: 'brotli-6', file: path.join(ARCHIVES_DIR, `br6__${source}${brExt}`), run: runBrotli },
-  ].filter(s => fs.existsSync(s.file))
+    { name: 'zip', file: path.join(TOKENS_DIR, `zip__${source}.zip`), run: runZip },
+    { name: 'tar.gz', file: path.join(TOKENS_DIR, `targz__${source}.tar.gz`), run: runTarGz },
+    { name: 'brotli-11', file: path.join(TOKENS_DIR, `br11__${source}${brExt}`), run: runBrotli },
+    { name: 'brotli-6', file: path.join(TOKENS_DIR, `br6__${source}${brExt}`), run: runBrotli },
+  ]
+
+  return scenarios.filter(s => fs.existsSync(s.file))
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────
@@ -396,7 +398,7 @@ async function main() {
     console.log()
   }
 
-  const outPath = path.join(ROOT, 'benchmark', 'results.json')
+  const outPath = path.join(RESULTS_DIR, 'results.json')
 
   fs.writeFileSync(outPath, JSON.stringify(allResults, null, 2))
   console.log(`Results saved → ${outPath}`)

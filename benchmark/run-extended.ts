@@ -5,27 +5,28 @@
  * Requires: yarn tsx benchmark/generate.ts  (generates token files + encode-times.json)
  *
  * Outputs:
- *   benchmark/results-extended.json  — per-codec rows  (feeds /benchmark-extended + /perf)
- *   benchmark/results.json           — network simulation rows  (feeds /benchmark)
+ *   packages/app/benchmark-results/results-extended.json  — per-codec rows
+ *   packages/app/benchmark-results/results.json           — network simulation rows
  */
 
-import '../src/algorithms/register-all'
+import 'tokenpack/algorithms/register-all'
 
 import AdmZip from 'adm-zip'
 import fs from 'fs'
 import http from 'http'
 import path from 'path'
+import { getAlgorithmByName } from 'tokenpack/algorithms/registry'
+import { isStreamingCodec } from 'tokenpack/codecs/types'
+import { decodeFromBuffer } from 'tokenpack/decoder'
+import { createTokenDecodeStream } from 'tokenpack/stream-decoder'
 import zlib from 'zlib'
 
-import { getAlgorithmByName } from '../src/algorithms/registry'
-import { isStreamingCodec } from '../src/codecs/types'
-import { decodeFromBuffer } from '../src/decoder'
-import { createTokenDecodeStream } from '../src/stream-decoder'
+const HERE = import.meta.dirname
+const TOKENS_DIR = path.join(HERE, 'tokens')
+const RESULTS_DIR = path.join(HERE, '..', 'packages', 'app', 'benchmark-results')
+const ENCODE_TIMES = path.join(RESULTS_DIR, 'encode-times.json')
 
-const ROOT = path.join(import.meta.dirname, '..', '..', '..')
-const TOKENS_DIR = path.join(ROOT, 'benchmark', 'tokens')
-const ARCHIVES_DIR = path.join(ROOT, 'benchmark', 'archives')
-const ENCODE_TIMES = path.join(ROOT, 'benchmark', 'encode-times.json')
+fs.mkdirSync(RESULTS_DIR, { recursive: true })
 
 const BROWSER_SAFE_IDS = new Set([0, 2, 4, 5, 6, 8, 9, 10, 15])
 
@@ -46,20 +47,13 @@ function withTimeout<T>(ms: number, promise: Promise<T>): Promise<T> {
 }
 const fmtMs = (ms: number) =>
   ms < 1 ? `${ms.toFixed(2)}ms` : ms < 1000 ? `${ms.toFixed(1)}ms` : `${(ms / 1000).toFixed(2)}s`
+
 const fmtBytes = (b: number) =>
   b < 1024
     ? `${b}B`
     : b < 1024 * 1024
       ? `${(b / 1024).toFixed(1)}KB`
       : `${(b / 1024 / 1024).toFixed(2)}MB`
-
-function getFamily(codecId: number): 'legacy' | 'A' | 'B' | 'C' {
-  if (codecId <= 11) return 'legacy'
-  if (codecId <= 15) return 'A'
-  if (codecId <= 20) return 'B'
-
-  return 'C'
-}
 
 // ── Source name mapping ───────────────────────────────────────────────────
 
@@ -69,7 +63,7 @@ const SOURCE_LABELS: Record<string, string> = {
   'react-dom-client.development': 'react-dom-dev',
   'react-dom-client.production': 'react-dom-prod',
   screenshot: 'screenshot',
-  'fs-src-tests-docs': 'fs-src-tests-docs',
+  'fs-app-core': 'fs-app-core',
 }
 
 // ── Section 1: Codec perf (results-extended.json) ────────────────────────
@@ -77,7 +71,6 @@ const SOURCE_LABELS: Record<string, string> = {
 export interface ExtBenchRow {
   codecId: number
   codecName: string
-  family: 'legacy' | 'A' | 'B' | 'C'
   outerCompression: string
   channels: number
   source: string
@@ -138,7 +131,7 @@ async function runCodecPerf(): Promise<void> {
 
       process.stdout.write(`  ${label.padEnd(46)}`)
 
-      const tokenPath = path.join(ROOT, entry.tokenFile)
+      const tokenPath = path.join(HERE, entry.tokenFile)
       const algorithm = getAlgorithmByName(entry.codec)
       const codec = algorithm.codec
 
@@ -148,7 +141,6 @@ async function runCodecPerf(): Promise<void> {
         row = {
           codecId: codec?.id ?? -1,
           codecName: entry.codec,
-          family: getFamily(codec?.id ?? 99),
           outerCompression: entry.compression,
           channels: entry.channels,
           source: SOURCE_LABELS[sourceName] ?? sourceName,
@@ -186,7 +178,6 @@ async function runCodecPerf(): Promise<void> {
         row = {
           codecId: codec?.id ?? -1,
           codecName: entry.codec,
-          family: getFamily(codec?.id ?? 99),
           outerCompression: entry.compression,
           channels: entry.channels,
           source: SOURCE_LABELS[sourceName] ?? sourceName,
@@ -209,7 +200,6 @@ async function runCodecPerf(): Promise<void> {
         row = {
           codecId: codec?.id ?? -1,
           codecName: entry.codec,
-          family: getFamily(codec?.id ?? 99),
           outerCompression: entry.compression,
           channels: entry.channels,
           source: SOURCE_LABELS[sourceName] ?? sourceName,
@@ -235,7 +225,7 @@ async function runCodecPerf(): Promise<void> {
     console.log()
   }
 
-  const outPath = path.join(ROOT, 'benchmark', 'results-extended.json')
+  const outPath = path.join(RESULTS_DIR, 'results-extended.json')
 
   fs.writeFileSync(outPath, JSON.stringify(rows, null, 2))
   console.log(`Codec perf saved → ${outPath}  (${rows.length} rows)`)
@@ -254,7 +244,7 @@ const NET_SOURCES = [
   'react-dom-client.development',
   'react-dom-client.production',
   'screenshot',
-  'fs-src-tests-docs',
+  'fs-app-core',
 ]
 
 const RUNS = 3
@@ -399,8 +389,7 @@ type NetScenario = { name: string; file: string; run: (url: string) => Promise<N
 
 function getNetScenarios(source: string): NetScenario[] {
   const brExt = source.startsWith('fs-') ? '.tar.br' : '.br'
-
-  return [
+  const scenarios: NetScenario[] = [
     {
       name: 'max-webp3',
       file: path.join(TOKENS_DIR, `max-webp3__${source}.webp`),
@@ -441,7 +430,7 @@ function getNetScenarios(source: string): NetScenario[] {
     },
     {
       name: 'zip',
-      file: path.join(ARCHIVES_DIR, `zip__${source}.zip`),
+      file: path.join(TOKENS_DIR, `zip__${source}.zip`),
       run: u =>
         runBatchDecode(u, buf => {
           const z = new AdmZip(buf)
@@ -454,20 +443,22 @@ function getNetScenarios(source: string): NetScenario[] {
     },
     {
       name: 'tar.gz',
-      file: path.join(ARCHIVES_DIR, `targz__${source}.tar.gz`),
+      file: path.join(TOKENS_DIR, `targz__${source}.tar.gz`),
       run: u => runBatchDecode(u, buf => zlib.gunzipSync(buf).length),
     },
     {
       name: 'brotli-11',
-      file: path.join(ARCHIVES_DIR, `br11__${source}${brExt}`),
+      file: path.join(TOKENS_DIR, `br11__${source}${brExt}`),
       run: u => runBatchDecode(u, buf => zlib.brotliDecompressSync(buf).length),
     },
     {
       name: 'brotli-6',
-      file: path.join(ARCHIVES_DIR, `br6__${source}${brExt}`),
+      file: path.join(TOKENS_DIR, `br6__${source}${brExt}`),
       run: u => runBatchDecode(u, buf => zlib.brotliDecompressSync(buf).length),
     },
-  ].filter(s => fs.existsSync(s.file))
+  ]
+
+  return scenarios.filter(s => fs.existsSync(s.file))
 }
 
 async function runNetworkSim(): Promise<void> {
@@ -550,7 +541,7 @@ async function runNetworkSim(): Promise<void> {
   }
 
   if (allResults.length) {
-    const outPath = path.join(ROOT, 'benchmark', 'results.json')
+    const outPath = path.join(RESULTS_DIR, 'results.json')
 
     fs.writeFileSync(outPath, JSON.stringify(allResults, null, 2))
     console.log(`\nNetwork results saved → ${outPath}  (${allResults.length} rows)`)

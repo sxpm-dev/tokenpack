@@ -6,6 +6,7 @@ import { CaretUpIcon } from '@phosphor-icons/react'
 import { BenchmarkFilters } from './components/BenchmarkFilters'
 import { BestComparison } from './components/BestComparison'
 import { BreakdownChart } from './components/BreakdownChart'
+import { Legend } from './components/Legend'
 import { RawDataTable } from './components/RawDataTable'
 import { SectionTitle } from './components/SectionTitle'
 import { SummaryTable } from './components/SummaryTable'
@@ -67,6 +68,8 @@ export default function BenchmarkPage() {
         onSourceChange={setSource}
         availableSources={allSources}
       />
+
+      <Legend />
 
       <SectionTitle>{condLabel} · {srcLabel}</SectionTitle>
       <SummaryTable data={data} condition={condition} source={source} />

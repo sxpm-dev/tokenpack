@@ -18,18 +18,6 @@ export const fmtArchiveMs = (ms: number): string =>
 export const fmtArchiveBytes = (b: number): string =>
   b < 1024 * 1024 ? `${(b / 1024).toFixed(0)}KB` : `${(b / 1024 / 1024).toFixed(2)}MB`
 
-export function getFamily(id: number): 'legacy' | 'A' | 'B' | 'C' {
-  if (id <= 11) return 'legacy'
-  if (id <= 15) return 'A'
-  if (id <= 20) return 'B'
-  return 'C'
-}
-
-export function getFamilyLabel(id: number): string {
-  const f = getFamily(id)
-  return f === 'legacy' ? 'Legacy' : `Family ${f}`
-}
-
 function getSortValue(row: ExtBenchRow, key: SortKey): number | string {
   if (key === 'roundTrip') return row.roundTripMs
   const v = row[key as keyof ExtBenchRow]

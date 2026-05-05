@@ -10,8 +10,6 @@ export const bitplaneMetadata: CodecMetadata = {
   approxRatio: '15-18% with deflate/brotli',
   description:
     'Writes bytes by bit significance to expose compressible planes to the outer compressor.',
-  family: 'legacy',
-  familyLabel: 'Legacy',
 }
 
 export const bitplaneInfo = { id: 4, name: 'bitplane', metadata: bitplaneMetadata } as const

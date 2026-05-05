@@ -10,8 +10,6 @@ export const linearMetadata: CodecMetadata = {
   approxRatio: '15-18% with deflate/brotli',
   description:
     'Direct byte-to-pixel copy. Baseline layout with strong results once paired with outer compression.',
-  family: 'legacy',
-  familyLabel: 'Legacy',
 }
 
 export const linearInfo = { id: 0, name: 'linear', metadata: linearMetadata } as const

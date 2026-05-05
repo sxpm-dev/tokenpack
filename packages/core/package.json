@@ -47,14 +47,12 @@
   },
   "bin": "./src/cli.ts",
   "scripts": {
-    "lint": "eslint src tests benchmark",
-    "lint:fix": "eslint src tests benchmark --fix",
-    "format": "prettier --write src tests benchmark",
+    "lint": "eslint src tests",
+    "lint:fix": "eslint src tests --fix",
+    "format": "prettier --write src tests",
     "test": "vitest run",
     "test:watch": "vitest",
-    "tokenpack": "tsx src/cli.ts",
-    "benchmark:generate": "tsx benchmark/generate.ts",
-    "benchmark:run": "tsx benchmark/run-extended.ts"
+    "tokenpack": "tsx src/cli.ts"
   },
   "dependencies": {
     "adm-zip": "^0.5.17",
@@ -63,22 +61,12 @@
     "sharp": "^0.34.2"
   },
   "devDependencies": {
-    "@eslint/compat": "^2.0.5",
-    "@eslint/eslintrc": "^3.3.5",
-    "@eslint/js": "^9.39.0",
     "@types/adm-zip": "^0",
     "@types/node": "^25.6.0",
     "@types/pngjs": "^6.0.5",
-    "@typescript-eslint/eslint-plugin": "^8.59.1",
-    "@typescript-eslint/parser": "^8.59.1",
     "eslint": "^9.39.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-prettier": "^5.5.5",
-    "eslint-plugin-simple-import-sort": "^13.0.0",
-    "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^17.6.0",
     "prettier": "^3.8.3",
+    "tokenpack-eslint-config": "workspace:*",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"

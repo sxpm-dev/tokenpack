@@ -3,34 +3,37 @@
  * Run: yarn tsx benchmark/generate.ts
  *
  * Outputs:
- *   benchmark/tokens/   max__*.webp, stream-png__*.png  (network benchmark)
- *   benchmark/tokens/   ext-<codec>-<compression>-c<ch>__<source>.png  (extended benchmark)
- *   benchmark/archives/ zip__*, targz__*, br11__*, br6__*
- *   benchmark/encode-times.json  (encode timings for run-extended.ts)
+ *   benchmark/tokens/   max__*.webp, stream-png__*.png       (network benchmark)
+ *   benchmark/tokens/   ext-<codec>-<compression>-c<ch>__*   (extended benchmark)
+ *   benchmark/tokens/   zip__*, targz__*, br11__*, br6__*    (archive comparisons)
+ *   packages/app/benchmark-results/encode-times.json   (consumed by run-extended.ts)
+ *   packages/app/benchmark-results/archive-times.json
  */
 
-import '../src/algorithms/register-all'
+import 'tokenpack/algorithms/register-all'
 
 import AdmZip from 'adm-zip'
 import fs from 'fs'
 import path from 'path'
+import { ALGORITHM_INFOS } from 'tokenpack/algorithms/catalog-info'
+import { getAlgorithmByName } from 'tokenpack/algorithms/registry'
+import { packDirs } from 'tokenpack/archive'
+import { encodeToBuffer } from 'tokenpack/encoder'
 import zlib from 'zlib'
 
-import { ALGORITHM_INFOS } from '../src/algorithms/catalog-info'
-import { getAlgorithmByName } from '../src/algorithms/registry'
-import { packDirs } from '../src/archive'
-import { encodeToBuffer } from '../src/encoder'
-
-const ROOT = path.join(import.meta.dirname, '..', '..', '..')
-const SOURCES = path.join(ROOT, 'benchmark/sources')
-const TOKENS = path.join(ROOT, 'benchmark/tokens')
-const ARCHIVES = path.join(ROOT, 'benchmark/archives')
+const HERE = import.meta.dirname
+const REPO_ROOT = path.join(HERE, '..')
+const SOURCES = path.join(HERE, 'sources')
+const TOKENS = path.join(HERE, 'tokens')
+const RESULTS_DIR = path.join(REPO_ROOT, 'packages', 'app', 'benchmark-results')
 
 fs.mkdirSync(TOKENS, { recursive: true })
-fs.mkdirSync(ARCHIVES, { recursive: true })
+fs.mkdirSync(RESULTS_DIR, { recursive: true })
 
 const LABEL_W = 38
 const SIZE_W = 8
+
+const now = () => performance.now()
 
 const fmtBytes = (b: number) =>
   b < 1024
@@ -206,7 +209,7 @@ async function generateFromBuffer(
 
       for (const e of z.getEntries()) if (!e.isDirectory) e.getData()
     },
-    path.join(ARCHIVES, `zip__${name}.zip`),
+    path.join(TOKENS, `zip__${name}.zip`),
   )
 
   // tar.gz
@@ -214,7 +217,7 @@ async function generateFromBuffer(
     'tar.gz',
     () => zlib.gzipSync(src, { level: 6 }),
     buf => zlib.gunzipSync(buf),
-    path.join(ARCHIVES, `targz__${name}.tar.gz`),
+    path.join(TOKENS, `targz__${name}.tar.gz`),
   )
 
   // brotli-11
@@ -222,7 +225,7 @@ async function generateFromBuffer(
     'brotli-11',
     () => zlib.brotliCompressSync(src, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }),
     buf => zlib.brotliDecompressSync(buf),
-    path.join(ARCHIVES, `br11__${name}${brExt}`),
+    path.join(TOKENS, `br11__${name}${brExt}`),
   )
 
   // brotli-6
@@ -230,7 +233,7 @@ async function generateFromBuffer(
     'brotli-6',
     () => zlib.brotliCompressSync(src, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 6 } }),
     buf => zlib.brotliDecompressSync(buf),
-    path.join(ARCHIVES, `br6__${name}${brExt}`),
+    path.join(TOKENS, `br6__${name}${brExt}`),
   )
 
   return archiveTimes
@@ -263,24 +266,27 @@ async function main() {
     allArchiveTimes.push(...(await generateFromBuffer(name, src, '.br')))
   }
 
-  const fsDirs = ['src', 'tests', 'docs'].map(d => path.join(ROOT, d)).filter(d => fs.existsSync(d))
+  const fsDirs = [
+    path.join(REPO_ROOT, 'packages/app/src'),
+    path.join(REPO_ROOT, 'packages/core/src'),
+  ].filter(d => fs.existsSync(d))
 
   if (fsDirs.length) {
-    const name = 'fs-src-tests-docs'
-    const cart = packDirs(fsDirs, [], ROOT)
+    const name = 'fs-app-core'
+    const cart = packDirs(fsDirs, [], REPO_ROOT)
 
     allSources.push({ name, buf: cart })
     console.log(
-      `\n[${name}]  ${fmtBytes(cart.length)} (packed: ${fsDirs.map(d => path.basename(d)).join(' + ')})`,
+      `\n[${name}]  ${fmtBytes(cart.length)} (packed: packages/{app,core}/src)`,
     )
     allArchiveTimes.push(...(await generateFromBuffer(name, cart, '.tar.br')))
   } else {
-    console.log('\n[fs-src-tests-docs] SKIP — no src/tests/docs dirs found')
+    console.log('\n[fs-app-core] SKIP — no app/core src dirs found')
   }
 
   // ── Extended tokens (all codecs × all compression modes) ────────────────
 
-  const COMPRESSION_MODES = ['none', 'deflate-1', 'deflate-6', 'brotli-6'] as const
+  const COMPRESSION_MODES = ['none', 'deflate-1', 'deflate-6', 'brotli-6', 'brotli-11'] as const
 
   type CompressionMode = (typeof COMPRESSION_MODES)[number]
 
@@ -295,7 +301,6 @@ async function main() {
     tokenFile: string // relative path under benchmark/
   }
 
-  const now = () => performance.now()
   const encodeTimes: EncodeTimeEntry[] = []
   const algorithms = ALGORITHM_INFOS.map(entry => getAlgorithmByName(entry.name))
 
@@ -349,7 +354,7 @@ async function main() {
             encodeMs: Math.round(encodeMs * 10) / 10,
             tokenBytes,
             originalBytes: src.length,
-            tokenFile: path.join('benchmark', 'tokens', tokenFile),
+            tokenFile: path.join('tokens', tokenFile),
           })
 
           const ratio = ((1 - tokenBytes / src.length) * 100).toFixed(1)
@@ -362,7 +367,7 @@ async function main() {
 
           encodeTimes.push({
             source: sourceName,
-            codec: codec.name,
+            codec: algorithm.name,
             compression,
             channels,
             encodeMs: 0,
@@ -377,12 +382,12 @@ async function main() {
     console.log()
   }
 
-  const encodeTimesPath = path.join(ROOT, 'benchmark', 'encode-times.json')
+  const encodeTimesPath = path.join(RESULTS_DIR, 'encode-times.json')
 
   fs.writeFileSync(encodeTimesPath, JSON.stringify(encodeTimes, null, 2))
   console.log(`Encode times saved → ${encodeTimesPath}  (${encodeTimes.length} entries)`)
 
-  const archiveTimesPath = path.join(ROOT, 'benchmark', 'archive-times.json')
+  const archiveTimesPath = path.join(RESULTS_DIR, 'archive-times.json')
 
   fs.writeFileSync(archiveTimesPath, JSON.stringify(allArchiveTimes, null, 2))
   console.log(`Archive times saved → ${archiveTimesPath}  (${allArchiveTimes.length} entries)`)

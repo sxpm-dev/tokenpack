@@ -11,8 +11,6 @@ export interface CodecMetadata {
   streamFriendly: Friendliness
   approxRatio: string
   description: string
-  family: 'legacy' | 'A' | 'B' | 'C'
-  familyLabel: string
   requiredChannels?: 1 | 2 | 3 | 4
 }
 

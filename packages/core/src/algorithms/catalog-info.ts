@@ -9,8 +9,6 @@ import type { ImageFormat } from '../types'
 export interface AlgorithmInfo {
   id: number
   name: string
-  family: CodecMetadata['family']
-  familyLabel: string
   description: string
   pixelLayout: string
   writeStyle: string
@@ -36,8 +34,6 @@ export function buildAlgorithmInfo(info: CodecInfo): AlgorithmInfo {
   return {
     id: info.id,
     name: info.name,
-    family: info.metadata.family,
-    familyLabel: info.metadata.familyLabel,
     description: info.metadata.description,
     pixelLayout: info.metadata.pixelLayout,
     writeStyle: info.metadata.writeStyle,

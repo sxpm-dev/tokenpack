@@ -18,6 +18,7 @@ function packRgba(target: Buffer, pixels: Uint8Array, n: number, fileChannels: 3
       target[i * 4 + 2] = pixels[i * 4 + 2]
       target[i * 4 + 3] = pixels[i * 4 + 3]
     }
+
     return
   }
   for (let i = 0; i < n; i++) {
@@ -32,9 +33,12 @@ function packRgba(target: Buffer, pixels: Uint8Array, n: number, fileChannels: 3
 function detectFileChannels(d: Buffer, colorType: number): 3 | 4 {
   if (colorType !== 6) return 3
   const isFull4 = d[0] === 0xc0 && d[1] === 0xde && d[2] === 0xae && d[3] === 0x54
+
   if (isFull4) return 4
   const isCompact = d[0] === 0xc1
+
   if (isCompact && ((d[2] >> 2) & 0b11) === 3) return 4
+
   return 3
 }
 
@@ -44,21 +48,25 @@ function parsePngjs(png: ReturnType<typeof PNG.sync.read>): SurfacePixels {
 
   if (fileChannels === 4) {
     const out4 = new Uint8Array(n * 4)
+
     for (let i = 0; i < n; i++) {
       out4[i * 4] = png.data[i * 4]
       out4[i * 4 + 1] = png.data[i * 4 + 1]
       out4[i * 4 + 2] = png.data[i * 4 + 2]
       out4[i * 4 + 3] = png.data[i * 4 + 3]
     }
+
     return { pixels: out4, width: png.width, height: png.height, fileChannels: 4 }
   }
 
   const out3 = new Uint8Array(n * 3)
+
   for (let i = 0; i < n; i++) {
     out3[i * 3] = png.data[i * 4]
     out3[i * 3 + 1] = png.data[i * 4 + 1]
     out3[i * 3 + 2] = png.data[i * 4 + 2]
   }
+
   return { pixels: out3, width: png.width, height: png.height, fileChannels: 3 }
 }
 
@@ -83,6 +91,7 @@ export class PngSurface extends ImageSurface {
   static encodeSync(filePath: string, image: SurfacePixels): void {
     const { pixels, width, height, fileChannels } = image
     const png = new PNG({ width, height, filterType: -1 })
+
     png.data = Buffer.alloc(width * height * 4)
     packRgba(png.data, pixels, width * height, fileChannels)
     fs.writeFileSync(

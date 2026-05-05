@@ -10,8 +10,6 @@ export const deltaChainMetadata: CodecMetadata = {
   approxRatio: '15-18% with deflate/brotli',
   description:
     'Chains deltas across the byte stream and produced the fastest passing decode in the baseline run.',
-  family: 'legacy',
-  familyLabel: 'Legacy',
 }
 
 export const deltaChainInfo = { id: 8, name: 'delta-chain', metadata: deltaChainMetadata } as const

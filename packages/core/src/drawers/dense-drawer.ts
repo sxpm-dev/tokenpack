@@ -9,8 +9,8 @@ import {
   writeCompactHeader,
   writeHeader,
 } from '../header'
-import { fromFileChannels, toFileChannels } from '../surfaces/channels'
 import { applyStyle, reverseStyle } from '../style'
+import { fromFileChannels, toFileChannels } from '../surfaces/channels'
 import type { SurfacePixels } from '../surfaces/types'
 import type { HeaderData } from '../types'
 import {

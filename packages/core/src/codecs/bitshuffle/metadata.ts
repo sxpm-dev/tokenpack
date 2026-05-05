@@ -10,8 +10,6 @@ export const bitshuffleMetadata: CodecMetadata = {
   approxRatio: '15-18% with deflate/brotli',
   description:
     'Shuffles bit positions across bytes so general-purpose compressors see longer repeated patterns.',
-  family: 'A',
-  familyLabel: 'Pixel Packers',
   requiredChannels: 3,
 }
 

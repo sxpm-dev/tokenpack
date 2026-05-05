@@ -3,6 +3,11 @@ import path from 'path'
 
 const config: NextConfig = {
   outputFileTracingRoot: path.join(__dirname, '..', '..'),
+  outputFileTracingIncludes: {
+    '/api/benchmark': ['./benchmark-results/**'],
+    '/api/benchmark/extended': ['./benchmark-results/**'],
+    '/api/benchmark/archives': ['./benchmark-results/**'],
+  },
   transpilePackages: ['tokenpack'],
   serverExternalPackages: ['sharp'],
   experimental: {

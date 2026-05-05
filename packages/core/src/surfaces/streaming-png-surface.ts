@@ -32,6 +32,7 @@ export class StreamingPngSurface extends ImageSurface {
       deflateLevel: 0,
       deflateChunkSize: 1024,
     })
+
     png.data = Buffer.alloc(width * height * 4)
     const n = width * height
 
@@ -53,6 +54,7 @@ export class StreamingPngSurface extends ImageSurface {
 
     return new Promise((resolve, reject) => {
       const buf: Buffer[] = []
+
       png
         .pack()
         .on('data', (c: Buffer) => buf.push(c))

@@ -10,8 +10,6 @@ export const interleavedMetadata: CodecMetadata = {
   approxRatio: '15-18% with deflate/brotli',
   description:
     'Swaps adjacent pixel pairs for light visual obfuscation while preserving benchmark speed.',
-  family: 'legacy',
-  familyLabel: 'Legacy',
 }
 
 export const interleavedInfo = {

@@ -3,9 +3,10 @@
 import { Table } from '@heroui/react'
 import { CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react'
 import type { SortDescriptor } from 'react-aria-components'
+
 import type { ExtBenchRow } from '@/lib/bench-types'
-import { FAMILY_DOT } from '../constants'
-import { fmtBytes, fmtMs, getFamily } from '../utils'
+
+import { fmtBytes, fmtMs } from '../utils'
 import { ColHeader } from './ColHeader'
 
 interface ResultsTableProps {
@@ -39,19 +40,13 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
         </Table.Header>
         <Table.Body>
           {rows.map((row, i) => {
-            const dot = FAMILY_DOT[getFamily(row.codecId)]
             const isBest = !row.error && row.ratio > 0 && row.ratio === bestRatio
 
             if (row.error) {
               const isTimeout = row.error.startsWith('timeout after')
               return (
                 <Table.Row id={i} key={i} className="opacity-60">
-                  <Table.Cell>
-                    <div className="flex items-center gap-1.5">
-                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
-                      {row.codecName}
-                    </div>
-                  </Table.Cell>
+                  <Table.Cell>{row.codecName}</Table.Cell>
                   <Table.Cell className="text-white/30">{row.outerCompression}</Table.Cell>
                   <Table.Cell className="text-white/30">{row.channels}</Table.Cell>
                   <Table.Cell>
@@ -74,7 +69,6 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
               <Table.Row id={i} key={i} className={isBest ? 'text-green-400' : 'text-white/60'}>
                 <Table.Cell>
                   <div className="flex items-center gap-1.5">
-                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
                     {row.codecName}
                     {isBest && (
                       <span className="text-[9px] text-green-400/60 border border-green-400/30 rounded px-1">

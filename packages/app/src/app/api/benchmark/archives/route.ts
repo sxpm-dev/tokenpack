@@ -1,5 +1,5 @@
+import { existsSync, readFileSync } from 'fs'
 import { NextResponse } from 'next/server'
-import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 
 export interface ArchiveTimeEntry {
@@ -12,13 +12,16 @@ export interface ArchiveTimeEntry {
 }
 
 export async function GET() {
-  const filePath = join(process.cwd(), '..', '..', 'benchmark', 'archive-times.json')
+  const filePath = join(process.cwd(), 'benchmark-results', 'archive-times.json')
+
   if (!existsSync(filePath)) {
     return NextResponse.json(
-      { error: 'No archive times found. Run: yarn tsx benchmark/generate.ts' },
+      { error: 'No archive times found. Run: yarn benchmark:generate' },
       { status: 404 },
     )
   }
+
   const data: ArchiveTimeEntry[] = JSON.parse(readFileSync(filePath, 'utf-8'))
+
   return NextResponse.json(data)
 }

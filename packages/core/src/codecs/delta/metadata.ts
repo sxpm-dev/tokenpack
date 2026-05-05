@@ -10,8 +10,6 @@ export const deltaMetadata: CodecMetadata = {
   approxRatio: '15-18% with brotli',
   description:
     'Stores byte deltas between neighbors, which can improve compression on smooth or structured data.',
-  family: 'legacy',
-  familyLabel: 'Legacy',
 }
 
 export const deltaInfo = { id: 5, name: 'delta', metadata: deltaMetadata } as const

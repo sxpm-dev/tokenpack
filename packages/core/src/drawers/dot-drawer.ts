@@ -1,6 +1,6 @@
 import { HEADER_PIXELS, readHeader, writeHeader } from '../header'
-import { fromFileChannels, toFileChannels } from '../surfaces/channels'
 import { dotLayout, readDots, renderDots } from '../render'
+import { fromFileChannels, toFileChannels } from '../surfaces/channels'
 import type { SurfacePixels } from '../surfaces/types'
 import type { HeaderData } from '../types'
 import {

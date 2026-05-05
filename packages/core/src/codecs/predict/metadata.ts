@@ -10,8 +10,6 @@ export const predictMetadata: CodecMetadata = {
   approxRatio: '15-18% with brotli',
   description:
     'Predictive transform that leaves residuals for outer compression while keeping decode under the gate.',
-  family: 'legacy',
-  familyLabel: 'Legacy',
 }
 
 export const predictInfo = { id: 10, name: 'predict', metadata: predictMetadata } as const

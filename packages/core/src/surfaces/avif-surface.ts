@@ -18,6 +18,7 @@ export class AvifSurface extends ImageSurface {
 
   async write(filePath: string, image: SurfacePixels): Promise<void> {
     const { pixels, width, height, fileChannels } = image
+
     await sharp(Buffer.from(pixels.buffer, pixels.byteOffset, pixels.byteLength), {
       raw: { width, height, channels: fileChannels },
     })

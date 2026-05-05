@@ -1,6 +1,6 @@
 import type { Readable } from 'stream'
 
-import type { AbstractCodec, CodecMetadata, Friendliness } from '../codecs/types'
+import type { AbstractCodec, Friendliness } from '../codecs/types'
 import type { AbstractCompressor } from '../compressors/types'
 import type { AbstractDrawer } from '../drawers/types'
 import type { AbstractSurface } from '../surfaces/types'
@@ -28,8 +28,6 @@ export interface AlgorithmCatalogEntry {
   id: number
   name: string
   title: string
-  family: CodecMetadata['family']
-  familyLabel: string
   description: string
   composition: string
   pixelLayout: string
@@ -49,8 +47,6 @@ export abstract class AbstractAlgorithm {
   abstract readonly name: string
   abstract readonly title: string
   abstract readonly description: string
-  abstract readonly family: CodecMetadata['family']
-  abstract readonly familyLabel: string
   abstract readonly codec: AbstractCodec
   abstract readonly compressor: AbstractCompressor
   abstract readonly drawer: AbstractDrawer

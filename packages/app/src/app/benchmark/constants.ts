@@ -4,7 +4,7 @@ export const SOURCES: readonly string[] = [
   'react-dom-client.development',
   'react-dom-client.production',
   'screenshot',
-  'fs-src-tests-docs',
+  'fs-app-core',
 ]
 
 export const SCENARIOS: readonly string[] = [
@@ -39,7 +39,7 @@ export const SOURCE_LABELS: Record<string, string> = {
   'react-dom-client.development': 'react-dom dev',
   'react-dom-client.production':  'react-dom prod',
   'screenshot':                   'screenshot PNG',
-  'fs-src-tests-docs':            'fs: src+tests+docs',
+  'fs-app-core':                  'fs: app+core src',
 }
 
 export const CONDITION_LABELS: Record<string, string> = {

@@ -1,8 +1,6 @@
-import nextConfig from 'eslint-config-next'
+import nextConfig from 'tokenpack-eslint-config/next'
 
 export default [
   ...nextConfig,
-  {
-    ignores: ['.next/**', 'node_modules/**', 'tsconfig.tsbuildinfo'],
-  },
+  { ignores: ['.next/**', 'node_modules/**', 'tsconfig.tsbuildinfo'] },
 ]
