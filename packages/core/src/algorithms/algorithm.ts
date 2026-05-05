@@ -8,6 +8,7 @@ import type { AbstractCompressor } from '../compressors/types'
 import { encryptData } from '../crypto'
 import { DenseDrawer, pickDrawerForOptions } from '../drawers'
 import type { AbstractDrawer, DrawContext } from '../drawers/types'
+import { fecRegistry } from '../fec/registry'
 import { surfaceRegistry } from '../surfaces/registry'
 import type { AbstractSurface } from '../surfaces/types'
 import type { DecodeOptions, EncodeOptions } from '../types'
@@ -53,6 +54,13 @@ const DEFAULT_OPTIONS: AlgorithmOption[] = [
     type: 'select',
     defaultValue: 'png',
     values: ['png', 'webp', 'avif'],
+  },
+  {
+    name: 'fecMode',
+    label: 'Error correction',
+    type: 'select',
+    defaultValue: 'none',
+    values: fecRegistry.listModes(),
   },
 ]
 
@@ -137,6 +145,13 @@ export class Algorithm extends AbstractAlgorithm {
       merged.streaming ?? false,
     )
     const drawer = pickDrawerForOptions(merged.cellSize)
+    const fec = fecRegistry.byMode(merged.fecMode)
+
+    if (merged.streaming && fec.id !== 'none') {
+      throw new Error(
+        `streaming and FEC are incompatible (got fecMode=${fec.id}, streaming=true). Disable one or the other.`,
+      )
+    }
 
     const requested = (merged.channels ?? 3) as 1 | 2 | 3 | 4
     const required = this.codec.metadata?.requiredChannels
@@ -172,6 +187,18 @@ export class Algorithm extends AbstractAlgorithm {
       console.log(`Encrypted → ${dataToEncode.length} bytes`)
     }
 
+    let preFecLength = 0
+
+    if (fec.id !== 'none') {
+      preFecLength = dataToEncode.length
+      const fecResult = fec.encode(dataToEncode)
+
+      dataToEncode = fecResult.data
+      console.log(
+        `FEC [${fec.id}] ${preFecLength} → ${dataToEncode.length} bytes (+${dataToEncode.length - preFecLength})`,
+      )
+    }
+
     const ctx: DrawContext = {
       codec: this.codec,
       surface,
@@ -182,7 +209,10 @@ export class Algorithm extends AbstractAlgorithm {
       encrypted,
       cellSize: merged.cellSize ?? 1,
       width: merged.width,
-      requiresFullHeader: compressor.requiresFullHeader,
+      // FEC requires full header (compact has no room for fecLevel + preFecLength).
+      requiresFullHeader: compressor.requiresFullHeader || fec.headerLevel > 0,
+      fecLevel: fec.headerLevel,
+      preFecLength,
     }
 
     const { chunks } = drawer.write(dataToEncode, ctx)

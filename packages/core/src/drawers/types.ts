@@ -21,6 +21,8 @@ export interface DrawContext {
   cellSize: number
   width?: number
   requiresFullHeader: boolean
+  fecLevel: number // 0 = none, 1 = rs-5, 2 = rs-15, 3 = rs-25
+  preFecLength: number // payload bytes before FEC (0 when fecLevel === 0)
 }
 
 export interface ReadContext {
@@ -46,6 +48,8 @@ export interface ChunkReadResult {
   chunkIndex: number
   chunkTotal: number
   streamId: number
+  fecLevel: number
+  preFecLength: number
 }
 
 export abstract class AbstractDrawer {

@@ -32,6 +32,7 @@ export interface HeaderData {
   chunkTotal: number // total chunk count (1 when not chunked)
   streamId: number // uint32 hash of full compressed stream — ties chunks together
   channels: 1 | 2 | 3 | 4 // bpp stored in header
+  preFecLength: number // payload byte count BEFORE FEC encode (0 when fecLevel === 0)
 }
 
 export interface EncodeOptions {
@@ -46,6 +47,7 @@ export interface EncodeOptions {
   channels?: 1 | 2 | 3 | 4 // bytes of data per pixel (default 3)
   format?: ImageFormat // image container (default 'png')
   streaming?: boolean // write PNG with small IDAT chunks so stream-decoder gets pixels progressively
+  fecMode?: string // forward error correction: 'none' | 'rs-5' | 'rs-15' | 'rs-25' (default 'none'). Forbidden when streaming=true.
 }
 
 export interface DecodeOptions {

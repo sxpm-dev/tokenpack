@@ -2,6 +2,8 @@ import { createHash } from 'crypto'
 
 import {
   COMPACT_HEADER_PIXELS,
+  decodeEcByte,
+  encodeEcByte,
   HEADER_PIXELS,
   isCompactToken,
   readCompactHeader,
@@ -169,7 +171,7 @@ export class DenseDrawer extends AbstractDrawer {
       width,
       height,
       styleFlags: (hasGradient ? 0b01 : 0) | (hasBackground ? 0b10 : 0),
-      ecLevel: ctx.encrypted ? 1 : 0,
+      ecLevel: encodeEcByte(ctx.encrypted, ctx.fecLevel),
       codecMeta: new Uint8Array(16),
       gradientFrom: ctx.style?.gradient?.from ?? [0, 0, 0],
       gradientTo: ctx.style?.gradient?.to ?? [0, 0, 0],
@@ -184,6 +186,7 @@ export class DenseDrawer extends AbstractDrawer {
       chunkTotal,
       streamId: sid,
       channels: ctx.bpp,
+      preFecLength: ctx.preFecLength,
     }
 
     writeHeader(pixels, headerData)
@@ -234,6 +237,8 @@ export class DenseDrawer extends AbstractDrawer {
       chunkIndex: 0,
       chunkTotal: 1,
       streamId: 0,
+      fecLevel: 0,
+      preFecLength: 0,
     }
   }
 
@@ -251,14 +256,18 @@ export class DenseDrawer extends AbstractDrawer {
     const dataPixelCount = width * height - HEADER_PIXELS
     const dataPixels = fromFileChannels(dataPixelsFc, dataPixelCount, fileChannels, bpp)
 
+    const ec = decodeEcByte(header.ecLevel)
+
     return {
       bytes: ctx.codec.decode(dataPixels, header.fileLength, width, height, bpp),
       compressionLevel: header.compressionLevel,
-      encrypted: (header.ecLevel & 1) !== 0,
+      encrypted: ec.encrypted,
       uncompressedLength: header.uncompressedLength,
       chunkIndex: header.chunkIndex,
       chunkTotal: header.chunkTotal,
       streamId: header.streamId,
+      fecLevel: ec.fecLevel,
+      preFecLength: header.preFecLength,
     }
   }
 }

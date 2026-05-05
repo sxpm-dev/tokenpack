@@ -7,6 +7,7 @@ import { AlgorithmSection } from './components/AlgorithmSection'
 import { CompressorSection } from './components/CompressorSection'
 import { DefaultPresets } from './components/DefaultPresets'
 import { DrawerSection } from './components/DrawerSection'
+import { FecSection } from './components/FecSection'
 import { InputModeTabs } from './components/InputModeTabs'
 import { SurfaceSection } from './components/SurfaceSection'
 import { TokenResult } from './components/TokenResult'
@@ -43,6 +44,7 @@ export function CreateToken() {
   const [bpp, setBpp] = useState<number>(4)
   const [imgFormat, setImgFormat] = useState<ImageFormat>('webp')
   const [streaming, setStreaming] = useState(false)
+  const [fecMode, setFecMode] = useState('none')
   const [useBackground, setUseBackground] = useState(false)
   const [gradientFrom, setGradientFrom] = useState('#ff0050')
   const [gradientTo, setGradientTo] = useState('#0050ff')
@@ -102,6 +104,7 @@ export function CreateToken() {
       form.append('channels', String(effectiveBpp))
       form.append('format', imgFormat)
       if (streaming && imgFormat === 'png') form.append('streaming', 'true')
+      if (fecMode !== 'none' && !streaming) form.append('fecMode', fecMode)
       if (supportsDrawerBackground && useBackground) {
         form.append('style', JSON.stringify({
           gradient: {
@@ -247,6 +250,12 @@ export function CreateToken() {
                 <CompressorSection
                   value={compressionMode}
                   onChange={setCompressionMode}
+                />
+
+                <FecSection
+                  value={fecMode}
+                  onChange={setFecMode}
+                  disabled={streaming && imgFormat === 'png'}
                 />
               </>
             )}

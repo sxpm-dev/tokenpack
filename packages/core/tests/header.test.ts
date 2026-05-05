@@ -25,6 +25,7 @@ const sample: HeaderData = {
   chunkTotal: 5,
   streamId: 0xdeadbeef,
   channels: 4,
+  preFecLength: 0,
 }
 
 describe('header', () => {

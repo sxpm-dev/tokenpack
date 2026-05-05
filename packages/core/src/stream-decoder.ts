@@ -224,6 +224,15 @@ export function createTokenDecodeStream(_key?: string): Duplex {
         } // not a valid full header yet
         const h = readHeader(pixelBuf)
 
+        // FEC tokens require buffered decode (FEC operates on full payload).
+        const fecLevel = (h.ecLevel >> 1) & 0b111
+
+        if (fecLevel > 0) {
+          stream.destroy(new Error('FEC tokens cannot be streamed; decode the full token instead'))
+
+          return
+        }
+
         bpp = h.channels
         compressionLevel = h.compressionLevel
         dataLength = h.fileLength

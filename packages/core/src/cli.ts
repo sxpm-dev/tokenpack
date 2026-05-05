@@ -38,6 +38,10 @@ program
   .option('--key <password>', 'encrypt token with AES-256-GCM (optional)')
   .option('--bpp <n>', 'bytes of data per pixel: 1, 2, 3, or 4 (default 3)', v => parseInt(v, 10))
   .option('--format <fmt>', 'image format: png, avif, webp (default png)')
+  .option(
+    '--fec <mode>',
+    'forward error correction: none | rs-5 | rs-15 | rs-25 (default none, incompatible with streaming)',
+  )
   .action(
     async (
       input: string,
@@ -53,6 +57,7 @@ program
         key?: string
         bpp?: number
         format?: string
+        fec?: string
       },
     ) => {
       let algo = opts.algo
@@ -97,6 +102,7 @@ program
         key: opts.key,
         channels,
         format,
+        fecMode: opts.fec,
       })
       console.log(`Encoded → ${opts.out}`)
     },
@@ -128,6 +134,7 @@ program
   .option('--key <password>', 'encrypt token with AES-256-GCM (optional)')
   .option('--bpp <n>', 'bytes of data per pixel: 1, 2, 3, or 4 (default 3)', v => parseInt(v, 10))
   .option('--format <fmt>', 'image format: png, avif, webp (default png)')
+  .option('--fec <mode>', 'forward error correction: none | rs-5 | rs-15 | rs-25 (default none)')
   .action(
     async (
       dirs: string[],
@@ -142,6 +149,7 @@ program
         key?: string
         bpp?: number
         format?: string
+        fec?: string
       },
     ) => {
       let algo = opts.algo
@@ -180,6 +188,7 @@ program
         key: opts.key,
         channels,
         format,
+        fecMode: opts.fec,
       })
       console.log(`Packed [${dirs.join(', ')}] → ${opts.out}`)
     },

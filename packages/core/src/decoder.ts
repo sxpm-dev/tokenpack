@@ -10,6 +10,7 @@ import { compressorRegistry } from './compressors/registry'
 import { decryptData } from './crypto'
 import { pickDrawerForPixels } from './drawers'
 import type { ChunkReadResult } from './drawers/types'
+import { fecRegistry } from './fec/registry'
 import { isCompactToken, readCompactHeader, readHeader } from './header'
 import { surfaceRegistry } from './surfaces/registry'
 import type { SurfacePixels } from './surfaces/types'
@@ -66,14 +67,19 @@ function finalizeChunks(chunks: ChunkReadResult[], key?: string): Buffer {
     }
   }
 
-  const { compressionLevel, encrypted } = chunks[0]
-  let combined: Buffer
+  const { compressionLevel, encrypted, fecLevel, preFecLength } = chunks[0]
+  let combined: Buffer = Buffer.concat(chunks.map(c => c.bytes))
+
+  // FEC runs first (outermost layer on encode → first to undo on decode).
+  if (fecLevel > 0) {
+    const fec = fecRegistry.byHeaderLevel(fecLevel)
+
+    combined = fec.decode(combined, preFecLength)
+  }
 
   if (encrypted) {
     if (!key) throw new Error('Token is encrypted — provide --key to decode')
-    combined = Buffer.concat(chunks.map(c => decryptData(c.bytes, key)))
-  } else {
-    combined = Buffer.concat(chunks.map(c => c.bytes))
+    combined = decryptData(combined, key)
   }
 
   return compressorRegistry.byHeaderLevel(compressionLevel).decompress(combined)

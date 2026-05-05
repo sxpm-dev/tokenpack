@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'zlib'
 import 'tokenpack/algorithms/register-all'
+import { FEC_MODES } from 'tokenpack/algorithms/catalog-info'
 import { encodeToBuffer } from 'tokenpack/encoder'
 import type { Style } from 'tokenpack/types'
 
@@ -22,6 +23,10 @@ export async function POST(req: NextRequest) {
   const channels = parseInt(form.get('channels') as string || '3', 10) as 1 | 2 | 3 | 4
   const format = (form.get('format') as string | null) as 'png' | 'avif' | 'webp' | null
   const streaming = form.get('streaming') === 'true'
+  const rawFecMode = form.get('fecMode') as string | null
+  const fecMode = rawFecMode && (FEC_MODES as readonly string[]).includes(rawFecMode)
+    ? rawFecMode
+    : undefined
   const style = parseStyle(form.get('style'))
 
   let inputBuf: Buffer
@@ -60,6 +65,7 @@ export async function POST(req: NextRequest) {
       channels,
       format: format ?? 'png',
       streaming,
+      fecMode,
       style,
     })
 

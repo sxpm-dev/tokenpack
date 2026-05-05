@@ -1,4 +1,4 @@
-import { HEADER_PIXELS, readHeader, writeHeader } from '../header'
+import { decodeEcByte, encodeEcByte, HEADER_PIXELS, readHeader, writeHeader } from '../header'
 import { dotLayout, readDots, renderDots } from '../render'
 import { fromFileChannels, toFileChannels } from '../surfaces/channels'
 import type { SurfacePixels } from '../surfaces/types'
@@ -57,7 +57,7 @@ export class DotDrawer extends AbstractDrawer {
       width: imageWidth,
       height: imageHeight,
       styleFlags: hasGradient ? 0b01 : 0,
-      ecLevel: 0,
+      ecLevel: encodeEcByte(ctx.encrypted, ctx.fecLevel),
       codecMeta: new Uint8Array(16),
       gradientFrom: ctx.style?.gradient?.from ?? [0, 0, 0],
       gradientTo: ctx.style?.gradient?.to ?? [0, 0, 0],
@@ -72,6 +72,7 @@ export class DotDrawer extends AbstractDrawer {
       chunkTotal: 1,
       streamId: 0,
       channels: ctx.bpp,
+      preFecLength: ctx.preFecLength,
     }
 
     const dataRaw = ctx.codec.encode(input, dataPixelCount, gridWidth, gridHeight, ctx.bpp)
@@ -93,14 +94,18 @@ export class DotDrawer extends AbstractDrawer {
     const dataRawFc = readDots(pixels, dataPixelCount, header.cellSize, layout, fileChannels)
     const dataRaw = fromFileChannels(dataRawFc, dataPixelCount, fileChannels, bpp)
 
+    const ec = decodeEcByte(header.ecLevel)
+
     return {
       bytes: ctx.codec.decode(dataRaw, header.fileLength, layout.gridWidth, layout.gridHeight, bpp),
       compressionLevel: header.compressionLevel,
-      encrypted: (header.ecLevel & 1) !== 0,
+      encrypted: ec.encrypted,
       uncompressedLength: header.uncompressedLength,
       chunkIndex: header.chunkIndex,
       chunkTotal: header.chunkTotal,
       streamId: header.streamId,
+      fecLevel: ec.fecLevel,
+      preFecLength: header.preFecLength,
     }
   }
 }

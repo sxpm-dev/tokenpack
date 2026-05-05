@@ -2,6 +2,7 @@ import { CODEC_INFOS, type CodecInfo } from '../codecs/metadata'
 import type { CodecMetadata, Friendliness } from '../codecs/types'
 import { COMPRESSION_MODE_INFOS, COMPRESSION_MODES } from '../compressors/modes'
 import type { CompressionMode } from '../compressors/types'
+import { FEC_MODE_INFOS, FEC_MODES } from '../fec/modes'
 import { type Preset, PRESETS } from '../presets'
 import { IMAGE_FORMATS, SURFACE_INFOS } from '../surfaces/info'
 import type { ImageFormat } from '../types'
@@ -94,4 +95,11 @@ export const DEFAULT_PRESETS: readonly DefaultPreset[] = [
   },
 ]
 
-export { COMPRESSION_MODE_INFOS, COMPRESSION_MODES, IMAGE_FORMATS, SURFACE_INFOS }
+export {
+  COMPRESSION_MODE_INFOS,
+  COMPRESSION_MODES,
+  FEC_MODE_INFOS,
+  FEC_MODES,
+  IMAGE_FORMATS,
+  SURFACE_INFOS,
+}

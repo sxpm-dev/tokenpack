@@ -103,6 +103,29 @@ export function writeHeader(pixels: Uint8Array, d: HeaderData): void {
   pixels[60] = d.streamId & 0xff
   // byte 61: bpp — 0 or 3 means default bpp=3 (backward compat)
   pixels[61] = d.channels ?? 3
+  // bytes 62-65: pre-FEC payload length (only meaningful when fecLevel > 0; 0 otherwise).
+  pixels[62] = (d.preFecLength >>> 24) & 0xff
+  pixels[63] = (d.preFecLength >>> 16) & 0xff
+  pixels[64] = (d.preFecLength >>> 8) & 0xff
+  pixels[65] = d.preFecLength & 0xff
+  // bytes 66-95: reserved for future header extensions
+}
+
+// ── Error-correction byte (byte 15) layout ───────────────────────────────────
+//   bit 0     : encryption flag (1 = AES-256-GCM encrypted)
+//   bits 1-3  : FEC level (0 = none, 1 = rs-5, 2 = rs-15, 3 = rs-25, 4-7 reserved)
+//   bits 4-7  : reserved for future ec extensions
+//
+// Backward compatibility: old tokens stored only the encryption flag (bits 1-7 = 0),
+// so they read back as { encrypted, fecLevel: 0 } automatically.
+export function encodeEcByte(encrypted: boolean, fecLevel: number): number {
+  if (fecLevel < 0 || fecLevel > 7) throw new Error(`fecLevel out of range: ${fecLevel}`)
+
+  return (encrypted ? 1 : 0) | ((fecLevel & 0b111) << 1)
+}
+
+export function decodeEcByte(b: number): { encrypted: boolean; fecLevel: number } {
+  return { encrypted: (b & 1) !== 0, fecLevel: (b >> 1) & 0b111 }
 }
 
 export function readHeader(pixels: Uint8Array): HeaderData {
@@ -135,5 +158,6 @@ export function readHeader(pixels: Uint8Array): HeaderData {
     chunkTotal: (pixels[55] << 8) | pixels[56] || 1, // 0 in old tokens → treat as 1
     streamId: ((pixels[57] << 24) | (pixels[58] << 16) | (pixels[59] << 8) | pixels[60]) >>> 0,
     channels: (rawChannels === 0 ? 3 : rawChannels) as 1 | 2 | 3 | 4,
+    preFecLength: ((pixels[62] << 24) | (pixels[63] << 16) | (pixels[64] << 8) | pixels[65]) >>> 0,
   }
 }
