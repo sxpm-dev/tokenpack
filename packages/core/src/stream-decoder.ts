@@ -31,7 +31,7 @@ import {
   readCompactHeader,
   readHeader,
 } from './header'
-import { fromFileChannels } from './image'
+import { fromFileChannels } from './surfaces/channels'
 
 // ── PNG filter reconstruction ─────────────────────────────────────────────
 
@@ -99,7 +99,6 @@ export function createTokenDecodeStream(_key?: string): Duplex {
   let activeCodec: Codec | null = null
   let codecState: StreamCodecState | null = null
 
-  let inputEnded = false
   let outputEnded = false
 
   // Create the Duplex
@@ -110,7 +109,6 @@ export function createTokenDecodeStream(_key?: string): Duplex {
       parsePNG(cb)
     },
     final(cb) {
-      inputEnded = true
       cb()
     },
     // Read side: push decoded bytes (handled by decompressor events)
@@ -158,7 +156,6 @@ export function createTokenDecodeStream(_key?: string): Duplex {
 
   // We use zlib.inflate in streaming mode across all IDAT chunks
   let inflater: zlib.Inflate | null = null
-  let idatQueue: Buffer[] = []
   let idatDone = false
 
   function onIDATChunk(data: Buffer) {

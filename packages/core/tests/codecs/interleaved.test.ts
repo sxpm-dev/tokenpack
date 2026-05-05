@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { interleavedCodec } from '../../src/codecs/interleaved'
-import { CHANNELS } from '../../src/image'
+import { CHANNELS } from '../../src/surfaces/channels'
 
 describe('interleavedCodec', () => {
   it('produces a different pixel order than raw bytes', () => {

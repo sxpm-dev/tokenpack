@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest'
 import { decode } from '../src/decoder'
 import { encode } from '../src/encoder'
 import { readHeader } from '../src/header'
-import { readPNG } from '../src/image'
+import { PngSurface } from '../src/surfaces/png-surface'
 
 function tmpPath(ext = '.png') {
   return path.join(
@@ -32,7 +32,7 @@ describe('encoder', () => {
       },
     })
 
-    const { pixels, width, height } = readPNG(out)
+    const { pixels, width, height } = PngSurface.decodeSync(out)
     const header = readHeader(pixels)
 
     expect(header.version).toBe(1)
@@ -48,7 +48,7 @@ describe('encoder', () => {
 
     await encode(data, { out })
 
-    const { width, height } = readPNG(out)
+    const { width, height } = PngSurface.decodeSync(out)
     const totalPixels = width * height
 
     expect(totalPixels).toBeGreaterThanOrEqual(32 + Math.ceil(300 / 4))

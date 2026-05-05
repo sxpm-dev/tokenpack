@@ -3,6 +3,7 @@ import { surfaceRegistry } from './registry'
 import type { AbstractSurface } from './types'
 
 export { AvifSurface } from './avif-surface'
+export { CHANNELS, fromFileChannels, toFileChannels } from './channels'
 export { ImageSurface, type ImageSurfaceInit } from './image-surface'
 export { PngSurface } from './png-surface'
 export { SurfaceRegistry, surfaceRegistry } from './registry'

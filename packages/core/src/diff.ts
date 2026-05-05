@@ -2,11 +2,11 @@ import path from 'path'
 
 import { decodeToBuffer } from './decoder'
 import { HEADER_PIXELS, readHeader } from './header'
-import { readImage, writePNG } from './image'
+import { PngSurface } from './surfaces/png-surface'
 import { surfaceRegistry } from './surfaces/registry'
 
-function formatFor(filePath: string): ReturnType<typeof surfaceRegistry.byExtension>['format'] {
-  return surfaceRegistry.byExtension(path.extname(filePath)).format
+function surfaceFor(filePath: string) {
+  return surfaceRegistry.byExtension(path.extname(filePath))
 }
 
 // ── Visual pixel diff ─────────────────────────────────────────────────────────
@@ -16,8 +16,8 @@ export async function diffTokens(
   pathB: string,
   outPath: string,
 ): Promise<DiffStats> {
-  const a = await readImage(pathA, formatFor(pathA))
-  const b = await readImage(pathB, formatFor(pathB))
+  const a = await surfaceFor(pathA).readFile(pathA)
+  const b = await surfaceFor(pathB).readFile(pathB)
 
   const headerA = readHeader(a.pixels)
   const headerB = readHeader(b.pixels)
@@ -61,7 +61,7 @@ export async function diffTokens(
     }
   }
 
-  writePNG(outPath, out, width, height)
+  PngSurface.encodeSync(outPath, { pixels: out, width, height, fileChannels: 3 })
 
   return {
     totalPixels: total,

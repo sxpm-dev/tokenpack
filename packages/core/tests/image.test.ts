@@ -2,9 +2,10 @@ import os from 'os'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
 
-import { CHANNELS, readPNG, writePNG } from '../src/image'
+import { CHANNELS } from '../src/surfaces/channels'
+import { PngSurface } from '../src/surfaces/png-surface'
 
-describe('image', () => {
+describe('PngSurface', () => {
   it('roundtrips a flat RGB buffer through PNG', () => {
     const width = 4
     const height = 4
@@ -14,12 +15,12 @@ describe('image', () => {
 
     const tmp = path.join(os.tmpdir(), `codeart-test-${Date.now()}.png`)
 
-    writePNG(tmp, pixels, width, height)
-    const result = readPNG(tmp)
+    PngSurface.encodeSync(tmp, { pixels, width, height, fileChannels: 3 })
+    const result = PngSurface.decodeSync(tmp)
 
     expect(result.width).toBe(width)
     expect(result.height).toBe(height)
-    expect(result.channels).toBe(3)
+    expect(result.fileChannels).toBe(3)
     expect(Array.from(result.pixels)).toEqual(Array.from(pixels))
   })
 })

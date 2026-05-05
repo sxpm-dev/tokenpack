@@ -1,5 +1,5 @@
 import { HEADER_PIXELS } from './header'
-import { CHANNELS } from './image'
+import { CHANNELS } from './surfaces/channels'
 import type { HeaderData } from './types'
 
 export function applyStyle(

@@ -1,4 +1,5 @@
-import { readImage, readImageFromBuffer, writeImage } from '../image'
+import sharp from 'sharp'
+
 import type { ImageFormat } from '../types'
 import { AbstractSurface, type SurfaceId, type SurfacePixels } from './types'
 
@@ -13,7 +14,21 @@ export interface ImageSurfaceInit {
   maxBpp?: 1 | 2 | 3 | 4
 }
 
-export class ImageSurface extends AbstractSurface {
+// Sharp-based raster reader shared by all raster surfaces (PNG, WebP, AVIF).
+// Sharp auto-detects the format from the buffer/file header.
+async function readSharp(input: string | Buffer): Promise<SurfacePixels> {
+  const { data, info } = await sharp(input).raw().toBuffer({ resolveWithObject: true })
+  const fileChannels = (info.channels >= 4 ? 4 : 3) as 3 | 4
+
+  return {
+    pixels: new Uint8Array(data.buffer, data.byteOffset, data.byteLength),
+    width: info.width,
+    height: info.height,
+    fileChannels,
+  }
+}
+
+export abstract class ImageSurface extends AbstractSurface {
   readonly id: SurfaceId
   readonly label: string
   readonly format: ImageFormat
@@ -38,23 +53,13 @@ export class ImageSurface extends AbstractSurface {
     this.maxBpp = init.maxBpp ?? 4
   }
 
-  write(filePath: string, image: SurfacePixels): Promise<void> {
-    return writeImage(
-      filePath,
-      image.pixels,
-      image.width,
-      image.height,
-      image.fileChannels,
-      this.format,
-      this.streamable,
-    )
-  }
+  abstract write(filePath: string, image: SurfacePixels): Promise<void>
 
   readFile(filePath: string): Promise<SurfacePixels> {
-    return readImage(filePath, this.format)
+    return readSharp(filePath)
   }
 
   readBuffer(buffer: Buffer): Promise<SurfacePixels> {
-    return readImageFromBuffer(buffer, this.format)
+    return readSharp(buffer)
   }
 }

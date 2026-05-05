@@ -15,7 +15,6 @@
     "./stream-decoder": "./src/stream-decoder.ts",
     "./types": "./src/types.ts",
     "./header": "./src/header.ts",
-    "./image": "./src/image.ts",
     "./style": "./src/style.ts",
     "./crypto": "./src/crypto.ts",
     "./archive": "./src/archive.ts",
@@ -39,7 +38,12 @@
     "./surfaces": "./src/surfaces/index.ts",
     "./surfaces/types": "./src/surfaces/types.ts",
     "./surfaces/info": "./src/surfaces/info.ts",
-    "./surfaces/registry": "./src/surfaces/registry.ts"
+    "./surfaces/registry": "./src/surfaces/registry.ts",
+    "./surfaces/channels": "./src/surfaces/channels.ts",
+    "./surfaces/png": "./src/surfaces/png-surface.ts",
+    "./surfaces/streaming-png": "./src/surfaces/streaming-png-surface.ts",
+    "./surfaces/webp": "./src/surfaces/webp-surface.ts",
+    "./surfaces/avif": "./src/surfaces/avif-surface.ts"
   },
   "bin": "./src/cli.ts",
   "scripts": {
@@ -50,7 +54,7 @@
     "test:watch": "vitest",
     "tokenpack": "tsx src/cli.ts",
     "benchmark:generate": "tsx benchmark/generate.ts",
-    "benchmark:run": "tsx benchmark/run.ts"
+    "benchmark:run": "tsx benchmark/run-extended.ts"
   },
   "dependencies": {
     "adm-zip": "^0.5.17",

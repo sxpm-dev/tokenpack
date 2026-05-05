@@ -9,7 +9,7 @@ import {
   writeCompactHeader,
   writeHeader,
 } from '../header'
-import { fromFileChannels, toFileChannels } from '../image'
+import { fromFileChannels, toFileChannels } from '../surfaces/channels'
 import { applyStyle, reverseStyle } from '../style'
 import type { SurfacePixels } from '../surfaces/types'
 import type { HeaderData } from '../types'

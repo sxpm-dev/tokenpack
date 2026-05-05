@@ -172,5 +172,11 @@ export default defineConfig([
         }
       ]
     }
+  },
+  {
+    files: ['src/cli.ts', 'benchmark/**/*.ts'],
+    rules: {
+      'no-console': 'off'
+    }
   }
 ]);
