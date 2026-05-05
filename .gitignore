@@ -11,3 +11,14 @@
 
 #!.yarn/cache
 .pnp.*
+node_modules
+**/.next
+**/dist
+**/tsconfig.tsbuildinfo
+benchmark/encode-times.json
+benchmark/results-extended.json
+benchmark/results.json
+benchmark/archive-times.json
+benchmark/tokens/
+benchmark/archives/
+

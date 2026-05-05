@@ -1,0 +1,16 @@
+import { NextResponse } from 'next/server'
+import { readFileSync, existsSync } from 'fs'
+import { join } from 'path'
+export type { ExtBenchRow } from '@/lib/bench-types'
+
+export async function GET() {
+  const filePath = join(process.cwd(), '..', '..', 'benchmark', 'results-extended.json')
+  if (!existsSync(filePath)) {
+    return NextResponse.json(
+      { error: 'No results found. Run: yarn tsx benchmark/run-extended.ts' },
+      { status: 404 },
+    )
+  }
+  const data = JSON.parse(readFileSync(filePath, 'utf-8'))
+  return NextResponse.json(data)
+}

@@ -1,36 +1,23 @@
 {
-  "name": "tokenpack",
+  "name": "codeart-monorepo",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
   "packageManager": "yarn@4.3.1",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "lint": "eslint src tests",
-    "format": "prettier --write src tests",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "tokenpack": "tsx src/cli.ts",
-    "start": "NODE_OPTIONS='' npm --prefix dashboard start",
-    "dashboard": "NODE_OPTIONS='' npm --prefix dashboard run dev",
-    "benchmark:generate": "tsx benchmark/generate.ts",
-    "benchmark:run": "tsx benchmark/run.ts"
-  },
-  "dependencies": {
-    "adm-zip": "^0.5.17",
-    "commander": "^14.0.3",
-    "pngjs": "^7.0.0",
-    "sharp": "^0.34.2"
-  },
-  "devDependencies": {
-    "@types/adm-zip": "^0",
-    "@types/node": "^25.6.0",
-    "@types/pngjs": "^6.0.5",
-    "@typescript-eslint/eslint-plugin": "^8.59.1",
-    "@typescript-eslint/parser": "^8.59.1",
-    "eslint": "^10.3.0",
-    "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.8.3",
-    "tsx": "^4.21.0",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.5"
+    "lint": "yarn workspaces foreach -A --exclude codeart-monorepo run lint",
+    "lint:fix": "yarn workspaces foreach -A --exclude codeart-monorepo run lint:fix",
+    "format": "yarn workspaces foreach -A --exclude codeart-monorepo run format",
+    "test": "yarn workspace tokenpack test",
+    "test:watch": "yarn workspace tokenpack test:watch",
+    "tokenpack": "yarn workspace tokenpack tokenpack",
+    "benchmark:generate": "yarn workspace tokenpack benchmark:generate",
+    "benchmark:run": "yarn workspace tokenpack benchmark:run",
+    "app": "yarn workspace tokenpack-app dev",
+    "app:build": "yarn workspace tokenpack-app build",
+    "start": "yarn workspace tokenpack-app start"
   }
 }
