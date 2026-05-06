@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { hasZstd, zstdpixCodec } from '../../src/codecs/zstdpix'
+// zstdpix runtime moved to @tokenpack/node — Node 22 / @mongodb-js/zstd live there.
+import { hasZstd, zstdpixCodec } from '@tokenpack/node'
 
 function roundtrip(input: Buffer, channels = 3) {
   const dp = zstdpixCodec.estimateDataPixels!(input, channels)

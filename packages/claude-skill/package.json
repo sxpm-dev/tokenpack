@@ -6,14 +6,29 @@
   "description": "Claude Code skill exposing virtual-mount API over TokenPack Context Packs",
   "license": "MIT",
   "files": [
+    "src",
     "SKILL.md",
     "README.md"
   ],
+  "bin": {
+    "tokenpack-skill": "./src/cli.ts"
+  },
   "scripts": {
-    "lint": "echo 'no source files'",
-    "format": "prettier --write SKILL.md README.md"
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write src SKILL.md README.md"
   },
   "dependencies": {
-    "@tokenpack/node": "workspace:*"
+    "@tokenpack/node": "workspace:*",
+    "commander": "^14.0.3",
+    "tokenpack": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "eslint": "^9.39.0",
+    "prettier": "^3.8.3",
+    "tokenpack-eslint-config": "workspace:*",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
   }
 }

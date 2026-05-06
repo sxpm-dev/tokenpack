@@ -7,6 +7,8 @@ import { type Preset, PRESETS } from '../presets'
 import { IMAGE_FORMATS, SURFACE_INFOS } from '../surfaces/info'
 import type { ImageFormat } from '../types'
 
+export type AlgorithmEnvironment = 'node' | 'browser'
+
 export interface AlgorithmInfo {
   id: number
   name: string
@@ -20,6 +22,20 @@ export interface AlgorithmInfo {
   approxRatio: string
   requiredChannels: 1 | 2 | 3 | 4 | null
   options: string[]
+  /** Environments where this algorithm can run end-to-end (encode + decode). */
+  environments: AlgorithmEnvironment[]
+}
+
+function deriveEnvironments(
+  beFriendly: Friendliness,
+  feFriendly: Friendliness,
+): AlgorithmEnvironment[] {
+  const envs: AlgorithmEnvironment[] = []
+
+  if (beFriendly !== 'no') envs.push('node')
+  if (feFriendly !== 'no') envs.push('browser')
+
+  return envs
 }
 
 function describeOptions(meta: CodecMetadata): string[] {
@@ -45,6 +61,7 @@ export function buildAlgorithmInfo(info: CodecInfo): AlgorithmInfo {
     approxRatio: info.metadata.approxRatio,
     requiredChannels: info.metadata.requiredChannels ?? null,
     options: describeOptions(info.metadata),
+    environments: deriveEnvironments(info.metadata.beFriendly, info.metadata.feFriendly),
   }
 }
 

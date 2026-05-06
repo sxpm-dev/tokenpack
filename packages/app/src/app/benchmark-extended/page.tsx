@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
 import { Card } from '@heroui/react'
+import { useEffect, useMemo, useState } from 'react'
 import type { SortDescriptor } from 'react-aria-components'
+
 import type { ArchiveTimeEntry } from '@/app/api/benchmark/archives/route'
 import type { ExtBenchRow } from '@/lib/bench-types'
+
 import { ArchiveBaselines } from './components/ArchiveBaselines'
 import { ResultsTable } from './components/ResultsTable'
 import { SourceFilter } from './components/SourceFilter'
-import { SOURCES, SOURCE_TO_ARCHIVE_NAME } from './constants'
+import { SOURCE_TO_ARCHIVE_NAME, SOURCES } from './constants'
 import { sortRows } from './utils'
 
 export default function BenchmarkExtendedPage() {
@@ -26,6 +28,7 @@ export default function BenchmarkExtendedPage() {
         if ('error' in data) {
           setFetchErr(data.error)
           setLoading(false)
+
           return
         }
         setAllRows(data)
@@ -57,11 +60,13 @@ export default function BenchmarkExtendedPage() {
 
   const bestRatio = useMemo(() => {
     const valid = rows.filter(r => !r.error && r.ratio > 0)
+
     return valid.length ? Math.min(...valid.map(r => r.ratio)) : null
   }, [rows])
 
   const archiveBaselines = useMemo(() => {
     const archiveName = SOURCE_TO_ARCHIVE_NAME[source]
+
     return archiveName ? archiveRows.filter(r => r.source === archiveName) : []
   }, [archiveRows, source])
 
@@ -81,11 +86,9 @@ export default function BenchmarkExtendedPage() {
       )}
 
       {!loading && (fetchErr || allRows.length === 0) && (
-        <Card variant="secondary" className="space-y-2 p-6 text-center">
+        <Card className="space-y-2 p-6 text-center" variant="secondary">
           <p className="text-white/40 text-sm">No benchmark results found.</p>
-          <p className="text-white/25 text-xs font-mono">
-            Run: yarn tsx benchmark/run-extended.ts
-          </p>
+          <p className="text-white/25 text-xs font-mono">Run: yarn tsx benchmark/run-extended.ts</p>
           {fetchErr && <p className="text-red-400/60 text-xs">{fetchErr}</p>}
         </Card>
       )}
@@ -93,20 +96,20 @@ export default function BenchmarkExtendedPage() {
       {!loading && allRows.length > 0 && (
         <>
           <SourceFilter
+            errorRows={rows.filter(r => r.error).length}
             source={source}
-            onSourceChange={setSource}
             sources={availableSources}
             totalRows={rows.length}
-            errorRows={rows.filter(r => r.error).length}
+            onSourceChange={setSource}
           />
 
           <ArchiveBaselines entries={archiveBaselines} />
 
           <ResultsTable
+            bestRatio={bestRatio}
             rows={sortedRows}
             sort={sort}
             onSortChange={setSort}
-            bestRatio={bestRatio}
           />
         </>
       )}

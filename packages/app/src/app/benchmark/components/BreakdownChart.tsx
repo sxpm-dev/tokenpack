@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+
 import { SCENARIOS } from '../constants'
 import type { BenchRow } from '../types'
 import { avg, fmtMs, getRows } from '../utils'
@@ -24,14 +25,16 @@ interface BreakdownChartProps {
 export function BreakdownChart({ data, condition, source }: BreakdownChartProps) {
   const chartData = SCENARIOS.map(s => {
     const rows = getRows(data, condition, source).filter(r => r.scenario === s)
+
     if (!rows.length) return null
+
     return { name: s, fetch: avg(rows, 'fetchMs'), decode: avg(rows, 'decodeMs') }
   }).filter((d): d is { name: string; fetch: number; decode: number } => d !== null)
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer height={220} width="100%">
       <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+        <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
         <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
         <YAxis
           tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }}
@@ -40,8 +43,8 @@ export function BreakdownChart({ data, condition, source }: BreakdownChartProps)
         />
         <Tooltip content={<Tip unit="ms" />} />
         <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }} />
-        <Bar dataKey="fetch" fill="#6366f1" stackId="a" maxBarSize={32} />
-        <Bar dataKey="decode" fill="#f59e0b" stackId="a" radius={[3, 3, 0, 0]} maxBarSize={32} />
+        <Bar dataKey="fetch" fill="#6366f1" maxBarSize={32} stackId="a" />
+        <Bar dataKey="decode" fill="#f59e0b" maxBarSize={32} radius={[3, 3, 0, 0]} stackId="a" />
       </BarChart>
     </ResponsiveContainer>
   )

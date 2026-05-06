@@ -8,7 +8,10 @@ import { describe, expect, it } from 'vitest'
 import { decode } from '../src/decoder'
 import { encode } from '../src/encoder'
 import { readHeader } from '../src/header'
-import { PngSurface } from '../src/surfaces/png-surface'
+// Concrete PngSurface lives in @tokenpack/node — core ships only the abstract base.
+import { PngSurface } from '@tokenpack/node'
+
+const pngSurface = new PngSurface()
 
 function tmpPath(ext = '.png') {
   return path.join(
@@ -32,7 +35,7 @@ describe('encoder', () => {
       },
     })
 
-    const { pixels, width, height } = PngSurface.decodeSync(out)
+    const { pixels, width, height } = await pngSurface.readFile(out)
     const header = readHeader(pixels)
 
     expect(header.version).toBe(1)
@@ -48,7 +51,7 @@ describe('encoder', () => {
 
     await encode(data, { out })
 
-    const { width, height } = PngSurface.decodeSync(out)
+    const { width, height } = await pngSurface.readFile(out)
     const totalPixels = width * height
 
     expect(totalPixels).toBeGreaterThanOrEqual(32 + Math.ceil(300 / 4))

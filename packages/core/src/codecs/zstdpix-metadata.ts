@@ -1,4 +1,4 @@
-import type { CodecMetadata } from '../types'
+import type { CodecMetadata } from './types'
 
 export const zstdpixMetadata: CodecMetadata = {
   pixelLayout: 'RGB · compressed blocks',

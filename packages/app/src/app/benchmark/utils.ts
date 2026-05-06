@@ -12,11 +12,10 @@ export const fmtBytes = (b: number): string =>
 
 export function avg(rows: BenchRow[], key: keyof BenchRow): number {
   if (!rows.length) return 0
+
   return rows.reduce((s, r) => s + (r[key] as number), 0) / rows.length
 }
 
 export function getRows(data: BenchRow[], condition: string, source: string): BenchRow[] {
-  return data.filter(r =>
-    r.condition === condition && (source === 'avg' || r.source === source),
-  )
+  return data.filter(r => r.condition === condition && (source === 'avg' || r.source === source))
 }

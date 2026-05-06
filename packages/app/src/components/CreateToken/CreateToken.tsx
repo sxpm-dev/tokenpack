@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { Button, Chip, Input, Tabs } from '@heroui/react'
 import { LockIcon, SlidersIcon, StarIcon } from '@phosphor-icons/react'
+import { useState } from 'react'
+
 import { AlgorithmSection } from './components/AlgorithmSection'
 import { CompressorSection } from './components/CompressorSection'
 import { DefaultPresets } from './components/DefaultPresets'
@@ -20,12 +21,7 @@ import type {
   InputMode,
   SizeStats,
 } from './types'
-import {
-  appendDefaultAlgorithm,
-  getDefaultAlgorithmFormat,
-  hexToRgb,
-  mimeForFormat,
-} from './utils'
+import { appendDefaultAlgorithm, getDefaultAlgorithmFormat, hexToRgb, mimeForFormat } from './utils'
 
 export function CreateToken() {
   const [inputMode, setInputMode] = useState<InputMode>('text')
@@ -64,6 +60,7 @@ export function CreateToken() {
 
   function getInputBytes() {
     if (inputMode === 'text') return new TextEncoder().encode(text).length
+
     return file?.size ?? 0
   }
 
@@ -106,14 +103,17 @@ export function CreateToken() {
       if (streaming && imgFormat === 'png') form.append('streaming', 'true')
       if (fecMode !== 'none' && !streaming) form.append('fecMode', fecMode)
       if (supportsDrawerBackground && useBackground) {
-        form.append('style', JSON.stringify({
-          gradient: {
-            from: hexToRgb(gradientFrom),
-            to: hexToRgb(gradientTo),
-            direction: gradientDirection,
-          },
-          opacity: backgroundOpacity / 100,
-        }))
+        form.append(
+          'style',
+          JSON.stringify({
+            gradient: {
+              from: hexToRgb(gradientFrom),
+              to: hexToRgb(gradientTo),
+              direction: gradientDirection,
+            },
+            opacity: backgroundOpacity / 100,
+          }),
+        )
       }
     }
     form.append('compressionMode', compressionMode)
@@ -129,13 +129,14 @@ export function CreateToken() {
 
     try {
       const isPackMode = inputMode === 'file' && file && isZip && unzip
-      const outputFormat = configMode === 'default'
-        ? getDefaultAlgorithmFormat(defaultPreset)
-        : imgFormat
+      const outputFormat =
+        configMode === 'default' ? getDefaultAlgorithmFormat(defaultPreset) : imgFormat
       const fileName = `token.${outputFormat}`
+
       setTokenFileName(fileName)
 
       const form = new FormData()
+
       if (isPackMode && file) {
         form.append('file', file)
         form.append('unzip', 'true')
@@ -152,10 +153,12 @@ export function CreateToken() {
       const endpoint = isPackMode ? '/api/pack' : '/api/encode'
       const res = await fetch(endpoint, { method: 'POST', body: form })
       const data = await res.json()
+
       if (!res.ok) throw new Error(data.error)
 
       const imgBytes = Uint8Array.from(atob(data.token), c => c.charCodeAt(0))
       const blob = new Blob([imgBytes], { type: mimeForFormat(outputFormat) })
+
       setTokenUrl(URL.createObjectURL(blob))
       setSizeStats({
         inputBytes,
@@ -176,86 +179,79 @@ export function CreateToken() {
 
   return (
     <div className="flex flex-col gap-3">
-
       <InputModeTabs
-        mode={inputMode}
-        onModeChange={handleInputModeChange}
-        text={text}
-        onTextChange={handleTextChange}
         file={file}
-        onFileChange={handleFileChange}
         isZip={isZip}
+        mode={inputMode}
+        text={text}
         unzip={unzip}
+        onFileChange={handleFileChange}
+        onModeChange={handleInputModeChange}
+        onTextChange={handleTextChange}
         onUnzipChange={setUnzip}
       />
 
-      <Tabs
-        selectedKey={configMode}
-        onSelectionChange={key => setConfigMode(key as ConfigMode)}
-      >
+      <Tabs selectedKey={configMode} onSelectionChange={key => setConfigMode(key as ConfigMode)}>
         <Tabs.List className="w-fit">
           <Tabs.Tab id="default">
-            <StarIcon size={18} className="text-accent mr-2" />
+            <StarIcon className="text-accent mr-2" size={18} />
             Default
             <Tabs.Indicator />
           </Tabs.Tab>
           <Tabs.Tab id="manual">
-            <SlidersIcon size={18} className="text-accent mr-2" />
+            <SlidersIcon className="text-accent mr-2" size={18} />
             Manual
             <Tabs.Indicator />
           </Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel id="default" className="p-0">
+        <Tabs.Panel className="p-0" id="default">
           <DefaultPresets value={defaultPreset} onChange={setDefaultPreset} />
         </Tabs.Panel>
 
-        <Tabs.Panel id="manual" className="p-0">
+        <Tabs.Panel className="p-0" id="manual">
           <div className="grid gap-3 lg:grid-cols-2">
             <AlgorithmSection
-              preset={preset}
-              onPresetChange={setPreset}
               algo={algo}
+              preset={preset}
               onAlgoChange={setAlgo}
+              onPresetChange={setPreset}
             />
 
             {showManualDetails && (
               <>
                 <DrawerSection
-                  drawer={drawer}
-                  onDrawerChange={setDrawer}
-                  cellSize={cellSize}
-                  onCellSizeChange={setCellSize}
-                  useBackground={useBackground}
-                  onUseBackgroundChange={setUseBackground}
-                  gradientFrom={gradientFrom}
-                  onGradientFromChange={setGradientFrom}
-                  gradientTo={gradientTo}
-                  onGradientToChange={setGradientTo}
-                  gradientDirection={gradientDirection}
-                  onGradientDirectionChange={setGradientDirection}
                   backgroundOpacity={backgroundOpacity}
+                  cellSize={cellSize}
+                  drawer={drawer}
+                  gradientDirection={gradientDirection}
+                  gradientFrom={gradientFrom}
+                  gradientTo={gradientTo}
+                  useBackground={useBackground}
                   onBackgroundOpacityChange={setBackgroundOpacity}
+                  onCellSizeChange={setCellSize}
+                  onDrawerChange={setDrawer}
+                  onGradientDirectionChange={setGradientDirection}
+                  onGradientFromChange={setGradientFrom}
+                  onGradientToChange={setGradientTo}
+                  onUseBackgroundChange={setUseBackground}
                 />
 
                 <SurfaceSection
-                  imgFormat={imgFormat}
-                  onImgFormatChange={handleImgFormatChange}
                   effectiveBpp={effectiveBpp}
-                  onBppChange={setBpp}
+                  imgFormat={imgFormat}
                   streaming={streaming}
+                  onBppChange={setBpp}
+                  onImgFormatChange={handleImgFormatChange}
                   onStreamingChange={setStreaming}
                 />
 
-                <CompressorSection
-                  value={compressionMode}
-                  onChange={setCompressionMode}
-                />
+                <CompressorSection value={compressionMode} onChange={setCompressionMode} />
 
                 <FecSection
+                  disabled={streaming && imgFormat === 'png'}
                   value={fecMode}
                   onChange={setFecMode}
-                  disabled={streaming && imgFormat === 'png'}
                 />
               </>
             )}
@@ -264,23 +260,23 @@ export function CreateToken() {
       </Tabs>
 
       <Input
-        type="password"
-        value={key}
-        onChange={e => setKey(e.target.value)}
-        placeholder="Encryption key (optional)"
-        variant="secondary"
         fullWidth
         className="!rounded-2xl"
+        placeholder="Encryption key (optional)"
+        type="password"
+        value={key}
+        variant="secondary"
+        onChange={e => setKey(e.target.value)}
       />
       <div>
         {key && (
-          <Chip size="sm" variant="soft" color="warning">
+          <Chip color="warning" size="sm" variant="soft">
             <LockIcon size={12} /> AES-256
           </Chip>
         )}
       </div>
 
-      <Button size="sm" onPress={handleGenerate} isPending={loading} isDisabled={!canGenerate}>
+      <Button isDisabled={!canGenerate} isPending={loading} size="sm" onPress={handleGenerate}>
         {loading ? 'Generating…' : 'Generate Token'}
       </Button>
 
@@ -291,7 +287,7 @@ export function CreateToken() {
       )}
 
       {tokenUrl && sizeStats && (
-        <TokenResult url={tokenUrl} fileName={tokenFileName} stats={sizeStats} />
+        <TokenResult fileName={tokenFileName} stats={sizeStats} url={tokenUrl} />
       )}
     </div>
   )

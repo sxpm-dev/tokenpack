@@ -22,7 +22,10 @@ export interface AggregatedResult {
 
 const hrtime = typeof performance !== 'undefined' ? performance : Date
 
-export async function bench<T>(label: string, fn: () => Promise<T> | T): Promise<{ result: T; bench: BenchResult }> {
+export async function bench<T>(
+  label: string,
+  fn: () => Promise<T> | T,
+): Promise<{ result: T; bench: BenchResult }> {
   const t0 = hrtime.now()
   const result = await fn()
   const ms = hrtime.now() - t0

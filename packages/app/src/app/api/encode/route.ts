@@ -1,12 +1,16 @@
+// Side-effect import: registers Node-zlib compressors + sharp/pngjs surfaces
+// + zstdpix codec into core's append-only registries before encode runs.
+import '@tokenpack/node'
+
 import { NextRequest, NextResponse } from 'next/server'
-import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'zlib'
-import 'tokenpack/algorithms/register-all'
 import { FEC_MODES } from 'tokenpack/algorithms/catalog-info'
 import { encodeToBuffer } from 'tokenpack/encoder'
 import type { Style } from 'tokenpack/types'
+import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib'
 
 function parseStyle(value: FormDataEntryValue | null): Partial<Style> | undefined {
   if (typeof value !== 'string' || value.length === 0) return undefined
+
   return JSON.parse(value) as Partial<Style>
 }
 
@@ -20,16 +24,16 @@ export async function POST(req: NextRequest) {
   const compressionMode = form.get('compressionMode') as string | null
   const cellSize = form.get('cellSize') as string | null
   const key = form.get('key') as string | null
-  const channels = parseInt(form.get('channels') as string || '3', 10) as 1 | 2 | 3 | 4
-  const format = (form.get('format') as string | null) as 'png' | 'avif' | 'webp' | null
+  const channels = parseInt((form.get('channels') as string) || '3', 10) as 1 | 2 | 3 | 4
+  const format = form.get('format') as string | null as 'png' | 'avif' | 'webp' | null
   const streaming = form.get('streaming') === 'true'
   const rawFecMode = form.get('fecMode') as string | null
-  const fecMode = rawFecMode && (FEC_MODES as readonly string[]).includes(rawFecMode)
-    ? rawFecMode
-    : undefined
+  const fecMode =
+    rawFecMode && (FEC_MODES as readonly string[]).includes(rawFecMode) ? rawFecMode : undefined
   const style = parseStyle(form.get('style'))
 
   let inputBuf: Buffer
+
   if (text) {
     inputBuf = Buffer.from(text, 'utf8')
   } else if (file) {
@@ -76,6 +80,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)
+
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

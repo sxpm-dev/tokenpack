@@ -1,6 +1,9 @@
 import zlib from 'zlib'
-
-import { AbstractCompressor, type CompressionMode, type CompressionResult } from './types'
+import {
+  AbstractCompressor,
+  type CompressionMode,
+  type CompressionResult,
+} from 'tokenpack/compressors/types'
 
 type DeflateMode = Extract<CompressionMode, 'deflate-1' | 'deflate-6' | 'deflate-9'>
 
@@ -26,7 +29,7 @@ export class DeflateCompressor extends AbstractCompressor {
     this.headerLevel = HEADER_LEVEL[mode]
   }
 
-  compress(input: Buffer): CompressionResult {
+  async compress(input: Buffer): Promise<CompressionResult> {
     return {
       data: zlib.deflateSync(input, { level: this.zlibLevel }),
       level: this.headerLevel,
@@ -34,7 +37,7 @@ export class DeflateCompressor extends AbstractCompressor {
     }
   }
 
-  decompress(input: Buffer): Buffer {
+  async decompress(input: Buffer): Promise<Buffer> {
     return zlib.inflateSync(input)
   }
 

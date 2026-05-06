@@ -1,8 +1,9 @@
 'use client'
 
-import { useRef } from 'react'
 import { Button, Checkbox, Tabs, TextArea } from '@heroui/react'
 import { FileIcon, TextTIcon, UploadSimpleIcon } from '@phosphor-icons/react'
+import { useRef } from 'react'
+
 import type { InputMode } from '../types'
 import { formatBytes } from '../utils'
 
@@ -33,48 +34,46 @@ export function InputModeTabs({
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null
+
     onFileChange(f)
   }
 
   return (
-    <Tabs
-      selectedKey={mode}
-      onSelectionChange={key => onModeChange(key as InputMode)}
-    >
+    <Tabs selectedKey={mode} onSelectionChange={key => onModeChange(key as InputMode)}>
       <Tabs.List className="w-fit">
         <Tabs.Tab id="text">
-          <TextTIcon size={18} className="text-accent mr-2" />
+          <TextTIcon className="text-accent mr-2" size={18} />
           Text
           <Tabs.Indicator />
         </Tabs.Tab>
         <Tabs.Tab id="file">
-          <FileIcon size={18} className="text-accent mr-2" />
+          <FileIcon className="text-accent mr-2" size={18} />
           File
           <Tabs.Indicator />
         </Tabs.Tab>
       </Tabs.List>
 
-      <Tabs.Panel id="text" className="p-0">
+      <Tabs.Panel className="p-0" id="text">
         <TextArea
-          value={text}
-          onChange={e => onTextChange(e.target.value)}
+          fullWidth
+          className="min-h-[210px] font-mono text-[13px] !rounded-2xl"
           placeholder="Paste your source code or any text here…"
           rows={7}
-          fullWidth
+          value={text}
           variant="secondary"
-          className="min-h-[210px] font-mono text-[13px] !rounded-2xl"
+          onChange={e => onTextChange(e.target.value)}
         />
       </Tabs.Panel>
 
-      <Tabs.Panel id="file" className="p-0">
+      <Tabs.Panel className="p-0" id="file">
         <div className="flex flex-col gap-2">
           <Button
+            className="min-h-24 w-full border border-dashed border-white/18"
             variant="secondary"
             onPress={() => fileRef.current?.click()}
-            className="min-h-24 w-full border border-dashed border-white/18"
           >
             <div className="flex flex-col items-center gap-2">
-              <UploadSimpleIcon size={24} className="text-white/30" />
+              <UploadSimpleIcon className="text-white/30" size={24} />
               {file ? (
                 <span className="text-white/80 font-medium">
                   {file.name}
@@ -83,17 +82,12 @@ export function InputModeTabs({
               ) : (
                 'Click to upload a file or .zip'
               )}
-              <input
-                ref={fileRef}
-                type="file"
-                className="hidden"
-                onChange={handleFileChange}
-              />
+              <input ref={fileRef} className="hidden" type="file" onChange={handleFileChange} />
             </div>
           </Button>
 
           {isZip && (
-            <Checkbox isSelected={unzip} onChange={onUnzipChange} variant="secondary">
+            <Checkbox isSelected={unzip} variant="secondary" onChange={onUnzipChange}>
               <Checkbox.Control>
                 <Checkbox.Indicator />
               </Checkbox.Control>

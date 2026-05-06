@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "packageManager": "yarn@4.3.1",
+  "engines": {
+    "node": ">=18.18"
+  },
   "workspaces": [
     "packages/*",
     "benchmark"
@@ -14,9 +17,13 @@
     "format": "yarn workspaces foreach -A --exclude codeart-monorepo run format",
     "test": "yarn workspace tokenpack test",
     "test:watch": "yarn workspace tokenpack test:watch",
-    "tokenpack": "yarn workspace tokenpack tokenpack",
+    "tokenpack": "yarn workspace tokenpack-cli tokenpack",
+    "tokenpack-skill": "yarn workspace tokenpack-claude-skill exec tsx src/cli.ts",
     "benchmark:generate": "yarn workspace tokenpack-benchmark generate",
+    "benchmark:generate:runtime": "yarn workspace tokenpack-benchmark generate:runtime",
+    "benchmark:run": "yarn workspace tokenpack-benchmark exec tsx run.ts",
     "benchmark:run:extended": "yarn workspace tokenpack-benchmark run:extended",
+    "benchmark:all": "yarn benchmark:generate && yarn benchmark:generate:runtime && yarn benchmark:run && yarn benchmark:run:extended",
     "app": "yarn workspace tokenpack-app dev",
     "app:build": "yarn workspace tokenpack-app build",
     "start": "yarn workspace tokenpack-app start"

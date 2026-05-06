@@ -1,31 +1,30 @@
 import type { ImageFormat } from '../types'
-import { AvifSurface } from './avif-surface'
-import { PngSurface } from './png-surface'
-import { StreamingPngSurface } from './streaming-png-surface'
 import { AbstractSurface, type SurfaceId } from './types'
-import { WebpSurface } from './webp-surface'
 
+// Append-only registry. Core stays env-neutral; it registers no surfaces
+// itself. `@tokenpack/node` registers PNG (pngjs), streaming-PNG (pngjs),
+// AVIF (sharp) and WebP (sharp) on import. `@tokenpack/browser` registers
+// browser-native PNG / streaming-PNG (Canvas + createImageBitmap).
 export class SurfaceRegistry {
   private readonly factories = new Map<SurfaceId, () => AbstractSurface>()
 
-  constructor() {
-    // TODO Phase 2: AVIF and WebP surfaces relocate to `@tokenpack/node`
-    // (they pull sharp's native binary). The pluggable `register()` API below
-    // is the migration target — `@tokenpack/node` will register them at import.
-    this.register('png', () => new PngSurface())
-    this.register('png-stream', () => new StreamingPngSurface())
-    this.register('webp', () => new WebpSurface())
-    this.register('avif', () => new AvifSurface())
+  register(id: SurfaceId, factory: () => AbstractSurface): void {
+    // Idempotent: webpack chunk splitting can re-evaluate the env-package
+    // register module per server chunk. Skip silently on duplicate `id` —
+    // the first registration wins. Append-only invariant intact at the data
+    // level (existing surface can't be overridden).
+    if (this.factories.has(id)) return
+    this.factories.set(id, factory)
   }
 
-  register(id: SurfaceId, factory: () => AbstractSurface): void {
-    this.factories.set(id, factory)
+  has(id: SurfaceId): boolean {
+    return this.factories.has(id)
   }
 
   byId(id: SurfaceId): AbstractSurface {
     const factory = this.factories.get(id)
 
-    if (!factory) throw new Error(`Unknown surface id: ${id}`)
+    if (!factory) throw new Error(`Unknown surface id: ${id}. No env package registered it.`)
 
     return factory()
   }
@@ -50,6 +49,10 @@ export class SurfaceRegistry {
 
   list(): AbstractSurface[] {
     return [...this.factories.values()].map(f => f())
+  }
+
+  listIds(): SurfaceId[] {
+    return [...this.factories.keys()]
   }
 }
 

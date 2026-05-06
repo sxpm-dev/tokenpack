@@ -1,4 +1,5 @@
 import { ArrowRightIcon } from '@phosphor-icons/react'
+
 import type { SizeStats } from '../types'
 import { formatBytes } from '../utils'
 import { PctBadge } from './PctBadge'
@@ -12,7 +13,7 @@ export function SizeBadge({ stats }: SizeBadgeProps) {
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3 text-sm flex-wrap">
         <span className="text-white/50 font-mono">{formatBytes(stats.inputBytes)}</span>
-        <ArrowRightIcon size={14} className="text-white/20" />
+        <ArrowRightIcon className="text-white/20" size={14} />
         <span className="text-white/80 font-mono font-semibold">
           {formatBytes(stats.tokenBytes)}
         </span>

@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+
 import type { FileEntry } from '@/app/api/decode/route'
+
 import { buildTree } from '../utils'
 import { FileIcon } from './FileIcon'
 import { TreeNodeRow } from './TreeNodeRow'
@@ -16,18 +18,23 @@ export function FileTree({ files }: FileTreeProps) {
   const [selected, setSelected] = useState<FileEntry | null>(firstFile)
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     const dirs = new Set<string>()
+
     files.forEach(f => {
       const parts = f.path.split('/')
+
       for (let i = 1; i < parts.length; i++) dirs.add(parts.slice(0, i).join('/'))
     })
+
     return dirs
   })
 
   function toggle(path: string) {
     setExpanded(prev => {
       const next = new Set(prev)
+
       if (next.has(path)) next.delete(path)
       else next.add(path)
+
       return next
     })
   }
@@ -41,11 +48,11 @@ export function FileTree({ files }: FileTreeProps) {
         {tree.map(node => (
           <TreeNodeRow
             key={node.path}
-            node={node}
             depth={0}
+            expanded={expanded}
+            node={node}
             selected={selected}
             onSelect={setSelected}
-            expanded={expanded}
             onToggle={toggle}
           />
         ))}

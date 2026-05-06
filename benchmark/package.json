@@ -6,6 +6,7 @@
   "description": "Benchmark scripts and fixtures for tokenpack codecs",
   "scripts": {
     "generate": "tsx generate.ts",
+    "generate:runtime": "tsx generate-runtime.ts",
     "run": "tsx run.ts",
     "run:extended": "tsx run-extended.ts",
     "lint": "eslint *.ts",
@@ -13,6 +14,7 @@
     "format": "prettier --write *.ts"
   },
   "dependencies": {
+    "@tokenpack/node": "workspace:*",
     "adm-zip": "^0.5.17",
     "tokenpack": "workspace:*"
   },

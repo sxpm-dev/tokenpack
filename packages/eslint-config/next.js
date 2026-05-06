@@ -1,47 +1,41 @@
-// React/Next layer for the tokenpack monorepo. Composes the base TS config with
-// React + Next + jsx-a11y rules. Use this in packages that ship JSX.
+// React/Next layer for the tokenpack monorepo.
+//
+// Compose strategy: eslint-config-next registers @typescript-eslint, react,
+// jsx-a11y, and import plugins via its flat config. We add the plugins it
+// DOESN'T provide (unused-imports, simple-import-sort, prettier) plus our
+// base rules on top.
+//
+// Non-Next packages use `./index.js` directly (full plugin set there).
 
-import { fixupConfigRules, fixupPluginRules } from '@eslint/compat'
-import { FlatCompat } from '@eslint/eslintrc'
-import js from '@eslint/js'
+import { fixupPluginRules } from '@eslint/compat'
 import nextEslintConfig from 'eslint-config-next'
-import jsxA11Y from 'eslint-plugin-jsx-a11y'
-import react from 'eslint-plugin-react'
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import prettier from 'eslint-plugin-prettier'
+import simpleImportSort from 'eslint-plugin-simple-import-sort'
+import unusedImports from 'eslint-plugin-unused-imports'
 
-import { baseConfig } from './index.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-})
+import {
+  baseIgnores,
+  baseLanguageOptions,
+  baseRules,
+  prettierConfig,
+} from './index.js'
 
 export const nextConfig = [
-  ...baseConfig,
+  baseIgnores,
   ...nextEslintConfig,
-  ...fixupConfigRules(
-    compat.extends(
-      'plugin:react/recommended',
-      'plugin:react-hooks/recommended',
-      'plugin:jsx-a11y/recommended',
-    ),
-  ),
+  ...prettierConfig,
   {
-    files: ['**/*.tsx', '**/*.jsx'],
+    files: ['**/*.ts', '**/*.tsx'],
     plugins: {
-      react: fixupPluginRules(react),
-      'jsx-a11y': fixupPluginRules(jsxA11Y),
+      // Only the plugins that eslint-config-next does NOT already register.
+      'unused-imports': unusedImports,
+      'simple-import-sort': simpleImportSort,
+      prettier: fixupPluginRules(prettier),
     },
-    languageOptions: {
-      parserOptions: { ecmaFeatures: { jsx: true } },
-    },
-    settings: { react: { version: 'detect' } },
+    languageOptions: baseLanguageOptions,
     rules: {
+      ...baseRules,
+      // React-specific overrides on top of Next's defaults.
       'react/prop-types': 'off',
       'react/display-name': 'off',
       'react/jsx-uses-react': 'off',
@@ -60,6 +54,7 @@ export const nextConfig = [
         },
       ],
     },
+    settings: { react: { version: 'detect' } },
   },
 ]
 

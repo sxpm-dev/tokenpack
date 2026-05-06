@@ -1,5 +1,7 @@
 import { Card } from '@heroui/react'
+
 import type { ArchiveTimeEntry } from '@/app/api/benchmark/archives/route'
+
 import { fmtArchiveBytes, fmtArchiveMs } from '../utils'
 
 interface ArchiveBaselinesProps {
@@ -10,7 +12,7 @@ export function ArchiveBaselines({ entries }: ArchiveBaselinesProps) {
   if (!entries.length) return null
 
   return (
-    <Card variant="secondary" className="space-y-2.5 px-3.5 py-3">
+    <Card className="space-y-2.5 px-3.5 py-3" variant="secondary">
       <div className="text-[10px] text-white/30 uppercase tracking-widest">
         Traditional archive baselines
       </div>
@@ -27,7 +29,7 @@ export function ArchiveBaselines({ entries }: ArchiveBaselinesProps) {
               <span className="text-white/70">{fmtArchiveBytes(b.bytes)}</span>
               <span className="text-white/30">ratio</span>
               <span className="text-white/70">
-                {Math.round(b.bytes / b.originalBytes * 100)}%
+                {Math.round((b.bytes / b.originalBytes) * 100)}%
               </span>
             </div>
           </div>

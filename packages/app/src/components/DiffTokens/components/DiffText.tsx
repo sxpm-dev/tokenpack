@@ -6,6 +6,7 @@ function classifyLine(line: string): string {
   if (line.startsWith('+ ')) return 'text-green-400'
   if (line.startsWith('- ')) return 'text-red-400'
   if (line.startsWith('━') || line.startsWith('@@')) return 'text-blue-400/80'
+
   return 'text-white/50'
 }
 

@@ -1,8 +1,10 @@
 // Test environment setup.
 //
-// Vitest's 'node' environment doesn't expose `globalThis.crypto` even though
-// it's available in plain Node ≥ 18. Polyfill from node:crypto.webcrypto so
-// the Web Crypto API used by src/crypto.ts works in tests.
+// 1. Polyfill `globalThis.crypto` from `node:crypto.webcrypto` (Vitest's 'node'
+//    env doesn't expose it, even though it's available on plain Node ≥ 18).
+// 2. Register Node-zlib compressors and pngjs/sharp surfaces with core's
+//    append-only registries by importing `@tokenpack/node`. Core ships only
+//    `none` + zero surfaces by design — env packages contribute the rest.
 
 import { webcrypto } from 'node:crypto'
 
@@ -14,3 +16,5 @@ if (!globalThis.crypto) {
     configurable: true,
   })
 }
+
+import '@tokenpack/node'

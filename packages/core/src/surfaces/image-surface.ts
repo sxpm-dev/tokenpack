@@ -1,5 +1,3 @@
-import sharp from 'sharp'
-
 import type { ImageFormat } from '../types'
 import { AbstractSurface, type SurfaceId, type SurfacePixels } from './types'
 
@@ -14,20 +12,10 @@ export interface ImageSurfaceInit {
   maxBpp?: 1 | 2 | 3 | 4
 }
 
-// Sharp-based raster reader shared by all raster surfaces (PNG, WebP, AVIF).
-// Sharp auto-detects the format from the buffer/file header.
-async function readSharp(input: string | Buffer): Promise<SurfacePixels> {
-  const { data, info } = await sharp(input).raw().toBuffer({ resolveWithObject: true })
-  const fileChannels = (info.channels >= 4 ? 4 : 3) as 3 | 4
-
-  return {
-    pixels: new Uint8Array(data.buffer, data.byteOffset, data.byteLength),
-    width: info.width,
-    height: info.height,
-    fileChannels,
-  }
-}
-
+// Env-neutral base class for raster surfaces. Concrete subclasses live in
+// env packages: pngjs/sharp impls in `@tokenpack/node`, Canvas/createImageBitmap
+// impls in `@tokenpack/browser`. The abstract `write` / `readFile` / `readBuffer`
+// methods are required — there is no Node-only fallback in core.
 export abstract class ImageSurface extends AbstractSurface {
   readonly id: SurfaceId
   readonly label: string
@@ -54,12 +42,6 @@ export abstract class ImageSurface extends AbstractSurface {
   }
 
   abstract write(filePath: string, image: SurfacePixels): Promise<void>
-
-  readFile(filePath: string): Promise<SurfacePixels> {
-    return readSharp(filePath)
-  }
-
-  readBuffer(buffer: Buffer): Promise<SurfacePixels> {
-    return readSharp(buffer)
-  }
+  abstract readFile(filePath: string): Promise<SurfacePixels>
+  abstract readBuffer(buffer: Buffer): Promise<SurfacePixels>
 }

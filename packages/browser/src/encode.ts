@@ -3,8 +3,9 @@
 // Uses `algorithmCatalog.encodeBytes` from @tokenpack/core to produce raw pixel
 // chunks, then wraps each chunk in a PNG via the browser's native encoder.
 
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import 'tokenpack/algorithms/register-all'
+
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import type { DrawnChunk } from 'tokenpack/drawers/types'
 import type { EncodeOptions } from 'tokenpack/types'
 
@@ -61,14 +62,17 @@ async function coerceToBytes(input: string | Uint8Array | ArrayBuffer | Blob): P
 
 async function chunkToPngBlob(chunk: DrawnChunk): Promise<Blob> {
   const { pixels, width, height, fileChannels } = chunk
-  const canvas = typeof OffscreenCanvas !== 'undefined'
-    ? new OffscreenCanvas(width, height)
-    : (() => {
-        const c = document.createElement('canvas')
-        c.width = width
-        c.height = height
-        return c
-      })()
+  const canvas =
+    typeof OffscreenCanvas !== 'undefined'
+      ? new OffscreenCanvas(width, height)
+      : (() => {
+          const c = document.createElement('canvas')
+
+          c.width = width
+          c.height = height
+
+          return c
+        })()
 
   const ctx = canvas.getContext('2d')
 
@@ -78,14 +82,19 @@ async function chunkToPngBlob(chunk: DrawnChunk): Promise<Blob> {
   const rgba = fileChannels === 4 ? pixels : expandRgbToRgba(pixels, width, height)
   const clamped = new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, rgba.byteLength)
   // TS 5.7+ Uint8ClampedArray<ArrayBufferLike> trips ImageData's BufferSource expectation.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const imageData = new ImageData(clamped as any, width, height)
 
-  ;(ctx as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D).putImageData(imageData, 0, 0)
+  ;(ctx as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D).putImageData(
+    imageData,
+    0,
+    0,
+  )
 
   if ('convertToBlob' in canvas) {
     return await canvas.convertToBlob({ type: 'image/png' })
   }
+
   return await new Promise<Blob>((resolve, reject) => {
     ;(canvas as HTMLCanvasElement).toBlob(blob => {
       if (blob) resolve(blob)
@@ -96,12 +105,14 @@ async function chunkToPngBlob(chunk: DrawnChunk): Promise<Blob> {
 
 function expandRgbToRgba(rgb: Uint8Array, width: number, height: number): Uint8Array {
   const out = new Uint8Array(width * height * 4)
+
   for (let i = 0, j = 0; i < rgb.length; i += 3, j += 4) {
     out[j] = rgb[i]
     out[j + 1] = rgb[i + 1]
     out[j + 2] = rgb[i + 2]
     out[j + 3] = 255
   }
+
   return out
 }
 

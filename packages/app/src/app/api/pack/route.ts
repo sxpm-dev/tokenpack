@@ -1,17 +1,20 @@
+// Side-effect import: registers Node compressors + surfaces with core.
+import '@tokenpack/node'
+
+import AdmZip from 'adm-zip'
+import { randomUUID } from 'crypto'
+import { mkdirSync, rmSync, writeFileSync } from 'fs'
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFileSync, mkdirSync, rmSync } from 'fs'
-import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'zlib'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { randomUUID } from 'crypto'
-import AdmZip from 'adm-zip'
-import 'tokenpack/algorithms/register-all'
-import { encodeToBuffer } from 'tokenpack/encoder'
 import { packDirs } from 'tokenpack/archive'
+import { encodeToBuffer } from 'tokenpack/encoder'
 import type { Style } from 'tokenpack/types'
+import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib'
 
 function parseStyle(value: FormDataEntryValue | null): Partial<Style> | undefined {
   if (typeof value !== 'string' || value.length === 0) return undefined
+
   return JSON.parse(value) as Partial<Style>
 }
 
@@ -25,8 +28,8 @@ export async function POST(req: NextRequest) {
   const compressionMode = form.get('compressionMode') as string | null
   const cellSize = form.get('cellSize') as string | null
   const key = form.get('key') as string | null
-  const channels = parseInt(form.get('channels') as string || '3', 10) as 1 | 2 | 3 | 4
-  const format = (form.get('format') as string | null) as 'png' | 'avif' | 'webp' | null
+  const channels = parseInt((form.get('channels') as string) || '3', 10) as 1 | 2 | 3 | 4
+  const format = form.get('format') as string | null as 'png' | 'avif' | 'webp' | null
   const streaming = form.get('streaming') === 'true'
   const style = parseStyle(form.get('style'))
 
@@ -46,6 +49,7 @@ export async function POST(req: NextRequest) {
 
     if (unzip && (file.name.endsWith('.zip') || file.type === 'application/zip')) {
       const zip = new AdmZip(bytes)
+
       zip.extractAllTo(tmpDir, true)
     } else {
       writeFileSync(join(tmpDir, file.name), bytes)
@@ -85,6 +89,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)
+
     return NextResponse.json({ error: msg }, { status: 500 })
   } finally {
     try {

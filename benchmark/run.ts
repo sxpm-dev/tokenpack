@@ -7,7 +7,9 @@
  * Network: throttled local HTTP server simulating 4 conditions
  */
 
-import 'tokenpack/algorithms/register-all'
+// Side-effect: registers AVIF/WebP surfaces. Required because the benchmark
+// decodes WebP tokens via `decodeFromBuffer(... '.webp')`.
+import '@tokenpack/node'
 
 import AdmZip from 'adm-zip'
 import fs from 'fs'
@@ -15,9 +17,10 @@ import http from 'http'
 import path from 'path'
 import { decodeFromBuffer } from 'tokenpack/decoder'
 import { createTokenDecodeStream } from 'tokenpack/stream-decoder'
+import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 
-const HERE = import.meta.dirname
+const HERE = path.dirname(fileURLToPath(import.meta.url))
 const TOKENS_DIR = path.join(HERE, 'tokens')
 const RESULTS_DIR = path.join(HERE, '..', 'packages', 'app', 'benchmark-results')
 
@@ -37,8 +40,11 @@ const CONDITIONS = [
 const SOURCES = [
   'react-dom-client.development',
   'react-dom-client.production',
+  'chunk-5mb',
   'screenshot',
   'fs-app-core',
+  'client-spec-map',
+  'client-spec-map.min',
 ]
 
 // ── Throttled HTTP server ─────────────────────────────────────────────────

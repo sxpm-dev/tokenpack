@@ -8,7 +8,7 @@
 //
 // Browser-safe — no fs deps; uses only `packBuffers`/`unpackBuffers`/`isCartArchive`.
 
-import { isCartArchive, packBuffers, type PackEntry, unpackBuffers } from './archive'
+import { isCartArchive, packBuffers, type PackEntry, unpackBuffers } from './archive-buffers'
 
 const META_PATH = '.tokenpack-diff-meta.json'
 

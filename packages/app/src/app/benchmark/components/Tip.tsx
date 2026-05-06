@@ -15,6 +15,7 @@ interface TipProps {
 
 export function Tip({ active, payload, label, unit }: TipProps) {
   if (!active || !payload?.length) return null
+
   return (
     <div className="bg-zinc-900 border border-white/10 rounded-xl p-3 text-xs shadow-xl">
       <div className="text-white/60 mb-2 font-medium">{label}</div>

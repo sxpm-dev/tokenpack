@@ -1,13 +1,7 @@
 'use client'
 
-import {
-  ColorArea,
-  ColorPicker,
-  ColorSlider,
-  ColorSwatch,
-  Label,
-  Slider,
-} from '@heroui/react'
+import { ColorArea, ColorPicker, ColorSlider, ColorSwatch, Label, Slider } from '@heroui/react'
+
 import { GRADIENT_DIRECTIONS } from '../constants'
 import type { GradientDirection } from '../types'
 import { SelectField } from './SelectField'
@@ -98,11 +92,11 @@ export function GradientPicker({
         <div className="flex flex-col gap-1 flex-1">
           <span className="text-xs text-white/40">Data opacity · {opacity}%</span>
           <Slider
+            maxValue={100}
+            minValue={20}
+            step={5}
             value={opacity}
             onChange={v => onOpacityChange(Array.isArray(v) ? v[0] : v)}
-            minValue={20}
-            maxValue={100}
-            step={5}
           >
             <Slider.Track>
               <Slider.Fill />

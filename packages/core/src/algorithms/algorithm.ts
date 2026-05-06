@@ -9,11 +9,12 @@ import { fecRegistry } from '../fec/registry'
 import { finalizeChunks } from '../finalize-chunks'
 import { surfaceRegistry } from '../surfaces/registry'
 import type { AbstractSurface, SurfacePixels } from '../surfaces/types'
-import type { DecodeOptions, EncodeOptions } from '../types'
+import type { EncodeOptions, ImageFormat } from '../types'
 import {
   AbstractAlgorithm,
   type AlgorithmCapabilities,
   type AlgorithmCatalogEntry,
+  type AlgorithmEnvironment,
   type AlgorithmOption,
 } from './types'
 
@@ -86,34 +87,30 @@ export class Algorithm extends AbstractAlgorithm {
   readonly title: string
   readonly description: string
   readonly codec: AbstractCodec
-  readonly compressor: AbstractCompressor
   readonly drawer: AbstractDrawer
-  readonly surface: AbstractSurface
   readonly capabilities: AlgorithmCapabilities
   readonly options: AlgorithmOption[]
   readonly defaults: Partial<Omit<EncodeOptions, 'algo'>>
 
-  // Stream decode lives in a Node-only adapter (`@tokenpack/node` after Phase 2)
-  // because it requires Node `stream.PassThrough`. Browser callers use the
-  // Web Streams variant from `@tokenpack/browser` (Phase 3 / Phase 1 stream-decoder rewrite).
-  readonly stream = {
-    decode: async (input: unknown, key?: string): Promise<unknown> => {
-      const { createTokenDecodeStream } = await import('../stream-decoder')
-      const { PassThrough } = await import('stream')
-      const out = new PassThrough()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(input as any).pipe(createTokenDecodeStream(key)).pipe(out)
-
-      return out
-    },
-  }
+  // Default surface/compressor are stored as identifiers, not concrete instances.
+  // Resolution happens lazily through the `surface` / `compressor` getters because
+  // the env package (@tokenpack/node or @tokenpack/browser) may not have populated
+  // the registries yet at the moment Algorithm instances are constructed (chunk-eval
+  // order during webpack bundling). By the time anything reads these getters, the
+  // env-side side-effect imports have run.
+  readonly defaultFormat: ImageFormat
+  readonly defaultCompressionMode: string
+  private readonly explicitCompressor?: AbstractCompressor
+  private readonly explicitSurface?: AbstractSurface
 
   constructor(init: AlgorithmInit) {
     super()
     this.codec = init.codec
-    this.compressor = init.compressor ?? compressorRegistry.byMode('brotli-11')
     this.drawer = init.drawer ?? new DenseDrawer()
-    this.surface = init.surface ?? surfaceRegistry.byFormat('png')
+    this.explicitCompressor = init.compressor
+    this.explicitSurface = init.surface
+    this.defaultFormat = init.surface?.format ?? init.defaults?.format ?? 'png'
+    this.defaultCompressionMode = init.compressor?.id ?? 'brotli-11'
     this.id = init.codec.id
     this.name = init.name ?? init.codec.name
     const meta = init.codec.metadata
@@ -122,17 +119,47 @@ export class Algorithm extends AbstractAlgorithm {
     this.description = init.description ?? meta?.description ?? `${init.codec.name} algorithm`
     this.options = init.options ?? DEFAULT_OPTIONS
     this.defaults = init.defaults ?? {}
-    this.validateCompatibility()
-    const streamable = this.surface.streamable || isStreamingCodec(this.codec)
-    const decodeOnFlight =
-      this.surface.streamable && isStreamingCodec(this.codec) && this.compressor.streamableDecode
+
+    // Only validate when init carries explicit instances. With defaults the
+    // resolved surface comes from the env-package registry and is always sound.
+    if (init.surface || init.drawer) this.validateExplicitCompatibility(init)
+
+    const nodeOnly = init.nodeOnly ?? meta?.feFriendly === 'no'
+    const browserFriendly = init.browserFriendly ?? meta?.feFriendly !== 'no'
+    const environments: AlgorithmEnvironment[] = nodeOnly
+      ? ['node']
+      : browserFriendly
+        ? ['node', 'browser']
+        : ['node']
+    // Streaming capability is intrinsic to (codec × compressor mode); the
+    // surface contributes the `png-stream` flag at encode time. We report
+    // the optimistic case here.
+    const streamable = isStreamingCodec(this.codec)
 
     this.capabilities = {
       streamable,
-      decodeOnFlight,
-      browserFriendly: init.browserFriendly ?? meta?.feFriendly !== 'no',
-      nodeOnly: init.nodeOnly ?? meta?.feFriendly === 'no',
+      decodeOnFlight: streamable,
+      browserFriendly,
+      nodeOnly,
+      environments,
     }
+  }
+
+  get compressor(): AbstractCompressor {
+    if (this.explicitCompressor) return this.explicitCompressor
+
+    return compressorRegistry.has(this.defaultCompressionMode as never)
+      ? compressorRegistry.byMode(this.defaultCompressionMode)
+      : compressorRegistry.byMode('none')
+  }
+
+  get surface(): AbstractSurface {
+    if (this.explicitSurface) return this.explicitSurface
+    if (surfaceRegistry.has(this.defaultFormat)) return surfaceRegistry.byFormat(this.defaultFormat)
+    throw new Error(
+      `No surface registered for format "${this.defaultFormat}". ` +
+        `Make sure @tokenpack/node or @tokenpack/browser is imported before using this algorithm.`,
+    )
   }
 
   // Pure browser-safe encode: returns raw pixel chunks. No fs, no surface.write.
@@ -168,7 +195,7 @@ export class Algorithm extends AbstractAlgorithm {
     let uncompressedLength = 0
 
     if (compressor.id !== 'none') {
-      const result = compressor.compress(dataToEncode)
+      const result = await compressor.compress(dataToEncode)
 
       if (result.data.length < dataToEncode.length) {
         const inputLen = dataToEncode.length
@@ -254,24 +281,6 @@ export class Algorithm extends AbstractAlgorithm {
     return paths
   }
 
-  async decode(inputPath: string, options: DecodeOptions): Promise<void> {
-    const { decodeFile } = await import('../decoder')
-
-    return decodeFile(inputPath, options)
-  }
-
-  async decodeToBuffer(inputPath: string, key?: string): Promise<Buffer> {
-    const { decodeToBuffer } = await import('../decoder')
-
-    return decodeToBuffer(inputPath, key)
-  }
-
-  async decodeFromBuffer(imageBuffer: Buffer, key?: string, ext = '.png'): Promise<Buffer> {
-    const { decodeFromBuffer } = await import('../decoder')
-
-    return decodeFromBuffer(imageBuffer, key, ext)
-  }
-
   toCatalogEntry(): AlgorithmCatalogEntry {
     const meta = this.codec.metadata
 
@@ -306,20 +315,28 @@ export class Algorithm extends AbstractAlgorithm {
     return [channels, `outer compression: none / ${compressionFamilies}`]
   }
 
-  private validateCompatibility(): void {
-    if (this.drawer.outputKind !== this.surface.inputKind) {
+  // Validates that an explicitly-supplied (drawer, surface) pair is sound.
+  // Only invoked when init carries a custom drawer or surface — default
+  // configs (DenseDrawer + registry-resolved 'png') skip this because the
+  // pair is always valid by construction.
+  private validateExplicitCompatibility(init: AlgorithmInit): void {
+    if (!init.surface) return
+    const { drawer } = this
+    const surface = init.surface
+
+    if (drawer.outputKind !== surface.inputKind) {
       throw new Error(
-        `Algorithm "${this.name}" is invalid: drawer ${this.drawer.id} cannot feed surface ${this.surface.id}`,
+        `Algorithm "${this.name}" is invalid: drawer ${drawer.id} cannot feed surface ${surface.id}`,
       )
     }
-    if (this.drawer.capabilities.requiresLosslessSurface && !this.surface.lossless) {
+    if (drawer.capabilities.requiresLosslessSurface && !surface.lossless) {
       throw new Error(
-        `Algorithm "${this.name}" is invalid: drawer ${this.drawer.id} requires a lossless surface`,
+        `Algorithm "${this.name}" is invalid: drawer ${drawer.id} requires a lossless surface`,
       )
     }
-    if (this.drawer.capabilities.requiresAlpha && !this.surface.preservesAlpha) {
+    if (drawer.capabilities.requiresAlpha && !surface.preservesAlpha) {
       throw new Error(
-        `Algorithm "${this.name}" is invalid: drawer ${this.drawer.id} requires alpha-preserving surface`,
+        `Algorithm "${this.name}" is invalid: drawer ${drawer.id} requires alpha-preserving surface`,
       )
     }
   }

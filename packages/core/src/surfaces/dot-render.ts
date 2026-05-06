@@ -1,6 +1,12 @@
-import { HEADER_PIXELS } from './header'
-import { CHANNELS } from './surfaces/channels'
-import type { HeaderData } from './types'
+// Dot-mode rendering helpers — relocated from `core/src/render.ts` because
+// these functions are surface-level concerns: they compute the 2D image
+// layout from a stream of data cells, place data pixels into the grid,
+// and paint the gradient background. They sit between codec output (raw
+// bytes) and surface write (PNG/WebP/AVIF file output).
+
+import { HEADER_PIXELS } from '../header'
+import type { HeaderData } from '../types'
+import { CHANNELS } from './channels'
 
 export interface DotLayout {
   gridWidth: number

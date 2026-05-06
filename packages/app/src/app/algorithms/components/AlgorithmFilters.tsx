@@ -24,24 +24,21 @@ export function AlgorithmFilters({
       <div className="flex flex-col gap-2">
         <div className="text-[10px] text-white/30 uppercase tracking-widest">Filter</div>
         <ToggleButtonGroup
+          className="flex-wrap"
+          selectedKeys={
+            new Set([...(browserOnly ? ['browser'] : []), ...(streamOnly ? ['stream'] : [])])
+          }
           selectionMode="multiple"
-          selectedKeys={new Set([
-            ...(browserOnly ? ['browser'] : []),
-            ...(streamOnly ? ['stream'] : []),
-          ])}
+          size="sm"
           onSelectionChange={keys => {
             const s = keys as Set<string>
+
             onBrowserOnlyChange(s.has('browser'))
             onStreamOnlyChange(s.has('stream'))
           }}
-          size="sm"
-          className="flex-wrap"
         >
           <ToggleButton id="browser">Browser-safe</ToggleButton>
-          <ToggleButton id="stream">
-            <ToggleButtonGroup.Separator />
-            Streaming-only
-          </ToggleButton>
+          <ToggleButton id="stream">Streaming-only</ToggleButton>
         </ToggleButtonGroup>
       </div>
 

@@ -21,7 +21,9 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write src",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:browser": "tsup src/index.ts --format esm --platform browser --target es2022 --external react --external react-dom --out-dir dist --dts",
+    "verify:browser": "node scripts/verify-browser-build.mjs"
   },
   "peerDependencies": {
     "react": "^19.0.0",
@@ -36,6 +38,7 @@
     }
   },
   "dependencies": {
+    "buffer": "^6.0.3",
     "tokenpack": "workspace:*"
   },
   "devDependencies": {
@@ -46,6 +49,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tokenpack-eslint-config": "workspace:*",
+    "tsup": "^8.5.0",
     "typescript": "^6.0.3",
     "vitest": "^2.1.9"
   }

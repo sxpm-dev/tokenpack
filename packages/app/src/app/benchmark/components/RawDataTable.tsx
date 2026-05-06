@@ -1,4 +1,5 @@
 import { Table } from '@heroui/react'
+
 import { COLORS, SCENARIOS, SOURCE_LABELS } from '../constants'
 import type { BenchRow } from '../types'
 import { fmtBytes, fmtMs } from '../utils'
@@ -22,20 +23,44 @@ export function RawDataTable({ data, condition, source }: RawDataTableProps) {
     <Table className="overflow-x-auto">
       <Table.Content aria-label="Raw benchmark data" className="text-xs font-mono w-full">
         <Table.Header>
-          <Table.Column id="source"     key="source"     isRowHeader>Source</Table.Column>
-          <Table.Column id="scenario"   key="scenario">Scenario</Table.Column>
-          <Table.Column id="ttfb"       key="ttfb">TTFB</Table.Column>
-          <Table.Column id="fetch"      key="fetch">Fetch</Table.Column>
-          <Table.Column id="firstByte"  key="firstByte">1st byte</Table.Column>
-          <Table.Column id="decode"     key="decode">Decode</Table.Column>
-          <Table.Column id="total"      key="total">Total</Table.Column>
-          <Table.Column id="transfer"   key="transfer">Transfer</Table.Column>
-          <Table.Column id="mbps"       key="mbps">MB/s</Table.Column>
+          <Table.Column key="source" isRowHeader id="source">
+            Source
+          </Table.Column>
+          <Table.Column key="scenario" id="scenario">
+            Scenario
+          </Table.Column>
+          <Table.Column key="ttfb" id="ttfb">
+            TTFB
+          </Table.Column>
+          <Table.Column key="fetch" id="fetch">
+            Fetch
+          </Table.Column>
+          <Table.Column key="firstByte" id="firstByte">
+            1st byte
+          </Table.Column>
+          <Table.Column key="decode" id="decode">
+            Decode
+          </Table.Column>
+          <Table.Column key="total" id="total">
+            Total
+          </Table.Column>
+          <Table.Column key="transfer" id="transfer">
+            Transfer
+          </Table.Column>
+          <Table.Column key="mbps" id="mbps">
+            MB/s
+          </Table.Column>
         </Table.Header>
         <Table.Body>
           {rawData.map((r, i) => (
-            <Table.Row id={i} key={i} style={{ color: COLORS[r.scenario] ?? 'rgba(255,255,255,0.4)' }}>
-              <Table.Cell className="text-white/35">{SOURCE_LABELS[r.source] ?? r.source}</Table.Cell>
+            <Table.Row
+              key={i}
+              id={i}
+              style={{ color: COLORS[r.scenario] ?? 'rgba(255,255,255,0.4)' }}
+            >
+              <Table.Cell className="text-white/35">
+                {SOURCE_LABELS[r.source] ?? r.source}
+              </Table.Cell>
               <Table.Cell>{r.scenario}</Table.Cell>
               <Table.Cell>{fmtMs(r.ttfb)}</Table.Cell>
               <Table.Cell>{fmtMs(r.fetchMs)}</Table.Cell>

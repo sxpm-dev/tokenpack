@@ -21,22 +21,52 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
     <Table className="overflow-x-auto">
       <Table.Content
         aria-label="Extended benchmark results"
+        className="text-xs font-mono w-full"
         sortDescriptor={sort}
         onSortChange={onSortChange}
-        className="text-xs font-mono w-full"
       >
         <Table.Header>
-          <Table.Column id="codecName"        key="codecName"        allowsSorting isRowHeader><ColHeader label="Algorithm"   sortKey="codecName"        sort={sort} /></Table.Column>
-          <Table.Column id="outerCompression" key="outerCompression" allowsSorting>            <ColHeader label="Compression" sortKey="outerCompression" sort={sort} /></Table.Column>
-          <Table.Column id="channels"         key="channels"         allowsSorting>            <ColHeader label="Ch"          sortKey="channels"         sort={sort} /></Table.Column>
-          <Table.Column id="encodeMs"         key="encodeMs"         allowsSorting>            <ColHeader label="Encode ms"   sortKey="encodeMs"         sort={sort} /></Table.Column>
-          <Table.Column id="decodeMs"         key="decodeMs"         allowsSorting>            <ColHeader label="Decode ms"   sortKey="decodeMs"         sort={sort} /></Table.Column>
-          <Table.Column id="roundTrip"        key="roundTrip"        allowsSorting>            <ColHeader label="Round-trip"  sortKey="roundTrip"        sort={sort} /></Table.Column>
-          <Table.Column id="tokenBytes"       key="tokenBytes"       allowsSorting>            <ColHeader label="Size"        sortKey="tokenBytes"       sort={sort} /></Table.Column>
-          <Table.Column id="ratio"            key="ratio"            allowsSorting>            <ColHeader label="Ratio"       sortKey="ratio"            sort={sort} /></Table.Column>
-          <Table.Column id="throughputMBps"   key="throughputMBps"   allowsSorting>            <ColHeader label="MB/s"        sortKey="throughputMBps"   sort={sort} /></Table.Column>
-          <Table.Column id="isStreaming"      key="isStreaming">Stream</Table.Column>
-          <Table.Column id="isBrowserSafe"    key="isBrowserSafe">Browser</Table.Column>
+          <Table.Column key="codecName" allowsSorting isRowHeader id="codecName">
+            <ColHeader label="Algorithm" sort={sort} sortKey="codecName" />
+          </Table.Column>
+          <Table.Column key="outerCompression" allowsSorting id="outerCompression">
+            {' '}
+            <ColHeader label="Compression" sort={sort} sortKey="outerCompression" />
+          </Table.Column>
+          <Table.Column key="channels" allowsSorting id="channels">
+            {' '}
+            <ColHeader label="Ch" sort={sort} sortKey="channels" />
+          </Table.Column>
+          <Table.Column key="encodeMs" allowsSorting id="encodeMs">
+            {' '}
+            <ColHeader label="Encode ms" sort={sort} sortKey="encodeMs" />
+          </Table.Column>
+          <Table.Column key="decodeMs" allowsSorting id="decodeMs">
+            {' '}
+            <ColHeader label="Decode ms" sort={sort} sortKey="decodeMs" />
+          </Table.Column>
+          <Table.Column key="roundTrip" allowsSorting id="roundTrip">
+            {' '}
+            <ColHeader label="Round-trip" sort={sort} sortKey="roundTrip" />
+          </Table.Column>
+          <Table.Column key="tokenBytes" allowsSorting id="tokenBytes">
+            {' '}
+            <ColHeader label="Size" sort={sort} sortKey="tokenBytes" />
+          </Table.Column>
+          <Table.Column key="ratio" allowsSorting id="ratio">
+            {' '}
+            <ColHeader label="Ratio" sort={sort} sortKey="ratio" />
+          </Table.Column>
+          <Table.Column key="throughputMBps" allowsSorting id="throughputMBps">
+            {' '}
+            <ColHeader label="MB/s" sort={sort} sortKey="throughputMBps" />
+          </Table.Column>
+          <Table.Column key="isStreaming" id="isStreaming">
+            Stream
+          </Table.Column>
+          <Table.Column key="isBrowserSafe" id="isBrowserSafe">
+            Browser
+          </Table.Column>
         </Table.Header>
         <Table.Body>
           {rows.map((row, i) => {
@@ -44,16 +74,20 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
 
             if (row.error) {
               const isTimeout = row.error.startsWith('timeout after')
+
               return (
-                <Table.Row id={i} key={i} className="opacity-60">
+                <Table.Row key={i} className="opacity-60" id={i}>
                   <Table.Cell>{row.codecName}</Table.Cell>
                   <Table.Cell className="text-white/30">{row.outerCompression}</Table.Cell>
                   <Table.Cell className="text-white/30">{row.channels}</Table.Cell>
                   <Table.Cell>
-                    {isTimeout
-                      ? <span className="text-amber-400/80 text-[10px] border border-amber-400/30 rounded px-1.5 py-0.5">⏱ slow</span>
-                      : <span className="text-red-400/70">err</span>
-                    }
+                    {isTimeout ? (
+                      <span className="text-amber-400/80 text-[10px] border border-amber-400/30 rounded px-1.5 py-0.5">
+                        ⏱ slow
+                      </span>
+                    ) : (
+                      <span className="text-red-400/70">err</span>
+                    )}
                   </Table.Cell>
                   <Table.Cell>—</Table.Cell>
                   <Table.Cell>—</Table.Cell>
@@ -66,7 +100,7 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
             }
 
             return (
-              <Table.Row id={i} key={i} className={isBest ? 'text-green-400' : 'text-white/60'}>
+              <Table.Row key={i} className={isBest ? 'text-green-400' : 'text-white/60'} id={i}>
                 <Table.Cell>
                   <div className="flex items-center gap-1.5">
                     {row.codecName}
@@ -86,14 +120,18 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
                 <Table.Cell>{Math.round(row.ratio * 100)}%</Table.Cell>
                 <Table.Cell>{row.throughputMBps.toFixed(1)}</Table.Cell>
                 <Table.Cell>
-                  {row.isStreaming
-                    ? <CheckCircleIcon size={14} weight="fill" className="text-green-400" />
-                    : <XCircleIcon size={14} className="text-white/20" />}
+                  {row.isStreaming ? (
+                    <CheckCircleIcon className="text-green-400" size={14} weight="fill" />
+                  ) : (
+                    <XCircleIcon className="text-white/20" size={14} />
+                  )}
                 </Table.Cell>
                 <Table.Cell>
-                  {row.isBrowserSafe
-                    ? <CheckCircleIcon size={14} weight="fill" className="text-green-400" />
-                    : <XCircleIcon size={14} className="text-white/20" />}
+                  {row.isBrowserSafe ? (
+                    <CheckCircleIcon className="text-green-400" size={14} weight="fill" />
+                  ) : (
+                    <XCircleIcon className="text-white/20" size={14} />
+                  )}
                 </Table.Cell>
               </Table.Row>
             )

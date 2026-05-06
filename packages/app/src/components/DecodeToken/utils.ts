@@ -1,4 +1,5 @@
 import type { FileEntry } from '@/app/api/decode/route'
+
 import type { TreeNode } from './types'
 
 export function buildTree(files: FileEntry[]): TreeNode[] {
@@ -8,12 +9,15 @@ export function buildTree(files: FileEntry[]): TreeNode[] {
   for (const file of sorted) {
     const parts = file.path.split('/')
     let current = root
+
     for (let i = 0; i < parts.length; i++) {
       const name = parts[i]
+
       if (i === parts.length - 1) {
         current.push({ name, path: file.path, type: 'file', children: [], entry: file })
       } else {
         let dir = current.find(n => n.name === name && n.type === 'dir')
+
         if (!dir) {
           dir = { name, path: parts.slice(0, i + 1).join('/'), type: 'dir', children: [] }
           current.push(dir)
@@ -22,5 +26,6 @@ export function buildTree(files: FileEntry[]): TreeNode[] {
       }
     }
   }
+
   return root
 }

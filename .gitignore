@@ -19,6 +19,9 @@ node_modules
 # Benchmark generated tokens (large)
 benchmark/tokens/
 
+# Runtime-benchmark fixtures (re-generatable via `yarn benchmark:generate:runtime`)
+packages/app/runtime-fixtures/
+
 # encode-times.json is an intermediate (consumed only by run-extended.ts, not the dashboard)
 packages/app/benchmark-results/encode-times.json
 

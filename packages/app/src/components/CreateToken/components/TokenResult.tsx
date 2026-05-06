@@ -1,4 +1,5 @@
 import { Card } from '@heroui/react'
+
 import type { SizeStats } from '../types'
 import { SizeBadge } from './SizeBadge'
 
@@ -16,17 +17,17 @@ export function TokenResult({ url, fileName, stats }: TokenResultProps) {
         <div className="flex items-center justify-between gap-3">
           <span className="text-xs text-white/30 truncate">{fileName}</span>
           <a
-            href={url}
-            download={fileName}
             className="text-sm text-blue-400 hover:text-blue-300 underline shrink-0"
+            download={fileName}
+            href={url}
           >
             Download
           </a>
         </div>
         <img
-          src={url}
           alt="Generated token"
           className="w-full rounded-lg border border-white/10"
+          src={url}
           style={{ imageRendering: 'pixelated', background: '#111' }}
         />
       </Card.Content>

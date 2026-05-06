@@ -25,26 +25,26 @@ export function Legend() {
         </Def>
 
         <Def term="1st byte">
-          Time to first <em>decoded</em> byte — when downstream code can start consuming data.
-          For batch scenarios this equals <span className="font-mono text-white/60">total</span> (no overlap).
-          For streaming scenarios it&apos;s much earlier — the streaming codec emits decoded bytes
-          while bytes are still arriving, so the consumer sees data sooner than the file finishes
-          downloading.
+          Time to first <em>decoded</em> byte — when downstream code can start consuming data. For
+          batch scenarios this equals <span className="font-mono text-white/60">total</span> (no
+          overlap). For streaming scenarios it&apos;s much earlier — the streaming codec emits
+          decoded bytes while bytes are still arriving, so the consumer sees data sooner than the
+          file finishes downloading.
         </Def>
 
         <Def term="Total">
-          End-to-end wall time: from request start until the last decoded byte is produced.
-          The fairest single number to compare scenarios.
+          End-to-end wall time: from request start until the last decoded byte is produced. The
+          fairest single number to compare scenarios.
         </Def>
 
         <Def term="Decode">
-          <span className="text-white/60">Batch</span> (
-          <span className="font-mono">max-*</span>, <span className="font-mono">zip</span>,{' '}
-          <span className="font-mono">tar.gz</span>, <span className="font-mono">brotli-*</span>):
-          pure CPU decode time, measured <em>after</em> the entire response is downloaded.
+          <span className="text-white/60">Batch</span> (<span className="font-mono">max-*</span>,{' '}
+          <span className="font-mono">zip</span>, <span className="font-mono">tar.gz</span>,{' '}
+          <span className="font-mono">brotli-*</span>): pure CPU decode time, measured{' '}
+          <em>after</em> the entire response is downloaded.
           <br />
-          <span className="text-white/60">Stream</span> (<span className="font-mono">stream-*</span>):
-          residual decode tail <em>after</em> the last network byte arrives. Approaches 0 when
+          <span className="text-white/60">Stream</span> (<span className="font-mono">stream-*</span>
+          ): residual decode tail <em>after</em> the last network byte arrives. Approaches 0 when
           decode keeps up with download — the work happened in parallel with the transfer.
         </Def>
 

@@ -1,9 +1,11 @@
 'use client'
 
 import { Button } from '@heroui/react'
-import { PlayIcon, DownloadSimpleIcon } from '@phosphor-icons/react'
+import { DownloadSimpleIcon, PlayIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
+
 import { type AggregatedResult, runRepeated } from '@/lib/measure'
+
 import { ComparisonTable } from './ComparisonTable'
 
 export interface Variant {
@@ -46,7 +48,10 @@ export function ScenarioRunner({ variants, defaultIterations = 10 }: ScenarioRun
   function handleExport() {
     const header = 'variant,iterations,median_ms,p95_ms,min_ms,max_ms,bytes,per_run_ms\n'
     const rows = results
-      .map(r => `${r.label},${r.iterations},${r.median},${r.p95},${r.min},${r.max},${r.bytes ?? ''},"${r.perRun.join(';')}"`)
+      .map(
+        r =>
+          `${r.label},${r.iterations},${r.median},${r.p95},${r.min},${r.max},${r.bytes ?? ''},"${r.perRun.join(';')}"`,
+      )
       .join('\n')
     const blob = new Blob([header + rows], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
@@ -61,24 +66,24 @@ export function ScenarioRunner({ variants, defaultIterations = 10 }: ScenarioRun
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <Button onPress={handleRun} isPending={running} isDisabled={running}>
-          <PlayIcon size={14} className="mr-1.5" />
+        <Button isDisabled={running} isPending={running} onPress={handleRun}>
+          <PlayIcon className="mr-1.5" size={14} />
           {running ? 'Running…' : 'Run benchmark'}
         </Button>
         <label className="text-xs text-white/50">
           Iterations:{' '}
           <input
-            type="number"
-            min={1}
+            className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-xs w-16 text-white"
             max={100}
+            min={1}
+            type="number"
             value={iterations}
             onChange={e => setIterations(Math.max(1, Number(e.target.value)))}
-            className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-xs w-16 text-white"
           />
         </label>
         {results.length > 0 && !running && (
           <Button size="sm" variant="ghost" onPress={handleExport}>
-            <DownloadSimpleIcon size={14} className="mr-1.5" />
+            <DownloadSimpleIcon className="mr-1.5" size={14} />
             Export CSV
           </Button>
         )}

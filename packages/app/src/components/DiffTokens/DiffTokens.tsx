@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { Button, ToggleButton, ToggleButtonGroup } from '@heroui/react'
 import { GitDiffIcon } from '@phosphor-icons/react'
+import { useState } from 'react'
+
 import { DiffImage } from './components/DiffImage'
 import { DiffText } from './components/DiffText'
 import { TokenSlot } from './components/TokenSlot'
@@ -54,6 +55,7 @@ export function DiffTokens() {
 
     try {
       const form = new FormData()
+
       form.append('tokenA', fileA)
       form.append('tokenB', fileB)
       form.append('mode', mode)
@@ -63,12 +65,15 @@ export function DiffTokens() {
       if (mode === 'image') {
         if (!res.ok) {
           const j = await res.json()
+
           throw new Error(j.error)
         }
         const blob = await res.blob()
+
         setDiffUrl(URL.createObjectURL(blob))
       } else {
         const data = await res.json()
+
         if (!res.ok) throw new Error(data.error)
         setTextDiff(data.content)
       }
@@ -83,15 +88,15 @@ export function DiffTokens() {
     <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-2">
         <TokenSlot
-          label="Token A (before)"
           file={fileA}
+          label="Token A (before)"
           previewUrl={urlA}
           onFile={setA}
           onReset={resetA}
         />
         <TokenSlot
-          label="Token B (after)"
           file={fileB}
+          label="Token B (after)"
           previewUrl={urlB}
           onFile={setB}
           onReset={resetB}
@@ -100,28 +105,21 @@ export function DiffTokens() {
 
       <div className="flex flex-wrap items-center gap-3">
         <ToggleButtonGroup
-          selectionMode="single"
+          disallowEmptySelection
           selectedKeys={new Set([mode])}
+          selectionMode="single"
+          size="sm"
           onSelectionChange={keys => {
             const [k] = [...(keys as Set<string>)]
+
             if (k) setMode(k as DiffMode)
           }}
-          disallowEmptySelection
-          size="sm"
         >
           <ToggleButton id="image">visual</ToggleButton>
-          <ToggleButton id="text">
-            <ToggleButtonGroup.Separator />
-            text
-          </ToggleButton>
+          <ToggleButton id="text">text</ToggleButton>
         </ToggleButtonGroup>
 
-        <Button
-          size="sm"
-          onPress={handleDiff}
-          isPending={loading}
-          isDisabled={!fileA || !fileB}
-        >
+        <Button isDisabled={!fileA || !fileB} isPending={loading} size="sm" onPress={handleDiff}>
           <GitDiffIcon size={16} />
           {loading ? 'Comparing…' : 'Compare Tokens'}
         </Button>

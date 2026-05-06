@@ -2,11 +2,7 @@ import sharp from 'sharp'
 import { ImageSurface } from 'tokenpack/surfaces'
 import type { SurfacePixels } from 'tokenpack/surfaces/types'
 
-// Phase 2 target — replaces packages/core/src/surfaces/webp-surface.ts.
-// Currently a scaffold; not yet wired into the core registry. Phase 2 will:
-//   1. Import this file from `@tokenpack/node`'s index.
-//   2. Call `surfaceRegistry.register('webp', () => new WebpSurface())`.
-//   3. Delete packages/core/src/surfaces/webp-surface.ts and remove from registry.ts auto-registration.
+import { sharpReadBuffer, sharpReadFile } from './sharp-read'
 
 export class WebpSurface extends ImageSurface {
   constructor() {
@@ -29,5 +25,13 @@ export class WebpSurface extends ImageSurface {
     })
       .webp({ lossless: true, quality: 100 })
       .toFile(filePath)
+  }
+
+  readFile(filePath: string): Promise<SurfacePixels> {
+    return sharpReadFile(filePath)
+  }
+
+  readBuffer(buffer: Buffer): Promise<SurfacePixels> {
+    return sharpReadBuffer(buffer)
   }
 }

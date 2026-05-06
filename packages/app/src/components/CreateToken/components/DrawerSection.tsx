@@ -1,12 +1,7 @@
 'use client'
 
-import {
-  Checkbox,
-  Label,
-  NumberField,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@heroui/react'
+import { Checkbox, Label, NumberField, ToggleButton, ToggleButtonGroup } from '@heroui/react'
+
 import { DRAWERS } from '../constants'
 import type { DrawerChoice, GradientDirection } from '../types'
 import { pickFirst } from '../utils'
@@ -50,24 +45,24 @@ export function DrawerSection({
 
   return (
     <Section
-      title="Drawer"
       description="Pixel placement and visual background. Dot drawer supports gradient surfaces."
+      title="Drawer"
     >
       <div className="flex flex-col gap-1.5">
         <span className="text-xs text-white/40">Mode</span>
         <ToggleButtonGroup
-          selectionMode="single"
+          disallowEmptySelection
           selectedKeys={new Set([drawer])}
+          selectionMode="single"
+          size="sm"
           onSelectionChange={keys => {
             const k = pickFirst(keys)
+
             if (k) onDrawerChange(k as DrawerChoice)
           }}
-          disallowEmptySelection
-          size="sm"
         >
-          {DRAWERS.map((v, i) => (
+          {DRAWERS.map(v => (
             <ToggleButton key={v} id={v}>
-              {i > 0 && <ToggleButtonGroup.Separator />}
               {v}
             </ToggleButton>
           ))}
@@ -78,11 +73,11 @@ export function DrawerSection({
         <div className="flex flex-col gap-1">
           <div className="text-xs text-white/40">Cell size</div>
           <NumberField
-            value={Number(cellSize)}
-            onChange={v => onCellSizeChange(String(v))}
-            minValue={2}
             maxValue={10}
+            minValue={2}
+            value={Number(cellSize)}
             variant="secondary"
+            onChange={v => onCellSizeChange(String(v))}
           >
             <NumberField.Group>
               <NumberField.DecrementButton>-</NumberField.DecrementButton>
@@ -95,11 +90,7 @@ export function DrawerSection({
 
       {supportsBackground && (
         <>
-          <Checkbox
-            isSelected={useBackground}
-            onChange={onUseBackgroundChange}
-            variant="secondary"
-          >
+          <Checkbox isSelected={useBackground} variant="secondary" onChange={onUseBackgroundChange}>
             <Checkbox.Control>
               <Checkbox.Indicator />
             </Checkbox.Control>
@@ -110,14 +101,14 @@ export function DrawerSection({
 
           {useBackground && (
             <GradientPicker
-              from={gradientFrom}
-              onFromChange={onGradientFromChange}
-              to={gradientTo}
-              onToChange={onGradientToChange}
               direction={gradientDirection}
-              onDirectionChange={onGradientDirectionChange}
+              from={gradientFrom}
               opacity={backgroundOpacity}
+              to={gradientTo}
+              onDirectionChange={onGradientDirectionChange}
+              onFromChange={onGradientFromChange}
               onOpacityChange={onBackgroundOpacityChange}
+              onToChange={onGradientToChange}
             />
           )}
         </>

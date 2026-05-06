@@ -7,11 +7,11 @@ export class NoneCompressor extends AbstractCompressor {
   readonly streamableDecode = true
   readonly requiresFullHeader = false
 
-  compress(input: Buffer): CompressionResult {
+  async compress(input: Buffer): Promise<CompressionResult> {
     return { data: input, level: 0, uncompressedLength: 0 }
   }
 
-  decompress(input: Buffer): Buffer {
+  async decompress(input: Buffer): Promise<Buffer> {
     return input
   }
 }

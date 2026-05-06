@@ -2,6 +2,7 @@
 
 import { Chip, ToggleButton, ToggleButtonGroup } from '@heroui/react'
 import { DEFAULT_PRESETS } from 'tokenpack/algorithms/catalog-info'
+
 import type { DefaultPresetName } from '../types'
 import { pickFirst } from '../utils'
 import { Section } from './Section'
@@ -14,23 +15,24 @@ interface DefaultPresetsProps {
 export function DefaultPresets({ value, onChange }: DefaultPresetsProps) {
   return (
     <Section
-      title="Algorithm"
-      description="The default most optimized presets"
       className="lg:col-span-2"
+      description="The default most optimized presets"
+      title="Algorithm"
     >
       <ToggleButtonGroup
-        selectionMode="single"
+        disallowEmptySelection
+        className="flex-wrap"
         selectedKeys={new Set([value])}
+        selectionMode="single"
+        size="sm"
         onSelectionChange={keys => {
           const k = pickFirst(keys)
+
           if (k) onChange(k as DefaultPresetName)
         }}
-        disallowEmptySelection
-        size="sm"
-        className="flex-wrap"
       >
         {DEFAULT_PRESETS.map(p => (
-          <ToggleButton key={p.name} id={p.name} className="h-18 text-left">
+          <ToggleButton key={p.name} className="h-18 text-left" id={p.name}>
             <div className="flex flex-col gap-1">
               <div className="flex gap-2">
                 {p.label}
@@ -43,7 +45,7 @@ export function DefaultPresets({ value, onChange }: DefaultPresetsProps) {
                 </div>
               </div>
               <div>
-                <Chip size="sm" variant="soft" color="warning">
+                <Chip color="warning" size="sm" variant="soft">
                   {p.description}
                 </Chip>
               </div>

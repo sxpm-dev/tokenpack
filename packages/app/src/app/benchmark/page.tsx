@@ -1,16 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Button, Surface } from '@heroui/react'
 import { CaretUpIcon } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
+
 import { BenchmarkFilters } from './components/BenchmarkFilters'
 import { BestComparison } from './components/BestComparison'
 import { BreakdownChart } from './components/BreakdownChart'
 import { Legend } from './components/Legend'
 import { RawDataTable } from './components/RawDataTable'
+import { ScenarioConfigTable } from './components/ScenarioConfigTable'
 import { SectionTitle } from './components/SectionTitle'
 import { SummaryTable } from './components/SummaryTable'
-import { CONDITION_LABELS, SOURCES, SOURCE_LABELS } from './constants'
+import { CONDITION_LABELS, SOURCE_LABELS, SOURCES } from './constants'
 import type { BenchRow } from './types'
 
 export default function BenchmarkPage() {
@@ -18,6 +20,7 @@ export default function BenchmarkPage() {
   const [error, setError] = useState<string | null>(null)
   const [condition, setCondition] = useState('average')
   const [source, setSource] = useState('avg')
+  const [aboutOpen, setAboutOpen] = useState(false)
   const [rawOpen, setRawOpen] = useState(false)
 
   useEffect(() => {
@@ -48,7 +51,7 @@ export default function BenchmarkPage() {
     )
   }
 
-  const srcLabel = source === 'avg' ? 'all sources (avg)' : SOURCE_LABELS[source] ?? source
+  const srcLabel = source === 'avg' ? 'all sources (avg)' : (SOURCE_LABELS[source] ?? source)
   const condLabel = CONDITION_LABELS[condition] ?? condition
   const allSources = ['avg', ...SOURCES]
 
@@ -62,44 +65,80 @@ export default function BenchmarkPage() {
       </div>
 
       <BenchmarkFilters
-        condition={condition}
-        onConditionChange={setCondition}
-        source={source}
-        onSourceChange={setSource}
         availableSources={allSources}
+        condition={condition}
+        source={source}
+        onConditionChange={setCondition}
+        onSourceChange={setSource}
       />
 
-      <Legend />
+      <SectionTitle>
+        {condLabel} · {srcLabel}
+      </SectionTitle>
+      <SummaryTable condition={condition} data={data} source={source} />
 
-      <SectionTitle>{condLabel} · {srcLabel}</SectionTitle>
-      <SummaryTable data={data} condition={condition} source={source} />
+      <SectionTitle>
+        Best case — {condLabel} · {srcLabel}
+      </SectionTitle>
+      <BestComparison condition={condition} data={data} source={source} />
 
-      <SectionTitle>Best case — {condLabel} · {srcLabel}</SectionTitle>
-      <BestComparison data={data} condition={condition} source={source} />
+      {/* Legend + token configs collapsed by default — they're reference material,
+          most readers want results first. Same caret-toggle pattern as Raw data. */}
+      <CollapsibleSection
+        label="Legend & token configs"
+        open={aboutOpen}
+        onToggle={() => setAboutOpen(o => !o)}
+      />
+      {aboutOpen && (
+        <>
+          <Legend />
+          <ScenarioConfigTable />
+        </>
+      )}
 
-      <SectionTitle>Fetch vs decode — {condLabel} · {srcLabel}</SectionTitle>
+      <SectionTitle>
+        Fetch vs decode — {condLabel} · {srcLabel}
+      </SectionTitle>
       <Surface className="rounded-2xl p-3.5">
-        <BreakdownChart data={data} condition={condition} source={source} />
+        <BreakdownChart condition={condition} data={data} source={source} />
       </Surface>
 
-      <div className="flex items-center gap-2">
-        <Button
-          isIconOnly
-          variant="ghost"
-          size="sm"
-          onPress={() => setRawOpen(o => !o)}
-          aria-label={rawOpen ? 'Collapse' : 'Expand'}
-        >
-          <CaretUpIcon
-            size={14}
-            className={`transition-transform duration-150 ${rawOpen ? '' : 'rotate-180'}`}
-          />
-        </Button>
-        <span className="text-xs font-semibold text-white/35 uppercase tracking-widest">
-          Raw data — {condLabel} · {srcLabel}
-        </span>
-      </div>
-      {rawOpen && <RawDataTable data={data} condition={condition} source={source} />}
+      <CollapsibleSection
+        label={`Raw data — ${condLabel} · ${srcLabel}`}
+        open={rawOpen}
+        onToggle={() => setRawOpen(o => !o)}
+      />
+      {rawOpen && <RawDataTable condition={condition} data={data} source={source} />}
+    </div>
+  )
+}
+
+function CollapsibleSection({
+  label,
+  open,
+  onToggle,
+}: {
+  label: string
+  open: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        isIconOnly
+        aria-label={open ? 'Collapse' : 'Expand'}
+        size="sm"
+        variant="ghost"
+        onPress={onToggle}
+      >
+        <CaretUpIcon
+          className={`transition-transform duration-150 ${open ? '' : 'rotate-180'}`}
+          size={14}
+        />
+      </Button>
+      <span className="text-xs font-semibold text-white/35 uppercase tracking-widest">
+        {label}
+      </span>
     </div>
   )
 }

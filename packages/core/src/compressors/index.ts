@@ -1,5 +1,7 @@
-export { BrotliCompressor } from './brotli-compressor'
-export { DeflateCompressor } from './deflate-compressor'
+// Core ships only the env-neutral `NoneCompressor`. Node-zlib compressors
+// (deflate-*, brotli-*) live in `@tokenpack/node`. Browser CompressionStream-
+// backed compressors live in `@tokenpack/browser`. Both env packages register
+// themselves on import.
 export { NoneCompressor } from './none-compressor'
 export { CompressorRegistry, compressorRegistry } from './registry'
 export {

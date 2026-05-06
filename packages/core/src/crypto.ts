@@ -18,27 +18,24 @@ export const CRYPTO_OVERHEAD = SALT_LEN + IV_LEN + TAG_LEN // 44 bytes
 
 const passwordEncoder = new TextEncoder()
 
-// TS 5.7+ tightened Uint8Array's generic to `Uint8Array<ArrayBufferLike>` and
-// Web Crypto signatures want `Uint8Array<ArrayBuffer>` — explicit cast to ease
-// downstream consumers using stricter TS.
-// TS 5.7+ tightened Uint8Array's generic; brute cast to BufferSource keeps the
-// Web Crypto calls compiling under both core's TS 6.0 and consumer TS 5.8.
-function asBufferSource(data: ArrayBuffer | ArrayBufferView): BufferSource {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return data as any
-}
+// TS 5.7+ tightened `Uint8Array<ArrayBufferLike>`, while Web Crypto wants the
+// older `BufferSource` shape. We bypass strict generic checks with a typed-any
+// helper. The runtime types are correct; this is purely TS bookkeeping for
+// consumers compiling under different tsconfigs.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const asBuf = (data: ArrayBuffer | ArrayBufferView): any => data
 
 async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
   const baseKey = await globalThis.crypto.subtle.importKey(
     'raw',
-    asBufferSource(passwordEncoder.encode(password)),
+    asBuf(passwordEncoder.encode(password)),
     { name: 'PBKDF2' },
     false,
     ['deriveKey'],
   )
 
   return globalThis.crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: asBufferSource(salt), iterations: PBKDF2_ITER, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: asBuf(salt), iterations: PBKDF2_ITER, hash: 'SHA-256' },
     baseKey,
     { name: 'AES-GCM', length: KEY_BITS },
     false,
@@ -52,11 +49,7 @@ export async function encryptData(data: Uint8Array, password: string): Promise<U
   const key = await deriveKey(password, salt)
   // AES-GCM output = ciphertext || tag (tag length defaults to 128 bits = 16 bytes).
   const ctAndTag = new Uint8Array(
-    await globalThis.crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv: asBufferSource(iv) },
-      key,
-      asBufferSource(data),
-    ),
+    await globalThis.crypto.subtle.encrypt({ name: 'AES-GCM', iv: asBuf(iv) }, key, asBuf(data)),
   )
 
   const out = new Uint8Array(SALT_LEN + IV_LEN + ctAndTag.length)
@@ -77,9 +70,9 @@ export async function decryptData(data: Uint8Array, password: string): Promise<U
 
   try {
     const plaintext = await globalThis.crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: asBufferSource(iv) },
+      { name: 'AES-GCM', iv: asBuf(iv) },
       key,
-      asBufferSource(ctAndTag),
+      asBuf(ctAndTag),
     )
 
     return new Uint8Array(plaintext)

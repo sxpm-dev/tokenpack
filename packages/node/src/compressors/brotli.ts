@@ -1,6 +1,9 @@
 import zlib from 'zlib'
-
-import { AbstractCompressor, type CompressionMode, type CompressionResult } from './types'
+import {
+  AbstractCompressor,
+  type CompressionMode,
+  type CompressionResult,
+} from 'tokenpack/compressors/types'
 
 type BrotliMode = Extract<CompressionMode, 'brotli-4' | 'brotli-6' | 'brotli-11'>
 
@@ -33,7 +36,7 @@ export class BrotliCompressor extends AbstractCompressor {
     this.requiresFullHeader = mode !== 'brotli-11'
   }
 
-  compress(input: Buffer): CompressionResult {
+  async compress(input: Buffer): Promise<CompressionResult> {
     return {
       data: zlib.brotliCompressSync(input, {
         params: { [zlib.constants.BROTLI_PARAM_QUALITY]: this.quality },
@@ -43,7 +46,7 @@ export class BrotliCompressor extends AbstractCompressor {
     }
   }
 
-  decompress(input: Buffer): Buffer {
+  async decompress(input: Buffer): Promise<Buffer> {
     return zlib.brotliDecompressSync(input)
   }
 

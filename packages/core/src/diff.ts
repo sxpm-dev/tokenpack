@@ -2,7 +2,6 @@ import path from 'path'
 
 import { decodeToBuffer } from './decoder'
 import { HEADER_PIXELS, readHeader } from './header'
-import { PngSurface } from './surfaces/png-surface'
 import { surfaceRegistry } from './surfaces/registry'
 
 function surfaceFor(filePath: string) {
@@ -61,7 +60,7 @@ export async function diffTokens(
     }
   }
 
-  PngSurface.encodeSync(outPath, { pixels: out, width, height, fileChannels: 3 })
+  await surfaceRegistry.byId('png').write(outPath, { pixels: out, width, height, fileChannels: 3 })
 
   return {
     totalPixels: total,

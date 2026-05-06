@@ -1,15 +1,13 @@
 import fs from 'fs'
 import { PNG } from 'pngjs'
-
-import { ImageSurface } from './image-surface'
-import type { SurfacePixels } from './types'
+import { ImageSurface } from 'tokenpack/surfaces'
+import type { SurfacePixels } from 'tokenpack/surfaces/types'
 
 // PNG colorType: bpp=1,2,3 → RGB (2), bpp=4 → RGBA (6).
 function pngColorType(fileChannels: 3 | 4): 2 | 6 {
   return fileChannels === 4 ? 6 : 2
 }
 
-// Pack fileChannels-bytes-per-pixel data into pngjs's RGBA buffer.
 function packRgba(target: Buffer, pixels: Uint8Array, n: number, fileChannels: 3 | 4): void {
   if (fileChannels === 4) {
     for (let i = 0; i < n; i++) {
@@ -29,7 +27,6 @@ function packRgba(target: Buffer, pixels: Uint8Array, n: number, fileChannels: 3
   }
 }
 
-// Detect bpp=4 in pngjs RGBA output: full-header magic 0xC0DEAE54 or compact-header bppBits=3.
 function detectFileChannels(d: Buffer, colorType: number): 3 | 4 {
   if (colorType !== 6) return 3
   const isFull4 = d[0] === 0xc0 && d[1] === 0xde && d[2] === 0xae && d[3] === 0x54
@@ -42,7 +39,14 @@ function detectFileChannels(d: Buffer, colorType: number): 3 | 4 {
   return 3
 }
 
-function parsePngjs(png: ReturnType<typeof PNG.sync.read>): SurfacePixels {
+interface PngLike {
+  data: Buffer
+  width: number
+  height: number
+  colorType: number
+}
+
+function parsePngjs(png: PngLike): SurfacePixels {
   const n = png.width * png.height
   const fileChannels = detectFileChannels(png.data, png.colorType)
 
@@ -84,11 +88,6 @@ export class PngSurface extends ImageSurface {
   }
 
   async write(filePath: string, image: SurfacePixels): Promise<void> {
-    PngSurface.encodeSync(filePath, image)
-  }
-
-  // Sync pngjs writer — used by surface.write and by tools that want a guaranteed-sync write.
-  static encodeSync(filePath: string, image: SurfacePixels): void {
     const { pixels, width, height, fileChannels } = image
     const png = new PNG({ width, height, filterType: -1 })
 
@@ -100,8 +99,11 @@ export class PngSurface extends ImageSurface {
     )
   }
 
-  // Sync pngjs reader — kept for tooling that can't use sharp's async API.
-  static decodeSync(filePath: string): SurfacePixels {
+  async readFile(filePath: string): Promise<SurfacePixels> {
     return parsePngjs(PNG.sync.read(fs.readFileSync(filePath)))
+  }
+
+  async readBuffer(buffer: Buffer): Promise<SurfacePixels> {
+    return parsePngjs(PNG.sync.read(buffer))
   }
 }

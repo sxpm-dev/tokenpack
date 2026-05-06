@@ -1,6 +1,7 @@
 'use client'
 
-import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts'
+import { Line, LineChart, ResponsiveContainer, Tooltip } from 'recharts'
+
 import type { AggregatedResult } from '@/lib/measure'
 import { formatBytes, formatMs } from '@/lib/measure'
 
@@ -10,7 +11,11 @@ interface ComparisonTableProps {
 
 export function ComparisonTable({ results }: ComparisonTableProps) {
   if (!results.length) {
-    return <div className="text-white/30 text-sm py-6 text-center">No results yet — click "Run benchmark"</div>
+    return (
+      <div className="text-white/30 text-sm py-6 text-center">
+        No results yet — click &quot;Run benchmark&quot;
+      </div>
+    )
   }
 
   const bestMedian = Math.min(...results.map(r => r.median))
@@ -33,6 +38,7 @@ export function ComparisonTable({ results }: ComparisonTableProps) {
           {results.map(r => {
             const isBest = r.median === bestMedian
             const sparkData = r.perRun.map((ms, i) => ({ i, ms }))
+
             return (
               <tr key={r.label} className="border-b border-white/5">
                 <td className="py-2 px-3">
@@ -45,30 +51,48 @@ export function ComparisonTable({ results }: ComparisonTableProps) {
                     )}
                   </span>
                 </td>
-                <td className={`py-2 px-3 text-right tabular-nums ${isBest ? 'text-green-400' : 'text-white/80'}`}>
+                <td
+                  className={`py-2 px-3 text-right tabular-nums ${isBest ? 'text-green-400' : 'text-white/80'}`}
+                >
                   {formatMs(r.median)}
                 </td>
-                <td className="py-2 px-3 text-right tabular-nums text-white/50">{formatMs(r.p95)}</td>
-                <td className="py-2 px-3 text-right tabular-nums text-white/40">{formatMs(r.min)}</td>
-                <td className="py-2 px-3 text-right tabular-nums text-white/40">{formatMs(r.max)}</td>
-                <td className="py-2 px-3 text-right tabular-nums text-white/60">{formatBytes(r.bytes)}</td>
+                <td className="py-2 px-3 text-right tabular-nums text-white/50">
+                  {formatMs(r.p95)}
+                </td>
+                <td className="py-2 px-3 text-right tabular-nums text-white/40">
+                  {formatMs(r.min)}
+                </td>
+                <td className="py-2 px-3 text-right tabular-nums text-white/40">
+                  {formatMs(r.max)}
+                </td>
+                <td className="py-2 px-3 text-right tabular-nums text-white/60">
+                  {formatBytes(r.bytes)}
+                </td>
                 <td className="py-1 px-3" style={{ minWidth: 96 }}>
                   <div className="h-6 w-24">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer height="100%" width="100%">
                       <LineChart data={sparkData}>
                         <Line
-                          type="monotone"
                           dataKey="ms"
-                          stroke={isBest ? '#4ade80' : '#9ca3af'}
-                          strokeWidth={1.5}
                           dot={false}
                           isAnimationActive={false}
+                          stroke={isBest ? '#4ade80' : '#9ca3af'}
+                          strokeWidth={1.5}
+                          type="monotone"
                         />
                         <Tooltip
-                          contentStyle={{ background: '#0a0a0a', border: '1px solid #222', fontSize: 11, padding: '4px 6px' }}
+                          contentStyle={{
+                            background: '#0a0a0a',
+                            border: '1px solid #222',
+                            fontSize: 11,
+                            padding: '4px 6px',
+                          }}
+                          formatter={(v: unknown) => [
+                            typeof v === 'number' ? formatMs(v) : String(v),
+                            'ms',
+                          ]}
                           itemStyle={{ color: '#fff' }}
                           labelFormatter={i => `Run ${(i as number) + 1}`}
-                          formatter={(v: unknown) => [typeof v === 'number' ? formatMs(v) : String(v), 'ms']}
                         />
                       </LineChart>
                     </ResponsiveContainer>

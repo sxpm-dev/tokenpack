@@ -1,13 +1,10 @@
 'use client'
 
 import { Button } from '@heroui/react'
-import {
-  CaretDownIcon,
-  CaretRightIcon,
-  FolderIcon,
-  FolderOpenIcon,
-} from '@phosphor-icons/react'
+import { CaretDownIcon, CaretRightIcon, FolderIcon, FolderOpenIcon } from '@phosphor-icons/react'
+
 import type { FileEntry } from '@/app/api/decode/route'
+
 import type { TreeNode } from '../types'
 import { FileIcon } from './FileIcon'
 
@@ -34,13 +31,13 @@ export function TreeNodeRow({
   return (
     <>
       <Button
+        fullWidth
+        className="justify-start gap-1.5 px-2 py-[3px] rounded-none text-xs font-mono text-left select-none group"
+        style={{ paddingLeft: `${8 + depth * 16}px` }}
         variant={isSelected ? 'primary' : 'tertiary'}
         onPress={() =>
           node.type === 'dir' ? onToggle(node.path) : node.entry && onSelect(node.entry)
         }
-        fullWidth
-        className="justify-start gap-1.5 px-2 py-[3px] rounded-none text-xs font-mono text-left select-none group"
-        style={{ paddingLeft: `${8 + depth * 16}px` }}
       >
         {node.type === 'dir' ? (
           <>
@@ -48,15 +45,15 @@ export function TreeNodeRow({
               {isExpanded ? <CaretDownIcon size={10} /> : <CaretRightIcon size={10} />}
             </span>
             {isExpanded ? (
-              <FolderOpenIcon size={14} weight="fill" className="shrink-0 text-yellow-300/80" />
+              <FolderOpenIcon className="shrink-0 text-yellow-300/80" size={14} weight="fill" />
             ) : (
-              <FolderIcon size={14} weight="fill" className="shrink-0 text-yellow-300/60" />
+              <FolderIcon className="shrink-0 text-yellow-300/60" size={14} weight="fill" />
             )}
           </>
         ) : (
           <>
             <span className="w-3 shrink-0" />
-            <FileIcon name={node.name} className="shrink-0" />
+            <FileIcon className="shrink-0" name={node.name} />
           </>
         )}
         <span className="truncate">{node.name}</span>
@@ -72,11 +69,11 @@ export function TreeNodeRow({
         node.children.map(child => (
           <TreeNodeRow
             key={child.path}
-            node={child}
             depth={depth + 1}
+            expanded={expanded}
+            node={child}
             selected={selected}
             onSelect={onSelect}
-            expanded={expanded}
             onToggle={onToggle}
           />
         ))}

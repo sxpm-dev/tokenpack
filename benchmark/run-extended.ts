@@ -9,7 +9,8 @@
  *   packages/app/benchmark-results/results.json           — network simulation rows
  */
 
-import 'tokenpack/algorithms/register-all'
+// Side-effect: registers AVIF/WebP surfaces (required for WebP decoding).
+import '@tokenpack/node'
 
 import AdmZip from 'adm-zip'
 import fs from 'fs'
@@ -19,9 +20,10 @@ import { getAlgorithmByName } from 'tokenpack/algorithms/registry'
 import { isStreamingCodec } from 'tokenpack/codecs/types'
 import { decodeFromBuffer } from 'tokenpack/decoder'
 import { createTokenDecodeStream } from 'tokenpack/stream-decoder'
+import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 
-const HERE = import.meta.dirname
+const HERE = path.dirname(fileURLToPath(import.meta.url))
 const TOKENS_DIR = path.join(HERE, 'tokens')
 const RESULTS_DIR = path.join(HERE, '..', 'packages', 'app', 'benchmark-results')
 const ENCODE_TIMES = path.join(RESULTS_DIR, 'encode-times.json')
@@ -64,6 +66,8 @@ const SOURCE_LABELS: Record<string, string> = {
   'react-dom-client.production': 'react-dom-prod',
   screenshot: 'screenshot',
   'fs-app-core': 'fs-app-core',
+  'client-spec-map': 'client-spec',
+  'client-spec-map.min': 'client-spec-min',
 }
 
 // ── Section 1: Codec perf (results-extended.json) ────────────────────────
@@ -245,6 +249,8 @@ const NET_SOURCES = [
   'react-dom-client.production',
   'screenshot',
   'fs-app-core',
+  'client-spec-map',
+  'client-spec-map.min',
 ]
 
 const RUNS = 3

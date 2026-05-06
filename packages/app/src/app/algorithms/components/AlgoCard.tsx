@@ -13,7 +13,7 @@ export function AlgoCard({ algo }: AlgoCardProps) {
     <Card className="border border-white/10 bg-white/2 p-3.5">
       <div className="flex items-start justify-between gap-3">
         <div className="font-mono text-sm font-semibold text-white tracking-tight">{algo.name}</div>
-        <Chip size="sm" variant="tertiary" className="font-mono text-[10px]">
+        <Chip className="font-mono text-[10px]" size="sm" variant="tertiary">
           #{algo.id}
         </Chip>
       </div>
@@ -40,9 +40,18 @@ export function AlgoCard({ algo }: AlgoCardProps) {
       </dl>
 
       <div className="flex flex-wrap gap-1.5 border-t border-white/6 pt-2">
-        <FriendlyChip value={algo.beFriendly} label="Node.js" />
-        <FriendlyChip value={algo.feFriendly} label="Browser" />
-        <FriendlyChip value={algo.streamFriendly} label="Stream" />
+        <FriendlyChip label="Node.js" value={algo.beFriendly} />
+        <FriendlyChip label="Browser" value={algo.feFriendly} />
+        <FriendlyChip label="Stream" value={algo.streamFriendly} />
+      </div>
+
+      <div className="flex flex-wrap gap-1 pt-1.5">
+        <span className="text-[10px] uppercase tracking-wide text-white/30 mr-1">Runs in</span>
+        {algo.environments.map(env => (
+          <Chip key={env} className="font-mono text-[10px] uppercase" size="sm" variant="tertiary">
+            {env}
+          </Chip>
+        ))}
       </div>
 
       {algo.options.length > 0 && (

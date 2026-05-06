@@ -7,8 +7,16 @@ const config: NextConfig = {
     '/api/benchmark': ['./benchmark-results/**'],
     '/api/benchmark/extended': ['./benchmark-results/**'],
     '/api/benchmark/archives': ['./benchmark-results/**'],
+    '/api/runtime-benchmark/manifest': [
+      '../../benchmark/sources/**',
+      '../../benchmark/tokens/**',
+      './runtime-fixtures/**',
+    ],
+    '/api/runtime-benchmark/text': ['../../benchmark/sources/**', './runtime-fixtures/**'],
+    '/api/runtime-benchmark/token': ['../../benchmark/tokens/**', './runtime-fixtures/**'],
+    '/api/runtime-benchmark/script-token': ['./runtime-fixtures/**'],
   },
-  transpilePackages: ['tokenpack'],
+  transpilePackages: ['tokenpack', '@tokenpack/browser', '@tokenpack/node'],
   serverExternalPackages: ['sharp'],
   experimental: {
     serverActions: { bodySizeLimit: '50mb' },
@@ -21,6 +29,7 @@ const config: NextConfig = {
         '@mongodb-js/zstd',
       ]
     }
+
     return cfg
   },
 }

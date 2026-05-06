@@ -8,7 +8,7 @@ import { predictInfo } from './predict/metadata'
 import { rleInfo } from './rle/metadata'
 import type { CodecMetadata } from './types'
 import { xorInfo } from './xor/metadata'
-import { zstdpixInfo } from './zstdpix/metadata'
+import { zstdpixInfo } from './zstdpix-metadata'
 
 export interface CodecInfo {
   id: number

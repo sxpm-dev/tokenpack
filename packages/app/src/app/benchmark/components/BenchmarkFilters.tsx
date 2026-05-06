@@ -1,6 +1,7 @@
 'use client'
 
 import { Surface, ToggleButton, ToggleButtonGroup } from '@heroui/react'
+
 import { CONDITIONS, SOURCE_LABELS } from '../constants'
 
 interface BenchmarkFiltersProps {
@@ -23,19 +24,19 @@ export function BenchmarkFilters({
       <div className="space-y-2">
         <div className="text-[10px] text-white/30 uppercase tracking-widest">Network condition</div>
         <ToggleButtonGroup
-          selectionMode="single"
+          disallowEmptySelection
+          className="flex-wrap"
           selectedKeys={new Set([condition])}
+          selectionMode="single"
+          size="sm"
           onSelectionChange={keys => {
             const [k] = [...(keys as Set<string>)]
+
             if (k) onConditionChange(k)
           }}
-          disallowEmptySelection
-          size="sm"
-          className="flex-wrap"
         >
-          {CONDITIONS.map((c, i) => (
+          {CONDITIONS.map(c => (
             <ToggleButton key={c} id={c}>
-              {i > 0 && <ToggleButtonGroup.Separator />}
               {c}
             </ToggleButton>
           ))}
@@ -45,20 +46,20 @@ export function BenchmarkFilters({
       <div className="space-y-2">
         <div className="text-[10px] text-white/30 uppercase tracking-widest">Source</div>
         <ToggleButtonGroup
-          selectionMode="single"
+          disallowEmptySelection
+          className="flex-wrap"
           selectedKeys={new Set([source])}
+          selectionMode="single"
+          size="sm"
           onSelectionChange={keys => {
             const [k] = [...(keys as Set<string>)]
+
             if (k) onSourceChange(k)
           }}
-          disallowEmptySelection
-          size="sm"
-          className="flex-wrap"
         >
-          {availableSources.map((s, i) => (
+          {availableSources.map(s => (
             <ToggleButton key={s} id={s}>
-              {i > 0 && <ToggleButtonGroup.Separator />}
-              {s === 'avg' ? 'Avg' : SOURCE_LABELS[s] ?? s}
+              {s === 'avg' ? 'Avg' : (SOURCE_LABELS[s] ?? s)}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>

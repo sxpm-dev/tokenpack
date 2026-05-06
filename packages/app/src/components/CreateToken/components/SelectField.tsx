@@ -12,12 +12,12 @@ export function SelectField({ label, value, values, onChange }: SelectFieldProps
     <div className="flex flex-col gap-1">
       <div className="text-xs text-white/40">{label}</div>
       <Select
-        variant="secondary"
+        fullWidth
         selectedKey={value}
+        variant="secondary"
         onSelectionChange={key => {
           if (key !== null) onChange(String(key))
         }}
-        fullWidth
       >
         <Select.Trigger>
           <Select.Value />

@@ -11,9 +11,8 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { isCartArchive, packBuffers, unpackBuffers } from './archive'
-import { decodeFromBuffer } from './decoder'
-import { applyDiff, readDiffMeta } from './diff-pack'
+import { decode, encode } from '@tokenpack/node'
+import { applyDiff, packBuffers, readDiffMeta } from 'tokenpack'
 
 const CACHE_ROOT = path.join(os.homedir(), '.tokenpack', 'cache')
 
@@ -48,12 +47,14 @@ const TEXT_EXT = new Set([
 
 function detectType(filePath: string, bytes: Uint8Array): 'text' | 'binary' {
   const ext = path.extname(filePath).toLowerCase()
+
   if (TEXT_EXT.has(ext)) return 'text'
-  // Heuristic: NUL byte in first 8KB → binary.
   const head = bytes.subarray(0, Math.min(bytes.length, 8192))
+
   for (let i = 0; i < head.length; i++) {
     if (head[i] === 0) return 'binary'
   }
+
   return 'text'
 }
 
@@ -71,24 +72,31 @@ export function exists(id: string): boolean {
 
 export function readManifest(id: string): ManifestEntry[] {
   const p = path.join(cacheDir(id), 'manifest.json')
-  if (!fs.existsSync(p)) throw new Error(`pack ${id} not open. Run \`tokenpack-pack open <png>\` first.`)
+
+  if (!fs.existsSync(p)) throw new Error(`pack ${id} not open. Run \`tokenpack-skill open <png>\` first.`)
+
   return JSON.parse(fs.readFileSync(p, 'utf-8')) as ManifestEntry[]
 }
 
 export function readMeta(id: string): PackMeta {
   const p = path.join(cacheDir(id), 'meta.json')
+
   if (!fs.existsSync(p)) throw new Error(`pack ${id} meta missing`)
+
   return JSON.parse(fs.readFileSync(p, 'utf-8')) as PackMeta
 }
 
 export function readBlob(id: string, sha: string): Uint8Array {
   const p = path.join(cacheDir(id), 'blobs', sha)
+
   if (!fs.existsSync(p)) throw new Error(`blob ${sha} missing in pack ${id}`)
+
   return new Uint8Array(fs.readFileSync(p))
 }
 
 export function close(id: string): void {
   const dir = cacheDir(id)
+
   if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
 }
 
@@ -97,13 +105,13 @@ export async function open(pngPath: string, key?: string): Promise<OpenResult> {
 
   if (!fs.existsSync(absPath)) throw new Error(`file not found: ${absPath}`)
   const ext = path.extname(absPath)
-  const imageBytes = fs.readFileSync(absPath)
 
-  let payload: Buffer
+  let result: Awaited<ReturnType<typeof decode>>
+
   try {
-    payload = await decodeFromBuffer(imageBytes, key, ext)
+    result = await decode(absPath, { key })
   } catch (e: unknown) {
-    if (e instanceof Error && e.message.includes('encrypted')) {
+    if (e instanceof Error && /encrypted/i.test(e.message)) {
       throw new Error('pack is encrypted — pass --key <password>')
     }
     throw e
@@ -111,44 +119,46 @@ export async function open(pngPath: string, key?: string): Promise<OpenResult> {
 
   const id = randomUUID()
   const dir = cacheDir(id)
-  fs.mkdirSync(path.join(dir, 'blobs'), { recursive: true })
 
-  const payloadBytes = new Uint8Array(payload.buffer, payload.byteOffset, payload.byteLength)
+  fs.mkdirSync(path.join(dir, 'blobs'), { recursive: true })
 
   let manifest: ManifestEntry[]
   let totalBytes: number
   let topLevel: Set<string>
 
-  if (isCartArchive(payloadBytes)) {
-    const entries = unpackBuffers(payloadBytes)
+  if (result.type === 'dir') {
     manifest = []
     totalBytes = 0
     topLevel = new Set<string>()
-    for (const entry of entries) {
-      const entryBytes = new Uint8Array(entry.bytes)
+    for (const entry of result.entries) {
+      const entryBytes = new Uint8Array(entry.payload)
       const sha = sha256(entryBytes)
       const blobPath = path.join(dir, 'blobs', sha)
+
       if (!fs.existsSync(blobPath)) fs.writeFileSync(blobPath, entryBytes)
       manifest.push({
         path: entry.path,
-        size: entry.bytes.length,
+        size: entry.payload.length,
         type: detectType(entry.path, entryBytes),
         sha256: sha,
       })
-      totalBytes += entry.bytes.length
+      totalBytes += entry.payload.length
       topLevel.add(entry.path.split('/')[0])
     }
   } else {
-    // Single-file token: synthesize a manifest with one entry.
-    const sha = sha256(payloadBytes)
-    fs.writeFileSync(path.join(dir, 'blobs', sha), payloadBytes)
-    manifest = [{
-      path: path.basename(absPath, ext) || 'payload',
-      size: payloadBytes.length,
-      type: detectType(absPath, payloadBytes),
-      sha256: sha,
-    }]
-    totalBytes = payloadBytes.length
+    // Single-file token — synthesize a one-entry manifest.
+    const sha = sha256(result.payload)
+
+    fs.writeFileSync(path.join(dir, 'blobs', sha), result.payload)
+    manifest = [
+      {
+        path: path.basename(absPath, ext) || 'payload',
+        size: result.payload.length,
+        type: detectType(absPath, result.payload),
+        sha256: sha,
+      },
+    ]
+    totalBytes = result.payload.length
     topLevel = new Set([manifest[0].path])
   }
 
@@ -172,6 +182,7 @@ export async function open(pngPath: string, key?: string): Promise<OpenResult> {
 
 export function listIds(): string[] {
   if (!fs.existsSync(CACHE_ROOT)) return []
+
   return fs.readdirSync(CACHE_ROOT).filter(name => exists(name))
 }
 
@@ -182,8 +193,8 @@ export interface ApplyDiffResult {
 }
 
 /**
- * Apply a diff PNG on top of an open pack. Decodes the diff token, calls
- * applyDiff, and rewrites the cache (manifest + blobs).
+ * Apply a diff PNG on top of an open pack. Decodes the diff token, applies it,
+ * and rewrites the cache (manifest + blobs).
  */
 export async function applyDiffToPack(
   id: string,
@@ -193,12 +204,17 @@ export async function applyDiffToPack(
   if (!exists(id)) throw new Error(`pack ${id} not open`)
 
   const dir = cacheDir(id)
-  const diffBytes = fs.readFileSync(diffPngPath)
-  const diffPayload = await decodeFromBuffer(diffBytes, key, path.extname(diffPngPath))
-  const diffArchive = new Uint8Array(diffPayload.buffer, diffPayload.byteOffset, diffPayload.byteLength)
+  const diffResult = await decode(diffPngPath, { key })
 
+  if (diffResult.type !== 'dir') throw new Error('apply-diff: token is not a CART archive')
+
+  // Reconstruct the raw diff archive bytes for applyDiff input.
+  const diffArchive = packBuffers(
+    diffResult.entries.map(e => ({ path: e.path, bytes: e.payload })),
+  )
   const meta = readDiffMeta(diffArchive)
-  if (!meta) throw new Error('apply-diff: token does not contain a re-applyable diff archive')
+
+  if (!meta) throw new Error('apply-diff: token is a regular pack, not a re-applyable diff')
 
   // Reconstruct prev pack entries from the cache.
   const prevManifest = readManifest(id)
@@ -207,27 +223,29 @@ export async function applyDiffToPack(
   // Apply.
   const nextEntries = applyDiff(prevEntries, diffArchive)
 
-  // Compute change summary by re-deriving (cheaper than passing it through applyDiff).
-  const prevPaths = new Set(prevEntries.map(e => e.path))
+  // Compute change summary.
+  const prevByPath = new Map(prevEntries.map(e => [e.path, e.bytes]))
   const nextPaths = new Set(nextEntries.map(e => e.path))
   const added: string[] = []
   const modified: string[] = []
   const deleted: string[] = []
 
-  const prevByPath = new Map(prevEntries.map(e => [e.path, e.bytes]))
   for (const e of nextEntries) {
     const prev = prevByPath.get(e.path)
+
     if (prev === undefined) added.push(e.path)
     else if (!bytesEqual(prev, e.bytes)) modified.push(e.path)
   }
-  for (const p of prevPaths) if (!nextPaths.has(p)) deleted.push(p)
+  for (const p of prevByPath.keys()) if (!nextPaths.has(p)) deleted.push(p)
 
   // Rewrite manifest + blobs.
   const newManifest: ManifestEntry[] = []
+
   for (const entry of nextEntries) {
     const entryBytes = new Uint8Array(entry.bytes)
     const sha = sha256(entryBytes)
     const blobPath = path.join(dir, 'blobs', sha)
+
     if (!fs.existsSync(blobPath)) fs.writeFileSync(blobPath, entryBytes)
     newManifest.push({
       path: entry.path,
@@ -238,14 +256,15 @@ export async function applyDiffToPack(
   }
   fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(newManifest, null, 2))
 
-  // Update meta with last applied diff path (best-effort timestamp).
   const metaState = readMeta(id)
+
   metaState.lastDiffId = path.basename(diffPngPath)
   fs.writeFileSync(path.join(dir, 'meta.json'), JSON.stringify(metaState, null, 2))
 
-  // Best-effort GC: remove blobs no longer referenced by manifest.
+  // GC unreferenced blobs.
   const referenced = new Set(newManifest.map(e => e.sha256))
   const blobsDir = path.join(dir, 'blobs')
+
   if (fs.existsSync(blobsDir)) {
     for (const blob of fs.readdirSync(blobsDir)) {
       if (!referenced.has(blob)) fs.unlinkSync(path.join(blobsDir, blob))
@@ -259,7 +278,6 @@ export async function applyDiffToPack(
  * Produce a re-applyable diff token PNG from two existing token PNGs.
  *
  * Both inputs must be CART-format packs (typically produced by `tokenpack pack`).
- * The diff is encoded as a regular tokenpack PNG via the given algorithm.
  */
 export async function produceDiffToken(
   prevPngPath: string,
@@ -267,27 +285,19 @@ export async function produceDiffToken(
   diffOutPath: string,
   options: { algo?: string; compressionMode?: string; key?: string } = {},
 ): Promise<{ diffBytes: number; added: string[]; modified: string[]; deleted: string[] }> {
-  // Decode both packs, compute archive-level diff, then encode as a new token.
-  const prevImage = fs.readFileSync(prevPngPath)
-  const nextImage = fs.readFileSync(nextPngPath)
-  const prevPayload = await decodeFromBuffer(prevImage, options.key, path.extname(prevPngPath))
-  const nextPayload = await decodeFromBuffer(nextImage, options.key, path.extname(nextPngPath))
+  const prev = await decode(prevPngPath, { key: options.key })
+  const next = await decode(nextPngPath, { key: options.key })
 
-  const prevBytes = new Uint8Array(prevPayload.buffer, prevPayload.byteOffset, prevPayload.byteLength)
-  const nextBytes = new Uint8Array(nextPayload.buffer, nextPayload.byteOffset, nextPayload.byteLength)
+  if (prev.type !== 'dir') throw new Error(`prev (${prevPngPath}) is not a packed archive`)
+  if (next.type !== 'dir') throw new Error(`next (${nextPngPath}) is not a packed archive`)
 
-  if (!isCartArchive(prevBytes)) throw new Error(`prev (${prevPngPath}) is not a packed archive`)
-  if (!isCartArchive(nextBytes)) throw new Error(`next (${nextPngPath}) is not a packed archive`)
+  const { diffPack } = await import('tokenpack')
+  const result = diffPack(
+    prev.entries.map(e => ({ path: e.path, bytes: e.payload })),
+    next.entries.map(e => ({ path: e.path, bytes: e.payload })),
+  )
 
-  const prevEntries = unpackBuffers(prevBytes)
-  const nextEntries = unpackBuffers(nextBytes)
-
-  const { diffPack } = await import('./diff-pack')
-  const result = diffPack(prevEntries, nextEntries)
-
-  // Encode the diff archive as a token PNG via the existing encoder.
-  const { encode } = await import('./encoder')
-
+  // Encode the diff archive as a token PNG.
   await encode(Buffer.from(result.diff), {
     out: diffOutPath,
     algo: options.algo ?? 'linear',
@@ -306,8 +316,6 @@ export async function produceDiffToken(
 function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false
   for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false
+
   return true
 }
-
-// Suppress unused-import warning for packBuffers — we re-export it implicitly via diff-pack.
-void packBuffers

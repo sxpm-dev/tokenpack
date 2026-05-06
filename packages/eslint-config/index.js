@@ -6,7 +6,6 @@ import { FlatCompat } from '@eslint/eslintrc'
 import js from '@eslint/js'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
-import _import from 'eslint-plugin-import'
 import prettier from 'eslint-plugin-prettier'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import unusedImports from 'eslint-plugin-unused-imports'
@@ -23,58 +22,69 @@ const compat = new FlatCompat({
   allConfig: js.configs.all,
 })
 
+// Plugins block — used directly by non-Next packages. The Next layer composes
+// `eslint-config-next` (which already registers @typescript-eslint, react,
+// jsx-a11y, import) plus a rules-only block, to avoid plugin redefinition.
+const basePlugins = {
+  'unused-imports': unusedImports,
+  'simple-import-sort': simpleImportSort,
+  '@typescript-eslint': typescriptEslint,
+  prettier: fixupPluginRules(prettier),
+}
+
+export const baseRules = {
+  'no-console': 'warn',
+  'prettier/prettier': 'warn',
+  'no-unused-vars': 'off',
+  'unused-imports/no-unused-vars': 'off',
+  'unused-imports/no-unused-imports': 'warn',
+  '@typescript-eslint/no-unused-vars': [
+    'warn',
+    {
+      args: 'after-used',
+      ignoreRestSiblings: false,
+      argsIgnorePattern: '^_.*?$',
+    },
+  ],
+  'simple-import-sort/imports': 'error',
+  'simple-import-sort/exports': 'error',
+  'padding-line-between-statements': [
+    'warn',
+    { blankLine: 'always', prev: '*', next: 'return' },
+    { blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
+    { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
+  ],
+}
+
+export const baseLanguageOptions = {
+  globals: { ...globals.node },
+  parser: tsParser,
+  ecmaVersion: 12,
+  sourceType: 'module',
+}
+
+export const baseIgnores = {
+  ignores: [
+    '**/node_modules',
+    '**/dist',
+    '**/build',
+    '**/.next',
+    '**/coverage',
+    '**/*.tsbuildinfo',
+    '**/.DS_Store',
+  ],
+}
+
+export const prettierConfig = fixupConfigRules(compat.extends('plugin:prettier/recommended'))
+
 export const baseConfig = [
-  {
-    ignores: [
-      '**/node_modules',
-      '**/dist',
-      '**/build',
-      '**/.next',
-      '**/coverage',
-      '**/*.tsbuildinfo',
-      '**/.DS_Store',
-    ],
-  },
-  ...fixupConfigRules(compat.extends('plugin:prettier/recommended')),
+  baseIgnores,
+  ...prettierConfig,
   {
     files: ['**/*.ts', '**/*.tsx'],
-    plugins: {
-      'unused-imports': unusedImports,
-      import: fixupPluginRules(_import),
-      'simple-import-sort': simpleImportSort,
-      '@typescript-eslint': typescriptEslint,
-      prettier: fixupPluginRules(prettier),
-    },
-    languageOptions: {
-      globals: { ...globals.node },
-      parser: tsParser,
-      ecmaVersion: 12,
-      sourceType: 'module',
-    },
-    rules: {
-      'no-console': 'warn',
-      'prettier/prettier': 'warn',
-      'no-unused-vars': 'off',
-      'unused-imports/no-unused-vars': 'off',
-      'unused-imports/no-unused-imports': 'warn',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          args: 'after-used',
-          ignoreRestSiblings: false,
-          argsIgnorePattern: '^_.*?$',
-        },
-      ],
-      'simple-import-sort/imports': 'error',
-      'simple-import-sort/exports': 'error',
-      'import/order': 'off',
-      'padding-line-between-statements': [
-        'warn',
-        { blankLine: 'always', prev: '*', next: 'return' },
-        { blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
-        { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
-      ],
-    },
+    plugins: basePlugins,
+    languageOptions: baseLanguageOptions,
+    rules: baseRules,
   },
 ]
 

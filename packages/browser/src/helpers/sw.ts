@@ -43,10 +43,20 @@ export async function handleTokenpackRequest(
   }
 
   // Decode the PNG → original payload bytes.
+  // SW serves the FILE form only; directory packs need a different handler.
   const blob = await cached.blob()
-  const data = await decode(blob, { key: options.key })
+  const result = await decode(blob, { key: options.key })
 
-  return new Response(data as BodyInit, {
+  if (result.type !== 'file') {
+    return new Response(
+      'TokenPack pack is a directory; SW handler only serves single-file tokens',
+      {
+        status: 415,
+      },
+    )
+  }
+
+  return new Response(result.payload as BodyInit, {
     status: 200,
     headers: {
       'content-type': options.contentType ?? 'application/octet-stream',

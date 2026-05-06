@@ -10,7 +10,9 @@
  *   packages/app/benchmark-results/archive-times.json
  */
 
-import 'tokenpack/algorithms/register-all'
+// Side-effect import: registers AVIF/WebP surfaces with core's registry.
+// Without this, encodeToBuffer({ format: 'webp' }) throws "Unknown surface id".
+import '@tokenpack/node'
 
 import AdmZip from 'adm-zip'
 import fs from 'fs'
@@ -19,9 +21,11 @@ import { ALGORITHM_INFOS } from 'tokenpack/algorithms/catalog-info'
 import { getAlgorithmByName } from 'tokenpack/algorithms/registry'
 import { packDirs } from 'tokenpack/archive'
 import { encodeToBuffer } from 'tokenpack/encoder'
+import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 
-const HERE = import.meta.dirname
+// Use fileURLToPath for Node 18.15 compat (import.meta.dirname is Node 20+).
+const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.join(HERE, '..')
 const SOURCES = path.join(HERE, 'sources')
 const TOKENS = path.join(HERE, 'tokens')
@@ -65,7 +69,10 @@ async function encodeQuiet(...args: Parameters<typeof encodeToBuffer>) {
 const FILE_SOURCES: { name: string; file: string }[] = [
   { name: 'react-dom-client.development', file: 'react-dom-client.development.js' },
   { name: 'react-dom-client.production', file: 'react-dom-client.production.js' },
+  { name: 'chunk-5mb', file: 'chunk-5mb.js' },
   { name: 'screenshot', file: 'screenshot.jpg' },
+  { name: 'client-spec-map', file: 'client-spec-map.json' },
+  { name: 'client-spec-map.min', file: 'client-spec-map.min.json' },
 ]
 
 export interface ArchiveTimeEntry {

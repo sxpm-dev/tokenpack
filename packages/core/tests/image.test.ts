@@ -3,10 +3,11 @@ import path from 'path'
 import { describe, expect, it } from 'vitest'
 
 import { CHANNELS } from '../src/surfaces/channels'
-import { PngSurface } from '../src/surfaces/png-surface'
+// Concrete PngSurface lives in @tokenpack/node — core ships only the abstract base.
+import { PngSurface } from '@tokenpack/node'
 
 describe('PngSurface', () => {
-  it('roundtrips a flat RGB buffer through PNG', () => {
+  it('roundtrips a flat RGB buffer through PNG', async () => {
     const width = 4
     const height = 4
     const pixels = new Uint8Array(width * height * CHANNELS)
@@ -14,9 +15,10 @@ describe('PngSurface', () => {
     for (let i = 0; i < pixels.length; i++) pixels[i] = i % 256
 
     const tmp = path.join(os.tmpdir(), `codeart-test-${Date.now()}.png`)
+    const surface = new PngSurface()
 
-    PngSurface.encodeSync(tmp, { pixels, width, height, fileChannels: 3 })
-    const result = PngSurface.decodeSync(tmp)
+    await surface.write(tmp, { pixels, width, height, fileChannels: 3 })
+    const result = await surface.readFile(tmp)
 
     expect(result.width).toBe(width)
     expect(result.height).toBe(height)

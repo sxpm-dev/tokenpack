@@ -1,10 +1,12 @@
+// Zstd-backed codec — Node-only because zstd support comes from Node 22's
+// built-in zlib `zstdCompressSync`/`zstdDecompressSync` or the optional
+// `@mongodb-js/zstd` native module. Browsers have no native zstd, so this
+// codec is registered exclusively by @tokenpack/node.
+
 import { createRequire } from 'module'
 import zlibBuiltin from 'zlib'
-
-import { AbstractCodec, type PixelBuffer } from '../types'
-import { zstdpixInfo } from './metadata'
-
-// ─── Zstd availability detection ─────────────────────────────────────────────
+import { AbstractCodec, type PixelBuffer } from 'tokenpack/codecs/types'
+import { zstdpixInfo } from 'tokenpack/codecs/zstdpix-metadata'
 
 type ZstdSync = {
   compress: (buf: Buffer, level?: number) => Buffer
@@ -12,7 +14,7 @@ type ZstdSync = {
 }
 
 function detectZstd(): ZstdSync | null {
-  // Node.js 22+ native zstd (available on the already-imported zlib built-in)
+  // Node 22+ native zstd (lives on the already-imported zlib built-in).
   const zlib = zlibBuiltin as unknown as Record<string, unknown>
 
   if (
@@ -21,8 +23,6 @@ function detectZstd(): ZstdSync | null {
   ) {
     const compressFn = zlib['zstdCompressSync'] as (buf: Buffer, opts?: object) => Buffer
     const decompressFn = zlib['zstdDecompressSync'] as (buf: Buffer) => Buffer
-    // ZSTD_c_compressionLevel = 100 in the zstd cParameter enum.
-    // Fall back to no-params (default level 3) if the constant isn't exposed yet.
     const constants = zlibBuiltin.constants as unknown as Record<string, number>
     const LEVEL_PARAM = constants['ZSTD_c_compressionLevel'] ?? 100
 
@@ -31,14 +31,14 @@ function detectZstd(): ZstdSync | null {
         try {
           return compressFn(buf, { params: { [LEVEL_PARAM]: level } })
         } catch {
-          return compressFn(buf) // default level
+          return compressFn(buf)
         }
       },
       decompress: buf => decompressFn(buf),
     }
   }
 
-  // Fallback: @mongodb-js/zstd (optional package, sync API only)
+  // Fallback: @mongodb-js/zstd (optional package, sync API only).
   try {
     const _require = createRequire(import.meta.url)
     const mongoZstd = _require('@mongodb-js/zstd') as unknown as Record<string, unknown>
@@ -62,9 +62,7 @@ function detectZstd(): ZstdSync | null {
 let _zstd: ZstdSync | null | undefined = undefined
 
 function getZstd(): ZstdSync {
-  if (_zstd === undefined) {
-    _zstd = detectZstd()
-  }
+  if (_zstd === undefined) _zstd = detectZstd()
   if (_zstd === null) {
     throw new Error('zstdpix requires Node.js ≥22 or @mongodb-js/zstd package')
   }
@@ -72,16 +70,11 @@ function getZstd(): ZstdSync {
   return _zstd
 }
 
-/** Returns true when Zstd is available in the current Node.js environment. */
 export function hasZstd(): boolean {
-  if (_zstd === undefined) {
-    _zstd = detectZstd()
-  }
+  if (_zstd === undefined) _zstd = detectZstd()
 
   return _zstd !== null
 }
-
-// ─── Codec ────────────────────────────────────────────────────────────────────
 
 export class ZstdpixCodec extends AbstractCodec {
   readonly id = zstdpixInfo.id

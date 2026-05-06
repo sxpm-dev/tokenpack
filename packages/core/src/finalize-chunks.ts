@@ -38,5 +38,5 @@ export async function finalizeChunks(
     combined = Buffer.from(await decryptData(combined, key))
   }
 
-  return compressorRegistry.byHeaderLevel(compressionLevel).decompress(combined)
+  return await compressorRegistry.byHeaderLevel(compressionLevel).decompress(combined)
 }

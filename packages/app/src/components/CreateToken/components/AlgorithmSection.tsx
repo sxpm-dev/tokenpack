@@ -2,6 +2,7 @@
 
 import { Chip } from '@heroui/react'
 import { ALGORITHM_INFOS } from 'tokenpack/algorithms/catalog-info'
+
 import { ALGOS, PRESETS } from '../constants'
 import { Section } from './Section'
 import { SelectField } from './SelectField'
@@ -13,15 +14,20 @@ interface AlgorithmSectionProps {
   onAlgoChange: (algo: string) => void
 }
 
-export function AlgorithmSection({ preset, onPresetChange, algo, onAlgoChange }: AlgorithmSectionProps) {
+export function AlgorithmSection({
+  preset,
+  onPresetChange,
+  algo,
+  onAlgoChange,
+}: AlgorithmSectionProps) {
   const selectedAlgorithm = ALGORITHM_INFOS.find(entry => entry.name === algo)
   const presetIsNone = preset === 'none'
 
   return (
     <Section
-      title="Algorithm"
-      description="The public entry point. Presets are preconfigured algorithms; none exposes the parts."
       className="lg:col-span-2"
+      description="The public entry point. Presets are preconfigured algorithms; none exposes the parts."
+      title="Algorithm"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <SelectField

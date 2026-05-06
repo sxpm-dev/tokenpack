@@ -1,5 +1,5 @@
 import { decodeEcByte, encodeEcByte, HEADER_PIXELS, readHeader, writeHeader } from '../header'
-import { dotLayout, readDots, renderDots } from '../render'
+import { dotLayout, readDots, renderDots } from '../surfaces/dot-render'
 import { fromFileChannels, toFileChannels } from '../surfaces/channels'
 import type { SurfacePixels } from '../surfaces/types'
 import type { HeaderData } from '../types'

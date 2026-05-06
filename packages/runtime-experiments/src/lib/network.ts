@@ -24,8 +24,12 @@ export const NETWORK_PROFILE_NAMES = Object.keys(NETWORK_PROFILES) as NetworkPro
  *
  *   const blob = await throttledFetch('/big.png', 'slow-3g').then(r => r.blob())
  */
-export async function throttledFetch(input: RequestInfo | URL, profile: NetworkProfile = 'none'): Promise<Response> {
+export async function throttledFetch(
+  input: RequestInfo | URL,
+  profile: NetworkProfile = 'none',
+): Promise<Response> {
   const cfg = NETWORK_PROFILES[profile]
+
   if (cfg.rttMs > 0) await sleep(cfg.rttMs)
   const response = await fetch(input)
 
@@ -33,17 +37,21 @@ export async function throttledFetch(input: RequestInfo | URL, profile: NetworkP
 
   // Throttle the response body.
   const body = response.body
+
   if (!body) return response
 
   const reader = body.getReader()
   const throttled = new ReadableStream<Uint8Array>({
     async pull(controller) {
       const { value, done } = await reader.read()
+
       if (done) {
         controller.close()
+
         return
       }
       const delayMs = (value.byteLength / cfg.bandwidthBps) * 1000
+
       if (delayMs > 1) await sleep(delayMs)
       controller.enqueue(value)
     },

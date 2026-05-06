@@ -32,5 +32,6 @@ export function FileIcon({ name, className }: FileIconProps) {
   if (['json', 'yaml', 'yml', 'toml'].includes(ext)) {
     return <FileCodeIcon {...props} className={`${base} text-orange-400`} />
   }
+
   return <PhosphorFileIcon {...props} className={`${base} text-white/40`} />
 }

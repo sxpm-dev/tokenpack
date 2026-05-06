@@ -1,6 +1,8 @@
-import type { Metadata } from 'next'
-import { Nav } from '@/components/Nav'
 import './globals.css'
+
+import type { Metadata } from 'next'
+
+import { Nav } from '@/components/Nav'
 
 export const metadata: Metadata = {
   title: 'TokenPack Dashboard',
@@ -9,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html className="dark" lang="en">
       <body className="min-h-screen text-white antialiased">
         <Nav />
         {children}

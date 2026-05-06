@@ -17,15 +17,39 @@ function rng(seed: number) {
     seed |= 0
     seed = (seed + 0x6d2b79f5) | 0
     let t = seed
+
     t = Math.imul(t ^ (t >>> 15), t | 1)
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
 
 const FIRST_NAMES = ['Ava', 'Liam', 'Sofia', 'Ethan', 'Mia', 'Noah', 'Zoe', 'Leo', 'Nora', 'Kai']
-const LAST_NAMES = ['Park', 'Singh', 'Chen', 'Garcia', 'Müller', 'Tanaka', 'Okafor', 'Silva', 'Lopez', 'Kim']
-const TAG_POOL = ['vip', 'churn-risk', 'beta', 'alpha', 'paid', 'trial', 'engaged', 'dormant', 'flagged', 'verified']
+const LAST_NAMES = [
+  'Park',
+  'Singh',
+  'Chen',
+  'Garcia',
+  'Müller',
+  'Tanaka',
+  'Okafor',
+  'Silva',
+  'Lopez',
+  'Kim',
+]
+const TAG_POOL = [
+  'vip',
+  'churn-risk',
+  'beta',
+  'alpha',
+  'paid',
+  'trial',
+  'engaged',
+  'dormant',
+  'flagged',
+  'verified',
+]
 
 function makeItem(rand: () => number, id: number): Item {
   const f = FIRST_NAMES[Math.floor(rand() * FIRST_NAMES.length)]
@@ -35,7 +59,9 @@ function makeItem(rand: () => number, id: number): Item {
     () => TAG_POOL[Math.floor(rand() * TAG_POOL.length)],
   )
   const noteLen = 60 + Math.floor(rand() * 200)
-  const notes = Array.from({ length: noteLen }, () => String.fromCharCode(97 + Math.floor(rand() * 26))).join('')
+  const notes = Array.from({ length: noteLen }, () =>
+    String.fromCharCode(97 + Math.floor(rand() * 26)),
+  ).join('')
 
   return {
     id,
@@ -60,6 +86,7 @@ export function generatePayload(sizeKB: number): { items: Item[] } {
 
   while (currentBytes < targetBytes) {
     const item = makeItem(rand, items.length)
+
     items.push(item)
     currentBytes += JSON.stringify(item).length + 2 // approx
   }

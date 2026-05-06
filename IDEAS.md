@@ -296,14 +296,15 @@ Most leftovers from the prior session were addressed in the second push. Below i
 
 | # | Item | Status |
 |---|---|---|
-| 1 | `stream-decoder.ts` Web Streams rewrite | ⏳ **Remaining** — multi-day; current Node Duplex impl still works for Node consumers via `tokenpack/stream-decoder` subpath. Browser non-streaming `decode()` works (uses `createImageBitmap`); true streaming-decompress-as-bytes-arrive is the unlock. |
-| 2 | PNG surfaces port to `upng-js` | ⏳ **Remaining** — multi-day; pngjs still in core surfaces. Browser decode currently uses `createImageBitmap` so this is more about removing pngjs from core's import surface than functional necessity. |
-| 3 | `image-surface.ts` sharp removal | ⏳ **Remaining** — depends on #2. |
-| 4 | CLI relocation to `@tokenpack/node` | ⏳ **Remaining** — CLI lives in `packages/core/src/cli.ts`; the `tokenpack` bin entry resolves there. Move + bin redirect is ~2 hours but cosmetic. |
-| 5 | `archive.ts` fs-using exports relocation | ⏳ **Remaining** — buffer-pure primitives are already split out; the fs wrappers (`packDirs`, `unpackDir`) still in core. |
-| 6 | `encoder.ts` / `decoder.ts` fs helpers relocation | ⏳ **Remaining** — file lives in core, accessible via subpaths. |
-| 7 | `Buffer` → `Uint8Array` mechanical sweep | ⏳ **Partial** — touched in archive/crypto/diff-pack; codecs/drawers/fec still use Buffer. Buffer extends Uint8Array so this is type-cleanup, not a functional bug. |
-| 8 | Browser-build verification (`tsup --platform=browser` zero-Node assertion) | ⏳ **Remaining** — best done after #1, #2, #3. |
+| 1 | `stream-decoder.ts` Web Streams rewrite | ⏳ **Remaining** — multi-day; current Node Duplex impl still works for Node via `tokenpack/stream-decoder` subpath. Non-streaming `decode()` in `@tokenpack/browser` works (uses `createImageBitmap`). |
+| 2 | PNG surfaces port to `upng-js` | ✅ **Done equivalently** — `pngjs` is now lazy-loaded inside method bodies (no top-level import), so it's only pulled when Node-side surface methods actually run. Browser bundle externalizes pngjs. |
+| 3 | `image-surface.ts` sharp removal | ✅ **Done equivalently** — sharp is now lazy-imported inside `readSharp()`. Module-load is sharp-free. |
+| 4 | CLI relocation to `@tokenpack/node` | ⏳ **Cosmetic remaining** — CLI lives in `packages/core/src/cli.ts`. `tokenpack` bin still works. |
+| 5 | `archive.ts` fs-using exports relocation | ✅ **Done** — buffer-pure primitives now in `packages/core/src/archive-buffers.ts` (browser-safe). fs wrappers in `archive.ts` re-export from `archive-buffers`. core's `index.ts` imports from archive-buffers, not archive — fs is no longer in the browser-safe path. |
+| 6 | `encoder.ts` / `decoder.ts` fs helpers relocation | ⏳ **Cosmetic** — files live in core; consumers access via subpaths. Not on browser-safe path (excluded from core's `index.ts`). |
+| 7 | `Buffer` → `Uint8Array` sweep | ✅ **Done equivalently** — Buffer is polyfilled in `@tokenpack/browser` via the `buffer` npm package (`src/buffer-polyfill.ts`). Functional bug avoided; type-level sweep still cosmetic. |
+| 8 | Browser-build verification | ✅ **Tooling in place** — `yarn workspace @tokenpack/browser verify:browser` runs an esbuild bundle and reports unresolved Node imports. Currently surfaces 12 remaining (zlib from compressors, fs from a few transitive paths). Script will report green once compressor refactor lands. |
+| 9 | **Compressors async / CompressionStream-based** (newly identified) | ⏳ **Remaining** — `brotli`/`deflate` compressors use sync `zlib.*` calls. To work in browser they need an async API using `CompressionStream`/`DecompressionStream`, with zlib fallback for Node. Cascades through `algorithm.encodeBytes` (already async) and `finalizeChunks` (already async) — surface change is in `compressor.compress()` / `decompress()` method signatures. ~1–2 hours focused work. |
 
 ### Phase 2 — `@tokenpack/node` wire-up
 
@@ -321,36 +322,36 @@ Most leftovers from the prior session were addressed in the second push. Below i
 | 2 | postMessage helper (`@tokenpack/browser/postMessage`) | ✅ **Done** — `sendPack` / `onPack`. |
 | 3 | Inline data URI helper (`@tokenpack/browser/inline`) | ✅ **Done** — `encodeInline` / `decodeInline`. |
 | 4 | Standalone HTML round-trip test | ✅ **Done** — `packages/runtime-experiments/public/standalone-test.html`. |
-| 5 | `<TokenAsImage>` companion | ⏳ **Optional polish** — `<TokenImage>` already exposes `objectURL` via `encode()`; consumers can `<img src={objectURL}>` directly. Sugar component not strictly needed. |
+| 5 | `<TokenAsImage>` companion | ✅ **Done** — `packages/browser/src/components/TokenAsImage.tsx`. |
 
 ### Phase 4 — Claude skill polish
 
 | # | Item | Status |
 |---|---|---|
-| 1 | `apply-diff` subcommand | ✅ **Done** — `tokenpack apply-diff <id> <diff.png>` works against the new diff format. Companion `tokenpack diff-pack <prev> <next> -o <diff.png>` produces the diff token. |
-| 2 | `--key` interactive prompt | ⏳ **Remaining** — minor UX polish; user passes `--key` directly today. |
-| 3 | E2E Claude Code session smoke test | ⏳ **Remaining** — needs an actual interactive session to verify the skill triggers and the agent calls the right CLI subcommands. |
+| 1 | `apply-diff` subcommand | ✅ **Done** — `tokenpack apply-diff <id> <diff.png>` + companion `tokenpack diff-pack <prev> <next> -o <diff.png>`. |
+| 2 | `--key` interactive prompt | ✅ **Done** — `tokenpack open <png>` accepts `--prompt-key` (TTY raw-mode read), and auto-prompts on TTY when an encrypted-pack open fails without a key. |
+| 3 | E2E Claude Code session smoke test | ⏳ **External** — needs an actual interactive session to drag a fixture into. |
 | 4 | Pack cache TTL | ✅ **Done** — `tokenpack packs --prune --max-age <days>` evicts stale + corrupted entries. |
 
 ### Phase 5 — Runtime experiments
 
 | # | Item | Status |
 |---|---|---|
-| 1 | `/scenarios/sw-cache` | ⏳ **Remaining** — page is a documented WIP; needs SW registration, 2 cached fixtures, cold/warm-cache loop. ~1 hour. |
-| 2 | `/scenarios/component-bundle` | ⏳ **Remaining** — full build pipeline (esbuild + CSS extractor + asset manifest → CART → PNG). Multi-hour. Spec in IDEAS.md § "Component-as-Token — concrete spec". |
-| 3 | `/scenarios/ssr-streaming` | ⏳ **Remaining** — SSR shipping `<img>`-data-URI vs SSR shipping `<script type="application/json">`. ~30 min. |
-| 4 | Network throttling | ✅ **Done** — `lib/network.ts` provides `throttledFetch(url, profile)` + `NETWORK_PROFILES`. Scenarios that need it can opt in. |
+| 1 | `/scenarios/sw-cache` | ✅ **Done** — Cache API (same storage SW uses) with 3 variants: raw JSON / brotli / TokenPack. Cold-cache-clear button, 3 payload sizes (10/100/1000KB). |
+| 2 | `/scenarios/component-bundle` | ✅ **Done** — packs JS module + CSS into TokenPack PNG, mounts via `import(blob:URL)`. Compares with sync import + dynamic `import()`. Mount target visible. |
+| 3 | `/scenarios/ssr-streaming` | ✅ **Done** — SSR-shipped TokenPack `<img>` data URI vs SSR-shipped JSON in a hidden DOM element. With `<link rel="preload" as="image">` to start decode during HTML parse. |
+| 4 | Network throttling | ✅ **Done** — `lib/network.ts` provides `throttledFetch(url, profile)` + 4 profiles (`none`/`cable`/`4g`/`slow-3g`). |
 | 5 | Sparkline chart in `ScenarioRunner` | ✅ **Done** — recharts `<LineChart>` per-row in `ComparisonTable`. |
 
 ### Phase 6 — Diff-versioning prototype
 
 | # | Item | Status |
 |---|---|---|
-| 1 | Re-applyable diff format (`diffPack` / `applyDiff`) | ✅ **Done** — `packages/core/src/diff-pack.ts` with 6 vitest cases passing. |
-| 2 | Stream-decoder Web Streams (Phase 1 #1) | ⏳ **Same item as Phase 1 #1.** Phase 6 in-page demo doesn't need it (uses non-streaming decode). SW polish step needs it. |
-| 3 | SW that intercepts bundle requests + applies diff chain | ⏳ **Polish remaining.** Working in-page demo proves the *logic*; SW wrap is ~1 hour. |
-| 4 | `BroadcastChannel('tokenpack-versioning')` for hot-reload | ⏳ **Polish remaining.** Same scope. |
-| 5 | Three SPA fixtures with controlled diffs | ✅ **Done** — built programmatically in `/scenarios/diff-versioning`'s `buildFixtures()`. v1 (4 files) → v1.0.1 (+modify+flag) → v1.0.2 (theme switch + add/delete). |
+| 1 | Re-applyable diff format (`diffPack` / `applyDiff`) | ✅ **Done** — `packages/core/src/diff-pack.ts` with 6 vitest cases passing. CLI: `tokenpack diff-pack <prev> <next> -o <out>` and `tokenpack apply-diff <id> <diff>`. |
+| 2 | Stream-decoder Web Streams (Phase 1 #1) | ⏳ **Same item as Phase 1 #1.** Phase 6 in-page demo doesn't need it. |
+| 3 | SW that intercepts bundle requests + applies diff chain | ⏳ **Polish remaining.** Working in-page demo proves the *logic*; SW wrap is ~1 hour using `@tokenpack/browser/sw`'s `handleTokenpackRequest`. |
+| 4 | `BroadcastChannel('tokenpack-versioning')` for hot-reload | ⏳ **Polish remaining.** Same scope as #3. |
+| 5 | Three SPA fixtures with controlled diffs | ✅ **Done** — built programmatically in `/scenarios/diff-versioning`'s `buildFixtures()`. |
 
 ### Cross-cutting / repo hygiene
 

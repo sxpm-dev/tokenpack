@@ -8,7 +8,6 @@ import { predictCodec } from './predict'
 import { rleCodec } from './rle'
 import type { AbstractCodec } from './types'
 import { xorCodec } from './xor'
-import { zstdpixCodec } from './zstdpix'
 
 export { BitplaneCodec, bitplaneCodec } from './bitplane'
 export { BitshuffleCodec, bitshuffleCodec } from './bitshuffle'
@@ -29,8 +28,10 @@ export {
   type StreamingCodec,
 } from './types'
 export { XorCodec, xorCodec } from './xor'
-export { hasZstd, ZstdpixCodec, zstdpixCodec } from './zstdpix'
 
+// Env-neutral codecs registered into the algorithm catalog at module-load time.
+// Node-only codecs (e.g. `zstdpix`, which depends on Node 22 zstd or the
+// optional `@mongodb-js/zstd` native module) are registered by `@tokenpack/node`.
 export const CODECS: readonly AbstractCodec[] = [
   linearCodec,
   interleavedCodec,
@@ -41,5 +42,4 @@ export const CODECS: readonly AbstractCodec[] = [
   rleCodec,
   predictCodec,
   bitshuffleCodec,
-  zstdpixCodec,
 ]

@@ -11,8 +11,10 @@
 // is smaller than a structured-cloned JSON string. The catch: both ends must
 // run @tokenpack/browser to encode/decode.
 
-import { encode, type EncodeBrowserOptions } from '../encode'
+import type { DecodeResult } from 'tokenpack/decode-result'
+
 import { decode } from '../decode'
+import { encode, type EncodeBrowserOptions } from '../encode'
 
 const MESSAGE_KIND = '@tokenpack/pack'
 
@@ -41,15 +43,13 @@ export async function sendPack(
   }
 
   if (options.transfer && 'postMessage' in target) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(target as any).postMessage(message, [arrayBuffer])
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(target as any).postMessage(message)
   }
 }
 
-export type PackHandler = (data: Uint8Array, event: MessageEvent) => void | Promise<void>
+export type PackHandler = (result: DecodeResult, event: MessageEvent) => void | Promise<void>
 
 /**
  * Listen for `@tokenpack/pack` messages on a target. Returns a cleanup function.
@@ -75,11 +75,9 @@ export function onPack(
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(target as any).addEventListener('message', listener)
 
   return () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(target as any).removeEventListener('message', listener)
   }
 }

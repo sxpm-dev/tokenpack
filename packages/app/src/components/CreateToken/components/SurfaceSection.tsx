@@ -1,11 +1,7 @@
 'use client'
 
-import {
-  Checkbox,
-  Label,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@heroui/react'
+import { Checkbox, Label, ToggleButton, ToggleButtonGroup } from '@heroui/react'
+
 import { BPP_VALUES, FORMATS } from '../constants'
 import type { ImageFormat } from '../types'
 import { pickFirst } from '../utils'
@@ -29,26 +25,23 @@ export function SurfaceSection({
   onStreamingChange,
 }: SurfaceSectionProps) {
   return (
-    <Section
-      title="Surface"
-      description="Image container and file pixel channels."
-    >
+    <Section description="Image container and file pixel channels." title="Surface">
       <div className="flex flex-wrap gap-6">
         <div className="flex flex-col gap-1.5">
           <span className="text-xs text-white/40">Image format</span>
           <ToggleButtonGroup
-            selectionMode="single"
+            disallowEmptySelection
             selectedKeys={new Set([imgFormat])}
+            selectionMode="single"
+            size="sm"
             onSelectionChange={keys => {
               const k = pickFirst(keys)
+
               if (k) onImgFormatChange(k as ImageFormat)
             }}
-            disallowEmptySelection
-            size="sm"
           >
-            {FORMATS.map((f, i) => (
+            {FORMATS.map(f => (
               <ToggleButton key={f} id={f}>
-                {i > 0 && <ToggleButtonGroup.Separator />}
                 {f.toUpperCase()}
               </ToggleButton>
             ))}
@@ -58,18 +51,18 @@ export function SurfaceSection({
         <div className="flex flex-col gap-1.5">
           <span className="text-xs text-white/40">Bytes per pixel</span>
           <ToggleButtonGroup
-            selectionMode="single"
+            disallowEmptySelection
             selectedKeys={new Set([String(effectiveBpp)])}
+            selectionMode="single"
+            size="sm"
             onSelectionChange={keys => {
               const k = pickFirst(keys)
+
               if (k) onBppChange(Number(k))
             }}
-            disallowEmptySelection
-            size="sm"
           >
-            {BPP_VALUES.map((n, i) => (
+            {BPP_VALUES.map(n => (
               <ToggleButton key={n} id={String(n)}>
-                {i > 0 && <ToggleButtonGroup.Separator />}
                 {n}
               </ToggleButton>
             ))}
@@ -78,10 +71,10 @@ export function SurfaceSection({
       </div>
 
       <Checkbox
-        isSelected={streaming}
         isDisabled={imgFormat !== 'png'}
-        onChange={onStreamingChange}
+        isSelected={streaming}
         variant="secondary"
+        onChange={onStreamingChange}
       >
         <Checkbox.Control>
           <Checkbox.Indicator />

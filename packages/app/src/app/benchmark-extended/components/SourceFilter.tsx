@@ -27,19 +27,19 @@ export function SourceFilter({
       <div className="space-y-2">
         <div className="text-[10px] text-white/30 uppercase tracking-widest">Source</div>
         <ToggleButtonGroup
-          selectionMode="single"
+          disallowEmptySelection
+          className="flex-wrap"
           selectedKeys={new Set([source])}
+          selectionMode="single"
+          size="sm"
           onSelectionChange={keys => {
             const [k] = [...(keys as Set<string>)]
+
             if (k) onSourceChange(k)
           }}
-          disallowEmptySelection
-          size="sm"
-          className="flex-wrap"
         >
-          {sources.map((s, i) => (
+          {sources.map(s => (
             <ToggleButton key={s.id} id={s.id}>
-              {i > 0 && <ToggleButtonGroup.Separator />}
               {s.label}
             </ToggleButton>
           ))}

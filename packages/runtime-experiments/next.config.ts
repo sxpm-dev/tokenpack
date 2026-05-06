@@ -15,6 +15,7 @@ const config: NextConfig = {
         'sharp',
       ]
     }
+
     return cfg
   },
 }

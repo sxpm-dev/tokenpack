@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { NavLink } from './components/NavLink'
+
 import { MobileMenu } from './components/MobileMenu'
+import { NavLink } from './components/NavLink'
 import { NAV_LINKS } from './links'
 
 export function Nav() {
@@ -16,17 +17,13 @@ export function Nav() {
           <MobileMenu pathname={pathname} />
         </div>
 
-        <Link href="/" className="text-sm font-semibold tracking-tight text-white">
+        <Link className="text-sm font-semibold tracking-tight text-white" href="/">
           TokenPack
         </Link>
 
         <div className="hidden items-center gap-0.5 md:flex">
           {NAV_LINKS.map(item => (
-            <NavLink
-              key={item.href}
-              item={item}
-              active={pathname === item.href}
-            />
+            <NavLink key={item.href} active={pathname === item.href} item={item} />
           ))}
         </div>
       </div>

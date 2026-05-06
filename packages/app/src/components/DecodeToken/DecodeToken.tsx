@@ -1,7 +1,8 @@
 'use client'
 
-import { useRef, useState } from 'react'
 import { Button, Card } from '@heroui/react'
+import { useRef, useState } from 'react'
+
 import { FileTree } from './components/FileTree'
 import { UploadArea } from './components/UploadArea'
 import type { DecodeResult } from './types'
@@ -16,6 +17,7 @@ export function DecodeToken() {
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null
+
     setFile(f)
     setResult(null)
     setError(null)
@@ -39,9 +41,11 @@ export function DecodeToken() {
 
     try {
       const form = new FormData()
+
       form.append('token', file)
       const res = await fetch('/api/decode', { method: 'POST', body: form })
       const data = await res.json()
+
       if (!res.ok) throw new Error(data.error)
       setResult(data)
     } catch (e: unknown) {
@@ -57,13 +61,13 @@ export function DecodeToken() {
         ref={fileRef}
         file={file}
         previewUrl={previewUrl}
+        onFileChange={handleFileChange}
         onPickClick={() => fileRef.current?.click()}
         onReset={handleReset}
-        onFileChange={handleFileChange}
       />
 
       {file && (
-        <Button onPress={handleDecode} isPending={loading} fullWidth>
+        <Button fullWidth isPending={loading} onPress={handleDecode}>
           {loading ? 'Decoding…' : 'Decode Token'}
         </Button>
       )}
@@ -75,7 +79,7 @@ export function DecodeToken() {
       )}
 
       {result && (
-        <Card variant="secondary" className="p-3">
+        <Card className="p-3" variant="secondary">
           <Card.Header className="pb-2">
             <Card.Title className="text-[13px] font-medium text-white/65">
               {result.type === 'text' && 'Text content'}

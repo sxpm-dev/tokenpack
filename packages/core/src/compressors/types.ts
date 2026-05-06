@@ -20,6 +20,9 @@ export interface CompressionMeta {
   uncompressedLength: number
 }
 
+// Compress/decompress are async because browser implementations use
+// CompressionStream / DecompressionStream — both are inherently async APIs.
+// Node implementations wrap their sync zlib calls in Promise.resolve.
 export abstract class AbstractCompressor {
   abstract readonly id: CompressionMode
   abstract readonly label: string
@@ -27,8 +30,9 @@ export abstract class AbstractCompressor {
   abstract readonly streamableDecode: boolean
   abstract readonly requiresFullHeader: boolean
 
-  abstract compress(input: Buffer): CompressionResult
-  abstract decompress(input: Buffer, meta?: CompressionMeta): Buffer
+  abstract compress(input: Buffer): Promise<CompressionResult>
+  abstract decompress(input: Buffer, meta?: CompressionMeta): Promise<Buffer>
 
+  // Optional Node Transform stream — only Node-side compressors implement it.
   createDecodeStream?(): Transform
 }
