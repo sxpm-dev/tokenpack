@@ -94,7 +94,7 @@ export class BitshuffleCodec extends AbstractCodec implements StreamingCodec {
     return output
   }
 
-  createDecodeState(): BitshuffleState {
+  createDecodeState(): StreamCodecState {
     return { partial: Buffer.alloc(2), partialCount: 0 }
   }
 

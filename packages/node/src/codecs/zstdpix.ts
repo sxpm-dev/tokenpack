@@ -4,9 +4,9 @@
 // codec is registered exclusively by @tokenpack/node.
 
 import { createRequire } from 'module'
-import zlibBuiltin from 'zlib'
 import { AbstractCodec, type PixelBuffer } from 'tokenpack/codecs/types'
 import { zstdpixInfo } from 'tokenpack/codecs/zstdpix-metadata'
+import zlibBuiltin from 'zlib'
 
 type ZstdSync = {
   compress: (buf: Buffer, level?: number) => Buffer

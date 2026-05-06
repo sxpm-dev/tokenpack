@@ -18,6 +18,15 @@ function makeHeader(overrides: Partial<HeaderData> = {}): HeaderData {
     gradientDirection: 1,
     backgroundOpacity: 0,
     backgroundColor: [0, 0, 0],
+    compressionLevel: 0,
+    uncompressedLength: 0,
+    cellSize: 1,
+    dataPixelCount: 0,
+    chunkIndex: 0,
+    chunkTotal: 1,
+    streamId: 0,
+    channels: 3,
+    preFecLength: 0,
     ...overrides,
   }
 }

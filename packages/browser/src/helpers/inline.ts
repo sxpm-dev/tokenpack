@@ -5,7 +5,7 @@
 //   <img src={dataUrl} />
 //   // or for CSS:  background-image: url(...);
 
-import type { DecodeResult } from 'tokenpack/decode-result'
+import type { Pack } from 'tokenpack/pack/types'
 
 import { encode, type EncodeBrowserOptions } from '../encode'
 
@@ -18,11 +18,8 @@ export async function encodeInline(
   return result.dataURL
 }
 
-/** Decode an inline data URI back to a unified `DecodeResult`. */
-export async function decodeInline(
-  dataURL: string,
-  options: { key?: string } = {},
-): Promise<DecodeResult> {
+/** Decode an inline data URI back to a unified `Pack` handle. */
+export async function decodeInline(dataURL: string, options: { key?: string } = {}): Promise<Pack> {
   const { decode } = await import('../decode')
 
   return decode(dataURL, options)

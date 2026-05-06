@@ -19,7 +19,7 @@ describe('linearCodec', () => {
   it('decodes flat RGB pixels back to original bytes', () => {
     const input = Buffer.from([0xab, 0xcd, 0xef, 0x12])
     const encoded = linearCodec.encode(input, 2, 1, 2)
-    const decoded = linearCodec.decode(encoded, input.length, 1, 2)
+    const decoded = linearCodec.decode(encoded, input.length)
 
     expect(decoded).toEqual(input)
   })
@@ -28,7 +28,7 @@ describe('linearCodec', () => {
     const input = Buffer.from('Hello, CodeArt!')
     const dataPixelCount = Math.ceil(input.length / 3)
     const encoded = linearCodec.encode(input, dataPixelCount, 10, 10)
-    const decoded = linearCodec.decode(encoded, input.length, 10, 10)
+    const decoded = linearCodec.decode(encoded, input.length)
 
     expect(decoded).toEqual(input)
   })

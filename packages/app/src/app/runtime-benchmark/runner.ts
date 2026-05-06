@@ -87,10 +87,10 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
       decodeStart = performance.now()
       const result = await decodeStream(response.body)
 
-      if (result.type !== 'file') {
-        throw new Error('runtime-benchmark expected file token, got dir')
+      if (result.isPack() || result.isDiff()) {
+        throw new Error('runtime-benchmark expected file token, got pack/diff')
       }
-      bytesReady = result.payload
+      bytesReady = await result.content()
       decodeEnd = performance.now()
       // Wire bytes for streaming aren't known up-front (no Blob to size); fall
       // back to the Content-Length header. Server always sets it.
@@ -104,10 +104,10 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
       decodeStart = performance.now()
       const result = await decode(blob)
 
-      if (result.type !== 'file') {
-        throw new Error('runtime-benchmark expected file token, got dir')
+      if (result.isPack() || result.isDiff()) {
+        throw new Error('runtime-benchmark expected file token, got pack/diff')
       }
-      bytesReady = result.payload
+      bytesReady = await result.content()
       decodeEnd = performance.now()
     }
   } else {

@@ -18,7 +18,7 @@ function roundtrip(input: Buffer, channels = 3): Buffer {
   const dataPixelCount = bitshuffleCodec.estimateDataPixels!(input, channels)
   const encoded = bitshuffleCodec.encode(input, dataPixelCount, 10, 10, channels)
 
-  return bitshuffleCodec.decode(encoded, input.length, 10, 10, channels)
+  return bitshuffleCodec.decode(encoded, input.length)
 }
 
 describe('bitshuffleCodec', () => {

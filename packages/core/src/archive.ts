@@ -10,12 +10,12 @@ import path from 'path'
 import {
   isCartArchive,
   listArchive,
-  type PackEntry,
   packBuffers,
+  type PackEntry,
   unpackBuffers,
 } from './archive-buffers'
 
-export { isCartArchive, listArchive, packBuffers, unpackBuffers, type PackEntry }
+export { isCartArchive, listArchive, packBuffers, type PackEntry, unpackBuffers }
 
 const DEFAULT_IGNORE = new Set([
   'node_modules',
@@ -39,6 +39,7 @@ function walkDir(root: string, dir: string, ignore: Set<string>, out: PackEntry[
       walkDir(root, abs, ignore, out)
     } else if (entry.isFile()) {
       const rel = path.relative(root, abs).split(path.sep).join('/')
+
       out.push({ path: rel, bytes: fs.readFileSync(abs) })
     }
   }
@@ -67,6 +68,7 @@ export function unpackDir(data: Buffer | Uint8Array, outDir: string): string[] {
 
   for (const { path: filePath, bytes } of entries) {
     const fullPath = path.resolve(outDir, filePath)
+
     if (!fullPath.startsWith(resolvedOut)) {
       throw new Error(`Unsafe path in archive: ${filePath}`)
     }

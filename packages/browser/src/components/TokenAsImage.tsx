@@ -42,15 +42,18 @@ export function TokenAsImage({
     let url: string | null = null
 
     decode(src, { key: cipherKey })
-      .then(result => {
+      .then(async result => {
         if (cancelled) return
-        // TokenAsImage renders the payload as an image — only valid for `type: 'file'`.
-        if (result.type !== 'file') {
-          onDecodeError?.(new Error('TokenAsImage: token is a directory pack, not a single file'))
+        // TokenAsImage renders the payload as an image — only valid for FilePack.
+        if (result.isPack() || result.isDiff()) {
+          onDecodeError?.(new Error('TokenAsImage: token is a pack/diff, not a single file'))
 
           return
         }
-        const blob = new Blob([result.payload as BlobPart], { type: contentType })
+        const bytes = await result.content()
+
+        if (cancelled) return
+        const blob = new Blob([bytes as unknown as ArrayBuffer], { type: contentType })
 
         url = URL.createObjectURL(blob)
         setObjectURL(url)

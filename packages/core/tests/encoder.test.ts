@@ -1,5 +1,7 @@
 import '../src/algorithms/register-all'
 
+// Concrete PngSurface lives in @tokenpack/node — core ships only the abstract base.
+import { PngSurface } from '@tokenpack/node'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -8,8 +10,6 @@ import { describe, expect, it } from 'vitest'
 import { decode } from '../src/decoder'
 import { encode } from '../src/encoder'
 import { readHeader } from '../src/header'
-// Concrete PngSurface lives in @tokenpack/node — core ships only the abstract base.
-import { PngSurface } from '@tokenpack/node'
 
 const pngSurface = new PngSurface()
 

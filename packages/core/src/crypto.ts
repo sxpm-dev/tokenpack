@@ -22,7 +22,7 @@ const passwordEncoder = new TextEncoder()
 // older `BufferSource` shape. We bypass strict generic checks with a typed-any
 // helper. The runtime types are correct; this is purely TS bookkeeping for
 // consumers compiling under different tsconfigs.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const asBuf = (data: ArrayBuffer | ArrayBufferView): any => data
 
 async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {

@@ -1,10 +1,6 @@
-// Side-effect import: registers Node-zlib compressors + sharp/pngjs surfaces
-// + zstdpix codec into core's append-only registries before encode runs.
-import '@tokenpack/node'
-
+import { encodeToBuffer } from '@tokenpack/node'
 import { NextRequest, NextResponse } from 'next/server'
 import { FEC_MODES } from 'tokenpack/algorithms/catalog-info'
-import { encodeToBuffer } from 'tokenpack/encoder'
 import type { Style } from 'tokenpack/types'
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib'
 

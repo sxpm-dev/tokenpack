@@ -5,13 +5,19 @@
 
 import 'tokenpack/algorithms/register-all'
 
+import { PackBuilder } from 'tokenpack'
 import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { compressRaw } from 'tokenpack/compressors'
 import type { DrawnChunk } from 'tokenpack/drawers/types'
+import { wrapFileWithName } from 'tokenpack/pack-format/encode-file'
+import { encodePack } from 'tokenpack/pack-format/encode-pack'
 import type { EncodeOptions } from 'tokenpack/types'
 
 export interface EncodeResult {
   /** PNG bytes for each chunk. Most encodes produce a single chunk. */
   blobs: Blob[]
+  /** Raw token bytes (await-extracted from blobs[0]) — for direct `decode()` use. */
+  bytes: Uint8Array
   /** Object URL pointing at blobs[0] — convenient for `<img src={…}>` immediately. */
   objectURL: string
   /** Data URL pointing at blobs[0]. */
@@ -23,6 +29,10 @@ export interface EncodeResult {
 export interface EncodeBrowserOptions extends Omit<EncodeOptions, 'algo' | 'out' | 'format'> {
   /** Algorithm name (default: 'linear'). */
   algo?: string
+  /** Per-file compressor for pack-format encodes (default: 'brotli-11'). */
+  compressor?: string
+  /** File-format only: name embedded in the token; surfaced as `pack.list[0]` on decode. */
+  name?: string
 }
 
 /**
@@ -32,24 +42,51 @@ export interface EncodeBrowserOptions extends Omit<EncodeOptions, 'algo' | 'out'
  *  - `string`: encoded as UTF-8
  *  - `Uint8Array` / `ArrayBuffer`: copied raw
  *  - `Blob`: read via `arrayBuffer()`
+ *  - `PackBuilder`: each entry compressed independently into a pack-format token
  */
 export async function encode(
-  content: string | Uint8Array | ArrayBuffer | Blob,
+  content: string | Uint8Array | ArrayBuffer | Blob | PackBuilder,
   options: EncodeBrowserOptions = {},
 ): Promise<EncodeResult> {
-  const bytes = await coerceToBytes(content)
-  const algoName = options.algo ?? 'linear'
+  let bytes: Uint8Array
+  let runtimeOptions: EncodeBrowserOptions
+
+  if (content instanceof PackBuilder) {
+    const entries = await content.build()
+    const compressor = options.compressor ?? 'brotli-11'
+
+    bytes = await encodePack(entries, async b => {
+      const r = await compressRaw(b, compressor)
+
+      return {
+        bytes: r.bytes,
+        compressor: r.compressor,
+        level: r.level,
+        originalSize: r.originalSize,
+      }
+    })
+    // Outer pipeline must NOT recompress — region bytes are already compressed.
+    runtimeOptions = { ...options, compressionMode: 'none' }
+  } else {
+    const raw = await coerceToBytes(content)
+
+    bytes = options.name ? wrapFileWithName(options.name, raw) : raw
+    runtimeOptions = options
+  }
+
+  const algoName = runtimeOptions.algo ?? 'linear'
   const algorithm = algorithmCatalog.getByName(algoName)
-  const chunks = await algorithm.encodeBytes(bytes, options)
+  const chunks = await algorithm.encodeBytes(bytes, runtimeOptions)
 
   const blobs = await Promise.all(chunks.map(chunkToPngBlob))
   const objectURL = URL.createObjectURL(blobs[0])
   const dataURL = await blobToDataURL(blobs[0])
   const image = new Image()
+  const tokenBytes = new Uint8Array(await blobs[0].arrayBuffer())
 
   image.src = objectURL
 
-  return { blobs, objectURL, dataURL, image }
+  return { blobs, bytes: tokenBytes, objectURL, dataURL, image }
 }
 
 async function coerceToBytes(input: string | Uint8Array | ArrayBuffer | Blob): Promise<Uint8Array> {

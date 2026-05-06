@@ -16,29 +16,35 @@
 import 'tokenpack/algorithms/register-all'
 
 import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
-import { type DecodeResult, toDecodeResult } from 'tokenpack/decode-result'
+import { decompressRaw } from 'tokenpack/compressors'
 import { isCompactToken, readCompactHeader, readHeader } from 'tokenpack/header'
+import { fromBytes } from 'tokenpack/pack/from-bytes'
+import type { Pack } from 'tokenpack/pack/types'
 import type { SurfacePixels } from 'tokenpack/surfaces/types'
+
+import { buildDiffToFn } from './build-diff-to'
 
 export type DecodeSource = string | Blob | ArrayBuffer | Uint8Array | HTMLImageElement | ImageBitmap
 
 export interface DecodeOptions {
   /** Decryption key, if the token was encrypted. */
   key?: string
+  /** Compressor used when this Pack later produces a diff via `dirPack.diffTo`. */
+  compressor?: string
 }
 
-/** Decode a TokenPack source to either a file payload or a directory listing. */
-export async function decode(
-  source: DecodeSource,
-  options: DecodeOptions = {},
-): Promise<DecodeResult> {
+/** Decode a TokenPack source into a `Pack` (FilePack | DirPack | DiffPack). */
+export async function decode(source: DecodeSource, options: DecodeOptions = {}): Promise<Pack> {
   const pixels = await sourceToPixels(source)
   const codecId = resolveCodecId(pixels.pixels)
   const algorithm = algorithmCatalog.getById(codecId)
   const result = await algorithm.decodeBytes([pixels], options.key)
   const bytes = new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
 
-  return toDecodeResult(bytes)
+  return fromBytes(bytes, {
+    decompress: decompressRaw,
+    diffTo: buildDiffToFn(options.compressor),
+  })
 }
 
 async function sourceToPixels(source: DecodeSource): Promise<SurfacePixels> {

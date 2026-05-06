@@ -9,10 +9,7 @@ import { decryptData } from './crypto'
 import type { ChunkReadResult } from './drawers/types'
 import { fecRegistry } from './fec/registry'
 
-export async function finalizeChunks(
-  chunks: ChunkReadResult[],
-  key?: string,
-): Promise<Buffer> {
+export async function finalizeChunks(chunks: ChunkReadResult[], key?: string): Promise<Buffer> {
   chunks.sort((a, b) => a.chunkIndex - b.chunkIndex)
   if (chunks.length > 1) {
     const sid = chunks[0].streamId

@@ -1,9 +1,9 @@
-import zlib from 'zlib'
 import {
   AbstractCompressor,
   type CompressionMode,
   type CompressionResult,
 } from 'tokenpack/compressors/types'
+import zlib from 'zlib'
 
 type BrotliMode = Extract<CompressionMode, 'brotli-4' | 'brotli-6' | 'brotli-11'>
 

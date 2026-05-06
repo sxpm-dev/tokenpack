@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { packBuffers, type PackEntry } from '../src/archive'
 import { applyDiff, diffPack, readDiffMeta } from '../src/diff-pack'
 
@@ -23,6 +24,7 @@ describe('diff-pack', () => {
     expect(result.deleted).toEqual([])
 
     const v2 = applyDiff(v1, result.diff)
+
     expect(v2.map(e => [e.path, dec(e.bytes)])).toEqual([
       ['a.txt', 'aaa'],
       ['b.txt', 'bbb'],
@@ -52,6 +54,7 @@ describe('diff-pack', () => {
     const result = diffPack(v1, v2, { baseSha: 'abc123' })
 
     const meta = readDiffMeta(result.diff)
+
     expect(meta).not.toBeNull()
     expect(meta!.baseSha).toBe('abc123')
     expect(meta!.deletions).toEqual([])
@@ -69,6 +72,7 @@ describe('diff-pack', () => {
     const reconstructedV3 = applyDiff(reconstructedV2, d23)
 
     const map = Object.fromEntries(reconstructedV3.map(e => [e.path, dec(e.bytes)]))
+
     expect(map).toEqual({ 'a.txt': 'v3', 'c.txt': 'C' })
   })
 

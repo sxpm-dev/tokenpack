@@ -11,7 +11,7 @@
 // is smaller than a structured-cloned JSON string. The catch: both ends must
 // run @tokenpack/browser to encode/decode.
 
-import type { DecodeResult } from 'tokenpack/decode-result'
+import type { Pack } from 'tokenpack/pack/types'
 
 import { decode } from '../decode'
 import { encode, type EncodeBrowserOptions } from '../encode'
@@ -49,7 +49,7 @@ export async function sendPack(
   }
 }
 
-export type PackHandler = (result: DecodeResult, event: MessageEvent) => void | Promise<void>
+export type PackHandler = (result: Pack, event: MessageEvent) => void | Promise<void>
 
 /**
  * Listen for `@tokenpack/pack` messages on a target. Returns a cleanup function.

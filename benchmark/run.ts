@@ -7,16 +7,11 @@
  * Network: throttled local HTTP server simulating 4 conditions
  */
 
-// Side-effect: registers AVIF/WebP surfaces. Required because the benchmark
-// decodes WebP tokens via `decodeFromBuffer(... '.webp')`.
-import '@tokenpack/node'
-
+import { decodeFromBuffer, decodeStream as createTokenDecodeStream } from '@tokenpack/node'
 import AdmZip from 'adm-zip'
 import fs from 'fs'
 import http from 'http'
 import path from 'path'
-import { decodeFromBuffer } from 'tokenpack/decoder'
-import { createTokenDecodeStream } from 'tokenpack/stream-decoder'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 

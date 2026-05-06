@@ -15,15 +15,23 @@ export {
   isCartArchive,
   listArchive,
   packBuffers,
-  unpackBuffers,
   type PackEntry,
+  unpackBuffers,
 } from './archive-buffers'
 export { CRYPTO_OVERHEAD, decryptData, encryptData } from './crypto'
-export {
-  type DecodeDirEntry,
-  type DecodeResult,
-  toDecodeResult,
-} from './decode-result'
-export { applyDiff, diffPack, readDiffMeta, type DiffMeta, type DiffPackResult } from './diff-pack'
+export { type DecodeDirEntry, type DecodeResult, toDecodeResult } from './decode-result'
+// Pack types + builder (new unified Pack API)
+export { applyDiff, type DiffMeta, diffPack, type DiffPackResult, readDiffMeta } from './diff-pack'
 export { finalizeChunks } from './finalize-chunks'
+export type {
+  DiffEntry,
+  DiffOpKind,
+  DiffPack,
+  DirPack,
+  FilePack,
+  Pack,
+  PackBase,
+  PackEntryInfo,
+} from './pack/types'
+export { type BuilderIntent, PackBuilder } from './pack-builder'
 export type { DecodeOptions, EncodeOptions, HeaderData, ImageFormat, Style } from './types'

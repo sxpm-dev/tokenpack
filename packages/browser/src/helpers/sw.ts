@@ -47,16 +47,16 @@ export async function handleTokenpackRequest(
   const blob = await cached.blob()
   const result = await decode(blob, { key: options.key })
 
-  if (result.type !== 'file') {
+  if (result.isPack() || result.isDiff()) {
     return new Response(
-      'TokenPack pack is a directory; SW handler only serves single-file tokens',
-      {
-        status: 415,
-      },
+      'TokenPack pack is a directory or diff; SW handler only serves single-file tokens',
+      { status: 415 },
     )
   }
 
-  return new Response(result.payload as BodyInit, {
+  const bytes = await result.content()
+
+  return new Response(bytes as BodyInit, {
     status: 200,
     headers: {
       'content-type': options.contentType ?? 'application/octet-stream',

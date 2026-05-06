@@ -1,12 +1,9 @@
-// Side-effect import: registers Node compressors + surfaces with core.
-import '@tokenpack/node'
-
+import { diffText, diffTokens, type FileDiff } from '@tokenpack/node'
 import { randomUUID } from 'crypto'
 import { readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { NextRequest, NextResponse } from 'next/server'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { diffText, diffTokens, type FileDiff } from 'tokenpack/diff'
 
 function formatTextDiff(fileDiffs: FileDiff[]): string {
   if (!fileDiffs.length) return 'No differences found.'

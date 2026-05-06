@@ -1,40 +1,263 @@
 # @tokenpack/browser
 
-DX-first browser/DOM/React adapter for TokenPack on top of [`@tokenpack/core`](../core).
+Browser/DOM/React adapter for [TokenPack](../core/README.md). Decodes via
+Canvas + `createImageBitmap`, encodes via `OffscreenCanvas.convertToBlob` (or
+`canvas.toBlob` fallback), and uses native `CompressionStream`/`DecompressionStream`
+for inner brotli/deflate.
 
-> **Status:** Phase 0 scaffold. Real implementation lands in Phase 3 after the core split (Phase 1).
+```bash
+yarn add @tokenpack/browser   # workspace pkg, installs from local sources
+```
 
-## Planned surface
+## What you get
+
+- `encode` / `decode` — same shape as `@tokenpack/node`, returns Blob + dataURL + objectURL + a hot `<img>`.
+- `PackBuilder` for assembling pack contents (no fs methods — those live in node).
+- React components: `<TokenImage>` (consume payload), `<TokenAsImage>` (render encoded image as `<img>`).
+- React hook: `useTokenPack(src)`.
+- Streaming PNG decode (`@tokenpack/browser/decodeStream`).
+- Service Worker helper, `postMessage` transport, inline data-URI helper on dedicated subpaths.
+
+---
+
+## Quick examples
+
+### Encode + decode a single payload
 
 ```ts
 import { encode, decode } from '@tokenpack/browser'
 
-// Encode → ergonomic outputs
-const { blob, dataURL, image, stream } = await encode(jsonString, { algo: 'linear', compression: 'brotli-6' })
+const r = await encode('hello world')                 // string is encoded as UTF-8
+const pack = await decode(r.blobs[0])
+if (!pack.isPack() && !pack.isDiff()) {
+  console.log(await pack.text())                      // → "hello world"
+}
 
-// Decode → accepts whatever you have
-const data = await decode('/api/profile.png')      // fetch + decode
-const data = await decode(fileBlob)                // <input type="file">
-const data = await decode(imgElement)              // existing <img>
-const stream = decode(response.body, { stream: true })
+// `r` exposes multiple ways to consume the result:
+//   r.blobs       — Blob[] (one per chunk; usually one)
+//   r.bytes       — Uint8Array view of blobs[0]
+//   r.objectURL   — URL.createObjectURL(blobs[0])
+//   r.dataURL     — base64 data:image/png URL
+//   r.image       — detached HTMLImageElement; drop into the DOM
 ```
 
-### React
-
-```tsx
-import { TokenImage, useTokenPack } from '@tokenpack/browser/components'
-
-<TokenImage src="/data.png" onDecoded={data => console.log(data)} fallback={<Spinner />} />
-
-const { state, data, error, progress } = useTokenPack('/data.png')
-```
-
-### Service Worker / postMessage / inline data URI
+### Encode a multi-file pack via builder
 
 ```ts
-import { handleTokenpackRequest } from '@tokenpack/browser/sw'
-import { sendPack, onPack } from '@tokenpack/browser/postMessage'
-import { encodeInline } from '@tokenpack/browser/inline'
+import { encode, decode, PackBuilder } from '@tokenpack/browser'
+
+const r = await encode(
+  new PackBuilder()
+    .withFile('config.json', JSON.stringify({ version: 1 }))
+    .withFile('hello.txt', 'hi')
+    .withDirectory('assets', sub => {
+      sub.withBuffer('logo.png', logoBytes)
+    }),
+)
+
+// Drop into the DOM — it's a normal PNG.
+document.body.append(r.image)
+
+// Or decode + iterate later:
+const pack = await decode(r.blobs[0])
+if (pack.isPack()) {
+  console.log(pack.list)                              // ['config.json', 'hello.txt', 'assets/logo.png']
+  const config = await pack.json('config.json')
+}
 ```
 
-See [IDEAS.md](../../IDEAS.md) for the full architecture and roadmap.
+### Decode anything
+
+```ts
+await decode('/api/snapshot.png')                     // URL → fetch + decode
+await decode(blob)                                    // Blob (e.g. <input type="file">)
+await decode(uint8Array)
+await decode(arrayBuffer)
+await decode(htmlImageElement)                        // already-rendered <img>
+await decode(imageBitmap)
+```
+
+### React component — consume payload
+
+```tsx
+import { TokenImage } from '@tokenpack/browser/components'
+
+<TokenImage
+  src="/data.png"
+  fallback={<Spinner />}
+  onDecoded={async pack => {
+    if (pack.isPack()) {
+      const config = await pack.json('config.json')
+      // …
+    } else if (!pack.isDiff()) {
+      console.log(await pack.text())
+    }
+  }}
+/>
+```
+
+### React component — render encoded image as `<img>`
+
+```tsx
+import { TokenAsImage } from '@tokenpack/browser/components'
+
+// Use when the payload IS itself an image (e.g. screenshot encoded as TokenPack).
+<TokenAsImage src="/encoded-screenshot.png" alt="screenshot" />
+```
+
+### React hook
+
+```tsx
+import { useTokenPack } from '@tokenpack/browser/hooks'
+
+function Profile({ src }: { src: string }) {
+  const { state, data, error } = useTokenPack(src)
+
+  if (state === 'loading') return <Spinner />
+  if (state === 'error') return <ErrorView error={error!} />
+  if (data?.isPack()) return <PackTree pack={data} />
+  if (data && !data.isDiff()) return <Bytes pack={data} />
+  return null
+}
+```
+
+### Service Worker — serve TokenPack-cached assets
+
+```ts
+// sw.js
+import { handleTokenpackRequest } from '@tokenpack/browser/sw'
+
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url)
+  if (url.pathname.endsWith('.tpk.png')) {
+    event.respondWith(handleTokenpackRequest(event.request))
+  }
+})
+```
+
+### postMessage — compressed cross-context transport
+
+```ts
+// Sender
+import { sendPack } from '@tokenpack/browser/postMessage'
+sendPack(targetWindow, JSON.stringify(largePayload), { transfer: true })
+
+// Receiver
+import { onPack } from '@tokenpack/browser/postMessage'
+const cleanup = onPack(window, async (pack, event) => {
+  if (!pack.isPack() && !pack.isDiff()) {
+    const obj = await pack.json()
+    // …
+  }
+})
+```
+
+### Inline data URI
+
+```ts
+import { encodeInline, decodeInline } from '@tokenpack/browser/inline'
+
+const dataUrl = await encodeInline('{"big":"json"}')
+// <img src={dataUrl} /> OR background-image: url(...) in CSS
+
+const pack = await decodeInline(dataUrl)
+```
+
+### Diff round-trip in browser
+
+```ts
+import { encode, decode, PackBuilder } from '@tokenpack/browser'
+
+const v1 = await encode(new PackBuilder().withFile('a.js', 'aa').withFile('b.js', 'bb'))
+const v2 = await encode(new PackBuilder().withFile('a.js', 'AA').withFile('c.js', 'cc'))
+
+const prev = await decode(v1.blobs[0])
+const next = await decode(v2.blobs[0])
+
+if (prev.isPack() && next.isPack()) {
+  const diffResult = await prev.diffTo(next)          // EncodeResult — same shape as encode()
+  // ship diffResult.blobs[0] over the wire; on the receiver:
+  const diffPack = await decode((diffResult as { blobs: Blob[] }).blobs[0])
+  if (diffPack.isDiff()) {
+    const reconstructed = await diffPack.apply(prev)
+  }
+}
+```
+
+### Streaming PNG decode
+
+```ts
+import { decodeStream } from '@tokenpack/browser'
+
+const response = await fetch('/big-pack.png')
+const pack = await decodeStream(response.body!)       // pulls bytes as they arrive
+```
+
+For non-PNG (WebP/AVIF) the helper transparently falls back to the buffered
+`decode()` path (no streaming WebP decoder exists in browsers today).
+
+---
+
+## API surface
+
+### Top-level
+
+| Symbol | Notes |
+|---|---|
+| `encode(content \| builder, opts?)` | string / Uint8Array / ArrayBuffer / Blob / `PackBuilder` |
+| `decode(source, opts?)` | URL string / Blob / Uint8Array / ArrayBuffer / HTMLImageElement / ImageBitmap |
+| `decodeStream(source, opts?)` | ReadableStream / Blob / URL string |
+| `PackBuilder` | re-exported from core |
+| Pack types | `Pack`, `FilePack`, `DirPack`, `DiffPack`, `DiffEntry`, `DiffOpKind`, `PackEntryInfo` |
+| `registerBrowserDefaults` | Manual registration entry-point for unusual setups |
+
+### Subpath imports
+
+| Subpath | Exports |
+|---|---|
+| `@tokenpack/browser/components` | `<TokenImage>`, `<TokenAsImage>` |
+| `@tokenpack/browser/hooks` | `useTokenPack` |
+| `@tokenpack/browser/sw` | `handleTokenpackRequest` |
+| `@tokenpack/browser/postMessage` | `sendPack`, `onPack` |
+| `@tokenpack/browser/inline` | `encodeInline`, `decodeInline` |
+
+### Encode options
+
+```ts
+interface EncodeBrowserOptions {
+  algo?: string                     // codec name; default 'linear'
+  compressor?: string               // per-file compressor for pack format; default 'brotli-11'
+  compressionMode?: string          // outer compression mode; 'none' for pack format
+  cellSize?: number
+  channels?: 1 | 2 | 3 | 4
+  fecMode?: 'none' | 'rs-5' | 'rs-15' | 'rs-25'
+  key?: string                      // AES-256-GCM passphrase
+  streaming?: boolean
+  style?: { gradient?: unknown; background?: unknown; opacity: number }
+  width?: number
+  name?: string                     // file-format only — wraps payload with name
+}
+```
+
+### Decode options
+
+```ts
+interface DecodeOptions {
+  key?: string
+  compressor?: string               // used when produced pack later calls diffTo()
+}
+```
+
+### Browser-safety
+
+The package is bundle-clean: zero `node:*` imports. Verify locally:
+
+```bash
+yarn workspace @tokenpack/browser verify:browser
+```
+
+---
+
+## License
+
+MIT — see [LICENSE](../../LICENSE).

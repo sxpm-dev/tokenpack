@@ -1,8 +1,5 @@
-// Side-effect import: registers Node compressors + surfaces with core.
-import '@tokenpack/node'
-
+import { decodeFromBuffer } from '@tokenpack/node'
 import { NextRequest, NextResponse } from 'next/server'
-import { decodeFromBuffer } from 'tokenpack/decoder'
 
 export interface FileEntry {
   path: string

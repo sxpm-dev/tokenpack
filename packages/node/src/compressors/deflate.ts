@@ -1,9 +1,9 @@
-import zlib from 'zlib'
 import {
   AbstractCompressor,
   type CompressionMode,
   type CompressionResult,
 } from 'tokenpack/compressors/types'
+import zlib from 'zlib'
 
 type DeflateMode = Extract<CompressionMode, 'deflate-1' | 'deflate-6' | 'deflate-9'>
 

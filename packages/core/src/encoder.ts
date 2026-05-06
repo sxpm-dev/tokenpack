@@ -24,7 +24,10 @@ export async function encodeToBuffer(
   options: Omit<EncodeOptions, 'out'>,
 ): Promise<Buffer[]> {
   const surface = surfaceRegistry.byFormat(options.format ?? 'png', options.streaming ?? false)
-  const tmpBase = path.join(tmpdir(), `tp-enc-${globalThis.crypto.randomUUID()}${surface.extension}`)
+  const tmpBase = path.join(
+    tmpdir(),
+    `tp-enc-${globalThis.crypto.randomUUID()}${surface.extension}`,
+  )
   const writtenPaths = await encode(input, { ...options, out: tmpBase })
 
   try {

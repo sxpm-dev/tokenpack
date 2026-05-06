@@ -1,10 +1,10 @@
+// Concrete PngSurface lives in @tokenpack/node — core ships only the abstract base.
+import { PngSurface } from '@tokenpack/node'
 import os from 'os'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
 
 import { CHANNELS } from '../src/surfaces/channels'
-// Concrete PngSurface lives in @tokenpack/node — core ships only the abstract base.
-import { PngSurface } from '@tokenpack/node'
 
 describe('PngSurface', () => {
   it('roundtrips a flat RGB buffer through PNG', async () => {

@@ -9,17 +9,13 @@
  *   packages/app/benchmark-results/results.json           — network simulation rows
  */
 
-// Side-effect: registers AVIF/WebP surfaces (required for WebP decoding).
-import '@tokenpack/node'
-
+import { decodeFromBuffer, decodeStream as createTokenDecodeStream } from '@tokenpack/node'
 import AdmZip from 'adm-zip'
 import fs from 'fs'
 import http from 'http'
 import path from 'path'
 import { getAlgorithmByName } from 'tokenpack/algorithms/registry'
 import { isStreamingCodec } from 'tokenpack/codecs/types'
-import { decodeFromBuffer } from 'tokenpack/decoder'
-import { createTokenDecodeStream } from 'tokenpack/stream-decoder'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 

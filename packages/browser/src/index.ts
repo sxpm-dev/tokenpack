@@ -33,4 +33,16 @@ export {
   useTokenPack,
   type UseTokenPackOptions,
 } from './hooks/useTokenPack'
+// Pack types + builder (new unified Pack API).
+export { PackBuilder } from 'tokenpack'
+export type {
+  DiffEntry,
+  DiffOpKind,
+  DiffPack,
+  DirPack,
+  FilePack,
+  Pack,
+  PackEntryInfo,
+} from 'tokenpack/pack/types'
+// Legacy DecodeResult — kept during migration; use Pack instead.
 export type { DecodeDirEntry, DecodeResult } from 'tokenpack/decode-result'

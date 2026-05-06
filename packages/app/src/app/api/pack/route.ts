@@ -1,14 +1,10 @@
-// Side-effect import: registers Node compressors + surfaces with core.
-import '@tokenpack/node'
-
+import { encodeToBuffer, packDirs } from '@tokenpack/node'
 import AdmZip from 'adm-zip'
 import { randomUUID } from 'crypto'
 import { mkdirSync, rmSync, writeFileSync } from 'fs'
 import { NextRequest, NextResponse } from 'next/server'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { packDirs } from 'tokenpack/archive'
-import { encodeToBuffer } from 'tokenpack/encoder'
 import type { Style } from 'tokenpack/types'
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib'
 

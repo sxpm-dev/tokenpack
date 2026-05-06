@@ -21,8 +21,7 @@ import 'tokenpack/algorithms/register-all'
 import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import type { AbstractCodec, StreamCodecState } from 'tokenpack/codecs/types'
 import { isStreamingCodec } from 'tokenpack/codecs/types'
-import { compressorRegistry } from 'tokenpack/compressors/registry'
-import { type DecodeResult, toDecodeResult } from 'tokenpack/decode-result'
+import { compressorRegistry, decompressRaw } from 'tokenpack/compressors'
 import {
   COMPACT_HEADER_PIXELS,
   HEADER_PIXELS,
@@ -30,8 +29,11 @@ import {
   readCompactHeader,
   readHeader,
 } from 'tokenpack/header'
+import { fromBytes } from 'tokenpack/pack/from-bytes'
+import type { Pack } from 'tokenpack/pack/types'
 import { fromFileChannels } from 'tokenpack/surfaces/channels'
 
+import { buildDiffToFn } from './build-diff-to'
 import { decode, type DecodeOptions } from './decode'
 
 export type DecodeStreamSource = ReadableStream<Uint8Array> | Blob | string
@@ -47,7 +49,7 @@ const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
 export async function decodeStream(
   source: DecodeStreamSource,
   options: DecodeOptions = {},
-): Promise<DecodeResult> {
+): Promise<Pack> {
   const { stream, peek } = await peekAndRebuild(source)
 
   if (!isPng(peek)) {
@@ -141,7 +143,7 @@ async function streamToBlob(stream: ReadableStream<Uint8Array>): Promise<Blob> {
 async function decodeStreamPng(
   stream: ReadableStream<Uint8Array>,
   _options: DecodeOptions,
-): Promise<DecodeResult> {
+): Promise<Pack> {
   const reader = stream.getReader()
 
   // PNG container parsing state. `Uint8Array<any>` keeps the buffer-slot
@@ -432,7 +434,10 @@ async function decodeStreamPng(
     await outerHandle.pump.catch(() => undefined)
   }
 
-  return toDecodeResult(concatChunks(outputChunks, outputBytes))
+  return fromBytes(concatChunks(outputChunks, outputBytes), {
+    decompress: decompressRaw,
+    diffTo: buildDiffToFn(),
+  })
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────

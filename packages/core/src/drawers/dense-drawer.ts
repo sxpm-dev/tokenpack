@@ -44,10 +44,12 @@ function fileChannelsForBpp(bpp: number): 3 | 4 {
 // through the encode pipeline.
 function streamId(data: Uint8Array): number {
   let h = 0x811c9dc5
+
   for (let i = 0; i < data.length; i++) {
     h ^= data[i]
     h = Math.imul(h, 0x01000193)
   }
+
   // Force unsigned 32-bit result so consumers reading via UInt32BE get the same value back.
   return h >>> 0
 }

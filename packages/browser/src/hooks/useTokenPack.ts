@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { DecodeResult } from 'tokenpack/decode-result'
+import type { Pack } from 'tokenpack/pack/types'
 
 import { decode, type DecodeSource } from '../decode'
 
@@ -9,8 +9,8 @@ export type TokenPackState = 'idle' | 'loading' | 'loaded' | 'error'
 
 export interface TokenPackResult {
   state: TokenPackState
-  /** Unified decode result (file or dir). null while loading or on error. */
-  data: DecodeResult | null
+  /** Unified Pack handle (FilePack | DirPack | DiffPack). null while loading or on error. */
+  data: Pack | null
   error: Error | null
 }
 
@@ -24,10 +24,10 @@ export interface UseTokenPackOptions {
  * Reactive hook that fetches and decodes a TokenPack image.
  *
  *   const { state, data, error } = useTokenPack('/profile.png')
- *   if (state === 'loaded' && data?.type === 'file') {
- *     console.log(new TextDecoder().decode(data.payload))
+ *   if (state === 'loaded' && data && !data.isPack()) {
+ *     console.log(await data.text())
  *   }
- *   if (data?.type === 'dir') data.entries.forEach(e => …)
+ *   if (data?.isPack()) for (const path of data.list) await data.extract(path)
  */
 export function useTokenPack(
   src: DecodeSource | null | undefined,
@@ -36,7 +36,7 @@ export function useTokenPack(
   const [state, setState] = useState<TokenPackState>(
     src && options.enabled !== false ? 'loading' : 'idle',
   )
-  const [data, setData] = useState<DecodeResult | null>(null)
+  const [data, setData] = useState<Pack | null>(null)
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {

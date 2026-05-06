@@ -10,17 +10,12 @@
  *   packages/app/benchmark-results/archive-times.json
  */
 
-// Side-effect import: registers AVIF/WebP surfaces with core's registry.
-// Without this, encodeToBuffer({ format: 'webp' }) throws "Unknown surface id".
-import '@tokenpack/node'
-
+import { encodeToBuffer, packDirs } from '@tokenpack/node'
 import AdmZip from 'adm-zip'
 import fs from 'fs'
 import path from 'path'
 import { ALGORITHM_INFOS } from 'tokenpack/algorithms/catalog-info'
 import { getAlgorithmByName } from 'tokenpack/algorithms/registry'
-import { packDirs } from 'tokenpack/archive'
-import { encodeToBuffer } from 'tokenpack/encoder'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 

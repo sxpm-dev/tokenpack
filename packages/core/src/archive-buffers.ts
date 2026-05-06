@@ -23,6 +23,7 @@ export function packBuffers(entries: readonly PackEntry[]): Uint8Array {
   const encoded = entries.map(e => ({ pathBytes: encoder.encode(e.path), bytes: e.bytes }))
 
   let totalLen = HEADER_LEN
+
   for (const { pathBytes, bytes } of encoded) {
     totalLen += PATH_LEN_FIELD + pathBytes.length + CONTENT_LEN_FIELD + bytes.length
   }
@@ -34,6 +35,7 @@ export function packBuffers(entries: readonly PackEntry[]): Uint8Array {
   view.setUint32(4, entries.length, false)
 
   let offset = HEADER_LEN
+
   for (const { pathBytes, bytes } of encoded) {
     view.setUint16(offset, pathBytes.length, false)
     offset += PATH_LEN_FIELD
@@ -105,11 +107,12 @@ export function listArchive(data: Uint8Array): { filePath: string; size: number 
 /** Detect whether a buffer is a CART archive (cheap magic-byte check). */
 export function isCartArchive(data: Uint8Array): boolean {
   if (data.length < 4) return false
+
   return (
-    data[0] === MAGIC_BYTES[0]
-    && data[1] === MAGIC_BYTES[1]
-    && data[2] === MAGIC_BYTES[2]
-    && data[3] === MAGIC_BYTES[3]
+    data[0] === MAGIC_BYTES[0] &&
+    data[1] === MAGIC_BYTES[1] &&
+    data[2] === MAGIC_BYTES[2] &&
+    data[3] === MAGIC_BYTES[3]
   )
 }
 

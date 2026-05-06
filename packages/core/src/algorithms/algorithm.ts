@@ -199,12 +199,15 @@ export class Algorithm extends AbstractAlgorithm {
 
       if (result.data.length < dataToEncode.length) {
         const inputLen = dataToEncode.length
+
         dataToEncode = result.data
         compressionLevel = result.level
         uncompressedLength = inputLen
         const ratio = ((1 - result.data.length / inputLen) * 100).toFixed(1)
 
-        console.log(`Compressed [${compressor.id}] ${inputLen} → ${result.data.length} bytes (${ratio}% smaller)`)
+        console.log(
+          `Compressed [${compressor.id}] ${inputLen} → ${result.data.length} bytes (${ratio}% smaller)`,
+        )
       } else {
         console.log('Compression skipped (file too small to benefit)')
       }
@@ -225,7 +228,9 @@ export class Algorithm extends AbstractAlgorithm {
       const fecResult = fec.encode(dataToEncode)
 
       dataToEncode = fecResult.data
-      console.log(`FEC [${fec.id}] ${preFecLength} → ${dataToEncode.length} bytes (+${dataToEncode.length - preFecLength})`)
+      console.log(
+        `FEC [${fec.id}] ${preFecLength} → ${dataToEncode.length} bytes (+${dataToEncode.length - preFecLength})`,
+      )
     }
 
     const ctx: DrawContext = {

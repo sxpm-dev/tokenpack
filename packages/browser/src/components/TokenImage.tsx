@@ -1,7 +1,7 @@
 'use client'
 
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import type { DecodeResult } from 'tokenpack/decode-result'
+import type { Pack } from 'tokenpack/pack/types'
 
 import { decode, type DecodeSource } from '../decode'
 
@@ -10,8 +10,8 @@ export interface TokenImageProps {
   src: DecodeSource
   /** Optional decryption key (for encrypted tokens). */
   cipherKey?: string
-  /** Called once decode succeeds; receives the unified DecodeResult. */
-  onDecoded?: (result: DecodeResult) => void
+  /** Called once decode succeeds; receives the unified Pack handle. */
+  onDecoded?: (result: Pack) => void
   /** Called when decode fails. */
   onError?: (error: Error) => void
   /** Rendered while decode is in flight. */
