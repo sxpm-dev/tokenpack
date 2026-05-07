@@ -1,10 +1,5 @@
-import { encodeToBuffer, packDirs } from '@tokenpack/node'
-import AdmZip from 'adm-zip'
-import { randomUUID } from 'crypto'
-import { mkdirSync, rmSync, writeFileSync } from 'fs'
+import { encode, PackBuilder } from '@tokenpack/node'
 import { NextRequest, NextResponse } from 'next/server'
-import { tmpdir } from 'os'
-import { join } from 'path'
 import type { Style } from 'tokenpack/types'
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib'
 
@@ -14,82 +9,106 @@ function parseStyle(value: FormDataEntryValue | null): Partial<Style> | undefine
   return JSON.parse(value) as Partial<Style>
 }
 
-export async function POST(req: NextRequest) {
-  const form = await req.formData()
-  const file = form.get('file') as File | null
-  const unzip = form.get('unzip') === 'true'
+interface ResolvedOptions {
+  algo: string
+  compressionMode?: string
+  cellSize?: number
+  channels?: 1 | 2 | 3 | 4
+  format?: 'png' | 'webp' | 'avif'
+  streaming?: boolean
+  fecMode?: string
+  style?: Partial<Style>
+  key?: string
+}
+
+function resolveOptions(form: FormData): ResolvedOptions {
   const preset = form.get('preset') as string | null
-  const algo = form.get('algo') as string | null
-  const compress = form.has('compress') ? form.get('compress') === 'true' : undefined
-  const compressionMode = form.get('compressionMode') as string | null
-  const cellSize = form.get('cellSize') as string | null
-  const key = form.get('key') as string | null
-  const channels = parseInt((form.get('channels') as string) || '3', 10) as 1 | 2 | 3 | 4
-  const format = form.get('format') as string | null as 'png' | 'avif' | 'webp' | null
+  const algo = (form.get('algo') as string | null) ?? 'linear'
+  const compressionMode = (form.get('compressionMode') as string | null) ?? undefined
+  const cellSizeRaw = form.get('cellSize') as string | null
+  const channelsRaw = form.get('channels') as string | null
+  const format = form.get('format') as 'png' | 'webp' | 'avif' | null
   const streaming = form.get('streaming') === 'true'
+  const fecMode = (form.get('fecMode') as string | null) ?? undefined
   const style = parseStyle(form.get('style'))
+  const key = (form.get('key') as string | null) ?? undefined
 
-  if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+  if (preset && preset !== 'none') {
+    return { algo: preset, compressionMode, key }
+  }
 
-  const id = randomUUID()
-  const tmpDir = join(tmpdir(), `tp-pack-${id}`)
+  return {
+    algo,
+    compressionMode,
+    cellSize: cellSizeRaw ? parseInt(cellSizeRaw, 10) : 1,
+    channels: channelsRaw ? (parseInt(channelsRaw, 10) as 1 | 2 | 3 | 4) : 3,
+    format: format ?? 'png',
+    streaming,
+    fecMode,
+    style,
+    key,
+  }
+}
 
+async function readEntries(
+  form: FormData,
+): Promise<{ builder: PackBuilder; concatenated: Buffer; inputBytes: number }> {
+  const builder = new PackBuilder()
+  const parts: Buffer[] = []
+  let inputBytes = 0
+  let i = 0
+
+  while (true) {
+    const path = form.get(`entry.${i}.path`)
+
+    if (typeof path !== 'string') break
+
+    const textValue = form.get(`entry.${i}.text`)
+    const fileValue = form.get(`entry.${i}.file`)
+
+    if (typeof textValue === 'string') {
+      builder.withFile(path, textValue)
+      const buf = Buffer.from(textValue, 'utf8')
+
+      parts.push(buf)
+      inputBytes += buf.length
+    } else if (fileValue instanceof File) {
+      const buf = Buffer.from(await fileValue.arrayBuffer())
+
+      builder.withBuffer(path, new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength))
+      parts.push(buf)
+      inputBytes += buf.length
+    } else {
+      throw new Error(`entry ${i} (${path}) has no text or file payload`)
+    }
+    i++
+  }
+  if (i === 0) throw new Error('no entries provided')
+
+  return { builder, concatenated: Buffer.concat(parts), inputBytes }
+}
+
+export async function POST(req: NextRequest) {
   try {
-    mkdirSync(tmpDir, { recursive: true })
-    const bytes = Buffer.from(await file.arrayBuffer())
+    const form = await req.formData()
+    const { builder, concatenated, inputBytes } = await readEntries(form)
+    const opts = resolveOptions(form)
+    const tokenBuf = await encode(builder, opts)
 
-    const gzipSize = gzipSync(bytes, { level: 6 }).length
-    const brotliSize = brotliCompressSync(bytes, {
+    const gzipSize = gzipSync(concatenated, { level: 6 }).length
+    const brotliSize = brotliCompressSync(concatenated, {
       params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 },
     }).length
 
-    if (unzip && (file.name.endsWith('.zip') || file.type === 'application/zip')) {
-      const zip = new AdmZip(bytes)
-
-      zip.extractAllTo(tmpDir, true)
-    } else {
-      writeFileSync(join(tmpDir, file.name), bytes)
-    }
-
-    let resolvedAlgo = 'linear'
-    let resolvedCellSize: number | undefined
-    let resolvedCompress = compress
-    let resolvedCompressionMode: string | undefined = compressionMode ?? undefined
-
-    if (preset && preset !== 'none') {
-      resolvedAlgo = preset
-    } else if (algo) {
-      resolvedAlgo = algo
-      resolvedCellSize = cellSize ? parseInt(cellSize, 10) : 1
-    } else {
-      resolvedCellSize = 1
-    }
-
-    const archive = packDirs([tmpDir], [], tmpDir)
-    const buffers = await encodeToBuffer(archive, {
-      algo: resolvedAlgo,
-      compress: resolvedCompress,
-      compressionMode: resolvedCompressionMode,
-      cellSize: resolvedCellSize,
-      key: key ?? undefined,
-      channels,
-      format: format ?? 'png',
-      streaming,
-      style,
-    })
-
     return NextResponse.json({
-      token: buffers[0].toString('base64'),
+      token: tokenBuf.toString('base64'),
       gzipSize,
       brotliSize,
+      inputBytes,
     })
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)
 
     return NextResponse.json({ error: msg }, { status: 500 })
-  } finally {
-    try {
-      rmSync(tmpDir, { recursive: true })
-    } catch {}
   }
 }

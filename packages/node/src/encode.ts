@@ -22,15 +22,36 @@ export type EncodeInput = string | Buffer | Uint8Array | PackBuilder
 
 export interface EncodeNodeOptions extends Omit<EncodeOptions, 'algo' | 'out'> {
   algo?: string
+  /**
+   * Output base path. When the payload requires multiple PNG chunks, the
+   * lower-level encoder names them `<base>_1of<N>.png`, `<base>_2of<N>.png`,
+   * ... A single-chunk payload writes to the bare `<base>` path.
+   */
   out?: string
   /** Per-file compressor for pack-format encodes (default: 'brotli-11'). */
   compressor?: string
   /** File-format only: name embedded in the token; surfaced as `pack.list[0]` on decode. */
   name?: string
+  /**
+   * If true (default), payloads that exceed single-PNG capacity are written
+   * as multiple chunked PNGs and surfaced via `result.chunks` / `result.paths`.
+   * If false, throws when more than one chunk is produced — preserves the
+   * pre-multi-chunk behaviour for callers that assume a single image.
+   */
+  supportChunks?: boolean
 }
 
-/** Result of encoding — backwards-compatible with the old `Buffer` return. */
-export type EncodeResult = Buffer & { bytes: Uint8Array }
+/**
+ * Result of encoding. Back-compatible with the original `Buffer & { bytes }`
+ * shape: when there's a single chunk, `bytes` and the Buffer-extension are
+ * the whole payload. For multi-chunk encodes, `bytes` exposes chunk 0 and
+ * the full set is on `chunks` (in order). `paths` matches when `out` was given.
+ */
+export type EncodeResult = Buffer & {
+  bytes: Uint8Array
+  chunks: Uint8Array[]
+  paths: string[]
+}
 
 export async function encode(
   input: EncodeInput,
@@ -76,29 +97,53 @@ async function runImagePipeline(bytes: Buffer, options: EncodeNodeOptions): Prom
   const writtenPaths = await legacyEncode(bytes, { ...options, out: outPath } as EncodeOptions)
 
   if (writtenPaths.length === 0) throw new Error('encode produced no output')
-  if (writtenPaths.length > 1) {
+
+  const supportChunks = options.supportChunks ?? true
+
+  if (!supportChunks && writtenPaths.length > 1) {
+    // Best-effort cleanup of the temporary chunks if no `out` was supplied.
+    if (!options.out) {
+      for (const p of writtenPaths) {
+        try {
+          fs.unlinkSync(p)
+        } catch {}
+      }
+    }
     throw new Error(
       `encode produced ${writtenPaths.length} chunks — payload too large for single-PNG output. ` +
-        `Use the lower-level \`tokenpack/encoder\` API or split your payload.`,
+        `Pass supportChunks: true to allow multi-chunk output, or split your payload.`,
     )
   }
 
-  const result = fs.readFileSync(writtenPaths[0])
+  const buffers = writtenPaths.map(p => fs.readFileSync(p))
 
+  // When the caller didn't request a persistent `out`, clean up the temp files.
   if (!options.out) {
-    try {
-      fs.unlinkSync(writtenPaths[0])
-    } catch {}
+    for (const p of writtenPaths) {
+      try {
+        fs.unlinkSync(p)
+      } catch {}
+    }
   }
 
-  // Augment the Buffer with a `bytes` Uint8Array view for ergonomic decode().
-  // Buffer extends Uint8Array, so we just attach the property.
-  const augmented = result as EncodeResult
+  // Buffer extends Uint8Array — keep the Buffer-as-result shape for back-compat.
+  // `bytes` always exposes chunk 0 (matches single-chunk callers); `chunks`
+  // surfaces all chunks in order; `paths` lines up 1:1 with `chunks`.
+  const primary = buffers[0]
+  const augmented = primary as EncodeResult
 
-  Object.defineProperty(augmented, 'bytes', {
-    get() {
-      return new Uint8Array(this.buffer, this.byteOffset, this.byteLength)
+  const chunkBytes: Uint8Array[] = buffers.map(
+    b => new Uint8Array(b.buffer, b.byteOffset, b.byteLength),
+  )
+
+  Object.defineProperties(augmented, {
+    bytes: {
+      get() {
+        return new Uint8Array(this.buffer, this.byteOffset, this.byteLength)
+      },
     },
+    chunks: { value: chunkBytes, enumerable: true },
+    paths: { value: options.out ? writtenPaths : [], enumerable: true },
   })
 
   return augmented

@@ -95,6 +95,7 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
                   <Table.Cell>—</Table.Cell>
                   <Table.Cell>—</Table.Cell>
                   <Table.Cell>—</Table.Cell>
+                  <Table.Cell>—</Table.Cell>
                 </Table.Row>
               )
             }

@@ -18,6 +18,7 @@ import 'tokenpack/algorithms/register-all'
 import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { decompressRaw } from 'tokenpack/compressors'
 import { isCompactToken, readCompactHeader, readHeader } from 'tokenpack/header'
+import type { DecompressFn } from 'tokenpack/pack-format/decompress'
 import { fromBytes } from 'tokenpack/pack/from-bytes'
 import type { Pack } from 'tokenpack/pack/types'
 import type { SurfacePixels } from 'tokenpack/surfaces/types'
@@ -31,6 +32,13 @@ export interface DecodeOptions {
   key?: string
   /** Compressor used when this Pack later produces a diff via `dirPack.diffTo`. */
   compressor?: string
+  /**
+   * Custom decompress callback used by the resulting Pack's `extract`/`text`/etc.
+   * Default: the env-registered `decompressRaw`. Override to wrap with a server
+   * fallback when the browser lacks a specific decompressor (e.g. brotli on
+   * older browsers).
+   */
+  decompress?: DecompressFn
 }
 
 /** Decode a TokenPack source into a `Pack` (FilePack | DirPack | DiffPack). */
@@ -42,7 +50,7 @@ export async function decode(source: DecodeSource, options: DecodeOptions = {}):
   const bytes = new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
 
   return fromBytes(bytes, {
-    decompress: decompressRaw,
+    decompress: options.decompress ?? decompressRaw,
     diffTo: buildDiffToFn(options.compressor),
   })
 }

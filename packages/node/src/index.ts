@@ -27,16 +27,22 @@ if (!(globalThis as { crypto?: unknown }).crypto) {
 // Side-effect: registers Node-only compressors + surfaces with core registries.
 import './register'
 
-// Unified encode/decode
+// Unified encode/decode∑¡
 export { decode, type DecodeOptions, type DecodeSource } from './decode'
 export { encode, type EncodeInput, type EncodeNodeOptions, type EncodeResult } from './encode'
 
 // Lower-level fs helpers — kept for legacy callers (app routes, benchmark).
 // These will move to `@tokenpack/node/_internal` in a follow-up; the surface
 // stays import-compatible during migration.
-export { encodeToBuffer, encode as encodeFs, encodeFile } from 'tokenpack/encoder'
+export {
+  listArchive,
+  packBuffers,
+  packDirs,
+  type PackEntry,
+  unpackBuffers,
+} from 'tokenpack/archive'
 export { decodeFromBuffer } from 'tokenpack/decoder'
-export { listArchive, packBuffers, packDirs, unpackBuffers, type PackEntry } from 'tokenpack/archive'
+export { encodeFile, encode as encodeFs, encodeToBuffer } from 'tokenpack/encoder'
 
 // Pack types + builder
 export { type FsOptions, type GlobOptions, NodePackBuilder } from './node-pack-builder'
