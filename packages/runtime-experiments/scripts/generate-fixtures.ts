@@ -90,17 +90,22 @@ async function main() {
   }
 
   // Build scenarios in parallel — each owns a different output dir, no contention.
+  // Includes orphan builders (registered in BUILDERS but not in SCENARIOS) —
+  // those drive custom playground pages with their own UI (e.g. `partial-fetch`).
+  const scenarioIds = new Set(SCENARIOS.map(s => s.id))
+  const orphanBuilderIds = Object.keys(BUILDERS).filter(id => !scenarioIds.has(id))
+  const allIds = [...SCENARIOS.map(s => s.id), ...orphanBuilderIds]
   const entries: ManifestEntry[] = await Promise.all(
-    SCENARIOS.map(s => {
-      const build = BUILDERS[s.id]
+    allIds.map(id => {
+      const build = BUILDERS[id]
 
       if (!build) {
-        console.warn(`[${s.id}] no builder registered in src/scenarios/builders.ts — skipping`)
+        console.warn(`[${id}] no builder registered in src/scenarios/builders.ts — skipping`)
 
-        return Promise.resolve<ManifestEntry>({ scenarioId: s.id, files: [] })
+        return Promise.resolve<ManifestEntry>({ scenarioId: id, files: [] })
       }
 
-      return buildScenario(s.id, () => build(ctx))
+      return buildScenario(id, () => build(ctx))
     }),
   )
 

@@ -9,6 +9,11 @@
  *
  * The network simulation lives in `benchmark/run.ts`; this script focuses on
  * pure encode/decode timing per registered algorithm.
+ *
+ * Variance reduction (see `benchmark/measure.ts`):
+ *   - 2 warmup runs per scenario, 10 timed samples
+ *   - median + p95 + stddev reported on each row (not just mean)
+ *   - opt-in GC between samples via NODE_OPTIONS=--expose-gc
  */
 
 import '@tokenpack/node'
@@ -19,6 +24,7 @@ import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { fileURLToPath } from 'url'
 
 import { assertAllReferencedAlgosExist } from './bench-algos'
+import { type Stats, formatStats, measure } from './measure'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.join(HERE, '..')
@@ -29,9 +35,6 @@ fs.mkdirSync(RESULTS_DIR, { recursive: true })
 
 const BENCH_TIMEOUT_MS = 60_000
 
-const now = () => performance.now()
-const fmtMs = (ms: number) =>
-  ms < 1 ? `${ms.toFixed(2)}ms` : ms < 1000 ? `${ms.toFixed(1)}ms` : `${(ms / 1000).toFixed(2)}s`
 const fmtBytes = (b: number) =>
   b < 1024
     ? `${b}B`
@@ -50,11 +53,7 @@ function withTimeout<T>(ms: number, p: Promise<T>): Promise<T> {
 
 const SOURCE_LABELS: Record<string, string> = {
   'react-dom-client.development': 'react-dom-dev',
-  'react-dom-client.production': 'react-dom-prod',
-  screenshot: 'screenshot',
-  'fs-app-core': 'fs-app-core',
-  'client-spec-map': 'client-spec',
-  'client-spec-map.min': 'client-spec-min',
+  'chunk-5mb': 'chunk-5mb',
 }
 
 interface EncodeTimeEntry {
@@ -85,11 +84,13 @@ export interface ExtBenchRow {
   isStreaming: boolean
   isBrowserSafe: boolean
   error?: string
-  // Entity-aware fields (mirrors `packages/app/src/lib/bench-types.ts`).
   surfaceId?: string
   compressorId?: string
   drawerName?: string
   optionsSummary?: string
+  encodeStats?: Stats
+  decodeStats?: Stats
+  pathTaken?: 'stream' | 'batch'
 }
 
 async function decodeRaw(buf: Buffer, ext: string): Promise<Buffer> {
@@ -114,8 +115,6 @@ function buildBaseRow(entry: EncodeTimeEntry, error?: string): ExtBenchRow {
     codecId = Ctor.id
     isStreaming = Ctor.capabilities.streamable
     isBrowserSafe = Ctor.capabilities.environments.includes('browser')
-    // Instantiate the algorithm to read its bound entities. Constructor here
-    // is cheap (no encoding work happens until encode/decode are called).
     const instance = new Ctor({})
 
     surfaceId = (instance as unknown as { surface?: { id?: string } }).surface?.id ?? entry.surface
@@ -126,8 +125,6 @@ function buildBaseRow(entry: EncodeTimeEntry, error?: string): ExtBenchRow {
       (instance as unknown as { defaults?: Record<string, unknown> }).defaults,
     )
   } catch {
-    // Algorithm not registered or constructor failed — fall through with the
-    // raw entry fields so the row still shows the basics.
     surfaceId = entry.surface
     compressorId = entry.compressor
   }
@@ -158,11 +155,6 @@ function buildBaseRow(entry: EncodeTimeEntry, error?: string): ExtBenchRow {
   }
 }
 
-/**
- * Render a small summary of an algorithm's non-default `defaults` options:
- * keys we care about for the bench table. Returns `'—'` when nothing
- * interesting is set.
- */
 function formatOptions(defaults?: Record<string, unknown>): string {
   if (!defaults) return '—'
   const NOTABLE = ['cellSize', 'fecMode', 'streaming', 'channels'] as const
@@ -182,9 +174,6 @@ function formatOptions(defaults?: Record<string, unknown>): string {
 }
 
 async function main() {
-  // Fail fast if any EXCLUDE entry references a stale/typo'd algo name. This
-  // script just reads what `generate.ts` wrote, but the assertion guards
-  // against EXCLUDE drift between scripts.
   assertAllReferencedAlgosExist()
 
   if (!fs.existsSync(ENCODE_TIMES)) {
@@ -196,7 +185,7 @@ async function main() {
   const entries: EncodeTimeEntry[] = JSON.parse(fs.readFileSync(ENCODE_TIMES, 'utf-8'))
   const total = entries.length
 
-  console.log(`\n═══ Codec perf: decoding ${total} pre-generated tokens ═══\n`)
+  console.log(`\n═══ Codec perf: decoding ${total} pre-generated tokens (warmup×2 + 10 samples) ═══\n`)
 
   let done = 0
   const rows: ExtBenchRow[] = []
@@ -229,14 +218,22 @@ async function main() {
       try {
         const tokenBuf = fs.readFileSync(tokenPath)
         const ext = path.extname(tokenPath) || '.png'
-        const t1 = now()
 
-        await withTimeout(BENCH_TIMEOUT_MS, decodeRaw(tokenBuf, ext))
-        const decodeMs = now() - t1
+        // Single-decode timing call — wrapped in `measure()` for warmup +
+        // multi-sample stats. Stream-vs-batch dispatch isn't relevant here
+        // (the catalog's batch decode path handles both); pathTaken is set
+        // from the algo capability for the dashboard's UX.
+        const decodeStats = await withTimeout(
+          BENCH_TIMEOUT_MS,
+          measure(() => decodeRaw(tokenBuf, ext)),
+        )
+
+        const decodeMs = decodeStats.median
         const roundTripMs = entry.encodeMs + decodeMs
         const throughputMBps = entry.originalBytes / 1024 / 1024 / (roundTripMs / 1000)
         const ratio = entry.tokenBytes / entry.originalBytes
         const base = buildBaseRow(entry)
+        const pathTaken: 'stream' | 'batch' = base.isStreaming ? 'stream' : 'batch'
 
         rows.push({
           ...base,
@@ -244,9 +241,11 @@ async function main() {
           roundTripMs: Math.round(roundTripMs * 10) / 10,
           ratio: Math.round(ratio * 10000) / 10000,
           throughputMBps: Math.round(throughputMBps * 10) / 10,
+          decodeStats,
+          pathTaken,
         })
         console.log(
-          `enc=${fmtMs(entry.encodeMs).padStart(8)}  dec=${fmtMs(decodeMs).padStart(8)}  ratio=${(ratio * 100).toFixed(1).padStart(5)}%  ${fmtBytes(entry.tokenBytes)}`,
+          `enc=${entry.encodeMs.toFixed(0).padStart(6)}ms  dec=${formatStats(decodeStats).padEnd(28)}  ratio=${(ratio * 100).toFixed(1).padStart(5)}%  ${fmtBytes(entry.tokenBytes)}`,
         )
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e)

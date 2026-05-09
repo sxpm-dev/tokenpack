@@ -31,6 +31,18 @@ import { WebpSurface } from '../surfaces/webp'
 export { PixelRangePngBrotli } from './pixel-range-png-brotli'
 import { PixelRangePngBrotli } from './pixel-range-png-brotli'
 
+export { PixelRangePngDeflate } from './pixel-range-deflate'
+import { PixelRangePngDeflate } from './pixel-range-deflate'
+
+export { PixelRangePngNone } from './pixel-range-none'
+import { PixelRangePngNone } from './pixel-range-none'
+
+export { PixelRangeStreamPngBrotli } from './pixel-range-stream'
+import { PixelRangeStreamPngBrotli } from './pixel-range-stream'
+
+export { PixelRangeStreamPngDeflate } from './pixel-range-stream-deflate'
+import { PixelRangeStreamPngDeflate } from './pixel-range-stream-deflate'
+
 // ── Default-binding (PNG + Brotli + Dense) for each pixel-data codec ────────
 
 export const LinearPngBrotli = definePixelAlgorithm({
@@ -150,6 +162,10 @@ export const ALL_NODE_ALGORITHMS = [
   BitshufflePngBrotli,
   ZstdpixPngStream,
   PixelRangePngBrotli,
+  PixelRangePngDeflate,
+  PixelRangePngNone,
+  PixelRangeStreamPngBrotli,
+  PixelRangeStreamPngDeflate,
   LinearPngDeflate,
   LinearStreamingPngDeflate,
   LinearStreamingPngBrotli,

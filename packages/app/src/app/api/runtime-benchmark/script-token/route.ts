@@ -32,7 +32,10 @@ export async function GET(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: `unknown algorithm: ${algoName}` }, { status: 400 })
   }
-  const surface = new (Ctor.Surface as unknown as new () => { extension: string; mimeType: string })()
+  const surface = new (Ctor.Surface as unknown as new () => {
+    extension: string
+    mimeType: string
+  })()
   const headers: Record<string, string> = {
     ...NO_CACHE_HEADERS,
     'content-type': surface.mimeType,

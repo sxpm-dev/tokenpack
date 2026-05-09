@@ -21,7 +21,6 @@ import fs from 'fs'
 import path from 'path'
 import { encode } from '@tokenpack/node'
 import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
-import { packDirs } from 'tokenpack/archive'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 
@@ -316,21 +315,9 @@ async function main() {
     allArchiveTimes.push(...(await generateArchives(name, src, '.br')))
   }
 
-  const fsDirs = [
-    path.join(REPO_ROOT, 'packages/app/src'),
-    path.join(REPO_ROOT, 'packages/core/src'),
-  ].filter(d => fs.existsSync(d))
-
-  if (fsDirs.length) {
-    const name = 'fs-app-core'
-    const cart = packDirs(fsDirs, [], REPO_ROOT)
-
-    allSources.push({ name, buf: cart })
-    console.log(`\n[${name}]  ${fmtBytes(cart.length)} (packed: packages/{app,core}/src)`)
-    allArchiveTimes.push(...(await generateArchives(name, cart, '.tar.br')))
-  } else {
-    console.log('\n[fs-app-core] SKIP — no app/core src dirs found')
-  }
+  // fs-app-core source dropped from the bench matrix — Server Fetch Bench is
+  // narrowed to react-dom-dev + chunk-5mb only. To re-enable a packed-source
+  // scenario for a focused investigation, restore the block from git history.
 
   // ── Algorithm matrix: every registered Ctor × {3, 4} channels ────────────
   const bindings = listAlgoBindings()

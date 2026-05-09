@@ -2,6 +2,7 @@ import { FlaskIcon } from '@phosphor-icons/react/dist/ssr'
 
 import { SCENARIOS } from '@/scenarios/registry'
 
+import { PlaygroundCard } from './components/PlaygroundCard'
 import { ScenarioCard } from './components/ScenarioCard'
 
 export default function HomePage() {
@@ -29,6 +30,21 @@ export default function HomePage() {
           ))}
         </div>
       )}
+
+      <h2 className="mt-10 mb-3 text-xs uppercase tracking-widest text-white/40">Playgrounds</h2>
+      <div className="space-y-3">
+        <PlaygroundCard
+          description={
+            <>
+              Range-fetch one file from a remote pixel-range pack via HTTP{' '}
+              <code className="text-white/70">Range:</code>. Compare against whole-pack download,
+              single-file HTTP, and parallel multi-file HTTP. Text or JS-import mode.
+            </>
+          }
+          href="/partial-fetch"
+          name="Partial fetch"
+        />
+      </div>
 
       <p className="mt-8 text-[11px] text-white/25 leading-relaxed">
         Each scenario runs N iterations and reports median / p95 / min / max for every variant. See

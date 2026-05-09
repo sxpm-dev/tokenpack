@@ -30,24 +30,33 @@ are gitignored — re-run `yarn benchmark:generate` to recreate them.
 
 ## Sources
 
-The benchmark runs over **4 sources**, each with different compressibility.
-
-### Static sources (committed in `sources/`)
+The bench matrix is trimmed to **two sources** so the runner spends its time on
+the candidates that actually drive algorithm decisions.
 
 | Source id                       | File                                       | Approx size | Content type    | Compressibility    |
 |---------------------------------|--------------------------------------------|-------------|-----------------|--------------------|
 | `react-dom-client.development`  | `sources/react-dom-client.development.js`  | ~976 KB     | Unminified JS   | Very high (~87%)   |
-| `react-dom-client.production`   | `sources/react-dom-client.production.js`   | ~520 KB     | Minified JS     | High (~86%)        |
-| `screenshot`                    | `sources/screenshot.jpg`                   | ~2.6 MB     | JPEG image      | Very low (~5%)     |
+| `chunk-5mb`                     | `sources/chunk-5mb.js`                     | ~5 MB       | JS bundle       | Cache-stress case  |
 
-### Dynamic source (built on the fly)
+Other source files (production react-dom, screenshot, client-spec-map,
+fs-app-core) live under `sources/` but aren't iterated by the bench. To
+investigate a focused case, add the source back to `FILE_SOURCES` in
+`benchmark/generate.ts`.
 
-| Source id     | What it packs                                 | Why                                                   |
-|---------------|-----------------------------------------------|-------------------------------------------------------|
-| `fs-app-core` | `packages/app/src/` + `packages/core/src/`    | Realistic in-tree codebase fixture; cannot be committed because it changes whenever code changes. Built from the live filesystem at every `yarn benchmark:generate` run via `tokenpack/archive`'s `packDirs`. |
+## Variance reduction
 
-The FS source's size varies as the codebase grows. Source name is
-`fs-app-core`; archive extension is `.tar.br` instead of `.br`.
+Both `run.ts` and `run-extended.ts` run **2 warmup samples + 10 timed samples**
+per scenario and report **median + p95 + stddev** rather than just mean. To
+also call `globalThis.gc()` between samples (cuts variance further when the
+heap thrashes), launch with `--expose-gc`:
+
+```bash
+NODE_OPTIONS=--expose-gc yarn benchmark:run
+NODE_OPTIONS=--expose-gc yarn benchmark:run:extended
+```
+
+Without that flag the GC call is a silent no-op — measurement still works,
+just with slightly more jitter.
 
 ## Workflow
 

@@ -47,6 +47,23 @@ export class SurfaceRegistry {
     return this.byId('png')
   }
 
+  /** All non-streaming surfaces that match a given extension, in registration
+   *  order. Used by detection when the first surface fails — e.g. an upng-js
+   *  encoded PNG with 4 channels can confuse pngjs/sharp because of alpha
+   *  premultiplication, but upng-js itself reads it byte-exact. */
+  listForExtension(extension: string): AbstractSurface[] {
+    const normalized = extension.toLowerCase()
+    const out: AbstractSurface[] = []
+
+    for (const [, factory] of this.factories) {
+      const surface = factory()
+
+      if (surface.extension === normalized && !surface.streamable) out.push(surface)
+    }
+
+    return out
+  }
+
   list(): AbstractSurface[] {
     return [...this.factories.values()].map(f => f())
   }

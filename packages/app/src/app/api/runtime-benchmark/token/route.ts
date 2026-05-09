@@ -44,7 +44,10 @@ function resolveAlgo(algoName: string): ResolvedAlgo | { error: string } {
   }
   // Read the bound surface to get extension + mime — every algorithm carries
   // a Surface class whose instance exposes these.
-  const surface = new (Ctor.Surface as unknown as new () => { extension: string; mimeType: string })()
+  const surface = new (Ctor.Surface as unknown as new () => {
+    extension: string
+    mimeType: string
+  })()
 
   return { Ctor, ext: surface.extension, mime: surface.mimeType }
 }

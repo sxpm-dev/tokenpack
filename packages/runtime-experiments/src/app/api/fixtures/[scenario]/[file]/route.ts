@@ -90,6 +90,34 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   const mime = MIME_BY_EXTENSION[ext] ?? 'application/octet-stream'
 
   const view = new Uint8Array(body.buffer, body.byteOffset, body.byteLength)
+  const ce = CONTENT_ENCODING_BY_MODE[encoding]
+
+  const rangeHeader = req.headers.get('range')
+
+  if (rangeHeader && !ce) {
+    const parsed = parseRangeHeader(rangeHeader, view.byteLength)
+
+    if (!parsed) {
+      return new NextResponse(null, {
+        status: 416,
+        headers: { ...NO_CACHE_HEADERS, 'content-range': 'bytes */' + view.byteLength },
+      })
+    }
+    const slice = view.subarray(parsed.start, parsed.end + 1)
+    const partialHeaders: Record<string, string> = {
+      ...NO_CACHE_HEADERS,
+      'content-type': mime,
+      'content-length': String(slice.byteLength),
+      'content-range': 'bytes ' + parsed.start + '-' + parsed.end + '/' + view.byteLength,
+      'accept-ranges': 'bytes',
+      'x-runtime-experiments-throttle': condition.name,
+    }
+
+    return new NextResponse(throttledBody(slice, condition), {
+      status: 206,
+      headers: partialHeaders,
+    })
+  }
 
   const headers: Record<string, string> = {
     ...NO_CACHE_HEADERS,
@@ -97,9 +125,43 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     'content-length': String(view.byteLength),
     'x-runtime-experiments-throttle': condition.name,
   }
-  const ce = CONTENT_ENCODING_BY_MODE[encoding]
 
   if (ce) headers['content-encoding'] = ce
+  if (!ce) headers['accept-ranges'] = 'bytes'
 
   return new NextResponse(throttledBody(view, condition), { headers })
+}
+
+/** Minimal `Range:` header parser. Supports `bytes=A-B`, `bytes=A-`, `bytes=-N`. */
+function parseRangeHeader(header: string, size: number): { start: number; end: number } | null {
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header.trim())
+
+  if (!match) return null
+  const startRaw = match[1]
+  const endRaw = match[2]
+
+  if (startRaw === '' && endRaw === '') return null
+
+  let start: number
+  let end: number
+
+  if (startRaw === '') {
+    const suffix = Number(endRaw)
+
+    if (!Number.isFinite(suffix) || suffix <= 0) return null
+    start = Math.max(0, size - suffix)
+    end = size - 1
+  } else if (endRaw === '') {
+    start = Number(startRaw)
+    end = size - 1
+  } else {
+    start = Number(startRaw)
+    end = Number(endRaw)
+  }
+
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null
+  if (start < 0 || end < start || start >= size) return null
+  if (end >= size) end = size - 1
+
+  return { start, end }
 }

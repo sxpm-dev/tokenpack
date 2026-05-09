@@ -22,6 +22,7 @@
     "./pack-format/decompress": "./src/pack-format/decompress.ts",
     "./pack-format/encode-diff": "./src/pack-format/encode-diff.ts",
     "./pack-format/apply-diff": "./src/pack-format/apply-diff.ts",
+    "./pack-format/manifest": "./src/pack-format/manifest.ts",
     "./diff": "./src/diff.ts",
     "./components/options": "./src/components/options.ts",
     "./algorithms/catalog": "./src/algorithms/catalog.ts",

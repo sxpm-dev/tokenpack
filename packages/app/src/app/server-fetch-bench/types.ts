@@ -10,6 +10,11 @@ export interface BenchRow {
   transferBytes: number
   decodedBytes: number
   throughputMBps: number
+  /** Whether the runner used the streaming decode path. Lets the dashboard
+   *  confirm dispatch was correct per algo's `streamable` capability. */
+  pathTaken?: 'stream' | 'batch'
+  /** Stddev of `totalMs` across timed samples. */
+  totalMsStddev?: number
 }
 
 export type SummarySortKey =
@@ -29,6 +34,8 @@ export interface SummaryRow {
   decode: number
   transfer: number
   throughput: number
+  pathTaken?: 'stream' | 'batch'
+  totalMsStddev?: number
 }
 
 export interface BestEntry {

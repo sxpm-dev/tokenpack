@@ -60,17 +60,26 @@ export class AlgorithmCatalog {
     }
 
     if (buffer && buffer.length > 8) {
-      try {
-        const surface = surfaceRegistry.byExtension(ext ?? '.png')
-        const image = await surface.readBuffer(buffer)
-        const id = isCompactToken(image.pixels)
-          ? readCompactHeader(image.pixels).algoId
-          : readHeader(image.pixels).algorithmId
-        const Ctor = this.byId.get(id)
+      // Try every non-streaming surface that matches the extension. PNG has
+      // multiple readers registered (pngjs/sharp + upng-js); a 4-channel
+      // upng-encoded buffer can produce mangled pixels through pngjs (alpha
+      // premultiplication) but read byte-exact through upng-js. We accept the
+      // first reader whose pixel header maps to a known algo id.
+      const candidates = surfaceRegistry.listForExtension(ext ?? '.png')
+      const surfaces = candidates.length > 0 ? candidates : [surfaceRegistry.byExtension(ext ?? '.png')]
 
-        if (Ctor) return Ctor
-      } catch {
-        // not a decodable image — fall through to throw
+      for (const surface of surfaces) {
+        try {
+          const image = await surface.readBuffer(buffer)
+          const id = isCompactToken(image.pixels)
+            ? readCompactHeader(image.pixels).algoId
+            : readHeader(image.pixels).algorithmId
+          const Ctor = this.byId.get(id)
+
+          if (Ctor) return Ctor
+        } catch {
+          // surface couldn't decode or header was garbage — try the next one
+        }
       }
     }
 

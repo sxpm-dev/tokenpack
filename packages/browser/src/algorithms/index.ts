@@ -4,6 +4,7 @@
 // side decode here.
 
 import { definePixelAlgorithm } from 'tokenpack/algorithms/pixel-algorithm'
+import { PixelRangeAlgorithm } from 'tokenpack/algorithms/pixel-range-algorithm'
 import {
   BitplaneCodec,
   BitshuffleCodec,
@@ -22,6 +23,8 @@ import { BrowserBrotliCompressor } from '../compressors/brotli-compressor'
 import { BrowserDeflateCompressor } from '../compressors/deflate-compressor'
 import { BrowserPngSurface, BrowserStreamingPngSurface } from '../surfaces/png'
 import { BrowserPngUpngSurface } from '../surfaces/png-upng'
+
+import { extractTpakChunk, insertTpakChunk } from './pixel-range-png-base'
 
 export const LinearPngBrotli = definePixelAlgorithm({
   id: 0,
@@ -186,33 +189,8 @@ export const LinearPngUpngDeflate = definePixelAlgorithm({
 // stream-decode path which doesn't go through algorithmCatalog.
 
 // PixelRange* — server-only encode (browser PNG surface can't writeBuffer).
-// We register a stub here so the algorithm shows up in the dashboard dropdown;
-// fe-eligibility marks it as server-only so FE-encode is never attempted.
-import { PixelRangeAlgorithm } from 'tokenpack/algorithms/pixel-range-algorithm'
-
-const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
-const TPAK_TYPE = 'tpAK'
-
-const CRC_TABLE = (() => {
-  const table = new Uint32Array(256)
-
-  for (let n = 0; n < 256; n++) {
-    let c = n
-
-    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
-    table[n] = c >>> 0
-  }
-
-  return table
-})()
-
-function crc32(bytes: Buffer): number {
-  let c = 0xffffffff
-
-  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8)
-
-  return (c ^ 0xffffffff) >>> 0
-}
+// We register stubs here so tokens encoded on the server decode in the browser
+// via the standard catalog path.
 
 class PixelRangePngBrotli extends PixelRangeAlgorithm {
   static override readonly id = 100
@@ -225,49 +203,101 @@ class PixelRangePngBrotli extends PixelRangeAlgorithm {
   static override readonly Drawer = DenseDrawer
   static {
     Object.defineProperty(this, 'name', {
-      value: 'pixel-range-png-brotli',
+      value: 'pixel-range',
       configurable: true,
     })
   }
 
   protected embedData(imageBytes: Buffer, packBytes: Uint8Array): Buffer {
-    const ihdrEnd = 8 + 25
-    const dataBuf = Buffer.from(packBytes.buffer, packBytes.byteOffset, packBytes.byteLength)
-    const length = Buffer.alloc(4)
-
-    length.writeUInt32BE(dataBuf.length, 0)
-    const type = Buffer.from(TPAK_TYPE, 'ascii')
-    const crc = Buffer.alloc(4)
-
-    crc.writeUInt32BE(crc32(Buffer.concat([type, dataBuf])), 0)
-    const chunk = Buffer.concat([length, type, dataBuf, crc])
-
-    return Buffer.concat([imageBytes.subarray(0, ihdrEnd), chunk, imageBytes.subarray(ihdrEnd)])
+    return insertTpakChunk(imageBytes, packBytes)
   }
 
   protected extractData(artifactBytes: Buffer): Uint8Array {
-    if (artifactBytes.length < 8 || !artifactBytes.subarray(0, 8).equals(PNG_SIGNATURE)) {
-      throw new Error('not a PNG')
-    }
-    let pos = 8
-
-    while (pos + 8 <= artifactBytes.length) {
-      const length = artifactBytes.readUInt32BE(pos)
-      const type = artifactBytes.subarray(pos + 4, pos + 8).toString('ascii')
-
-      if (type === 'tpAK') {
-        const data = artifactBytes.subarray(pos + 8, pos + 8 + length)
-
-        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
-      }
-      if (type === 'IEND') break
-      pos = pos + 8 + length + 4
-    }
-    throw new Error('no tpAK chunk found in PNG')
+    return extractTpakChunk(artifactBytes)
   }
 }
 
-export { PixelRangePngBrotli }
+class PixelRangePngDeflate extends PixelRangeAlgorithm {
+  static override readonly id = 101
+  static override readonly title = 'PixelRange · PNG · Deflate'
+  static override readonly description =
+    'Pack data stored in a tpAK PNG chunk; deflate-compressed pack data. Browser-decodable.'
+  static override readonly Codec = LinearCodec
+  static override readonly Surface = BrowserPngSurface
+  static override readonly Compressor = BrowserDeflateCompressor
+  static override readonly Drawer = DenseDrawer
+  static {
+    Object.defineProperty(this, 'name', {
+      value: 'pixel-range-deflate',
+      configurable: true,
+    })
+  }
+
+  protected embedData(imageBytes: Buffer, packBytes: Uint8Array): Buffer {
+    return insertTpakChunk(imageBytes, packBytes)
+  }
+
+  protected extractData(artifactBytes: Buffer): Uint8Array {
+    return extractTpakChunk(artifactBytes)
+  }
+}
+
+class PixelRangePngNone extends PixelRangeAlgorithm {
+  static override readonly id = 102
+  static override readonly title = 'PixelRange · PNG · None'
+  static override readonly description =
+    'Pack data stored in a tpAK PNG chunk; no compression. Browser-decodable.'
+  static override readonly Codec = LinearCodec
+  static override readonly Surface = BrowserPngSurface
+  static override readonly Compressor = NoneCompressor
+  static override readonly Drawer = DenseDrawer
+  static {
+    Object.defineProperty(this, 'name', {
+      value: 'pixel-range-none',
+      configurable: true,
+    })
+  }
+
+  protected embedData(imageBytes: Buffer, packBytes: Uint8Array): Buffer {
+    return insertTpakChunk(imageBytes, packBytes)
+  }
+
+  protected extractData(artifactBytes: Buffer): Uint8Array {
+    return extractTpakChunk(artifactBytes)
+  }
+}
+
+class PixelRangeStreamPngDeflate extends PixelRangeAlgorithm {
+  static override readonly id = 104
+  static override readonly title = 'PixelRange · Streaming PNG · Deflate'
+  static override readonly description =
+    'Pack data in a tpAK PNG chunk; streaming-PNG decoration; deflate pack data. Browser-decodable.'
+  static override readonly Codec = LinearCodec
+  static override readonly Surface = BrowserStreamingPngSurface
+  static override readonly Compressor = BrowserDeflateCompressor
+  static override readonly Drawer = DenseDrawer
+  static {
+    Object.defineProperty(this, 'name', {
+      value: 'pixel-range-stream-deflate',
+      configurable: true,
+    })
+  }
+
+  protected embedData(imageBytes: Buffer, packBytes: Uint8Array): Buffer {
+    return insertTpakChunk(imageBytes, packBytes)
+  }
+
+  protected extractData(artifactBytes: Buffer): Uint8Array {
+    return extractTpakChunk(artifactBytes)
+  }
+}
+
+export {
+  PixelRangePngBrotli,
+  PixelRangePngDeflate,
+  PixelRangePngNone,
+  PixelRangeStreamPngDeflate,
+}
 
 export const ALL_BROWSER_ALGORITHMS = [
   LinearPngBrotli,
@@ -286,6 +316,9 @@ export const ALL_BROWSER_ALGORITHMS = [
   LinearPngUpngBrotli,
   LinearPngUpngDeflate,
   PixelRangePngBrotli,
+  PixelRangePngDeflate,
+  PixelRangePngNone,
+  PixelRangeStreamPngDeflate,
 ] as const
 
 // Mark BrowserStreamingPngSurface as exported so it remains tree-shake-stable

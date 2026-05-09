@@ -689,9 +689,12 @@ function ResultRow({
   // done
   const r = status.row
   const isBest = r.median.totalMs === bestTotal
+  const streamingClass = variant.isStreamable
+    ? 'border-l-2 border-purple-500/40 bg-purple-500/[0.025]'
+    : ''
 
   return (
-    <tr className="border-b border-white/5">
+    <tr className={`border-b border-white/5 ${streamingClass}`}>
       {variantCell}
       {compatCell}
       <td className="py-1.5 px-2 text-right tabular-nums text-white/60">

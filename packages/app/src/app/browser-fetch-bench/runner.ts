@@ -198,9 +198,9 @@ function aggregate(
   samples: Sample[],
   fingerprint: DecodeFingerprint | null,
 ): AggregatedRow {
-  const fields = ['ttfbMs', 'transferMs', 'decodeMs', 'totalMs', 'wireBytes'] as const
-  const sortedBy = (k: (typeof fields)[number]) => [...samples].map(s => s[k]).sort((a, b) => a - b)
-  const stats = (k: (typeof fields)[number]) => {
+  type NumericKey = 'ttfbMs' | 'transferMs' | 'decodeMs' | 'totalMs' | 'wireBytes'
+  const sortedBy = (k: NumericKey) => [...samples].map(s => s[k]).sort((a, b) => a - b)
+  const stats = (k: NumericKey) => {
     const sorted = sortedBy(k)
     const median = sorted[Math.floor(sorted.length / 2)]
     const p95 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))]

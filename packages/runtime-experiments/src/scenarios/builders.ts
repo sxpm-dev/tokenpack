@@ -6,6 +6,7 @@
 import { buildComponentBundleFixtures } from './component-bundle/build'
 import { buildDiffVersioningFixtures } from './diff-versioning/build'
 import { buildInlineDataUriFixtures } from './inline-data-uri/build'
+import { buildPartialFetchFixtures } from './partial-fetch/build'
 import { buildSsrStreamingFixtures } from './ssr-streaming/build'
 import { buildStreamBootFixtures } from './stream-boot/build'
 import { buildSwCacheFixtures } from './sw-cache/build'
@@ -18,4 +19,6 @@ export const BUILDERS: Record<string, BuildFixturesFn> = {
   'ssr-streaming': buildSsrStreamingFixtures,
   'component-bundle': buildComponentBundleFixtures,
   'diff-versioning': buildDiffVersioningFixtures,
+  // Custom playground (not in SCENARIOS — has its own page at /partial-fetch).
+  'partial-fetch': buildPartialFetchFixtures,
 }

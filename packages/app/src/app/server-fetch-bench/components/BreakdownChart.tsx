@@ -24,10 +24,7 @@ interface BreakdownChartProps {
 }
 
 export function BreakdownChart({ data, condition, source }: BreakdownChartProps) {
-  const scenarios = useMemo(
-    () => buildScenarioConfig(data.map(d => d.scenario)).scenarios,
-    [data],
-  )
+  const scenarios = useMemo(() => buildScenarioConfig(data.map(d => d.scenario)).scenarios, [data])
   const chartData = scenarios
     .map(s => {
       const rows = getRows(data, condition, source).filter(r => r.scenario === s)

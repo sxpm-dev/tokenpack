@@ -30,7 +30,11 @@ const RESULTS_DIR = path.join(REPO_ROOT, 'packages', 'app', 'benchmark-results')
 
 fs.mkdirSync(RESULTS_DIR, { recursive: true })
 
-const RUNS = 3
+// Sample budget for each (scenario × condition). Higher than the previous 3
+// to drop variance — combined with WARMUP_RUNS this means each datapoint
+// reflects the median of 10 timed runs after JIT/page-cache settles.
+const RUNS = 10
+const WARMUP_RUNS = 2
 const COL = 14
 
 // ── Network conditions ────────────────────────────────────────────────────
@@ -262,6 +266,8 @@ interface Scenario {
   name: string
   file: string
   run: (url: string) => Promise<RunResult>
+  /** Set for token scenarios — undefined for archive baselines (zip/tar.gz/brotli). */
+  pathTaken?: 'stream' | 'batch'
 }
 
 function isStreamSurface(surfaceId: string): boolean {
@@ -283,10 +289,13 @@ function getScenarios(source: string, encodeTimes: EncodeTimeEntry[]): Scenario[
     const ext = path.extname(fileAbs) || '.png'
 
     if (!fs.existsSync(fileAbs)) continue
+    const stream = isStreamSurface(e.surface)
+
     scenarios.push({
       name: fmtScenarioName(e),
       file: fileAbs,
-      run: isStreamSurface(e.surface) ? runTokenStream : (u => runTokenBatch(u, ext)),
+      run: stream ? runTokenStream : (u => runTokenBatch(u, ext)),
+      pathTaken: stream ? 'stream' : 'batch',
     })
   }
 
@@ -309,6 +318,19 @@ function getScenarios(source: string, encodeTimes: EncodeTimeEntry[]): Scenario[
 const now = () => performance.now()
 const sleep = (ms: number) => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve())
 const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length
+const median = (arr: number[]) => {
+  if (arr.length === 0) return 0
+  const sorted = [...arr].sort((a, b) => a - b)
+  const n = sorted.length
+
+  return n % 2 === 1 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2
+}
+const stddev = (arr: number[]) => {
+  if (arr.length === 0) return 0
+  const m = avg(arr)
+
+  return Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / arr.length)
+}
 const fmtMs = (ms: number) => (ms < 1000 ? `${ms.toFixed(1)}ms` : `${(ms / 1000).toFixed(2)}s`)
 const fmtBytes = (b: number) =>
   b < 1024
@@ -322,6 +344,11 @@ interface ResultRow extends RunResult {
   source: string
   condition: string
   throughputMBps: number
+  /** Whether the runner used the streaming decode path. Lets the dashboard
+   *  confirm dispatch was correct per algo's `streamable` capability. */
+  pathTaken?: 'stream' | 'batch'
+  /** Stddev of `totalMs` across timed samples — high stddev = jitter. */
+  totalMsStddev?: number
 }
 
 async function main() {
@@ -340,6 +367,16 @@ async function main() {
 
   // Reference archives — only logged for awareness; included via getScenarios.
   loadArchiveTimes()
+
+  // Dispatch audit — print the stream-vs-batch path picked for each token
+  // scenario before running. Lets you eyeball that a streamable algo really
+  // hits the streaming path.
+  console.log('\n── dispatch ──')
+  const auditScenarios = getScenarios(sources[0], encodeTimes)
+
+  for (const s of auditScenarios) {
+    if (s.pathTaken) console.log(`  [${s.pathTaken}] ${s.name}`)
+  }
 
   const allResults: ResultRow[] = []
 
@@ -360,6 +397,17 @@ async function main() {
         const runs: RunResult[] = []
 
         process.stdout.write(`    ${scenario.name.padEnd(COL)} `)
+        // Warmup runs first — JIT, DNS, TCP slow-start. Discarded.
+        for (let r = 0; r < WARMUP_RUNS; r++) {
+          try {
+            await scenario.run(`${base}/${encodeURIComponent(scenario.file)}`)
+            process.stdout.write('w')
+          } catch {
+            process.stdout.write('x')
+          }
+        }
+        // Optional GC between warmup and timed samples — `--expose-gc` only.
+        ;(globalThis as { gc?: () => void }).gc?.()
         for (let r = 0; r < RUNS; r++) {
           try {
             runs.push(await scenario.run(`${base}/${encodeURIComponent(scenario.file)}`))
@@ -373,22 +421,26 @@ async function main() {
           continue
         }
 
+        // Median is more representative than mean when network jitter spikes.
+        const totals = runs.map(r => r.totalMs)
+        const decodes = runs.map(r => r.decodeMs)
+        const transfers = runs.map(r => r.transferBytes)
+        const decoded = runs.map(r => r.decodedBytes)
+        const medianTotal = median(totals)
         const row: ResultRow = {
           scenario: scenario.name,
           source,
           condition: cond.name,
-          ttfb: avg(runs.map(r => r.ttfb)),
-          fetchMs: avg(runs.map(r => r.fetchMs)),
-          decodeMs: avg(runs.map(r => r.decodeMs)),
-          totalMs: avg(runs.map(r => r.totalMs)),
-          firstByteMs: avg(runs.map(r => r.firstByteMs)),
-          transferBytes: avg(runs.map(r => r.transferBytes)),
-          decodedBytes: avg(runs.map(r => r.decodedBytes)),
-          throughputMBps:
-            avg(runs.map(r => r.decodedBytes)) /
-            1024 /
-            1024 /
-            (avg(runs.map(r => r.totalMs)) / 1000),
+          ttfb: median(runs.map(r => r.ttfb)),
+          fetchMs: median(runs.map(r => r.fetchMs)),
+          decodeMs: median(decodes),
+          totalMs: medianTotal,
+          firstByteMs: median(runs.map(r => r.firstByteMs)),
+          transferBytes: median(transfers),
+          decodedBytes: median(decoded),
+          throughputMBps: medianTotal > 0 ? median(decoded) / 1024 / 1024 / (medianTotal / 1000) : 0,
+          pathTaken: scenario.pathTaken,
+          totalMsStddev: stddev(totals),
         }
 
         allResults.push(row)

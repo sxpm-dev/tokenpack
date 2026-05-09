@@ -1,13 +1,15 @@
 // Variants are generated from the live algorithm catalog: every browser-safe
-// registered algorithm × supported channel counts, plus the four HTTP
-// encodings. Importing `@tokenpack/browser` populates the catalog as a side
-// effect (its `register.ts` auto-runs).
+// registered algorithm × supported channel counts, plus the three universally-
+// decodable HTTP encodings.
 //
 // Filtering rules:
 //   1. `feFriendly === 'yes'` — algorithm metadata says it can decode in the
-//      browser end-to-end. (Today every registered algo qualifies, but this
-//      keeps the filter explicit if a future node-only algo lands.)
-//   2. `BROWSER_FETCH_PAGE_EXCLUDE` — manual escape hatch to skip a specific
+//      browser end-to-end.
+//   2. `compressorFamily !== 'brotli'` — brotli outer compression requires
+//      `DecompressionStream('br')` which isn't universally available; brotli
+//      variants are exercised by the server-fetch bench instead. Keeping them
+//      here only added "Partial-compat" rows that always skipped.
+//   3. `BROWSER_FETCH_PAGE_EXCLUDE` — manual escape hatch to skip a specific
 //      algo in this UI without touching the catalog. Mirrors the
 //      `BROWSER_FETCH_EXCLUDE` array in `benchmark/bench-algos.ts` (which
 //      controls the bench-script side); kept duplicated rather than coupled
@@ -26,10 +28,16 @@ const BROWSER_FETCH_PAGE_EXCLUDE: readonly string[] = []
 function browserFetchAlgoInfos(): AlgorithmInfo[] {
   return listAlgorithmInfos()
     .filter(a => a.feFriendly === 'yes')
+    .filter(a => {
+      const Ctor = algorithmCatalog.getByName(a.name)
+      const compressor = Ctor.Compressor as unknown as { familyId: string }
+
+      return compressor.familyId !== 'brotli'
+    })
     .filter(a => !BROWSER_FETCH_PAGE_EXCLUDE.includes(a.name))
 }
 
-const ENCODINGS = ['raw', 'gzip', 'br', 'deflate'] as const
+const ENCODINGS = ['raw', 'gzip', 'deflate'] as const
 
 const ENCODING_COMPAT: Record<
   (typeof ENCODINGS)[number],
@@ -37,10 +45,6 @@ const ENCODING_COMPAT: Record<
 > = {
   raw: { compat: 'full', note: 'No compression — universal.' },
   gzip: { compat: 'full', note: 'gzip via Content-Encoding — universal browser support.' },
-  br: {
-    compat: 'partial',
-    note: 'brotli via Content-Encoding — Chromium ≥ 50, Firefox ≥ 44, Safari ≥ 11. Wide support, slight asterisk on very old browsers.',
-  },
   deflate: { compat: 'full', note: 'deflate via Content-Encoding — universal browser support.' },
 }
 
@@ -66,25 +70,19 @@ function readBinding(Ctor: AlgorithmCtor): CatalogBinding {
 }
 
 /** Browser-safe algorithms registered in the catalog, filtered by
- *  `BROWSER_FETCH_PAGE_EXCLUDE`. */
+ *  `BROWSER_FETCH_PAGE_EXCLUDE` and the no-brotli rule. */
 function listBindings(): CatalogBinding[] {
   return browserFetchAlgoInfos().map(info => readBinding(algorithmCatalog.getByName(info.name)))
 }
 
 function tokenCompat(b: CatalogBinding): { compat: 'full' | 'partial'; note: string } {
-  // Browser decode of brotli requires DecompressionStream('br') —
-  // Chromium ≥ 124, Firefox ≥ 126, Safari ≥ 18.
+  // Defensive: if a brotli-bound binding ever leaks past the filter, mark it
+  // partial so the user sees why it's there. With the no-brotli filter this
+  // branch is unreachable in practice — kept as a guard rail.
   if (b.compressorFamily === 'brotli') {
     return {
       compat: 'partial',
-      note: `${b.algoName}: brotli outer compression — needs DecompressionStream("br"). Chromium ≥ 124 / Firefox ≥ 126 / Safari ≥ 18.`,
-    }
-  }
-
-  if (b.algoName.startsWith('pixel-range')) {
-    return {
-      compat: 'partial',
-      note: `${b.algoName}: pack data lives in a tpAK chunk; inner compressor is brotli (same browser caveat).`,
+      note: `${b.algoName}: brotli outer compression — needs DecompressionStream("br"). Should have been filtered out — please report.`,
     }
   }
 

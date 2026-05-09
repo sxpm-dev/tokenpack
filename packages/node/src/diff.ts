@@ -17,6 +17,7 @@ export type { DiffResult, FileDiff, Hunk }
 
 export function diff(sourceA: DecodeSource, sourceB: DecodeSource): DiffResult {
   let cached: DiffResult | null = null
+
   async function resolve(): Promise<DiffResult> {
     if (cached) return cached
     const [{ bytes: bufA, ext: extA }, { bytes: bufB, ext: extB }] = await Promise.all([

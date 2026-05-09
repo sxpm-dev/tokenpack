@@ -3,7 +3,7 @@
  *
  * Mental model: take ALL registered algos from the catalog, then filter.
  * Each bench has:
- *   - an immutable eligibility predicate (e.g. browser-safe only)
+ *   - an immutable eligibility predicate (e.g. browser-safe only, node-only)
  *   - a mutable EXCLUDE array — edit to skip a specific algo without code changes
  *
  * Imported by:
@@ -14,7 +14,23 @@
  *   - packages/app/src/app/browser-fetch-bench/* → browserFetchBenchAlgos()
  */
 
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { type AlgorithmInfo, listAlgorithmInfos } from 'tokenpack/algorithms/catalog-info'
+
+// ── Classification predicates ──────────────────────────────────────────────
+// Read straight from `Ctor.capabilities` and the bound Compressor — no other
+// place in the bench tree should re-derive these.
+//
+// Two axes drive every bench filter and the runner's stream-vs-batch dispatch:
+//   - environments: 'node' | 'browser' (where it can run end-to-end)
+//   - streamable: true means the runner must use the streaming decode path
+
+export const isNode = (a: AlgorithmInfo): boolean => a.environments.includes('node')
+export const isBrowser = (a: AlgorithmInfo): boolean => a.environments.includes('browser')
+export const isStream = (a: AlgorithmInfo): boolean =>
+  algorithmCatalog.getByName(a.name).capabilities.streamable
+export const usesBrotli = (a: AlgorithmInfo): boolean =>
+  (algorithmCatalog.getByName(a.name).Compressor as { familyId: string }).familyId === 'brotli'
 
 // ── Encode/Decode bench (codec micro-bench) ─────────────────────────────────
 // Tests every registered algorithm's encode + decode performance against a
@@ -26,22 +42,28 @@ export function encodeDecodeBenchAlgos(): AlgorithmInfo[] {
 }
 
 // ── Browser fetch bench (live in-browser fetch+decode) ──────────────────────
-// Eligibility: feFriendly === 'yes'. Algorithms that can't run in the browser
-// (e.g. AVIF/WebP via sharp on Node, NodeOnly codecs) are excluded by predicate.
+// Eligibility: browser environment + non-brotli compressor. Brotli requires
+// `DecompressionStream('br')` which has spotty support and was producing
+// noise-only "Partial-compat" rows in the bench grid.
 export const BROWSER_FETCH_EXCLUDE: readonly string[] = []
 
 export function browserFetchBenchAlgos(): AlgorithmInfo[] {
   return listAlgorithmInfos()
-    .filter(a => a.feFriendly === 'yes')
+    .filter(isBrowser)
+    .filter(a => !usesBrotli(a))
     .filter(a => !BROWSER_FETCH_EXCLUDE.includes(a.name))
 }
 
 // ── Server fetch bench (token-vs-archive scenarios) ─────────────────────────
 // Pre-recorded transport-comparison; uses the catalog as the variant pool.
+// Node-only: this bench runs on Node and decodes via @tokenpack/node, so a
+// browser-only algo cannot be measured here.
 export const SERVER_FETCH_EXCLUDE: readonly string[] = []
 
 export function serverFetchBenchAlgos(): AlgorithmInfo[] {
-  return listAlgorithmInfos().filter(a => !SERVER_FETCH_EXCLUDE.includes(a.name))
+  return listAlgorithmInfos()
+    .filter(isNode)
+    .filter(a => !SERVER_FETCH_EXCLUDE.includes(a.name))
 }
 
 /**

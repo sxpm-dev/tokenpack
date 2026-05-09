@@ -1,7 +1,7 @@
-// PixelRangePngBrotli — pack data lives in a `tpAK` PNG ancillary chunk;
-// IDAT carries arbitrary decoration. Range-fetch friendly: the chunk's bytes
-// are at known absolute file offsets so a consumer can `Range: bytes=A-B` to
-// pull a specific file region from a remote artifact without decoding pixels.
+// PixelRange (PNG · Brotli) — default-binding variant. Pack data lives in a
+// `tpAK` PNG ancillary chunk; IDAT carries arbitrary decoration. Range-fetch
+// friendly: chunk bytes are at known absolute file offsets so a consumer can
+// `Range: bytes=A-B` to pull a region without decoding pixels.
 
 import { PixelRangeAlgorithm } from 'tokenpack/algorithms/pixel-range-algorithm'
 import { LinearCodec } from 'tokenpack/codecs/linear'
@@ -10,73 +10,7 @@ import { DenseDrawer } from 'tokenpack/drawers'
 import { BrotliCompressor } from '../compressors/brotli-compressor'
 import { PngSurface } from '../surfaces/png'
 
-const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
-const TPAK_TYPE = Buffer.from('tpAK', 'ascii')
-
-const CRC_TABLE = (() => {
-  const table = new Uint32Array(256)
-
-  for (let n = 0; n < 256; n++) {
-    let c = n
-
-    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
-    table[n] = c >>> 0
-  }
-
-  return table
-})()
-
-function crc32(bytes: Buffer): number {
-  let c = 0xffffffff
-
-  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8)
-
-  return (c ^ 0xffffffff) >>> 0
-}
-
-function buildChunk(type: Buffer, data: Buffer): Buffer {
-  const length = Buffer.alloc(4)
-
-  length.writeUInt32BE(data.length, 0)
-  const crcInput = Buffer.concat([type, data])
-  const crc = Buffer.alloc(4)
-
-  crc.writeUInt32BE(crc32(crcInput), 0)
-
-  return Buffer.concat([length, type, data, crc])
-}
-
-/**
- * Insert a `tpAK` ancillary chunk after IHDR (which is always first in PNG).
- * IHDR is 25 bytes total: 4 length + 4 type + 13 data + 4 crc. So inserting
- * at byte 8 + 25 = 33 places the chunk between IHDR and the first IDAT.
- */
-function insertTpakChunk(pngBytes: Buffer, data: Uint8Array): Buffer {
-  const ihdrEnd = 8 + 25
-  const dataBuf = Buffer.from(data.buffer, data.byteOffset, data.byteLength)
-  const chunk = buildChunk(TPAK_TYPE, dataBuf)
-
-  return Buffer.concat([pngBytes.subarray(0, ihdrEnd), chunk, pngBytes.subarray(ihdrEnd)])
-}
-
-function extractTpakChunk(pngBytes: Buffer): Buffer {
-  if (pngBytes.length < 8 || !pngBytes.subarray(0, 8).equals(PNG_SIGNATURE)) {
-    throw new Error('not a PNG (missing signature)')
-  }
-  let pos = 8
-
-  while (pos + 8 <= pngBytes.length) {
-    const length = pngBytes.readUInt32BE(pos)
-    const type = pngBytes.subarray(pos + 4, pos + 8).toString('ascii')
-    const dataStart = pos + 8
-    const dataEnd = dataStart + length
-
-    if (type === 'tpAK') return Buffer.from(pngBytes.subarray(dataStart, dataEnd))
-    if (type === 'IEND') break
-    pos = dataEnd + 4 // advance past CRC
-  }
-  throw new Error('no tpAK chunk found in PNG')
-}
+import { extractTpakChunk, insertTpakChunk } from './pixel-range-png-base'
 
 export class PixelRangePngBrotli extends PixelRangeAlgorithm {
   // 100+ range reserved for PixelRange* algorithms (vs <100 codec-derived).
@@ -86,14 +20,13 @@ export class PixelRangePngBrotli extends PixelRangeAlgorithm {
     'Pack data stored in a tpAK PNG chunk; pixels are decoration. Range-fetch friendly.'
 
   // Codec/Drawer are decoration-only here — the data path bypasses them.
-  // Kept for class-shape compatibility with AbstractAlgorithm.
   static override readonly Codec = LinearCodec
   static override readonly Surface = PngSurface
   static override readonly Compressor = BrotliCompressor
   static override readonly Drawer = DenseDrawer
   static {
     Object.defineProperty(this, 'name', {
-      value: 'pixel-range-png-brotli',
+      value: 'pixel-range',
       configurable: true,
     })
   }

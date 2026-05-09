@@ -188,8 +188,8 @@ export function ScenarioConfigTable({ scenarioIds }: ScenarioConfigTableProps) {
       <div className="text-[11px] leading-5 text-white/40 space-y-1 pt-1 border-t border-white/5">
         <div>
           <span className="text-green-400 font-semibold">Full</span> — works in all modern browsers
-          via <code className="text-white/60">DecompressionStream(&quot;deflate&quot;)</code> (Chrome
-          ≥ 80, Safari ≥ 16.4, Firefox ≥ 113).
+          via <code className="text-white/60">DecompressionStream(&quot;deflate&quot;)</code>{' '}
+          (Chrome ≥ 80, Safari ≥ 16.4, Firefox ≥ 113).
         </div>
         <div>
           <span className="text-yellow-400 font-semibold">Partial</span> — needs{' '}
