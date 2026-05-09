@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "sharp": "^0.34.2",
-    "tokenpack": "workspace:*"
+    "tokenpack": "workspace:*",
+    "upng-js": "^2.1.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

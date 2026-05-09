@@ -41,7 +41,8 @@
     "./surfaces": "./src/surfaces/index.ts",
     "./surfaces/types": "./src/surfaces/types.ts",
     "./surfaces/registry": "./src/surfaces/registry.ts",
-    "./surfaces/channels": "./src/surfaces/channels.ts"
+    "./surfaces/channels": "./src/surfaces/channels.ts",
+    "./surfaces/streaming-png-decoder": "./src/surfaces/streaming-png-decoder.ts"
   },
   "scripts": {
     "lint": "eslint src tests",

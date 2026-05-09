@@ -2,7 +2,8 @@ import fs from 'fs'
 import { PNG } from 'pngjs'
 import { enumOption, type OptionsSchema } from 'tokenpack/components/options'
 import { ImageSurface } from 'tokenpack/surfaces'
-import type { SurfacePixels } from 'tokenpack/surfaces/types'
+import { decodeStreamingPng } from 'tokenpack/surfaces/streaming-png-decoder'
+import type { SurfacePixels, SurfaceStreamHandle } from 'tokenpack/surfaces/types'
 
 function detectFileChannels(d: Buffer, colorType: number): 3 | 4 {
   if (colorType !== 6) return 3
@@ -169,5 +170,17 @@ export class StreamingPngSurface extends ImageSurface {
 
   async readBuffer(buffer: Buffer): Promise<SurfacePixels> {
     return parsePngjs(PNG.sync.read(buffer))
+  }
+
+  /**
+   * Streaming-decode override. Uses the env-agnostic shared PNG-streaming
+   * helper from `tokenpack/surfaces/streaming-png-decoder` (Web Streams +
+   * `DecompressionStream`, both available natively in Node ≥ 18).
+   *
+   * Algorithm.decodeStream consumes the yielded pixel rows; codec / outer
+   * compressor work happens there per the entity-composition contract.
+   */
+  override async decodeStream(stream: ReadableStream<Uint8Array>): Promise<SurfaceStreamHandle> {
+    return decodeStreamingPng(stream)
   }
 }

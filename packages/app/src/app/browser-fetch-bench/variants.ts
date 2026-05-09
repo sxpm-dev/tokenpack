@@ -1,14 +1,33 @@
-// Variants are generated from the live algorithm catalog: every browser-
+// Variants are generated from the live algorithm catalog: every browser-safe
 // registered algorithm × supported channel counts, plus the four HTTP
 // encodings. Importing `@tokenpack/browser` populates the catalog as a side
 // effect (its `register.ts` auto-runs).
+//
+// Filtering rules:
+//   1. `feFriendly === 'yes'` — algorithm metadata says it can decode in the
+//      browser end-to-end. (Today every registered algo qualifies, but this
+//      keeps the filter explicit if a future node-only algo lands.)
+//   2. `BROWSER_FETCH_PAGE_EXCLUDE` — manual escape hatch to skip a specific
+//      algo in this UI without touching the catalog. Mirrors the
+//      `BROWSER_FETCH_EXCLUDE` array in `benchmark/bench-algos.ts` (which
+//      controls the bench-script side); kept duplicated rather than coupled
+//      because the app workspace doesn't depend on `tokenpack-benchmark`.
 
 import '@tokenpack/browser'
 
 import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { type AlgorithmInfo, listAlgorithmInfos } from 'tokenpack/algorithms/catalog-info'
 import type { AlgorithmCtor } from 'tokenpack/algorithms/types'
 
 import type { Variant } from './types'
+
+const BROWSER_FETCH_PAGE_EXCLUDE: readonly string[] = []
+
+function browserFetchAlgoInfos(): AlgorithmInfo[] {
+  return listAlgorithmInfos()
+    .filter(a => a.feFriendly === 'yes')
+    .filter(a => !BROWSER_FETCH_PAGE_EXCLUDE.includes(a.name))
+}
 
 const ENCODINGS = ['raw', 'gzip', 'br', 'deflate'] as const
 
@@ -46,9 +65,10 @@ function readBinding(Ctor: AlgorithmCtor): CatalogBinding {
   }
 }
 
-/** Every algorithm registered in the browser catalog. */
+/** Browser-safe algorithms registered in the catalog, filtered by
+ *  `BROWSER_FETCH_PAGE_EXCLUDE`. */
 function listBindings(): CatalogBinding[] {
-  return algorithmCatalog.list().map(readBinding)
+  return browserFetchAlgoInfos().map(info => readBinding(algorithmCatalog.getByName(info.name)))
 }
 
 function tokenCompat(b: CatalogBinding): { compat: 'full' | 'partial'; note: string } {

@@ -22,6 +22,8 @@ import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 
+import { assertAllReferencedAlgosExist } from './bench-algos'
+
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.join(HERE, '..')
 const RESULTS_DIR = path.join(REPO_ROOT, 'packages', 'app', 'benchmark-results')
@@ -326,6 +328,7 @@ async function main() {
   console.log('Tokenpack Benchmark')
   console.log('===================')
 
+  assertAllReferencedAlgosExist()
   const encodeTimes = loadEncodeTimes()
   const sources = [...new Set(encodeTimes.map(e => e.source))]
 

@@ -12,7 +12,6 @@ export type DecodeSource = string | Blob | ArrayBuffer | Uint8Array | HTMLImageE
 
 export interface DecodeOptions {
   key?: string
-  compressor?: string
   decompress?: DecompressFn
 }
 
@@ -25,7 +24,9 @@ export async function decode(source: DecodeSource, options: DecodeOptions = {}):
 
   return fromBytes(bytes, {
     decompress: options.decompress ?? decompressRaw,
-    diffTo: buildDiffToFn(options.compressor),
+    // Curry the source-decoded algorithm so `prevPack.diffTo(nextPack)`
+    // produces a diff token packaged with the same algorithm as the inputs.
+    diffTo: buildDiffToFn(algorithm),
   })
 }
 

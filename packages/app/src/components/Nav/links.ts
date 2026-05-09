@@ -16,7 +16,7 @@ export interface NavLinkItem {
 export const NAV_LINKS: readonly NavLinkItem[] = [
   { href: '/', label: 'Dashboard', icon: SquaresFourIcon },
   { href: '/algorithms', label: 'Algorithms', icon: CpuIcon },
-  { href: '/benchmark-extended', label: 'Extended Bench', icon: GaugeIcon },
-  { href: '/benchmark', label: 'Benchmark', icon: ChartBarIcon },
-  { href: '/runtime-benchmark', label: 'Runtime Bench', icon: LightningIcon },
+  { href: '/encode-decode-bench', label: 'Encode / Decode Bench', icon: GaugeIcon },
+  { href: '/server-fetch-bench', label: 'Server Fetch Bench', icon: ChartBarIcon },
+  { href: '/browser-fetch-bench', label: 'Browser Fetch Bench', icon: LightningIcon },
 ] as const

@@ -106,4 +106,16 @@ export class BrowserBrotliCompressor extends AbstractCompressor {
 
     return Buffer.from(decompressed)
   }
+
+  override decompressWebStream(input: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+    if (typeof DecompressionStream === 'undefined') {
+      throw new Error(
+        `DecompressionStream is unavailable. Brotli streaming requires Chrome 118+ / Firefox 113+ / Safari 17.4+.`,
+      )
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Decompress = DecompressionStream as any
+
+    return input.pipeThrough(new Decompress('br') as any) as ReadableStream<Uint8Array>
+  }
 }

@@ -61,7 +61,7 @@ export default function BenchmarkPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-5 px-4 py-5 sm:px-5">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">Benchmark Results</h1>
+        <h1 className="text-lg font-semibold tracking-tight">Server Fetch Bench</h1>
         <p className="mt-0.5 text-xs text-white/40">
           Token vs zip vs tar.gz vs brotli · {data.length} measurements
         </p>

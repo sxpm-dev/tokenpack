@@ -192,7 +192,7 @@ export default function RuntimeBenchmarkPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-5 px-4 py-5 sm:px-5">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">Runtime Benchmark</h1>
+        <h1 className="text-lg font-semibold tracking-tight">Browser Fetch Bench</h1>
         <p className="mt-0.5 text-xs text-white/40">
           Real-network download + decode (+ optional JS exec). Cache-busted per request.
         </p>
@@ -280,7 +280,7 @@ export default function RuntimeBenchmarkPage() {
 
           <label
             className="flex items-center gap-2"
-            title="Server-side latency + bandwidth simulation. Matches /benchmark conditions."
+            title="Server-side latency + bandwidth simulation. Matches /server-fetch-bench conditions."
           >
             <span className="text-white/50">Network:</span>
             <select

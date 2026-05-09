@@ -18,6 +18,8 @@ import path from 'path'
 import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { fileURLToPath } from 'url'
 
+import { assertAllReferencedAlgosExist } from './bench-algos'
+
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.join(HERE, '..')
 const RESULTS_DIR = path.join(REPO_ROOT, 'packages', 'app', 'benchmark-results')
@@ -83,6 +85,11 @@ export interface ExtBenchRow {
   isStreaming: boolean
   isBrowserSafe: boolean
   error?: string
+  // Entity-aware fields (mirrors `packages/app/src/lib/bench-types.ts`).
+  surfaceId?: string
+  compressorId?: string
+  drawerName?: string
+  optionsSummary?: string
 }
 
 async function decodeRaw(buf: Buffer, ext: string): Promise<Buffer> {
@@ -96,6 +103,10 @@ function buildBaseRow(entry: EncodeTimeEntry, error?: string): ExtBenchRow {
   let codecId = -1
   let isStreaming = false
   let isBrowserSafe = false
+  let surfaceId: string | undefined
+  let compressorId: string | undefined
+  let drawerName: string | undefined
+  let optionsSummary: string | undefined
 
   try {
     const Ctor = algorithmCatalog.getByName(entry.algorithm)
@@ -103,8 +114,22 @@ function buildBaseRow(entry: EncodeTimeEntry, error?: string): ExtBenchRow {
     codecId = Ctor.id
     isStreaming = Ctor.capabilities.streamable
     isBrowserSafe = Ctor.capabilities.environments.includes('browser')
+    // Instantiate the algorithm to read its bound entities. Constructor here
+    // is cheap (no encoding work happens until encode/decode are called).
+    const instance = new Ctor({})
+
+    surfaceId = (instance as unknown as { surface?: { id?: string } }).surface?.id ?? entry.surface
+    compressorId =
+      (instance as unknown as { compressor?: { id?: string } }).compressor?.id ?? entry.compressor
+    drawerName = (instance as unknown as { drawer?: object }).drawer?.constructor?.name
+    optionsSummary = formatOptions(
+      (instance as unknown as { defaults?: Record<string, unknown> }).defaults,
+    )
   } catch {
-    /* algorithm not registered */
+    // Algorithm not registered or constructor failed — fall through with the
+    // raw entry fields so the row still shows the basics.
+    surfaceId = entry.surface
+    compressorId = entry.compressor
   }
 
   return {
@@ -126,10 +151,42 @@ function buildBaseRow(entry: EncodeTimeEntry, error?: string): ExtBenchRow {
     isStreaming,
     isBrowserSafe,
     error,
+    surfaceId,
+    compressorId,
+    drawerName,
+    optionsSummary,
   }
 }
 
+/**
+ * Render a small summary of an algorithm's non-default `defaults` options:
+ * keys we care about for the bench table. Returns `'—'` when nothing
+ * interesting is set.
+ */
+function formatOptions(defaults?: Record<string, unknown>): string {
+  if (!defaults) return '—'
+  const NOTABLE = ['cellSize', 'fecMode', 'streaming', 'channels'] as const
+  const parts: string[] = []
+
+  for (const key of NOTABLE) {
+    const value = defaults[key]
+
+    if (value === undefined || value === null) continue
+    if (key === 'fecMode' && value === 'none') continue
+    if (key === 'cellSize' && (value === 0 || value === 1)) continue
+    if (key === 'streaming' && value === false) continue
+    parts.push(`${key}=${String(value)}`)
+  }
+
+  return parts.length === 0 ? '—' : parts.join(', ')
+}
+
 async function main() {
+  // Fail fast if any EXCLUDE entry references a stale/typo'd algo name. This
+  // script just reads what `generate.ts` wrote, but the assertion guards
+  // against EXCLUDE drift between scripts.
+  assertAllReferencedAlgosExist()
+
   if (!fs.existsSync(ENCODE_TIMES)) {
     console.error(`\nERROR: ${ENCODE_TIMES} not found.`)
     console.error('Run `yarn tsx benchmark/generate.ts` first.\n')

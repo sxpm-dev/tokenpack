@@ -27,38 +27,39 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
       >
         <Table.Header>
           <Table.Column key="codecName" allowsSorting isRowHeader id="codecName">
-            <ColHeader label="Algorithm" sort={sort} sortKey="codecName" />
+            <ColHeader label="Algo" sort={sort} sortKey="codecName" />
           </Table.Column>
-          <Table.Column key="outerCompression" allowsSorting id="outerCompression">
-            {' '}
-            <ColHeader label="Compression" sort={sort} sortKey="outerCompression" />
+          <Table.Column key="surfaceId" allowsSorting id="surfaceId">
+            <ColHeader label="Surface" sort={sort} sortKey="surfaceId" />
+          </Table.Column>
+          <Table.Column key="compressorId" allowsSorting id="compressorId">
+            <ColHeader label="Compressor" sort={sort} sortKey="compressorId" />
+          </Table.Column>
+          <Table.Column key="drawerName" allowsSorting id="drawerName">
+            <ColHeader label="Drawer" sort={sort} sortKey="drawerName" />
+          </Table.Column>
+          <Table.Column key="optionsSummary" id="optionsSummary">
+            Options
           </Table.Column>
           <Table.Column key="channels" allowsSorting id="channels">
-            {' '}
             <ColHeader label="Ch" sort={sort} sortKey="channels" />
           </Table.Column>
           <Table.Column key="encodeMs" allowsSorting id="encodeMs">
-            {' '}
-            <ColHeader label="Encode ms" sort={sort} sortKey="encodeMs" />
+            <ColHeader label="Encode" sort={sort} sortKey="encodeMs" />
           </Table.Column>
           <Table.Column key="decodeMs" allowsSorting id="decodeMs">
-            {' '}
-            <ColHeader label="Decode ms" sort={sort} sortKey="decodeMs" />
+            <ColHeader label="Decode" sort={sort} sortKey="decodeMs" />
           </Table.Column>
           <Table.Column key="roundTrip" allowsSorting id="roundTrip">
-            {' '}
-            <ColHeader label="Round-trip" sort={sort} sortKey="roundTrip" />
+            <ColHeader label="RT" sort={sort} sortKey="roundTrip" />
           </Table.Column>
           <Table.Column key="tokenBytes" allowsSorting id="tokenBytes">
-            {' '}
             <ColHeader label="Size" sort={sort} sortKey="tokenBytes" />
           </Table.Column>
           <Table.Column key="ratio" allowsSorting id="ratio">
-            {' '}
             <ColHeader label="Ratio" sort={sort} sortKey="ratio" />
           </Table.Column>
           <Table.Column key="throughputMBps" allowsSorting id="throughputMBps">
-            {' '}
             <ColHeader label="MB/s" sort={sort} sortKey="throughputMBps" />
           </Table.Column>
           <Table.Column key="isStreaming" id="isStreaming">
@@ -78,7 +79,10 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
               return (
                 <Table.Row key={i} className="opacity-60" id={i}>
                   <Table.Cell>{row.codecName}</Table.Cell>
-                  <Table.Cell className="text-white/30">{row.outerCompression}</Table.Cell>
+                  <Table.Cell className="text-white/30">{row.surfaceId ?? '—'}</Table.Cell>
+                  <Table.Cell className="text-white/30">{row.compressorId ?? row.outerCompression}</Table.Cell>
+                  <Table.Cell className="text-white/30">{row.drawerName ?? '—'}</Table.Cell>
+                  <Table.Cell className="text-white/30">{row.optionsSummary ?? '—'}</Table.Cell>
                   <Table.Cell className="text-white/30">{row.channels}</Table.Cell>
                   <Table.Cell>
                     {isTimeout ? (
@@ -112,7 +116,12 @@ export function ResultsTable({ rows, sort, onSortChange, bestRatio }: ResultsTab
                     )}
                   </div>
                 </Table.Cell>
-                <Table.Cell className="text-white/50">{row.outerCompression}</Table.Cell>
+                <Table.Cell className="text-white/50">{row.surfaceId ?? '—'}</Table.Cell>
+                <Table.Cell className="text-white/50">
+                  {row.compressorId ?? row.outerCompression}
+                </Table.Cell>
+                <Table.Cell className="text-white/50">{row.drawerName ?? '—'}</Table.Cell>
+                <Table.Cell className="text-white/40">{row.optionsSummary ?? '—'}</Table.Cell>
                 <Table.Cell className="text-white/40">{row.channels}</Table.Cell>
                 <Table.Cell>{fmtMs(row.encodeMs)}</Table.Cell>
                 <Table.Cell>{fmtMs(row.decodeMs)}</Table.Cell>

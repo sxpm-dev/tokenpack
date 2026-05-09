@@ -23,6 +23,8 @@ import { encode as tokenpackEncode } from '@tokenpack/node'
 import fs from 'fs'
 import path from 'path'
 import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+
+import { assertAllReferencedAlgosExist, browserFetchBenchAlgos } from './bench-algos'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 
@@ -72,8 +74,14 @@ interface AlgoBinding {
   streamable: boolean
 }
 
+/**
+ * Browser-safe algos only — derived from `browserFetchBenchAlgos()` in
+ * `benchmark/bench-algos.ts`. To skip a specific algo, edit
+ * `BROWSER_FETCH_EXCLUDE` there; no code changes here.
+ */
 function listAlgoBindings(): AlgoBinding[] {
-  return algorithmCatalog.list().map(Ctor => {
+  return browserFetchBenchAlgos().map(info => {
+    const Ctor = algorithmCatalog.getByName(info.name)
     const surface = new (Ctor.Surface as unknown as new () => {
       id: string
       extension: string
@@ -168,6 +176,7 @@ async function main() {
   console.log('Runtime fixture generator')
   console.log('=========================\n')
 
+  assertAllReferencedAlgosExist()
   fs.mkdirSync(OUT_DIR, { recursive: true })
 
   const manifest: ManifestEntry[] = []

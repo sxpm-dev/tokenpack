@@ -1,9 +1,9 @@
 'use client'
 
-import type { DiffPack, DirPack, Pack } from '@tokenpack/browser'
+import { type DiffPack, type DirPack, type Pack } from '@tokenpack/browser'
 import { useEffect, useRef, useState } from 'react'
 
-import { computeDiff as computeDiffPack, encodeDiffTokenViaServer } from '../utils/compute-diff'
+import { decodeBytesWithFallback } from '@/lib/decode-with-fallback'
 
 export interface DiffComputation {
   basePack: DirPack
@@ -82,16 +82,21 @@ export function useComputeDiff(base: Pack | null, next: Pack | null): UseCompute
 }
 
 async function computeDiff(base: DirPack, next: DirPack): Promise<DiffComputation> {
-  // Compute the DiffPack from raw diff bytes (no canvas roundtrip), and ask
-  // the server to wrap the bytes in a PNG for the download link.
-  const { diffPack, diffBytes } = await computeDiffPack(base, next)
-  const token = await encodeDiffTokenViaServer(diffBytes)
+  // The base pack carries its source-decoded `diffTo` callback; calling it
+  // produces a real diff token packaged with the source algorithm. We then
+  // decode it back to a DiffPack for in-app rendering.
+  const result = (await base.diffTo(next)) as { bytes: Uint8Array; objectURL: string }
+  const { pack: diffPackUnknown } = await decodeBytesWithFallback(result.bytes)
+
+  if (!diffPackUnknown.isDiff()) {
+    throw new Error('diff token did not decode to a DiffPack — unexpected')
+  }
 
   return {
     basePack: base,
     nextPack: next,
-    diffPack,
-    diffBytes: token.bytes,
-    diffObjectURL: token.objectURL,
+    diffPack: diffPackUnknown as DiffPack,
+    diffBytes: result.bytes,
+    diffObjectURL: result.objectURL,
   }
 }

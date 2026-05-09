@@ -21,7 +21,7 @@ import './register'
 // ── Public functions ──────────────────────────────────────────────────────
 export { decode, type DecodeOptions, type DecodeSource } from './decode'
 export { createTokenDecodeStream as decodeStream } from 'tokenpack/stream-decoder'
-export { diff, type DiffResult, type DiffStats, type FileDiff, type Hunk } from './diff'
+export { diff, type DiffResult, type FileDiff, type Hunk } from './diff'
 export { encode, type EncodeInput, type EncodeNodeOptions, type EncodeResult } from './encode'
 
 // ── Builder ───────────────────────────────────────────────────────────────

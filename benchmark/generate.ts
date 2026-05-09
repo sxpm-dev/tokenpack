@@ -16,6 +16,7 @@
 import '@tokenpack/node'
 
 import AdmZip from 'adm-zip'
+import { createHash } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import { encode } from '@tokenpack/node'
@@ -23,6 +24,8 @@ import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { packDirs } from 'tokenpack/archive'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
+
+import { assertAllReferencedAlgosExist, encodeDecodeBenchAlgos } from './bench-algos'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.join(HERE, '..')
@@ -51,13 +54,14 @@ function row(label: string, outSize: number, srcSize: number) {
   console.log(`  ${label.padEnd(LABEL_W)}${fmtBytes(outSize).padStart(SIZE_W)}   ${ratio}% smaller`)
 }
 
+// Trimmed corpus — `bench:all` only runs against these two sources to keep
+// the matrix tractable. `react-dom-client.development` covers a "real-world
+// medium JS bundle" case; `chunk-5mb` covers the "very large bundle / cache
+// stress" case. Re-add other sources here if a focused investigation needs
+// them (the smaller/screenshot fixtures still live under `benchmark/sources/`).
 const FILE_SOURCES: { name: string; file: string }[] = [
   { name: 'react-dom-client.development', file: 'react-dom-client.development.js' },
-  { name: 'react-dom-client.production', file: 'react-dom-client.production.js' },
   { name: 'chunk-5mb', file: 'chunk-5mb.js' },
-  { name: 'screenshot', file: 'screenshot.jpg' },
-  { name: 'client-spec-map', file: 'client-spec-map.json' },
-  { name: 'client-spec-map.min', file: 'client-spec-map.min.json' },
 ]
 
 interface ArchiveTimeEntry {
@@ -90,8 +94,14 @@ interface AlgoBinding {
   compressorFamily: string
 }
 
+/**
+ * Build per-algo bindings from the central bench-algos list. To trim the
+ * matrix or skip a specific algo, edit `ENCODE_DECODE_EXCLUDE` in
+ * `benchmark/bench-algos.ts` — no code changes here.
+ */
 function listAlgoBindings(): AlgoBinding[] {
-  const all = algorithmCatalog.list().map(Ctor => {
+  return encodeDecodeBenchAlgos().map(info => {
+    const Ctor = algorithmCatalog.getByName(info.name)
     const surface = new (Ctor.Surface as unknown as new () => {
       id: string
       extension: string
@@ -105,13 +115,6 @@ function listAlgoBindings(): AlgoBinding[] {
       compressorFamily: Ctor.Compressor.familyId,
     }
   })
-
-  // Trim the matrix to the `linear-*` family for now (linear, linear-deflate,
-  // linear-stream, linear-stream-deflate, linear-none, linear-webp, linear-avif).
-  // Cuts brotli-11 work by ~2× and skips slow sharp-backed WebP/AVIF for
-  // non-linear codecs. Re-enable by returning `all` instead.
-  return all.filter(b => b.algorithmName === 'linear' || b.algorithmName.startsWith('linear-'))
-  // return all  // ← uncomment to bench every registered algorithm
 }
 
 async function generateArchives(
@@ -200,9 +203,101 @@ async function withTimeout<T>(ms: number, p: Promise<T>): Promise<T> {
   ])
 }
 
+// ── Cache helpers ──────────────────────────────────────────────────────────
+// Keyed-skip layer for the encode matrix. First run still pays full encode
+// cost; subsequent runs reuse the previous fixture + timing entry whenever
+// the cache key matches.
+//
+// Cache key components: algorithm.name, surface.id, compressor.id, channels,
+// source bytes hash, and a single mtime across all algorithm sources. Any
+// change to any algo's source code invalidates everything (crude but safe).
+//
+// Force a full rebuild by deleting `benchmark/tokens/.cache.json`.
+
+const CACHE_PATH = path.join(TOKENS, '.cache.json')
+const SLOW_TASK_MS = 5_000 // tasks above this are reported in the post-summary
+
+interface CacheEntry {
+  algorithm: string
+  surface: string
+  compressor: string
+  channels: number
+  source: string
+  encodeMs: number
+  tokenBytes: number
+  originalBytes: number
+  tokenFile: string
+}
+
+interface CacheIndex {
+  algoSourceMtime: number
+  bySourceHash: Record<string, Record<string, CacheEntry>>
+  // bySourceHash[sourceHash][taskKey] = entry
+  // taskKey = `${algorithm}|${surface}|${compressor}|c${channels}`
+}
+
+function makeCacheKey(b: AlgoBinding, channels: number): string {
+  return `${b.algorithmName}|${b.surfaceId}|${b.compressorFamily}|c${channels}`
+}
+
+function hashBytes(buf: Buffer): string {
+  return createHash('sha256').update(buf).digest('hex').slice(0, 16)
+}
+
+function computeAlgoSourceMtime(): number {
+  const ALGOS_DIR = path.join(REPO_ROOT, 'packages', 'core', 'src', 'algorithms')
+
+  if (!fs.existsSync(ALGOS_DIR)) return 0
+
+  let max = 0
+  const walk = (dir: string) => {
+    for (const name of fs.readdirSync(dir)) {
+      const p = path.join(dir, name)
+      const stat = fs.statSync(p)
+
+      if (stat.isDirectory()) walk(p)
+      else if (stat.isFile() && p.endsWith('.ts')) {
+        if (stat.mtimeMs > max) max = stat.mtimeMs
+      }
+    }
+  }
+
+  walk(ALGOS_DIR)
+
+  return Math.floor(max)
+}
+
+function loadCacheIndex(currentMtime: number): CacheIndex {
+  if (!fs.existsSync(CACHE_PATH)) {
+    return { algoSourceMtime: currentMtime, bySourceHash: {} }
+  }
+  try {
+    const parsed = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf-8')) as CacheIndex
+
+    if (parsed.algoSourceMtime !== currentMtime) {
+      console.log(
+        `\n[cache] algorithm source mtime changed (${parsed.algoSourceMtime} → ${currentMtime}); invalidating all entries\n`,
+      )
+
+      return { algoSourceMtime: currentMtime, bySourceHash: {} }
+    }
+
+    return parsed
+  } catch {
+    return { algoSourceMtime: currentMtime, bySourceHash: {} }
+  }
+}
+
+function saveCacheIndex(idx: CacheIndex): void {
+  fs.writeFileSync(CACHE_PATH, JSON.stringify(idx, null, 2))
+}
+
 async function main() {
   console.log('Tokenpack Benchmark Fixture Generator')
   console.log('=====================================\n')
+
+  // Fail fast if any EXCLUDE entry references a stale/typo'd algo name.
+  assertAllReferencedAlgosExist()
 
   const allSources: { name: string; buf: Buffer }[] = []
   const allArchiveTimes: ArchiveTimeEntry[] = []
@@ -242,14 +337,26 @@ async function main() {
   const channelOptions = [3, 4] as const
   const total = bindings.length * channelOptions.length * allSources.length
   let done = 0
+  let reused = 0
+  let encoded = 0
+  const slowTasks: { label: string; ms: number }[] = []
   const encodeTimes: EncodeTimeEntry[] = []
+
+  // Cache layer: skip per-task encode whenever the (algo, surface, compressor,
+  // channels, source-bytes, algo-source-mtime) tuple matches a previous run.
+  const algoSourceMtime = computeAlgoSourceMtime()
+  const cache = loadCacheIndex(algoSourceMtime)
 
   console.log(
     `\n\n═══ Token matrix: ${bindings.length} algorithms × ${channelOptions.length} channels × ${allSources.length} sources = ${total} files ═══\n`,
   )
 
   for (const { name: sourceName, buf: src } of allSources) {
-    console.log(`── ${sourceName} (${fmtBytes(src.length)}) ──`)
+    const sourceHash = hashBytes(src)
+    const sourceCache = cache.bySourceHash[sourceHash] ?? {}
+
+    cache.bySourceHash[sourceHash] = sourceCache
+    console.log(`── ${sourceName} (${fmtBytes(src.length)}, hash=${sourceHash}) ──`)
 
     for (const binding of bindings) {
       for (const channels of channelOptions) {
@@ -260,6 +367,30 @@ async function main() {
 
         const tokenFile = `ext-${binding.algorithmName}-c${channels}__${sourceName}${binding.surfaceExt}`
         const tokenPath = path.join(TOKENS, tokenFile)
+        const taskKey = makeCacheKey(binding, channels)
+        const cached = sourceCache[taskKey]
+
+        // Cache hit: fixture file present + entry matches → reuse + skip encode.
+        if (cached && fs.existsSync(tokenPath)) {
+          reused++
+          encodeTimes.push({
+            source: sourceName,
+            algorithm: cached.algorithm,
+            surface: cached.surface,
+            compressor: cached.compressor,
+            channels: cached.channels,
+            encodeMs: cached.encodeMs,
+            tokenBytes: cached.tokenBytes,
+            originalBytes: cached.originalBytes,
+            tokenFile: cached.tokenFile,
+          })
+          const ratio = ((1 - cached.tokenBytes / src.length) * 100).toFixed(1)
+
+          console.log(
+            `${fmtBytes(cached.tokenBytes).padStart(8)}  ${ratio.padStart(5)}% smaller  ${cached.encodeMs.toFixed(0)}ms  (cached)`,
+          )
+          continue
+        }
 
         try {
           const t0 = now()
@@ -274,8 +405,7 @@ async function main() {
           const encodeMs = now() - t0
           const tokenBytes = result.byteLength
           const ratio = ((1 - tokenBytes / src.length) * 100).toFixed(1)
-
-          encodeTimes.push({
+          const entry: EncodeTimeEntry = {
             source: sourceName,
             algorithm: binding.algorithmName,
             surface: binding.surfaceId,
@@ -285,7 +415,24 @@ async function main() {
             tokenBytes,
             originalBytes: src.length,
             tokenFile: path.posix.join('tokens', tokenFile),
-          })
+          }
+
+          encodeTimes.push(entry)
+          sourceCache[taskKey] = {
+            algorithm: entry.algorithm,
+            surface: entry.surface,
+            compressor: entry.compressor,
+            channels: entry.channels,
+            source: sourceName,
+            encodeMs: entry.encodeMs,
+            tokenBytes: entry.tokenBytes,
+            originalBytes: entry.originalBytes,
+            tokenFile: entry.tokenFile,
+          }
+          encoded++
+          if (encodeMs >= SLOW_TASK_MS) {
+            slowTasks.push({ label: `${sourceName} · ${binding.algorithmName} c${channels}`, ms: encodeMs })
+          }
           console.log(
             `${fmtBytes(tokenBytes).padStart(8)}  ${ratio.padStart(5)}% smaller  ${encodeMs.toFixed(0)}ms`,
           )
@@ -303,11 +450,29 @@ async function main() {
             originalBytes: src.length,
             tokenFile: '',
           })
+          // Don't cache failed encodes — we want a retry on the next run.
+          delete sourceCache[taskKey]
           console.log(`ERROR: ${msg}`)
         }
       }
     }
+
+    // Persist cache after each source so an interrupted run still preserves
+    // partial progress.
+    saveCacheIndex(cache)
     console.log()
+  }
+
+  console.log(
+    `[cache] ${reused} reused · ${encoded} re-encoded · index → ${path.posix.join('benchmark', 'tokens', '.cache.json')}`,
+  )
+
+  if (slowTasks.length > 0) {
+    console.log(`\n[slow tasks] ≥${SLOW_TASK_MS / 1000}s — top offenders this run:`)
+    slowTasks
+      .sort((a, b) => b.ms - a.ms)
+      .slice(0, 10)
+      .forEach(t => console.log(`  ${(t.ms / 1000).toFixed(1)}s  ${t.label}`))
   }
 
   const encodeTimesPath = path.join(RESULTS_DIR, 'encode-times.json')

@@ -21,6 +21,7 @@ import { DenseDrawer } from 'tokenpack/drawers'
 import { BrowserBrotliCompressor } from '../compressors/brotli-compressor'
 import { BrowserDeflateCompressor } from '../compressors/deflate-compressor'
 import { BrowserPngSurface, BrowserStreamingPngSurface } from '../surfaces/png'
+import { BrowserPngUpngSurface } from '../surfaces/png-upng'
 
 export const LinearPngBrotli = definePixelAlgorithm({
   id: 0,
@@ -156,6 +157,30 @@ export const LinearPngNone = definePixelAlgorithm({
   Drawer: DenseDrawer,
 })
 
+// upng-js variants — pure-JS PNG codec, bypasses canvas. Byte-exact 4-channel
+// encode/decode in browser (canvas premultiplies alpha; upng-js doesn't). The
+// brotli variant matches `linear` (decode-only — browser can't encode brotli);
+// the deflate variant is round-trip-capable end-to-end in browser.
+export const LinearPngUpngBrotli = definePixelAlgorithm({
+  id: 17,
+  name: 'linear-upng',
+  title: 'Linear · PNG (upng) · Brotli',
+  Codec: LinearCodec,
+  Surface: BrowserPngUpngSurface,
+  Compressor: BrowserBrotliCompressor,
+  Drawer: DenseDrawer,
+})
+
+export const LinearPngUpngDeflate = definePixelAlgorithm({
+  id: 18,
+  name: 'linear-upng-deflate',
+  title: 'Linear · PNG (upng) · Deflate',
+  Codec: LinearCodec,
+  Surface: BrowserPngUpngSurface,
+  Compressor: BrowserDeflateCompressor,
+  Drawer: DenseDrawer,
+})
+
 // zstdpix encode is node-only (depends on zstd); browser only needs decode.
 // We don't register it here — server-encoded zstdpix tokens come through the
 // stream-decode path which doesn't go through algorithmCatalog.
@@ -258,6 +283,8 @@ export const ALL_BROWSER_ALGORITHMS = [
   LinearStreamingPngDeflate,
   LinearStreamingPngBrotli,
   LinearPngNone,
+  LinearPngUpngBrotli,
+  LinearPngUpngDeflate,
   PixelRangePngBrotli,
 ] as const
 

@@ -1,330 +1,99 @@
 /**
- * Streaming token decoder — PNG format only.
+ * Streaming TokenPack decoder for Node — thin Duplex adapter.
  *
- * Pipeline:
- *   HTTP/file bytes
- *   → PNGChunkParser (parses PNG structure, decompresses IDAT via inflate)
- *   → scanline bytes (with filter bytes)
- *   → TokenPixelDecoder (strips filter, reads header, routes to codec)
- *   → codec.decodeChunk() if codec implements StreamingCodec, else linear pass-through
- *   → streaming brotli/deflate decompressor (if outer compression is set)
- *   → original bytes
+ * Per the entity-composition principle (see
+ * `docs/architecture/algorithm-as-entity-composition.md`), the streaming
+ * pipeline is:
  *
- * Codecs that implement StreamingCodec are decoded incrementally as rows arrive.
- * Non-streaming codecs fall back to the linear pass-through path (pixels = data bytes).
- * Only PNG format (WebP/AVIF have no streaming decoder in Node.js).
+ *   surface.decodeStream  → AsyncIterable<pixelRow>      (Surface owns container parser)
+ *   → codec.decodeChunk   → data byte chunks             (Codec owns per-row decode)
+ *   → compressor.decompressWebStream → final bytes       (Compressor owns inflate)
+ *
+ * This file is the Node-shaped entry point: it accepts a Node Duplex of PNG
+ * bytes and emits decoded bytes. Internally it bridges Node Streams ↔ Web
+ * Streams and delegates to `algorithm.decodeStream`. There is **no** PNG
+ * parsing here — that lives in `StreamingPngSurface.decodeStream` (see
+ * `tokenpack/surfaces/streaming-png-decoder` for the shared implementation).
+ *
+ * History: this used to inline a 330-line custom PNG parser duplicated from
+ * the browser's `decode-stream.ts`. Both have been moved onto the surface.
  */
 
-import { Duplex, type Transform } from 'stream'
-import zlib from 'zlib'
+import { Duplex, Readable } from 'stream'
 
-import { getAlgorithmById } from './algorithms/registry'
-import type { Codec, StreamCodecState } from './codecs/types'
-import { isStreamingCodec } from './codecs/types'
-import { getCompressorByHeaderLevel } from './compressors'
-import {
-  COMPACT_HEADER_PIXELS,
-  HEADER_PIXELS,
-  isCompactToken,
-  readCompactHeader,
-  readHeader,
-} from './header'
-import { fromFileChannels } from './surfaces/channels'
+import { algorithmCatalog } from './algorithms/catalog'
 
-// ── PNG filter reconstruction ─────────────────────────────────────────────
-
-function unfilter(
-  filterType: number,
-  line: Uint8Array,
-  prev: Uint8Array,
-  channels: number,
-): Buffer {
-  const out = Buffer.from(line)
-
-  for (let i = 0; i < out.length; i++) {
-    const a = i >= channels ? out[i - channels] : 0
-    const b = prev[i] ?? 0
-    const c = i >= channels ? (prev[i - channels] ?? 0) : 0
-
-    if (filterType === 1) out[i] = (out[i] + a) & 0xff
-    else if (filterType === 2) out[i] = (out[i] + b) & 0xff
-    else if (filterType === 3) out[i] = (out[i] + Math.floor((a + b) / 2)) & 0xff
-    else if (filterType === 4) out[i] = (out[i] + paeth(a, b, c)) & 0xff
-  }
-
-  return out
-}
-
-function paeth(a: number, b: number, c: number): number {
-  const p = a + b - c
-  const pa = Math.abs(p - a),
-    pb = Math.abs(p - b),
-    pc = Math.abs(p - c)
-
-  return pa <= pb && pa <= pc ? a : pb <= pc ? b : c
-}
-
-// ── Main streaming decoder ────────────────────────────────────────────────
+const PEEK_BYTES = 64
 
 /**
  * Returns a Duplex stream: pipe PNG token bytes in, read original bytes out.
- * The first output byte is emitted as soon as the decompressor produces output
- * — well before the full PNG is received.
+ * Compatible with the previous inlined-pipeline shape; see file header for
+ * the architectural change.
  */
 export function createTokenDecodeStream(_key?: string): Duplex {
-  // Internal state
-  let pngBuf = Buffer.alloc(0)
-  let pngState: 'sig' | 'chunk' | 'done' = 'sig'
-  let width = 0
-  let fileChannels: 3 | 4 = 3
-  let scanlineLen = 0
+  // Buffered Duplex implementation. We collect the full input on the
+  // writable side, run through `algorithm.decodeStream` (which IS streaming
+  // internally — surface yields pixel rows progressively), and emit the
+  // result on the readable side.
+  //
+  // Why buffer the input? Algorithm detection requires reading the codec
+  // header from the first ~few pixels, which means we need the PNG signature
+  // + IHDR + a chunk of IDAT before we can pick the algorithm. Today the
+  // catalog's `detectFromBuffer` is a buffered API; once it grows a stream-
+  // aware variant this Duplex can switch to true incremental mode.
+  const inChunks: Buffer[] = []
+  let inTotal = 0
 
-  // Pixel accumulation
-  let scanlineBuf: Buffer = Buffer.alloc(0)
-  let prevLine: Buffer = Buffer.alloc(0)
-  let pixelBuf: Buffer = Buffer.alloc(0)
-
-  // Token header state
-  let headerParsed = false
-  let headerBytes = 0
-  let bpp: 1 | 2 | 3 | 4 = 3
-  let dataLength = 0
-  let compressionLevel = 0
-  let fedToDecomp = 0
-  let decompressor: Transform | null = null
-
-  // Streaming codec state (null = linear/pass-through path)
-  let activeCodec: Codec | null = null
-  let codecState: StreamCodecState | null = null
-
-  let outputEnded = false
-
-  // Create the Duplex
-  const stream = new Duplex({
-    // Write side: accepts PNG bytes
+  const out = new Duplex({
     write(chunk: Buffer, _enc, cb) {
-      pngBuf = Buffer.concat([pngBuf, chunk])
-      parsePNG(cb)
-    },
-    final(cb) {
+      inChunks.push(chunk)
+      inTotal += chunk.length
       cb()
     },
-    // Read side: push decoded bytes (handled by decompressor events)
-    read() {},
+    read() {
+      // Push happens via the async pipeline below; satisfy the Duplex contract.
+    },
   })
 
-  function parsePNG(cb: () => void) {
-    while (true) {
-      if (pngState === 'sig') {
-        if (pngBuf.length < 8) break
-        pngBuf = pngBuf.slice(8)
-        pngState = 'chunk'
+  out.once('finish', () => {
+    void runDecode()
+  })
+
+  async function runDecode() {
+    try {
+      const buffer = Buffer.concat(inChunks, inTotal)
+
+      if (buffer.length < PEEK_BYTES) {
+        out.destroy(new Error('createTokenDecodeStream: input too short to decode'))
+
+        return
       }
 
-      if (pngState === 'chunk') {
-        if (pngBuf.length < 8) break
-        const len = pngBuf.readUInt32BE(0)
+      const Ctor = await algorithmCatalog.detectFromBuffer(buffer, '.png')
+      const algorithm = new Ctor({})
 
-        if (pngBuf.length < 12 + len) break
-        const type = pngBuf.slice(4, 8).toString('ascii')
-        const data = pngBuf.slice(8, 8 + len)
-
-        pngBuf = pngBuf.slice(12 + len)
-
-        if (type === 'IHDR') {
-          width = data.readUInt32BE(0)
-          fileChannels = data[9] === 6 ? 4 : 3
-          scanlineLen = 1 + width * fileChannels
-          prevLine = Buffer.alloc(width * fileChannels)
-        } else if (type === 'IDAT') {
-          // Feed IDAT through inflate synchronously via inflateSync for simplicity
-          // For streaming, we'd use async inflate — but inflateRaw on each chunk works
-          // because PNG uses a single deflate stream across all IDAT chunks.
-          // We accumulate all IDAT data and inflate incrementally.
-          onIDATChunk(data)
-        } else if (type === 'IEND') {
-          pngState = 'done'
-          flushInflate()
-          break
-        }
-      }
-    }
-    cb()
-  }
-
-  // We use zlib.inflate in streaming mode across all IDAT chunks
-  let inflater: zlib.Inflate | null = null
-  let idatDone = false
-
-  function onIDATChunk(data: Buffer) {
-    if (!inflater) {
-      inflater = zlib.createInflate()
-      inflater.on('data', (chunk: Buffer) => onScanlineBytes(chunk))
-      inflater.on('end', () => {
-        idatDone = true
-        // For compressionLevel>0: decompressor.end() is called by feedDataPixels when
-        // all data bytes have been fed — don't call it here (would cause double-end).
-        // For compressionLevel===0: feedDataPixels pushes null; this is a safety net.
-        if (!decompressor && !outputEnded) {
-          stream.push(null)
-          outputEnded = true
-        }
+      // Web ReadableStream from the buffered bytes. Node 18+ has Web Streams
+      // globally; `Readable.toWeb()` is available too but constructing
+      // directly is simpler when we already have the full buffer.
+      const webStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new Uint8Array(buffer))
+          controller.close()
+        },
       })
-      inflater.on('error', e => stream.destroy(e))
-    }
-    inflater.write(data)
-  }
 
-  function flushInflate() {
-    if (inflater && !idatDone) inflater.end()
-  }
+      const decodedStream = algorithm.decodeStream(webStream, {})
+      // `Readable.fromWeb()` is available in Node 18+; pipe its output through
+      // our Duplex's readable side.
+      const nodeReadable = Readable.fromWeb(decodedStream as never)
 
-  function onScanlineBytes(chunk: Buffer) {
-    scanlineBuf = Buffer.concat([scanlineBuf, chunk])
-
-    while (scanlineLen > 0 && scanlineBuf.length >= scanlineLen) {
-      const filterByte = scanlineBuf[0]
-      const rawLine = scanlineBuf.slice(1, scanlineLen)
-
-      scanlineBuf = scanlineBuf.slice(scanlineLen)
-
-      const line = unfilter(filterByte, rawLine, prevLine, fileChannels)
-
-      prevLine = line
-
-      onPixelRow(line)
+      nodeReadable.on('data', (chunk: Buffer) => out.push(chunk))
+      nodeReadable.on('end', () => out.push(null))
+      nodeReadable.on('error', (e: Error) => out.destroy(e))
+    } catch (e) {
+      out.destroy(e instanceof Error ? e : new Error(String(e)))
     }
   }
 
-  function onPixelRow(pixels: Buffer) {
-    if (!headerParsed) {
-      pixelBuf = Buffer.concat([pixelBuf, pixels])
-
-      if (pixelBuf.length >= COMPACT_HEADER_PIXELS * fileChannels && isCompactToken(pixelBuf)) {
-        const needed = COMPACT_HEADER_PIXELS * fileChannels
-
-        if (pixelBuf.length < needed) return
-        const ch = readCompactHeader(pixelBuf)
-
-        bpp = ch.channels
-        compressionLevel = ch.flags & 0b10 ? 2 : 0
-        dataLength = ch.dataLength
-        headerBytes = needed
-        // Instantiate just the bound Codec class — full algorithm Ctor would
-        // also build Surface, Compressor, Drawer, Fec which streaming decode
-        // doesn't use.
-        activeCodec = new (getAlgorithmById(ch.algoId).Codec as new () => Codec)() ?? null
-        finishHeader()
-      } else if (pixelBuf.length >= HEADER_PIXELS * fileChannels) {
-        const needed = HEADER_PIXELS * fileChannels
-
-        try {
-          readHeader(pixelBuf)
-        } catch {
-          return
-        } // not a valid full header yet
-        const h = readHeader(pixelBuf)
-
-        // FEC tokens require buffered decode (FEC operates on full payload).
-        const fecLevel = (h.ecLevel >> 1) & 0b111
-
-        if (fecLevel > 0) {
-          stream.destroy(new Error('FEC tokens cannot be streamed; decode the full token instead'))
-
-          return
-        }
-
-        bpp = h.channels
-        compressionLevel = h.compressionLevel
-        dataLength = h.fileLength
-        headerBytes = needed
-        activeCodec = new (getAlgorithmById(h.algorithmId).Codec as new () => Codec)() ?? null
-        finishHeader()
-      }
-
-      return
-    }
-
-    feedDataPixels(pixels)
-  }
-
-  function finishHeader() {
-    headerParsed = true
-    if (activeCodec && isStreamingCodec(activeCodec)) {
-      codecState = activeCodec.createDecodeState()
-    }
-    initDecompressor()
-    const dataPixels = pixelBuf.slice(headerBytes)
-
-    pixelBuf = Buffer.alloc(0)
-    if (dataPixels.length > 0) feedDataPixels(dataPixels)
-  }
-
-  function initDecompressor() {
-    if (compressionLevel === 0) {
-      // No compression: pixel bytes are the data directly
-      return
-    }
-
-    decompressor = getCompressorByHeaderLevel(compressionLevel).createDecodeStream?.() ?? null
-    if (!decompressor) {
-      stream.destroy(
-        new Error(`Compression level ${compressionLevel} does not support streaming decode`),
-      )
-
-      return
-    }
-    decompressor.on('data', (c: Buffer) => stream.push(c))
-    decompressor.on('end', () => {
-      if (!outputEnded) {
-        stream.push(null)
-        outputEnded = true
-      }
-    })
-    decompressor.on('error', e => stream.destroy(e))
-  }
-
-  function feedDataPixels(pixels: Buffer) {
-    if (fedToDecomp >= dataLength) return
-
-    const pixelCount = Math.floor(pixels.length / fileChannels)
-
-    if (pixelCount === 0) return
-
-    const fcBytes = pixels.slice(0, pixelCount * fileChannels)
-    const bppBytes = fromFileChannels(fcBytes, pixelCount, fileChannels, bpp)
-
-    // Route through codec.decodeChunk for StreamingCodec, otherwise treat bpp bytes as data directly
-    let dataBytes: Buffer
-
-    if (activeCodec && isStreamingCodec(activeCodec) && codecState !== null) {
-      const result = activeCodec.decodeChunk(bppBytes, codecState)
-
-      codecState = result.state
-      dataBytes = result.bytes
-    } else {
-      dataBytes = Buffer.from(bppBytes)
-    }
-
-    const remaining = dataLength - fedToDecomp
-    const toFeed = dataBytes.slice(0, Math.min(remaining, dataBytes.length))
-
-    fedToDecomp += toFeed.length
-
-    if (compressionLevel === 0) {
-      // No decompressor — output directly
-      stream.push(toFeed)
-      if (fedToDecomp >= dataLength && !outputEnded) {
-        stream.push(null)
-        outputEnded = true
-      }
-    } else if (decompressor) {
-      decompressor.write(toFeed)
-      if (fedToDecomp >= dataLength) {
-        decompressor.end()
-      }
-    }
-  }
-
-  return stream
+  return out
 }

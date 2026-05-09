@@ -24,6 +24,7 @@ import { DeflateCompressor } from '../compressors/deflate-compressor'
 import { NoneCompressor } from 'tokenpack/compressors'
 import { AvifSurface } from '../surfaces/avif'
 import { PngSurface } from '../surfaces/png'
+import { PngUpngSurface } from '../surfaces/png-upng'
 import { StreamingPngSurface } from '../surfaces/streaming-png'
 import { WebpSurface } from '../surfaces/webp'
 
@@ -121,6 +122,22 @@ export const LinearAvifBrotli = definePixelAlgorithm({
   Codec: LinearCodec, Surface: AvifSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
 })
 
+// upng-js variants — pure-JS PNG codec. Identical wire format to the
+// pngjs-backed `linear-deflate` recipe (both produce colorType=6 deflate
+// PNGs); the difference is the codec library used to encode/decode the
+// pixels. Useful for: byte-exact 4-channel decode in the browser (canvas
+// premultiplies alpha; upng-js doesn't), and as a perf comparison vs
+// pngjs/sharp on the node side.
+export const LinearPngUpngBrotli = definePixelAlgorithm({
+  id: 17, name: 'linear-upng', title: 'Linear · PNG (upng) · Brotli',
+  Codec: LinearCodec, Surface: PngUpngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+})
+
+export const LinearPngUpngDeflate = definePixelAlgorithm({
+  id: 18, name: 'linear-upng-deflate', title: 'Linear · PNG (upng) · Deflate',
+  Codec: LinearCodec, Surface: PngUpngSurface, Compressor: DeflateCompressor, Drawer: DenseDrawer,
+})
+
 export const ALL_NODE_ALGORITHMS = [
   LinearPngBrotli,
   InterleavedPngBrotli,
@@ -139,4 +156,6 @@ export const ALL_NODE_ALGORITHMS = [
   LinearPngNone,
   LinearWebpBrotli,
   LinearAvifBrotli,
+  LinearPngUpngBrotli,
+  LinearPngUpngDeflate,
 ] as const

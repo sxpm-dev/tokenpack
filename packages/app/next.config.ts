@@ -32,6 +32,16 @@ const config: NextConfig = {
 
     return cfg
   },
+  async redirects() {
+    // 301s for the bench-page rename round (May 2026). Kept after the rename
+    // so any external links / dev-history bookmarks land on the new routes.
+    // Safe to remove once we're confident nothing references the old paths.
+    return [
+      { source: '/benchmark-extended', destination: '/encode-decode-bench', permanent: true },
+      { source: '/runtime-benchmark', destination: '/browser-fetch-bench', permanent: true },
+      { source: '/benchmark', destination: '/server-fetch-bench', permanent: true },
+    ]
+  },
 }
 
 export default config

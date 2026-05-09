@@ -24,7 +24,7 @@ export interface Variant {
   isStreamable?: boolean
   /** URL builder — caller appends the cache-busting nonce + live/throttle params. */
   url: (params: { source: string }) => string
-  /** Browser-decode tier (matches the legend on /benchmark). */
+  /** Browser-decode tier (matches the legend on /server-fetch-bench). */
   compat: 'full' | 'partial'
   compatNote: string
 }

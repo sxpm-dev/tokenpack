@@ -1,27 +1,20 @@
 // Diff compute primitives — env-neutral.
 //
 // `computeTextDiff(packA, packB)` runs a line-level diff across files in two
-// Pack objects. `renderHeatmap(bytesA, bytesB)` renders a pixel-delta PNG
-// heatmap by surface-decoding both inputs and comparing channels.
+// Pack objects. `packToEntries` extracts entries for use with `encodeDiff`.
+// `defaultDiffCompress` is the compressor used for diff-pack regions when
+// no caller override is supplied — `'deflate-9'` is the browser-friendly
+// pick that matches what the app's old `compute-diff.ts` used.
 //
 // Env packages (`@tokenpack/node`, `@tokenpack/browser`) expose a higher-level
 // `diff(sourceA, sourceB)` that loads sources (URLs/Blobs/file paths) and
-// delegates here. The compute functions don't touch fs / fetch / canvas.
+// delegates to `algo.diff(packA, packB)`. The compute functions here don't
+// touch fs / fetch / canvas.
 
-import type { Pack } from './pack/types'
-import { surfaceRegistry } from './surfaces/registry'
+import { compressRaw } from './compressors'
+import type { FilePack, Pack } from './pack/types'
 
-const HEADER_PIXELS = 32
-
-export interface DiffStats {
-  totalPixels: number
-  changedPixels: number
-  unchangedPixels: number
-  changedBytes: number
-  changePercent: string
-  sizeA: number
-  sizeB: number
-}
+const DIFF_COMPRESSOR = 'deflate-9'
 
 export interface FileDiff {
   filePath: string
@@ -102,78 +95,34 @@ function lineDiff(filePath: string, a: string | null, b: string | null): FileDif
   return { filePath, hunks, added, removed }
 }
 
-function padPixels(pixels: Uint8Array, target: number): Uint8Array {
-  if (pixels.length >= target) return pixels
-  const out = new Uint8Array(target)
+/**
+ * Flatten a Pack to the entry list `encodeDiff` expects. DirPack →
+ * `extractAll()`. FilePack → single `_root` entry. DiffPack callers should not
+ * pass a DiffPack here.
+ */
+export async function packToEntries(
+  pack: Pack,
+): Promise<Array<{ path: string; bytes: Uint8Array }>> {
+  if (pack.isPack()) return pack.extractAll()
+  if (pack.isDiff()) {
+    throw new Error('packToEntries: DiffPack inputs not supported')
+  }
+  const filePack = pack as FilePack
+  const bytes = await filePack.content()
 
-  out.set(pixels, 0)
-
-  return out
+  return [{ path: '_root', bytes }]
 }
 
-export async function renderHeatmap(
-  bytesA: Buffer,
-  bytesB: Buffer,
-): Promise<{ stats: DiffStats; bytes: Buffer }> {
-  const surface = surfaceRegistry.byFormat('png')
-  const a = await surface.readBuffer(bytesA)
-  const b = await surface.readBuffer(bytesB)
-
-  const width = Math.max(a.width, b.width)
-  const height = Math.max(a.height, b.height)
-  const size = width * height * 3
-  const pa = padPixels(a.pixels, size)
-  const pb = padPixels(b.pixels, size)
-  const out = new Uint8Array(size)
-  let changed = 0
-  let total = 0
-
-  for (let i = HEADER_PIXELS * 3; i < size; i += 3) {
-    const delta =
-      Math.abs(pa[i] - pb[i]) + Math.abs(pa[i + 1] - pb[i + 1]) + Math.abs(pa[i + 2] - pb[i + 2])
-
-    total++
-    if (delta === 0) {
-      out[i] = 20
-      out[i + 1] = 20
-      out[i + 2] = 20
-    } else {
-      changed++
-      const intensity = Math.min(255, delta)
-
-      if (intensity < 80) {
-        out[i] = 0
-        out[i + 1] = 80
-        out[i + 2] = intensity * 3
-      } else if (intensity < 200) {
-        out[i] = intensity
-        out[i + 1] = intensity / 2
-        out[i + 2] = 0
-      } else {
-        out[i] = 255
-        out[i + 1] = intensity / 4
-        out[i + 2] = intensity / 4
-      }
-    }
-  }
-
-  const heatmapBytes = await surface.writeBuffer({
-    pixels: out,
-    width,
-    height,
-    fileChannels: 3,
-  })
+/** Default per-region compressor for diff-pack bytes. Browser-friendly. */
+export async function defaultDiffCompress(
+  bytes: Uint8Array,
+): Promise<{ bytes: Uint8Array; compressor: string; level: number; originalSize: number }> {
+  const r = await compressRaw(bytes, DIFF_COMPRESSOR)
 
   return {
-    stats: {
-      totalPixels: total,
-      changedPixels: changed,
-      unchangedPixels: total - changed,
-      changedBytes: changed * 3,
-      changePercent: ((changed / total) * 100).toFixed(2),
-      sizeA: bytesA.length,
-      sizeB: bytesB.length,
-    },
-    bytes: heatmapBytes,
+    bytes: r.bytes,
+    compressor: r.compressor,
+    level: r.level,
+    originalSize: r.originalSize,
   }
 }

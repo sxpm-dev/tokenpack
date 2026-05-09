@@ -1,6 +1,6 @@
 'use client'
 
-import { type DiffPack, type DirPack, encode } from '@tokenpack/browser'
+import { diff, type DiffPack, type DirPack, encode } from '@tokenpack/browser'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { BuilderEntry } from '@/components/BuildToken'
@@ -11,8 +11,6 @@ import { base64ToBytes, serverEncodePack } from '@/components/BuildToken/utils/s
 import type { EncodeConfig } from '@/components/EncodeForm'
 import { mimeForFormat } from '@/components/EncodeForm'
 import { decodeBytesWithFallback } from '@/lib/decode-with-fallback'
-
-import { computeDiff, encodeDiffTokenViaServer } from '../utils/compute-diff'
 
 export interface GenerateDiffOutput {
   baseBytes: Uint8Array
@@ -88,21 +86,29 @@ export function useGenerateDiff(): UseGenerateDiffApi {
           throw new Error('encoded result was not a DirPack — unexpected')
         }
 
-        // Build DiffPack from raw diff bytes (no canvas roundtrip) and ask the
-        // server to wrap the same bytes in a PNG for download.
-        const { diffPack, diffBytes } = await computeDiff(basePack, nextPack)
-        const diffToken = await encodeDiffTokenViaServer(diffBytes)
+        // Unified diff path: `diff(a, b).token()` produces a real diff token
+        // packaged with the source algorithm, then we decode it back to a
+        // DiffPack for in-app rendering. No server hop needed.
+        const diffTokenBytes = await diff(baseEncoded.bytes, nextEncoded.bytes).token()
+        const { pack: diffPackUnknown } = await decodeBytesWithFallback(diffTokenBytes)
+
+        if (!diffPackUnknown.isDiff()) {
+          throw new Error('diff token did not decode to a DiffPack — unexpected')
+        }
+        const diffPack = diffPackUnknown as DiffPack
+        const diffBlob = new Blob([diffTokenBytes as BlobPart], { type: mimeForFormat('png') })
+        const diffObjectURL = URL.createObjectURL(diffBlob)
 
         previousURLs.current.forEach(URL.revokeObjectURL)
-        previousURLs.current = [baseEncoded.objectURL, nextEncoded.objectURL, diffToken.objectURL]
+        previousURLs.current = [baseEncoded.objectURL, nextEncoded.objectURL, diffObjectURL]
 
         setOutput({
           baseBytes: baseEncoded.bytes,
           baseObjectURL: baseEncoded.objectURL,
           nextBytes: nextEncoded.bytes,
           nextObjectURL: nextEncoded.objectURL,
-          diffBytes: diffToken.bytes,
-          diffObjectURL: diffToken.objectURL,
+          diffBytes: diffTokenBytes,
+          diffObjectURL,
           basePack,
           nextPack,
           diffPack,

@@ -11,6 +11,7 @@ import './register'
 // ── Public functions ──────────────────────────────────────────────────────
 export { decode, type DecodeOptions, type DecodeSource } from './decode'
 export { decodeStream, type DecodeStreamSource } from './decode-stream'
+export { diff, type DiffResult, type FileDiff, type Hunk } from './diff'
 export { encode, type EncodeBrowserOptions, type EncodeResult } from './encode'
 export {
   inspect,

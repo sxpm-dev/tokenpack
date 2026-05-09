@@ -11,8 +11,16 @@ import type { AbstractCodec } from '../codecs/types'
 import { composeEnvironments, composeOptions } from '../components/compose'
 import type { OptionsSchema } from '../components/options'
 import type { AbstractCompressor } from '../compressors/types'
+import {
+  computeTextDiff,
+  defaultDiffCompress,
+  type FileDiff,
+  packToEntries,
+} from '../diff'
 import type { AbstractDrawer } from '../drawers/types'
 import type { AbstractFec } from '../fec/types'
+import { encodeDiff } from '../pack-format/encode-diff'
+import type { Pack } from '../pack/types'
 import type { AbstractSurface } from '../surfaces/types'
 import type { ImageFormat } from '../types'
 
@@ -69,6 +77,17 @@ export interface DecodeOptions {
   key?: string
   /** File extension used to pick the surface decoder. Defaults to '.png'. */
   ext?: string
+}
+
+/**
+ * Result of `algo.diff(packA, packB)`. Lazy: pick the shape you want.
+ *
+ *   .text()  → `FileDiff[]` line-level diff per file
+ *   .token() → diff token bytes (decode → DiffPack with `.entries`/`.apply()`)
+ */
+export interface DiffResult {
+  text(): Promise<FileDiff[]>
+  token(): Promise<Uint8Array>
 }
 
 /** Abstract algorithm — the single concept. Concrete subclasses bind components. */
@@ -183,6 +202,33 @@ export abstract class AbstractAlgorithm {
         controller.close()
       },
     })
+  }
+
+  /**
+   * Pack-level diff. Returns a chainable result whose `.text()` produces a
+   * line-level `FileDiff[]` and `.token()` produces a structured diff token
+   * (Uint8Array). The diff token is wrapped using THIS algorithm's `encode()`
+   * so applying it later (via `decode → diffPack.apply(prev)`) is symmetric
+   * with the source tokens' packaging.
+   *
+   * Subclasses may override to redefine diff semantics (e.g. PixelRange could
+   * compare `tpAK` chunks directly without re-encoding).
+   */
+  diff(packA: Pack, packB: Pack): DiffResult {
+    const algo = this
+
+    return {
+      text: () => computeTextDiff(packA, packB),
+      async token() {
+        const entriesA = await packToEntries(packA)
+        const entriesB = await packToEntries(packB)
+        const diffBytes = await encodeDiff(entriesA, entriesB, defaultDiffCompress)
+        const buf = Buffer.from(diffBytes.buffer, diffBytes.byteOffset, diffBytes.byteLength)
+        const out = await algo.encode(buf)
+
+        return new Uint8Array(out.buffer, out.byteOffset, out.byteLength)
+      },
+    }
   }
 
   /** Source detection — does this algorithm own this artifact? */

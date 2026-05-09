@@ -12,6 +12,7 @@ import { BrotliCompressor } from './compressors/brotli-compressor'
 import { DeflateCompressor } from './compressors/deflate-compressor'
 import { AvifSurface } from './surfaces/avif'
 import { PngSurface } from './surfaces/png'
+import { PngUpngSurface } from './surfaces/png-upng'
 import { StreamingPngSurface } from './surfaces/streaming-png'
 import { WebpSurface } from './surfaces/webp'
 
@@ -23,6 +24,9 @@ if (!surfaceRegistry.has('png')) {
   surfaceRegistry.register('png-stream', () => new StreamingPngSurface())
   surfaceRegistry.register('avif', () => new AvifSurface())
   surfaceRegistry.register('webp', () => new WebpSurface())
+}
+if (!surfaceRegistry.has('png-upng')) {
+  surfaceRegistry.register('png-upng', () => new PngUpngSurface())
 }
 
 for (const Ctor of ALL_NODE_ALGORITHMS) {

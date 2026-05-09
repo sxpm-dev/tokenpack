@@ -12,19 +12,14 @@ import {
   decode,
   type DecodeSource,
   type DirPack,
-  encode as browserEncode,
   type EncodeResult,
   type Pack,
 } from '@tokenpack/browser'
-import { compressRaw } from 'tokenpack/compressors'
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { fromBytes } from 'tokenpack/pack/from-bytes'
-import { encodeDiff } from 'tokenpack/pack-format/encode-diff'
 
 import { smartDecompress } from '@/components/Explorer/utils/smart-decompress'
 import { extensionForBytes, mimeForBytes } from '@/components/Explorer/utils/sniff-format'
-
-/** Compressor used for diff token region encoding — always FE-friendly. */
-export const DIFF_COMPRESSOR = 'deflate-9'
 
 export type DecodeRoute = 'client' | 'server'
 
@@ -44,7 +39,6 @@ export async function decodeWithFallback(
   try {
     const pack = await decode(source, {
       ...(key ? { key } : {}),
-      compressor: DIFF_COMPRESSOR,
       decompress: smartDecompress,
     })
     const durationMs = Math.round(performance.now() - start)
@@ -104,20 +98,29 @@ async function serverDecode(source: DecodeSource, key: string): Promise<Pack> {
 }
 
 async function feFriendlyDiffTo(a: DirPack, b: DirPack): Promise<EncodeResult> {
-  const prevEntries = await a.extractAll()
-  const nextEntries = await b.extractAll()
-  const diffBytes = await encodeDiff(prevEntries, nextEntries, async bytes => {
-    const r = await compressRaw(bytes, DIFF_COMPRESSOR)
+  // Server-decode fallback path — we don't know the source algorithm here, so
+  // wrap the diff token with `linear-none` (FE-friendly, no extra compression
+  // since the diff regions are already deflate-compressed inside).
+  const algo = new (algorithmCatalog.getByName('linear-none'))()
+  const tokenBytes = await algo.diff(a, b).token()
+  const blob = new Blob([tokenBytes as unknown as BlobPart], { type: 'image/png' })
+  const objectURL = URL.createObjectURL(blob)
+  const dataURL = await blobToDataURL(blob)
+  const image = new Image()
 
-    return {
-      bytes: r.bytes,
-      compressor: r.compressor,
-      level: r.level,
-      originalSize: r.originalSize,
-    }
+  image.src = objectURL
+
+  return { blobs: [blob], bytes: tokenBytes, objectURL, dataURL, image }
+}
+
+async function blobToDataURL(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
   })
-
-  return browserEncode(diffBytes, { algo: 'linear-none' })
 }
 
 async function sourceToBlob(source: DecodeSource): Promise<Blob> {

@@ -14,6 +14,7 @@ import { ALL_BROWSER_ALGORITHMS } from './algorithms'
 import { BrowserBrotliCompressor } from './compressors/brotli-compressor'
 import { BrowserDeflateCompressor } from './compressors/deflate-compressor'
 import { BrowserPngSurface, BrowserStreamingPngSurface } from './surfaces/png'
+import { BrowserPngUpngSurface } from './surfaces/png-upng'
 
 let registered = false
 
@@ -29,6 +30,9 @@ function registerBrowserDefaults(): void {
   }
   if (!surfaceRegistry.has('png-stream')) {
     surfaceRegistry.register('png-stream', () => new BrowserStreamingPngSurface())
+  }
+  if (!surfaceRegistry.has('png-upng')) {
+    surfaceRegistry.register('png-upng', () => new BrowserPngUpngSurface())
   }
 
   for (const Ctor of ALL_BROWSER_ALGORITHMS) algorithmCatalog.register(Ctor as never)

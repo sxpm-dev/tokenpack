@@ -73,7 +73,7 @@ export default function BenchmarkExtendedPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-5 px-4 py-5 sm:px-5">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">Extended Benchmark</h1>
+        <h1 className="text-lg font-semibold tracking-tight">Encode / Decode Bench</h1>
         <p className="mt-0.5 text-xs text-white/40">
           All algorithms × compression modes — encode · decode · ratio · streaming
         </p>

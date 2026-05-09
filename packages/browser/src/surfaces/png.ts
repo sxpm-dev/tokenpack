@@ -13,7 +13,11 @@
 
 import { enumOption, type OptionsSchema } from 'tokenpack/components/options'
 import { ImageSurface } from 'tokenpack/surfaces'
-import type { SurfacePixels } from 'tokenpack/surfaces/types'
+import { decodeStreamingPng } from 'tokenpack/surfaces/streaming-png-decoder'
+import type {
+  SurfacePixels,
+  SurfaceStreamHandle,
+} from 'tokenpack/surfaces/types'
 
 const CHANNELS_SCHEMA: OptionsSchema = {
   channels: enumOption([3, 4], 3, { label: 'Channels per pixel' }),
@@ -235,5 +239,19 @@ export class BrowserStreamingPngSurface extends ImageSurface {
    */
   async writeBuffer(image: SurfacePixels): Promise<Buffer> {
     return new BrowserPngSurface().writeBuffer(image)
+  }
+
+  /**
+   * True streaming-PNG decoder. Owns the PNG container parsing entirely:
+   *   1. Read PNG signature + IHDR (sets width/fileChannels)
+   *   2. Pipe IDAT chunks through `DecompressionStream('deflate')`
+   *   3. Reconstruct scanlines, undo PNG filter
+   *   4. Yield raw pixel rows
+   *
+   * Algorithm.decodeStream consumes these rows — codec header reading,
+   * codec decode, and outer-compression decoding all live there.
+   */
+  override async decodeStream(stream: ReadableStream<Uint8Array>): Promise<SurfaceStreamHandle> {
+    return decodeStreamingPng(stream)
   }
 }

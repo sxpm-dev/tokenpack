@@ -153,9 +153,9 @@ program
 
 program
   .command('diff <tokenA> <tokenB>')
-  .description('Visual diff of two tokens — changed bytes as colored pixels')
-  .option('-o, --out <path>', 'output diff PNG path')
-  .option('--text', 'print byte-level diff as text instead of image')
+  .description('Structural diff between two tokens — emit a patch token or text diff')
+  .option('-o, --out <path>', 'write diff token to this path (the result is itself a token)')
+  .option('--text', 'print line-level diff as text instead of writing a token')
   .action(async (tokenA: string, tokenB: string, opts: { out?: string; text?: boolean }) => {
     if (opts.text) {
       const fileDiffs = await diff(tokenA, tokenB).text()
@@ -186,17 +186,27 @@ program
       return
     }
     if (!opts.out) {
-      console.error('error: -o / --out <path> required for image diff')
+      console.error('error: -o / --out <path> required (or pass --text for text output)')
       process.exit(1)
     }
-    const { stats } = await diff(tokenA, tokenB).token(opts.out)
+    const tokenBytes = await diff(tokenA, tokenB).token()
 
+    fs.writeFileSync(opts.out, tokenBytes)
+    const diffPack = await decode(tokenBytes)
+
+    if (!diffPack.isDiff()) {
+      console.error('warning: diff token did not decode to a DiffPack — unexpected')
+
+      return
+    }
+    const counts: Record<string, number> = {}
+
+    for (const e of diffPack.entries) counts[e.op] = (counts[e.op] ?? 0) + 1
     console.log(`Diff → ${opts.out}`)
-    console.log(
-      `  changed:   ${stats.changedPixels} pixels / ${stats.changedBytes} bytes (${stats.changePercent}%)`,
-    )
-    console.log(`  unchanged: ${stats.unchangedPixels} pixels`)
-    console.log(`  size:      ${stats.sizeA} bytes → ${stats.sizeB} bytes`)
+    console.log(`  added:    ${counts.add ?? 0}`)
+    console.log(`  modified: ${counts.modify ?? 0}`)
+    console.log(`  deleted:  ${counts.delete ?? 0}`)
+    console.log(`  renamed:  ${counts.rename ?? 0}`)
   })
 
 program.parseAsync()
