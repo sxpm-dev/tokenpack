@@ -6,7 +6,7 @@
 
 **Architecture:** A new top-level package `tokenpack-replay-harness` in the existing yarn workspace. Node-side controller drives Chromium via Playwright + CDP. A small bootstrap injected into the page fetches the pack via the browser's own (throttled) fetch and streams it through `@tokenpack/core`'s decoder; a `Runtime.addBinding` channel passes decoded asset bytes back to Node, which fulfills intercepted `Fetch.requestPaused` events.
 
-**Tech Stack:** TypeScript (ESM), yarn 4 workspaces, Playwright, `@tokenpack/core` (`packBuffers` / `unpackBuffers` from `./archive`), `@tokenpack/browser` (`decode` from `./decode`), vitest, Zod, pino, esbuild (bundles bootstrap), AWS SDK v3 S3 client (R2/B2/S3-compatible upload).
+**Tech Stack:** TypeScript (ESM), yarn 4 workspaces, Playwright, `tokenpack` (`PackBuilder`, `Pack` types), `@tokenpack/node` (unified `encode(builder)` → PNG, `decode(source)` → `Pack`), `@tokenpack/browser` (`decodeStream` for true streaming PNG decode in the browser), vitest, Zod, pino, esbuild (bundles bootstrap), AWS SDK v3 S3 client (R2/B2/S3-compatible upload).
 
 **No CLI wrapper.** Each operation is a `bin/*.ts` script invoked directly via `yarn workspace tokenpack-replay-harness run <script>`. No yargs, no shared dispatcher — these are perf-test scripts, not a distributed tool.
 
@@ -39,7 +39,7 @@ packages/replay-harness/
       url-to-path.ts                            Task 1.1  pure: URL → internalPath
       header-scrubber.ts                        Task 1.2  pure: allowlist filter
       manifest.ts                               Task 1.5  pure: build PackManifest
-      encoder.ts                                Task 1.6  packBuffers + write files
+      encoder.ts                                Task 1.6  PackBuilder + @tokenpack/node.encode → PNG
     upload/
       s3-uploader.ts                            Task 4.1  S3-compatible PUT
     replay/
@@ -123,6 +123,7 @@ No changes to `@tokenpack/core` or `@tokenpack/browser` are required by this pla
   "dependencies": {
     "@aws-sdk/client-s3": "^3.658.0",
     "@tokenpack/browser": "workspace:^",
+    "@tokenpack/node": "workspace:^",
     "esbuild": "^0.24.0",
     "pino": "^9.5.0",
     "pino-pretty": "^11.3.0",
@@ -779,7 +780,8 @@ git commit -m "feat(replay-harness): manifest builder"
 ```typescript
 import { writeFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import { packBuffers } from 'tokenpack/archive'
+import { PackBuilder } from 'tokenpack'
+import { encode as encodeToken } from '@tokenpack/node'
 import type { CapturedAsset, PackManifest } from '../config/types.js'
 import { buildManifest } from './manifest.js'
 import { logger } from '../log/logger.js'
@@ -798,15 +800,20 @@ export async function encode(
 ): Promise<EncodeResult> {
   const manifest = buildManifest(packId, assets)
 
-  const sortedByManifest = manifest.assets.map(entry => {
+  // Build a PackBuilder in manifest-sequence order so the streaming decoder
+  // emits assets in roughly the order the app requests them.
+  const builder = new PackBuilder()
+  for (const entry of manifest.assets) {
     const captured = assets.find(a => a.url === entry.url)
     if (!captured) throw new Error(`Manifest entry has no captured asset: ${entry.url}`)
-    return { path: entry.internalPath, bytes: captured.body }
-  })
+    builder.withFile(entry.internalPath, captured.body)
+  }
 
-  const packBytes = packBuffers(sortedByManifest)
+  // Produce a real PNG token (pack-format, per-file regions, brotli-11 default).
+  const result = await encodeToken(builder, { format: 'png' })
+  const packBytes = result.bytes
 
-  const packPath = `${outDir}/${packId}.cart`
+  const packPath = `${outDir}/${packId}.png`
   const manifestPath = `${outDir}/${packId}.manifest.json`
 
   await mkdir(dirname(packPath), { recursive: true })
@@ -819,7 +826,9 @@ export async function encode(
 }
 ```
 
-> **Note on the file extension:** the on-disk pack here is the raw CART blob (`packBuffers` output). The PNG carrier wrapping is added at upload time by the existing `@tokenpack/core` encoder pipeline; for the POC we keep both surfaces — CART for local replay (Phase 2), PNG for over-wire replay (Phase 4). Phase 4 invokes `encodeToBuffer` on top.
+The pack on disk is a real PNG token produced by `@tokenpack/node.encode(builder)` — pack-format with per-file regions, ready to be served over the wire and decoded streaming on the browser side. The manifest stays as a separate small JSON sidecar (URL → internalPath/headers mapping) so the harness knows which intercepted requests to fulfill from the pack before the pack even starts decoding.
+
+If `format: 'png'` is rejected by the current `EncodeNodeOptions` shape, drop the option — PNG is the default. Verify by reading `packages/node/src/encode.ts` types when implementing.
 
 - [ ] **Step 2: Verify type-check**
 
@@ -890,7 +899,7 @@ Run:
 yarn workspace tokenpack-replay-harness run record public-demo
 ```
 
-Expected: completes; produces `packages/replay-harness/fixtures/public-demo/public-demo.cart` + `public-demo.manifest.json`. Manifest has at least 1 asset (the example.com HTML body itself is excluded — only sub-resources, but example.com has none, so this may produce zero. If zero, swap to `https://www.iana.org/help/example-domains` which has a CSS load).
+Expected: completes; produces `packages/replay-harness/fixtures/public-demo/public-demo.png` + `public-demo.manifest.json`. Manifest has at least 1 asset (the example.com HTML body itself is excluded — only sub-resources, but example.com has none, so this may produce zero. If zero, swap to `https://www.iana.org/help/example-domains` which has a CSS load).
 
 If zero assets: change the URL in `public-demo.ts` to `https://playwright.dev` (heavy enough to verify capture).
 
@@ -1063,9 +1072,8 @@ This task is a deliberate stepping stone — it serves intercepted requests from
 - [ ] **Step 1: Write tokenpack-local.ts**
 
 ```typescript
-import { readFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
-import { unpackBuffers } from 'tokenpack/archive'
+import { decode as decodeToken } from '@tokenpack/node'
 import type { TargetConfig, ThrottleConfig, PackManifest } from '../config/types.js'
 import { runJourney } from '../record/journey.js'
 import { applyThrottle } from './throttle.js'
@@ -1092,8 +1100,11 @@ export async function runTokenpackLocal(
   options: LocalReplayOptions = {}
 ): Promise<LocalReplayResult> {
   const manifest = await loadManifest(manifestPath)
-  const packBytes = await readFile(packPath)
-  const entries = unpackBuffers(new Uint8Array(packBytes))
+
+  // Decode the PNG token via @tokenpack/node → DirPack → extractAll().
+  const pack = await decodeToken(packPath)
+  if (!pack.isPack()) throw new Error(`Pack at ${packPath} is not a DirPack`)
+  const entries = await pack.extractAll()
   const byInternalPath = new Map(entries.map(e => [e.path, e.bytes]))
   const byUrl = new Map(manifest.assets.map(a => [a.url, a]))
 
@@ -1284,22 +1295,26 @@ git commit -m "test(replay-harness): record→encode→local-replay integration 
 **Files:**
 - Create: `packages/replay-harness/src/browser/bootstrap.ts`
 
-The bootstrap runs **inside the browser**. It fetches the pack URL using the browser's fetch (so CDP throttle applies), parses the CART blob, and calls a `window.__bridge_asset` binding (registered by the Node side via `Runtime.addBinding`) for each emitted entry.
+The bootstrap runs **inside the browser**. It opens a `fetch(packUrl)` (so CDP throttle applies to the pack download), passes `response.body` to `@tokenpack/browser`'s `decodeStream`, and forwards each extracted asset to the Node bridge via `window.__bridge_asset`.
 
-> **POC limitation noted in spec Risk #2:** for v1 of the bridge we wait for the full pack to finish downloading before parsing entries (`unpackBuffers` is a synchronous parse over the complete CART blob). This still measures the streaming-overlap claim *partially* — the pack's download still overlaps with the page's HTML parse and JS-execution waterfall, but individual asset emission does not begin until the last byte arrives. A follow-up task (Phase 8 / future plan) would replace this with a true streaming CART parser. For the POC, this is acceptable and the report calls it out.
+> **What the streaming win actually buys us with the current `decodeStream` API:** the heavy work — PNG `IDAT` inflate + outer brotli/deflate decompression + per-file region decoding — runs concurrently with the network download. By the time the last byte arrives, most decompression is already complete and `extractAll()` returns near-instantly. Per-asset *emission* to the Node bridge still happens after `decodeStream` resolves (which is at end-of-stream), but the page's HTML parse + first-script execution have already overlapped with the pack download.
+>
+> A future enhancement to `@tokenpack/browser` could expose per-region emission events for true asset-by-asset streaming. For this POC, the current API is sufficient — and any positive measurement we collect is conservative against a future-improved implementation.
 
 - [ ] **Step 1: Write bootstrap.ts**
 
 ```typescript
 // Runs inside the browser, injected via addInitScript.
-// Globals provided by the Node bridge:
+// Globals provided by the Node bridge (registered via context.exposeBinding):
 //   - window.__bridge_asset(payloadJson: string): void
 //     payload: { url, status, headers, bytesB64 }
 //   - window.__bridge_done(metaJson: string): void
 //     payload: { count, totalBytes }
-// Globals read from the page:
+// Globals injected by the harness before this script runs:
 //   - window.__PACK_URL: string
 //   - window.__MANIFEST: { assets: Array<{ url; internalPath; status; headers }> }
+
+import { decodeStream } from '@tokenpack/browser'
 
 declare global {
   interface Window {
@@ -1312,11 +1327,6 @@ declare global {
   }
 }
 
-const MAGIC_LEN = 4
-const HEADER_LEN = 8
-const PATH_LEN_FIELD = 2
-const CONTENT_LEN_FIELD = 4
-
 function bytesToBase64(bytes: Uint8Array): string {
   let s = ''
   for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]!)
@@ -1328,36 +1338,28 @@ async function main(): Promise<void> {
   const manifest = window.__MANIFEST
   const byInternalPath = new Map(manifest.assets.map(a => [a.internalPath, a]))
 
-  const resp = await fetch(packUrl)
-  const buf = await resp.arrayBuffer()
-  const data = new Uint8Array(buf)
+  // fetch + streaming decode. CDP throttle applies to the fetch.
+  // PNG inflate + outer brotli/deflate run concurrently with download.
+  const response = await fetch(packUrl)
+  if (!response.body) throw new Error('pack response has no body')
+  const pack = await decodeStream(response.body)
+  if (!pack.isPack()) throw new Error('pack is not a DirPack')
 
-  const magic = new TextDecoder().decode(data.subarray(0, MAGIC_LEN))
-  if (magic !== 'CART') throw new Error('Pack is not CART format')
-
-  const view = new DataView(data.buffer, data.byteOffset, data.byteLength)
-  const count = view.getUint32(4, false)
-  let offset = HEADER_LEN
+  const entries = await pack.extractAll()
   let emitted = 0
   let totalBytes = 0
 
-  const decoder = new TextDecoder('utf-8')
-  for (let i = 0; i < count; i++) {
-    const pathLen = view.getUint16(offset, false); offset += PATH_LEN_FIELD
-    const internalPath = decoder.decode(data.subarray(offset, offset + pathLen)); offset += pathLen
-    const contentLen = view.getUint32(offset, false); offset += CONTENT_LEN_FIELD
-    const bytes = data.subarray(offset, offset + contentLen); offset += contentLen
-
-    const entry = byInternalPath.get(internalPath)
-    if (!entry) continue
+  for (const entry of entries) {
+    const meta = byInternalPath.get(entry.path)
+    if (!meta) continue
     window.__bridge_asset(JSON.stringify({
-      url: entry.url,
-      status: entry.status,
-      headers: entry.headers,
-      bytesB64: bytesToBase64(bytes)
+      url: meta.url,
+      status: meta.status,
+      headers: meta.headers,
+      bytesB64: bytesToBase64(entry.bytes)
     }))
     emitted++
-    totalBytes += contentLen
+    totalBytes += entry.bytes.byteLength
   }
 
   window.__bridge_done(JSON.stringify({ count: emitted, totalBytes }))
@@ -1762,8 +1764,8 @@ it('streams pack via browser fetch and serves all sub-resources', async () => {
 
   // Host the pack on the same fixture server so the browser fetch is real
   const packBytes = readFileSync(out.packPath)
-  server.serveFile('/pack.cart', 'application/octet-stream', new Uint8Array(packBytes))
-  const packUrl = `${server.url}pack.cart`
+  server.serveFile('/pack.png', 'image/png', new Uint8Array(packBytes))
+  const packUrl = `${server.url}pack.png`
 
   const result = await runTokenpack(target, {
     packUrl,
@@ -1850,7 +1852,7 @@ export async function uploadPack(
     Bucket: config.bucket,
     Key: objectKey,
     Body: body,
-    ContentType: 'application/octet-stream',
+    ContentType: 'image/png',
     CacheControl: 'public, max-age=300'
   }))
 
@@ -1896,11 +1898,11 @@ if (!target) {
   process.exit(1)
 }
 
-const packPath = `fixtures/${target.id}/${target.id}.cart`
+const packPath = `fixtures/${target.id}/${target.id}.png`
 const manifestPath = `fixtures/${target.id}/${target.id}.manifest.json`
 
 const config = uploadConfigFromEnv()
-const objectKey = `${target.id}/${Date.now()}-main.cart`
+const objectKey = `${target.id}/${Date.now()}-main.png`
 const publicUrl = await uploadPack(config, packPath, objectKey)
 
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as PackManifest
@@ -2034,8 +2036,8 @@ it('throttle applies in tokenpack mode (pack download is over the wire)', async 
   const recorded = await record(t)
   const out = await encode(t.id, recorded.assets, tmp)
   const packBytes = readFileSync(out.packPath)
-  server.serveFile('/pack.cart', 'application/octet-stream', new Uint8Array(packBytes))
-  const packUrl = `${server.url}pack.cart`
+  server.serveFile('/pack.png', 'image/png', new Uint8Array(packBytes))
+  const packUrl = `${server.url}pack.png`
 
   const fast = await runTokenpack(t, { packUrl, manifestPath: out.manifestPath })
   const slow = await runTokenpack(t, {
@@ -2509,10 +2511,10 @@ it('records and replays a basic-auth-protected page using extraHeaders', async (
 
   const out = await encode(target.id, recorded.assets, tmp)
   const packBytes = readFileSync(out.packPath)
-  server.serveFile('/pack.cart', 'application/octet-stream', new Uint8Array(packBytes))
+  server.serveFile('/pack.png', 'image/png', new Uint8Array(packBytes))
 
   const result = await runTokenpack(target, {
-    packUrl: `${server.url}pack.cart`,
+    packUrl: `${server.url}pack.png`,
     manifestPath: out.manifestPath,
     extraHeaders: target.extraHeaders
   })

@@ -16,6 +16,16 @@ node_modules
 **/dist
 **/tsconfig.tsbuildinfo
 
+# macOS turds
+**/.DS_Store
+
+# Local experimental codec scratch (not part of the build)
+archived-codecs/
+
+# Personal scratch notes
+TODO.md
+IDEAS.md
+
 # Benchmark generated tokens (large)
 benchmark/tokens/
 

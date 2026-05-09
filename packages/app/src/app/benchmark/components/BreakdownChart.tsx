@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import {
   Bar,
   BarChart,
@@ -11,7 +12,7 @@ import {
   YAxis,
 } from 'recharts'
 
-import { SCENARIOS } from '../constants'
+import { buildScenarioConfig } from '../constants'
 import type { BenchRow } from '../types'
 import { avg, fmtMs, getRows } from '../utils'
 import { Tip } from './Tip'
@@ -23,13 +24,19 @@ interface BreakdownChartProps {
 }
 
 export function BreakdownChart({ data, condition, source }: BreakdownChartProps) {
-  const chartData = SCENARIOS.map(s => {
-    const rows = getRows(data, condition, source).filter(r => r.scenario === s)
+  const scenarios = useMemo(
+    () => buildScenarioConfig(data.map(d => d.scenario)).scenarios,
+    [data],
+  )
+  const chartData = scenarios
+    .map(s => {
+      const rows = getRows(data, condition, source).filter(r => r.scenario === s)
 
-    if (!rows.length) return null
+      if (!rows.length) return null
 
-    return { name: s, fetch: avg(rows, 'fetchMs'), decode: avg(rows, 'decodeMs') }
-  }).filter((d): d is { name: string; fetch: number; decode: number } => d !== null)
+      return { name: s, fetch: avg(rows, 'fetchMs'), decode: avg(rows, 'decodeMs') }
+    })
+    .filter((d): d is { name: string; fetch: number; decode: number } => d !== null)
 
   return (
     <ResponsiveContainer height={220} width="100%">

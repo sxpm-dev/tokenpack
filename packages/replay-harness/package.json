@@ -1,0 +1,41 @@
+{
+  "name": "tokenpack-replay-harness",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Playwright-driven harness that benchmarks page load with TokenPack interception against a baseline, on any target URL.",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src test",
+    "lint:fix": "eslint src test --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "baseline": "tsx bin/baseline.ts",
+    "record": "tsx bin/record.ts",
+    "replay": "tsx bin/replay.ts",
+    "encode": "tsx bin/encode.ts",
+    "upload": "tsx bin/upload.ts",
+    "benchmark": "tsx bin/benchmark.ts",
+    "login": "tsx bin/login.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.658.0",
+    "@tokenpack/browser": "workspace:*",
+    "@tokenpack/node": "workspace:*",
+    "esbuild": "^0.24.0",
+    "pino": "^9.5.0",
+    "pino-pretty": "^11.3.0",
+    "playwright": "^1.48.0",
+    "tokenpack": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "eslint": "^9.39.0",
+    "tokenpack-eslint-config": "workspace:*",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.9"
+  }
+}

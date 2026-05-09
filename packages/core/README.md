@@ -248,10 +248,6 @@ tokens.
 | `tokenpack/pack-format/apply-diff` | Diff applier |
 | `tokenpack/pack/from-bytes` | Format dispatch — turn payload bytes into a `Pack` handle |
 
-Some legacy subpaths (`tokenpack/encoder`, `tokenpack/decoder`, `tokenpack/archive`,
-`tokenpack/diff`) are kept for backward compat with pre-spec consumers and
-will move to `@tokenpack/node`'s internals in a follow-up.
-
 ---
 
 ## License

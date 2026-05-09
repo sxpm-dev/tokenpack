@@ -1,24 +1,18 @@
+// Lookup helpers around the algorithm catalog.
+// Direct catalog access lives in `./catalog`; this module just exposes the
+// most-used queries with concise names.
+
 import { algorithmCatalog } from './catalog'
-import type { AbstractAlgorithm, AlgorithmCatalogEntry } from './types'
+import type { AlgorithmCtor } from './types'
 
-export { AlgorithmCatalog, algorithmCatalog } from './catalog'
-
-export function registerAlgorithm(algorithm: AbstractAlgorithm): void {
-  algorithmCatalog.register(algorithm)
-}
-
-export function getAlgorithmByName(name: string): AbstractAlgorithm {
+export function getAlgorithmByName(name: string): AlgorithmCtor {
   return algorithmCatalog.getByName(name)
 }
 
-export function getAlgorithmById(id: number): AbstractAlgorithm {
+export function getAlgorithmById(id: number): AlgorithmCtor {
   return algorithmCatalog.getById(id)
 }
 
-export function listAlgorithms(): AbstractAlgorithm[] {
+export function listAlgorithms(): AlgorithmCtor[] {
   return algorithmCatalog.list()
-}
-
-export function listAlgorithmCatalog(): AlgorithmCatalogEntry[] {
-  return algorithmCatalog.listEntries()
 }

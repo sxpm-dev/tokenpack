@@ -15,10 +15,6 @@ export {
   type ReadContext,
 } from './types'
 
-export function pickDrawerForOptions(cellSize: number | undefined): AbstractDrawer {
-  return (cellSize ?? 1) > 1 ? new DotDrawer() : new DenseDrawer()
-}
-
 export function pickDrawerForPixels(pixels: Uint8Array): AbstractDrawer {
   if (isCompactToken(pixels)) return new DenseDrawer()
   const header = readHeader(pixels)

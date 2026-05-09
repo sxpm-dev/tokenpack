@@ -1,11 +1,15 @@
 import type { HeaderData } from './types'
 
-export const HEADER_PIXELS = 32
-export const HEADER_BYTES = HEADER_PIXELS * 3 // 96
+// ── Full header (10 pixels = 30 bytes) ──────────────────────────────────────
+// Compact layout — only the fields the decode pipeline actually needs. The
+// previous 32-pixel format carried gradient/background/chunk metadata that
+// was never read; those bytes are gone now (and old tokens are not readable).
+export const HEADER_PIXELS = 10
+export const HEADER_BYTES = HEADER_PIXELS * 3 // 30
 
 // ── Compact header (2 pixels = 6 bytes) ─────────────────────────────────────
-// First byte 0xC1 distinguishes compact from full (0xC0). Saves 90 bytes of
-// header overhead for small tokens that don't need style metadata.
+// First byte 0xC1 distinguishes compact from full (0xC0). Saves 24 bytes of
+// header overhead for small tokens that don't need the full metadata set.
 export const COMPACT_MAGIC = 0xc1
 export const COMPACT_HEADER_PIXELS = 2
 
@@ -16,7 +20,6 @@ const FLAGS_BPP: Record<number, number> = { 1: 1, 2: 2, 3: 0, 4: 3 }
 export interface CompactHeader {
   algoId: number
   // flags byte: bits 3-2: bpp encoding; bit 1 = brotli compressed, bit 0 = AES-256-GCM encrypted
-  // Old tokens stored compressionLevel (0 or 2) here — bit 0 was always 0, so backward compatible.
   flags: number
   dataLength: number
   channels: 1 | 2 | 3 | 4 // derived from flags bits 3-2
@@ -68,56 +71,28 @@ export function writeHeader(pixels: Uint8Array, d: HeaderData): void {
   pixels[11] = d.width & 0xff
   pixels[12] = (d.height >>> 8) & 0xff
   pixels[13] = d.height & 0xff
-  pixels[14] = d.styleFlags
-  pixels[15] = d.ecLevel
-  pixels.set(d.codecMeta.slice(0, 16), 16)
-  pixels[32] = d.gradientFrom[0]
-  pixels[33] = d.gradientFrom[1]
-  pixels[34] = d.gradientFrom[2]
-  pixels[35] = d.gradientTo[0]
-  pixels[36] = d.gradientTo[1]
-  pixels[37] = d.gradientTo[2]
-  pixels[38] = d.gradientDirection
-  pixels[39] = d.backgroundOpacity
-  pixels[40] = d.backgroundColor[0]
-  pixels[41] = d.backgroundColor[1]
-  pixels[42] = d.backgroundColor[2]
-  pixels[43] = d.compressionLevel
-  pixels[44] = (d.uncompressedLength >>> 24) & 0xff
-  pixels[45] = (d.uncompressedLength >>> 16) & 0xff
-  pixels[46] = (d.uncompressedLength >>> 8) & 0xff
-  pixels[47] = d.uncompressedLength & 0xff
-  pixels[48] = d.cellSize
-  pixels[49] = (d.dataPixelCount >>> 24) & 0xff
-  pixels[50] = (d.dataPixelCount >>> 16) & 0xff
-  pixels[51] = (d.dataPixelCount >>> 8) & 0xff
-  pixels[52] = d.dataPixelCount & 0xff
-  // bytes 53-60: chunk metadata (zeros = single-chunk / legacy)
-  pixels[53] = (d.chunkIndex >>> 8) & 0xff
-  pixels[54] = d.chunkIndex & 0xff
-  pixels[55] = (d.chunkTotal >>> 8) & 0xff
-  pixels[56] = d.chunkTotal & 0xff
-  pixels[57] = (d.streamId >>> 24) & 0xff
-  pixels[58] = (d.streamId >>> 16) & 0xff
-  pixels[59] = (d.streamId >>> 8) & 0xff
-  pixels[60] = d.streamId & 0xff
-  // byte 61: bpp — 0 or 3 means default bpp=3 (backward compat)
-  pixels[61] = d.channels ?? 3
-  // bytes 62-65: pre-FEC payload length (only meaningful when fecLevel > 0; 0 otherwise).
-  pixels[62] = (d.preFecLength >>> 24) & 0xff
-  pixels[63] = (d.preFecLength >>> 16) & 0xff
-  pixels[64] = (d.preFecLength >>> 8) & 0xff
-  pixels[65] = d.preFecLength & 0xff
-  // bytes 66-95: reserved for future header extensions
+  pixels[14] = d.ecLevel
+  pixels[15] = d.compressionLevel
+  pixels[16] = (d.uncompressedLength >>> 24) & 0xff
+  pixels[17] = (d.uncompressedLength >>> 16) & 0xff
+  pixels[18] = (d.uncompressedLength >>> 8) & 0xff
+  pixels[19] = d.uncompressedLength & 0xff
+  pixels[20] = d.cellSize
+  pixels[21] = (d.dataPixelCount >>> 24) & 0xff
+  pixels[22] = (d.dataPixelCount >>> 16) & 0xff
+  pixels[23] = (d.dataPixelCount >>> 8) & 0xff
+  pixels[24] = d.dataPixelCount & 0xff
+  pixels[25] = d.channels
+  pixels[26] = (d.preFecLength >>> 24) & 0xff
+  pixels[27] = (d.preFecLength >>> 16) & 0xff
+  pixels[28] = (d.preFecLength >>> 8) & 0xff
+  pixels[29] = d.preFecLength & 0xff
 }
 
-// ── Error-correction byte (byte 15) layout ───────────────────────────────────
+// ── Error-correction byte (byte 14) layout ───────────────────────────────────
 //   bit 0     : encryption flag (1 = AES-256-GCM encrypted)
 //   bits 1-3  : FEC level (0 = none, 1 = rs-5, 2 = rs-15, 3 = rs-25, 4-7 reserved)
-//   bits 4-7  : reserved for future ec extensions
-//
-// Backward compatibility: old tokens stored only the encryption flag (bits 1-7 = 0),
-// so they read back as { encrypted, fecLevel: 0 } automatically.
+//   bits 4-7  : reserved
 export function encodeEcByte(encrypted: boolean, fecLevel: number): number {
   if (fecLevel < 0 || fecLevel > 7) throw new Error(`fecLevel out of range: ${fecLevel}`)
 
@@ -132,7 +107,7 @@ export function readHeader(pixels: Uint8Array): HeaderData {
   if (pixels[0] !== 0xc0 || pixels[1] !== 0xde || pixels[2] !== 0xae || pixels[3] !== 0x54) {
     throw new Error('not a tokenpack image')
   }
-  const rawChannels = pixels[61]
+  const rawChannels = pixels[25]
 
   return {
     version: pixels[4],
@@ -140,24 +115,14 @@ export function readHeader(pixels: Uint8Array): HeaderData {
     fileLength: ((pixels[6] << 24) | (pixels[7] << 16) | (pixels[8] << 8) | pixels[9]) >>> 0,
     width: (pixels[10] << 8) | pixels[11],
     height: (pixels[12] << 8) | pixels[13],
-    styleFlags: pixels[14],
-    ecLevel: pixels[15],
-    codecMeta: new Uint8Array(pixels.buffer, pixels.byteOffset + 16, 16).slice(),
-    gradientFrom: [pixels[32], pixels[33], pixels[34]],
-    gradientTo: [pixels[35], pixels[36], pixels[37]],
-    gradientDirection: pixels[38],
-    backgroundOpacity: pixels[39],
-    backgroundColor: [pixels[40], pixels[41], pixels[42]],
-    compressionLevel: pixels[43],
+    ecLevel: pixels[14],
+    compressionLevel: pixels[15],
     uncompressedLength:
-      ((pixels[44] << 24) | (pixels[45] << 16) | (pixels[46] << 8) | pixels[47]) >>> 0,
-    cellSize: pixels[48],
+      ((pixels[16] << 24) | (pixels[17] << 16) | (pixels[18] << 8) | pixels[19]) >>> 0,
+    cellSize: pixels[20],
     dataPixelCount:
-      ((pixels[49] << 24) | (pixels[50] << 16) | (pixels[51] << 8) | pixels[52]) >>> 0,
-    chunkIndex: (pixels[53] << 8) | pixels[54],
-    chunkTotal: (pixels[55] << 8) | pixels[56] || 1, // 0 in old tokens → treat as 1
-    streamId: ((pixels[57] << 24) | (pixels[58] << 16) | (pixels[59] << 8) | pixels[60]) >>> 0,
+      ((pixels[21] << 24) | (pixels[22] << 16) | (pixels[23] << 8) | pixels[24]) >>> 0,
     channels: (rawChannels === 0 ? 3 : rawChannels) as 1 | 2 | 3 | 4,
-    preFecLength: ((pixels[62] << 24) | (pixels[63] << 16) | (pixels[64] << 8) | pixels[65]) >>> 0,
+    preFecLength: ((pixels[26] << 24) | (pixels[27] << 16) | (pixels[28] << 8) | pixels[29]) >>> 0,
   }
 }

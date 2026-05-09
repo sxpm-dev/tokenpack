@@ -1,6 +1,8 @@
 import { AbstractCompressor, type CompressionMode, type CompressionResult } from './types'
 
 export class NoneCompressor extends AbstractCompressor {
+  static override readonly description = 'No outer compression — input bytes go directly into pixels.'
+
   readonly id: CompressionMode = 'none'
   readonly label = 'None'
   readonly headerLevel = 0

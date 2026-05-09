@@ -9801,9 +9801,7 @@ __metadata:
   resolution: "tokenpack@workspace:packages/core"
   dependencies:
     "@tokenpack/node": "workspace:*"
-    "@types/adm-zip": "npm:^0"
     "@types/node": "npm:^25.6.0"
-    adm-zip: "npm:^0.5.17"
     eslint: "npm:^9.39.0"
     prettier: "npm:^3.8.3"
     tokenpack-eslint-config: "workspace:*"

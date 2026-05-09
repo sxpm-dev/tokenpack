@@ -3,23 +3,27 @@
  * Run: yarn tsx benchmark/generate.ts
  *
  * Outputs:
- *   benchmark/tokens/   max__*.webp, stream-png__*.png       (network benchmark)
- *   benchmark/tokens/   ext-<codec>-<compression>-c<ch>__*   (extended benchmark)
+ *   benchmark/tokens/   ext-<algo>-c<ch>__<source>.<ext>     (one per registered algorithm × channels)
  *   benchmark/tokens/   zip__*, targz__*, br11__*, br6__*    (archive comparisons)
- *   packages/app/benchmark-results/encode-times.json   (consumed by run-extended.ts)
+ *   packages/app/benchmark-results/encode-times.json
  *   packages/app/benchmark-results/archive-times.json
+ *
+ * Iterates over `algorithmCatalog.list()` — each registered algorithm IS a
+ * full configuration (codec + surface + compressor + drawer). No flat
+ * `compressionMode` matrix; bound recipes only.
  */
 
-import { encodeToBuffer, packDirs } from '@tokenpack/node'
+import '@tokenpack/node'
+
 import AdmZip from 'adm-zip'
 import fs from 'fs'
 import path from 'path'
-import { ALGORITHM_INFOS } from 'tokenpack/algorithms/catalog-info'
-import { getAlgorithmByName } from 'tokenpack/algorithms/registry'
+import { encode } from '@tokenpack/node'
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { packDirs } from 'tokenpack/archive'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 
-// Use fileURLToPath for Node 18.15 compat (import.meta.dirname is Node 20+).
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.join(HERE, '..')
 const SOURCES = path.join(HERE, 'sources')
@@ -47,20 +51,6 @@ function row(label: string, outSize: number, srcSize: number) {
   console.log(`  ${label.padEnd(LABEL_W)}${fmtBytes(outSize).padStart(SIZE_W)}   ${ratio}% smaller`)
 }
 
-// Suppress encoder's internal console.log during encodeToBuffer calls.
-async function encodeQuiet(...args: Parameters<typeof encodeToBuffer>) {
-  const orig = console.log
-
-  console.log = () => {}
-  try {
-    return await encodeToBuffer(...args)
-  } finally {
-    console.log = orig
-  }
-}
-
-// ── Per-file sources ──────────────────────────────────────────────────────
-
 const FILE_SOURCES: { name: string; file: string }[] = [
   { name: 'react-dom-client.development', file: 'react-dom-client.development.js' },
   { name: 'react-dom-client.production', file: 'react-dom-client.production.js' },
@@ -70,7 +60,7 @@ const FILE_SOURCES: { name: string; file: string }[] = [
   { name: 'client-spec-map.min', file: 'client-spec-map.min.json' },
 ]
 
-export interface ArchiveTimeEntry {
+interface ArchiveTimeEntry {
   source: string
   format: string
   encodeMs: number
@@ -79,114 +69,76 @@ export interface ArchiveTimeEntry {
   originalBytes: number
 }
 
-async function generateFromBuffer(
+interface EncodeTimeEntry {
+  source: string
+  algorithm: string
+  surface: string
+  compressor: string
+  channels: number
+  encodeMs: number
+  tokenBytes: number
+  originalBytes: number
+  /** Path under benchmark/, e.g. `tokens/ext-linear-c3__source.png`. */
+  tokenFile: string
+}
+
+interface AlgoBinding {
+  Ctor: ReturnType<typeof algorithmCatalog.list>[number]
+  algorithmName: string
+  surfaceId: string
+  surfaceExt: string
+  compressorFamily: string
+}
+
+function listAlgoBindings(): AlgoBinding[] {
+  const all = algorithmCatalog.list().map(Ctor => {
+    const surface = new (Ctor.Surface as unknown as new () => {
+      id: string
+      extension: string
+    })()
+
+    return {
+      Ctor,
+      algorithmName: Ctor.name,
+      surfaceId: surface.id,
+      surfaceExt: surface.extension,
+      compressorFamily: Ctor.Compressor.familyId,
+    }
+  })
+
+  // Trim the matrix to the `linear-*` family for now (linear, linear-deflate,
+  // linear-stream, linear-stream-deflate, linear-none, linear-webp, linear-avif).
+  // Cuts brotli-11 work by ~2× and skips slow sharp-backed WebP/AVIF for
+  // non-linear codecs. Re-enable by returning `all` instead.
+  return all.filter(b => b.algorithmName === 'linear' || b.algorithmName.startsWith('linear-'))
+  // return all  // ← uncomment to bench every registered algorithm
+}
+
+async function generateArchives(
   name: string,
   src: Buffer,
   brExt: '.br' | '.tar.br',
 ): Promise<ArchiveTimeEntry[]> {
-  const archiveTimes: ArchiveTimeEntry[] = []
-  // max — webp / brotli-11 / bpp=3
-  const maxWebp3 = await encodeQuiet(src, {
-    algo: 'linear',
-    compressionMode: 'brotli-11',
-    format: 'webp',
-    channels: 3,
-  })
-
-  fs.writeFileSync(path.join(TOKENS, `max-webp3__${name}.webp`), maxWebp3[0])
-  row('max-webp3 (brotli-11, webp, bpp=3)', maxWebp3[0].length, src.length)
-
-  // max — png / brotli-11 / bpp=3
-  const maxPng3 = await encodeQuiet(src, {
-    algo: 'linear',
-    compressionMode: 'brotli-11',
-    format: 'png',
-    channels: 3,
-  })
-
-  fs.writeFileSync(path.join(TOKENS, `max-png3__${name}.png`), maxPng3[0])
-  row('max-png3  (brotli-11, png,  bpp=3)', maxPng3[0].length, src.length)
-
-  // max — png / brotli-11 / bpp=4
-  const maxPng4 = await encodeQuiet(src, {
-    algo: 'linear',
-    compressionMode: 'brotli-11',
-    format: 'png',
-    channels: 4,
-  })
-
-  fs.writeFileSync(path.join(TOKENS, `max-png4__${name}.png`), maxPng4[0])
-  row('max-png4  (brotli-11, png,  bpp=4)', maxPng4[0].length, src.length)
-
-  // stream tokens — written with small IDAT chunks (streaming: true) so the
-  // stream decoder processes pixels progressively as bytes arrive over the network.
-
-  // stream — png / brotli-6 / bpp=3
-  const streamPng3 = await encodeQuiet(src, {
-    algo: 'linear',
-    compressionMode: 'brotli-6',
-    format: 'png',
-    channels: 3,
-    streaming: true,
-  })
-
-  fs.writeFileSync(path.join(TOKENS, `stream-png3__${name}.png`), streamPng3[0])
-  row('stream-png3 (brotli-6,  png,  bpp=3)', streamPng3[0].length, src.length)
-
-  // stream — png / brotli-6 / bpp=4
-  const streamPng4 = await encodeQuiet(src, {
-    algo: 'linear',
-    compressionMode: 'brotli-6',
-    format: 'png',
-    channels: 4,
-    streaming: true,
-  })
-
-  fs.writeFileSync(path.join(TOKENS, `stream-png4__${name}.png`), streamPng4[0])
-  row('stream-png4 (brotli-6,  png,  bpp=4)', streamPng4[0].length, src.length)
-
-  // stream — png / deflate-6 / bpp=3
-  const streamDef3 = await encodeQuiet(src, {
-    algo: 'linear',
-    compressionMode: 'deflate-6',
-    format: 'png',
-    channels: 3,
-    streaming: true,
-  })
-
-  fs.writeFileSync(path.join(TOKENS, `stream-def3__${name}.png`), streamDef3[0])
-  row('stream-def3 (deflate-6, png,  bpp=3)', streamDef3[0].length, src.length)
-
-  // stream — png / deflate-6 / bpp=4
-  const streamDef4 = await encodeQuiet(src, {
-    algo: 'linear',
-    compressionMode: 'deflate-6',
-    format: 'png',
-    channels: 4,
-    streaming: true,
-  })
-
-  fs.writeFileSync(path.join(TOKENS, `stream-def4__${name}.png`), streamDef4[0])
-  row('stream-def4 (deflate-6, png,  bpp=4)', streamDef4[0].length, src.length)
+  const out: ArchiveTimeEntry[] = []
 
   function timeArchive(
     format: string,
-    encode: () => Buffer,
-    decode: (buf: Buffer) => void,
+    enc: () => Buffer,
+    dec: (buf: Buffer) => void,
     filePath: string,
   ) {
     const t0 = now()
-    const buf = encode()
+    const buf = enc()
     const encodeMs = now() - t0
 
     fs.writeFileSync(filePath, buf)
     const t1 = now()
 
-    decode(buf)
+    dec(buf)
     const decodeMs = now() - t1
 
     row(format, buf.length, src.length)
-    archiveTimes.push({
+    out.push({
       source: name,
       format,
       encodeMs: Math.round(encodeMs * 10) / 10,
@@ -196,7 +148,6 @@ async function generateFromBuffer(
     })
   }
 
-  // zip
   timeArchive(
     'zip',
     () => {
@@ -214,7 +165,6 @@ async function generateFromBuffer(
     path.join(TOKENS, `zip__${name}.zip`),
   )
 
-  // tar.gz
   timeArchive(
     'tar.gz',
     () => zlib.gzipSync(src, { level: 6 }),
@@ -222,7 +172,6 @@ async function generateFromBuffer(
     path.join(TOKENS, `targz__${name}.tar.gz`),
   )
 
-  // brotli-11
   timeArchive(
     'brotli-11',
     () => zlib.brotliCompressSync(src, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } }),
@@ -230,7 +179,6 @@ async function generateFromBuffer(
     path.join(TOKENS, `br11__${name}${brExt}`),
   )
 
-  // brotli-6
   timeArchive(
     'brotli-6',
     () => zlib.brotliCompressSync(src, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 6 } }),
@@ -238,19 +186,24 @@ async function generateFromBuffer(
     path.join(TOKENS, `br6__${name}${brExt}`),
   )
 
-  return archiveTimes
+  return out
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────
+const ENCODE_TIMEOUT_MS = 60_000
+
+async function withTimeout<T>(ms: number, p: Promise<T>): Promise<T> {
+  return await Promise.race([
+    p,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`timeout after ${ms}ms`)), ms),
+    ),
+  ])
+}
 
 async function main() {
   console.log('Tokenpack Benchmark Fixture Generator')
   console.log('=====================================\n')
-  console.log(`  ${'format'.padEnd(LABEL_W)}${'size'.padStart(SIZE_W)}   vs original`)
-  console.log(`  ${'─'.repeat(LABEL_W + SIZE_W + 12)}`)
 
-  // Collect all source buffers (file sources + packed dir) in one pass so the
-  // extended section can iterate over all of them including fs-src-tests-docs.
   const allSources: { name: string; buf: Buffer }[] = []
   const allArchiveTimes: ArchiveTimeEntry[] = []
 
@@ -265,7 +218,7 @@ async function main() {
 
     allSources.push({ name, buf: src })
     console.log(`\n[${name}]  ${fmtBytes(src.length)}`)
-    allArchiveTimes.push(...(await generateFromBuffer(name, src, '.br')))
+    allArchiveTimes.push(...(await generateArchives(name, src, '.br')))
   }
 
   const fsDirs = [
@@ -278,89 +231,61 @@ async function main() {
     const cart = packDirs(fsDirs, [], REPO_ROOT)
 
     allSources.push({ name, buf: cart })
-    console.log(
-      `\n[${name}]  ${fmtBytes(cart.length)} (packed: packages/{app,core}/src)`,
-    )
-    allArchiveTimes.push(...(await generateFromBuffer(name, cart, '.tar.br')))
+    console.log(`\n[${name}]  ${fmtBytes(cart.length)} (packed: packages/{app,core}/src)`)
+    allArchiveTimes.push(...(await generateArchives(name, cart, '.tar.br')))
   } else {
     console.log('\n[fs-app-core] SKIP — no app/core src dirs found')
   }
 
-  // ── Extended tokens (all codecs × all compression modes) ────────────────
-
-  const COMPRESSION_MODES = ['none', 'deflate-1', 'deflate-6', 'brotli-6', 'brotli-11'] as const
-
-  type CompressionMode = (typeof COMPRESSION_MODES)[number]
-
-  interface EncodeTimeEntry {
-    source: string
-    codec: string
-    compression: string
-    channels: number
-    encodeMs: number
-    tokenBytes: number
-    originalBytes: number
-    tokenFile: string // relative path under benchmark/
-  }
-
+  // ── Algorithm matrix: every registered Ctor × {3, 4} channels ────────────
+  const bindings = listAlgoBindings()
+  const channelOptions = [3, 4] as const
+  const total = bindings.length * channelOptions.length * allSources.length
+  let done = 0
   const encodeTimes: EncodeTimeEntry[] = []
-  const algorithms = ALGORITHM_INFOS.map(entry => getAlgorithmByName(entry.name))
-
-  const extTotal = algorithms.length * COMPRESSION_MODES.length * allSources.length
-  let extDone = 0
 
   console.log(
-    `\n\n═══ Extended tokens: ${algorithms.length} algorithms × ${COMPRESSION_MODES.length} modes × ${allSources.length} sources = ${extTotal} files ═══\n`,
+    `\n\n═══ Token matrix: ${bindings.length} algorithms × ${channelOptions.length} channels × ${allSources.length} sources = ${total} files ═══\n`,
   )
 
   for (const { name: sourceName, buf: src } of allSources) {
     console.log(`── ${sourceName} (${fmtBytes(src.length)}) ──`)
 
-    for (const algorithm of algorithms) {
-      const channels = 3
-
-      for (const compression of COMPRESSION_MODES) {
-        extDone++
-        const compress = compression !== 'none'
-        const label = `[${extDone}/${extTotal}] ${algorithm.name} + ${compression}`
+    for (const binding of bindings) {
+      for (const channels of channelOptions) {
+        done++
+        const label = `[${done}/${total}] ${binding.algorithmName} c${channels}`
 
         process.stdout.write(`  ${label.padEnd(46)}`)
 
-        const tokenFile = `ext-${algorithm.name}-${compression}-c${channels}__${sourceName}.png`
+        const tokenFile = `ext-${binding.algorithmName}-c${channels}__${sourceName}${binding.surfaceExt}`
         const tokenPath = path.join(TOKENS, tokenFile)
 
         try {
-          const TIMEOUT_MS = 2_000
           const t0 = now()
-          const encodePromise = encodeQuiet(src, {
-            algo: algorithm.name,
-            compress,
-            compressionMode: compress ? (compression as CompressionMode) : undefined,
-            channels: channels as 1 | 2 | 3 | 4,
-            format: 'png',
-          })
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error(`timeout after ${TIMEOUT_MS}ms`)), TIMEOUT_MS),
+          const result = await withTimeout(
+            ENCODE_TIMEOUT_MS,
+            encode(src, {
+              algo: binding.algorithmName,
+              algoOptions: { surface: { channels } },
+              out: tokenPath,
+            }),
           )
-          const tokens = await Promise.race([encodePromise, timeoutPromise])
           const encodeMs = now() - t0
-          const tokenBytes = tokens.reduce((s, b) => s + b.length, 0)
-
-          fs.writeFileSync(tokenPath, tokens[0])
+          const tokenBytes = result.byteLength
+          const ratio = ((1 - tokenBytes / src.length) * 100).toFixed(1)
 
           encodeTimes.push({
             source: sourceName,
-            codec: algorithm.name,
-            compression,
+            algorithm: binding.algorithmName,
+            surface: binding.surfaceId,
+            compressor: binding.compressorFamily,
             channels,
             encodeMs: Math.round(encodeMs * 10) / 10,
             tokenBytes,
             originalBytes: src.length,
-            tokenFile: path.join('tokens', tokenFile),
+            tokenFile: path.posix.join('tokens', tokenFile),
           })
-
-          const ratio = ((1 - tokenBytes / src.length) * 100).toFixed(1)
-
           console.log(
             `${fmtBytes(tokenBytes).padStart(8)}  ${ratio.padStart(5)}% smaller  ${encodeMs.toFixed(0)}ms`,
           )
@@ -369,8 +294,9 @@ async function main() {
 
           encodeTimes.push({
             source: sourceName,
-            codec: algorithm.name,
-            compression,
+            algorithm: binding.algorithmName,
+            surface: binding.surfaceId,
+            compressor: binding.compressorFamily,
             channels,
             encodeMs: 0,
             tokenBytes: 0,

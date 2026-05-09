@@ -1,15 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
-import { FEC_MODES } from '../../src/fec/modes'
 import { fecRegistry } from '../../src/fec/registry'
 
 describe('fecRegistry', () => {
   it('lists exactly the 4 modes (none, rs-5, rs-15, rs-25)', () => {
-    expect([...FEC_MODES]).toEqual(['none', 'rs-5', 'rs-15', 'rs-25'])
+    expect(fecRegistry.listModes()).toEqual(['none', 'rs-5', 'rs-15', 'rs-25'])
   })
 
   it('byMode roundtrips every declared mode', () => {
-    for (const mode of FEC_MODES) {
+    for (const mode of fecRegistry.listModes()) {
       const fec = fecRegistry.byMode(mode)
 
       expect(fec.id).toBe(mode)

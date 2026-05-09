@@ -5,7 +5,7 @@ import { CheckCircleIcon } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import type { SortDescriptor } from 'react-aria-components'
 
-import { COLORS, SCENARIOS } from '../constants'
+import { buildScenarioConfig } from '../constants'
 import type { BenchRow, SummaryRow, SummarySortKey } from '../types'
 import { avg, fmtBytes, fmtMs, getRows } from '../utils'
 import { ColHeader } from './ColHeader'
@@ -18,6 +18,11 @@ interface SummaryTableProps {
 
 export function SummaryTable({ data, condition, source }: SummaryTableProps) {
   const [sort, setSort] = useState<SortDescriptor>({ column: 'total', direction: 'ascending' })
+
+  const { scenarios: SCENARIOS, colors: COLORS } = useMemo(
+    () => buildScenarioConfig(data.map(d => d.scenario)),
+    [data],
+  )
 
   const rawRows = useMemo<SummaryRow[]>(
     () =>
@@ -36,7 +41,7 @@ export function SummaryTable({ data, condition, source }: SummaryTableProps) {
           throughput: avg(r, 'throughputMBps'),
         }
       }).filter((r): r is SummaryRow => r !== null),
-    [data, condition, source],
+    [SCENARIOS, data, condition, source],
   )
 
   const minTotal = useMemo(
@@ -100,7 +105,8 @@ export function SummaryTable({ data, condition, source }: SummaryTableProps) {
         <Table.Body>
           {sorted.map(r => {
             const isBest = r.total === minTotal
-            const isToken = r.scenario.startsWith('max-') || r.scenario.startsWith('stream-')
+            // Token rows = anything that's not a fixed archive baseline.
+            const isToken = !['zip', 'tar.gz', 'brotli-11', 'brotli-6'].includes(r.scenario)
 
             return (
               <Table.Row

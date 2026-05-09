@@ -1,18 +1,8 @@
-// @tokenpack/node — Node.js adapters for TokenPack.
+// @tokenpack/node — public API.
 //
-// Three top-level functions: `encode`, `decode`, `extract`. Each handles
-// every input shape (Buffer / Uint8Array / file path / directory path / URL)
-// in a single function — no `encodeFile`/`encodeToBuffer`/`decodeFromBuffer`
-// proliferation.
-//
-// Side effects on import:
-//   1. Polyfill `globalThis.crypto` from `node:crypto.webcrypto` for Node < 19
-//      (core's encoder/crypto use `globalThis.crypto.randomUUID` and
-//      `crypto.subtle`; on Node 18.x these aren't on globalThis by default).
-//   2. Register Node-zlib compressors (deflate-*, brotli-*) and sharp/pngjs
-//      surfaces (PNG, streaming-PNG, AVIF, WebP) with core's append-only
-//      registries. Core itself ships only `none` + zero surfaces so it stays
-//      browser-bundleable; env packages contribute their own implementations.
+// Five top-level functions + types. Anything else (codec/surface/compressor
+// classes, low-level encoder/decoder helpers) is internal — import from
+// `tokenpack/<subpath>` if you need it.
 
 import { webcrypto } from 'node:crypto'
 
@@ -24,29 +14,21 @@ if (!(globalThis as { crypto?: unknown }).crypto) {
   })
 }
 
-// Side-effect: registers Node-only compressors + surfaces with core registries.
+// Side-effect: registers Node-only compressors, surfaces, and concrete
+// algorithm classes with core's append-only registries.
 import './register'
 
-// Unified encode/decode∑¡
+// ── Public functions ──────────────────────────────────────────────────────
 export { decode, type DecodeOptions, type DecodeSource } from './decode'
+export { createTokenDecodeStream as decodeStream } from 'tokenpack/stream-decoder'
+export { diff, type DiffResult, type DiffStats, type FileDiff, type Hunk } from './diff'
 export { encode, type EncodeInput, type EncodeNodeOptions, type EncodeResult } from './encode'
 
-// Lower-level fs helpers — kept for legacy callers (app routes, benchmark).
-// These will move to `@tokenpack/node/_internal` in a follow-up; the surface
-// stays import-compatible during migration.
-export {
-  listArchive,
-  packBuffers,
-  packDirs,
-  type PackEntry,
-  unpackBuffers,
-} from 'tokenpack/archive'
-export { decodeFromBuffer } from 'tokenpack/decoder'
-export { encodeFile, encode as encodeFs, encodeToBuffer } from 'tokenpack/encoder'
-
-// Pack types + builder
+// ── Builder ───────────────────────────────────────────────────────────────
 export { type FsOptions, type GlobOptions, NodePackBuilder } from './node-pack-builder'
 export { PackBuilder } from 'tokenpack'
+
+// ── Pack types ────────────────────────────────────────────────────────────
 export type {
   DiffEntry,
   DiffOpKind,
@@ -57,24 +39,7 @@ export type {
   PackEntryInfo,
 } from 'tokenpack/pack/types'
 
-// Diff producers (file-based heatmap + text)
-export { diffText, diffTokens, type FileDiff } from 'tokenpack/diff'
-
-// Streaming decoder (Node Duplex). Browser equivalent is `@tokenpack/browser`'s decode.
-export { createTokenDecodeStream as decodeStream } from 'tokenpack/stream-decoder'
-
-// Surfaces (sharp/pngjs-backed)
-export { AvifSurface } from './surfaces/avif'
-export { PngSurface } from './surfaces/png'
-export { StreamingPngSurface } from './surfaces/streaming-png'
-export { WebpSurface } from './surfaces/webp'
-
-// Compressors (Node zlib-backed)
-export { BrotliCompressor } from './compressors/brotli'
-export { DeflateCompressor } from './compressors/deflate'
-
-// Node-only codecs.
-export { hasZstd, ZstdpixCodec, zstdpixCodec } from './codecs/zstdpix'
-
-// Manual registration entry-point (e.g. for test setup that imports core directly).
-export { registerNodeDefaults } from './register'
+// ── Convenience ───────────────────────────────────────────────────────────
+// `extract` writes a Pack's contents to a directory. Kept top-level since
+// it's used by the CLI and other consumers.
+export { extract } from './extract'

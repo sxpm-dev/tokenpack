@@ -1,11 +1,8 @@
 // Dot-mode rendering helpers — relocated from `core/src/render.ts` because
 // these functions are surface-level concerns: they compute the 2D image
-// layout from a stream of data cells, place data pixels into the grid,
-// and paint the gradient background. They sit between codec output (raw
-// bytes) and surface write (PNG/WebP/AVIF file output).
+// layout from a stream of data cells and place data pixels into the grid.
 
 import { HEADER_PIXELS } from '../header'
-import type { HeaderData } from '../types'
 import { CHANNELS } from './channels'
 
 export interface DotLayout {
@@ -37,39 +34,11 @@ export function renderDots(
   dataCount: number,
   cellSize: number,
   layout: DotLayout,
-  header: HeaderData,
   channels = CHANNELS,
 ): Uint8Array {
   const { imageWidth, imageHeight, gridWidth } = layout
   const pixels = new Uint8Array(imageWidth * imageHeight * channels)
-  const hasGradient = (header.styleFlags & 0b01) !== 0
   const dotOffset = Math.floor(cellSize / 2)
-  const from = header.gradientFrom
-  const to = header.gradientTo
-  const dir = header.gradientDirection
-  const maxW = Math.max(imageWidth - 1, 1)
-  const maxH = Math.max(imageHeight - 1, 1)
-
-  for (let py = 0; py < imageHeight; py++) {
-    for (let px = 0; px < imageWidth; px++) {
-      const idx = (py * imageWidth + px) * channels
-
-      if (hasGradient) {
-        const t =
-          dir === 1
-            ? px / maxW
-            : dir === 2
-              ? py / maxH
-              : dir === 3
-                ? (px / maxW + py / maxH) / 2
-                : 0
-
-        pixels[idx] = Math.round(from[0] + (to[0] - from[0]) * t)
-        pixels[idx + 1] = Math.round(from[1] + (to[1] - from[1]) * t)
-        pixels[idx + 2] = Math.round(from[2] + (to[2] - from[2]) * t)
-      }
-    }
-  }
 
   for (let i = 0; i < dataCount; i++) {
     const cellIdx = i + HEADER_PIXELS

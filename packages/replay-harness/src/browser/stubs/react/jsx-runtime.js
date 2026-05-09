@@ -1,0 +1,4 @@
+// Empty stub — JSX runtime
+export const jsx = () => null
+export const jsxs = () => null
+export const Fragment = null

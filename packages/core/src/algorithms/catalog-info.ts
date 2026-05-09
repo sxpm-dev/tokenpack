@@ -1,11 +1,9 @@
-import { CODEC_INFOS, type CodecInfo } from '../codecs/metadata'
 import type { CodecMetadata, Friendliness } from '../codecs/types'
-import { COMPRESSION_MODE_INFOS, COMPRESSION_MODES } from '../compressors/modes'
-import type { CompressionMode } from '../compressors/types'
-import { FEC_MODE_INFOS, FEC_MODES } from '../fec/modes'
-import { type Preset, PRESETS } from '../presets'
+import { compressorRegistry } from '../compressors/registry'
 import { IMAGE_FORMATS, SURFACE_INFOS } from '../surfaces/info'
-import type { ImageFormat } from '../types'
+
+import { algorithmCatalog } from './catalog'
+import type { AlgorithmCtor } from './types'
 
 export type AlgorithmEnvironment = 'node' | 'browser'
 
@@ -26,97 +24,48 @@ export interface AlgorithmInfo {
   environments: AlgorithmEnvironment[]
 }
 
-function deriveEnvironments(
-  beFriendly: Friendliness,
-  feFriendly: Friendliness,
-): AlgorithmEnvironment[] {
-  const envs: AlgorithmEnvironment[] = []
-
-  if (beFriendly !== 'no') envs.push('node')
-  if (feFriendly !== 'no') envs.push('browser')
-
-  return envs
-}
-
-function describeOptions(meta: CodecMetadata): string[] {
-  const channels = meta.requiredChannels ? `channels: ${meta.requiredChannels}` : 'channels: 1-4'
-  const families = Array.from(
-    new Set(COMPRESSION_MODE_INFOS.filter(m => m.id !== 'none').map(m => m.id.split('-')[0])),
-  ).join(' / ')
+function describeOptions(meta?: CodecMetadata): string[] {
+  const channels = meta?.requiredChannels ? `channels: ${meta.requiredChannels}` : 'channels: 1-4'
+  const families = compressorRegistry
+    .listFamilies()
+    .map(C => C.familyId)
+    .filter(id => id !== 'none')
+    .join(' / ')
 
   return [channels, `outer compression: none / ${families}`]
 }
 
-export function buildAlgorithmInfo(info: CodecInfo): AlgorithmInfo {
+/** Build AlgorithmInfo from a registered Ctor. Pulls codec metadata when the
+ *  bound Codec class exposes it (most pixel-data algorithms); otherwise falls
+ *  back to the algorithm's own static description fields. */
+export function buildAlgorithmInfoFromCtor(Ctor: AlgorithmCtor): AlgorithmInfo {
+  const codecCls = Ctor.Codec as unknown as { metadata?: CodecMetadata }
+  const meta = codecCls?.metadata
+  const caps = Ctor.capabilities
+  const ctorMeta = Ctor as unknown as { description?: string; title?: string }
+
   return {
-    id: info.id,
-    name: info.name,
-    description: info.metadata.description,
-    pixelLayout: info.metadata.pixelLayout,
-    writeStyle: info.metadata.writeStyle,
-    dependencies: info.metadata.dependencies,
-    beFriendly: info.metadata.beFriendly,
-    feFriendly: info.metadata.feFriendly,
-    streamFriendly: info.metadata.streamFriendly,
-    approxRatio: info.metadata.approxRatio,
-    requiredChannels: info.metadata.requiredChannels ?? null,
-    options: describeOptions(info.metadata),
-    environments: deriveEnvironments(info.metadata.beFriendly, info.metadata.feFriendly),
+    id: Ctor.id,
+    name: Ctor.name,
+    description: ctorMeta.description ?? meta?.description ?? Ctor.name,
+    pixelLayout: meta?.pixelLayout ?? 'n/a',
+    writeStyle: meta?.writeStyle ?? 'side-channel',
+    dependencies: meta?.dependencies ?? 'none',
+    beFriendly: caps.environments.includes('node') ? 'yes' : 'no',
+    feFriendly: caps.environments.includes('browser') ? 'yes' : 'no',
+    streamFriendly: caps.streamable ? 'yes' : 'no',
+    approxRatio: meta?.approxRatio ?? 'unknown',
+    requiredChannels: meta?.requiredChannels ?? null,
+    options: meta
+      ? describeOptions(meta)
+      : [`surface: ${caps.surface}`, `channels: ${caps.channels.join('/')}`],
+    environments: [...caps.environments],
   }
 }
 
-export const ALGORITHM_INFOS: readonly AlgorithmInfo[] = CODEC_INFOS.map(buildAlgorithmInfo)
-
-export const PRESET_INFOS: readonly Preset[] = PRESETS
-
-export interface DefaultPreset {
-  name: string
-  label: string
-  description: string
-  streamable: boolean
-  options: {
-    algo: string
-    compressionMode: CompressionMode
-    channels: 1 | 2 | 3 | 4
-    format: ImageFormat
-    streaming: boolean
-  }
+/** Live view of all registered algorithms. Reads catalog at access time. */
+export function listAlgorithmInfos(): AlgorithmInfo[] {
+  return algorithmCatalog.list().map(buildAlgorithmInfoFromCtor)
 }
 
-export const DEFAULT_PRESETS: readonly DefaultPreset[] = [
-  {
-    name: 'max',
-    label: 'Max compression',
-    description: 'brotli-11 · WebP · 3 bpp',
-    streamable: false,
-    options: {
-      algo: 'linear',
-      compressionMode: 'brotli-11',
-      channels: 3,
-      format: 'webp',
-      streaming: false,
-    },
-  },
-  {
-    name: 'streamable',
-    label: 'Max streamable',
-    description: 'brotli-6 · PNG · 4 bpp',
-    streamable: true,
-    options: {
-      algo: 'linear',
-      compressionMode: 'brotli-6',
-      channels: 4,
-      format: 'png',
-      streaming: true,
-    },
-  },
-]
-
-export {
-  COMPRESSION_MODE_INFOS,
-  COMPRESSION_MODES,
-  FEC_MODE_INFOS,
-  FEC_MODES,
-  IMAGE_FORMATS,
-  SURFACE_INFOS,
-}
+export { IMAGE_FORMATS, SURFACE_INFOS }

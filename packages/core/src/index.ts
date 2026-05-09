@@ -1,15 +1,8 @@
 // Browser-safe public API. Node-only helpers (file I/O, sharp surfaces,
 // Node-stream decoders) are accessible via subpaths and via `@tokenpack/node`.
 
-import './algorithms/register-all'
-
 export { AlgorithmCatalog, algorithmCatalog } from './algorithms/catalog'
-export {
-  getAlgorithmById,
-  getAlgorithmByName,
-  listAlgorithmCatalog,
-  listAlgorithms,
-} from './algorithms/registry'
+export { getAlgorithmById, getAlgorithmByName, listAlgorithms } from './algorithms/registry'
 // Buffer-pure CART primitives — no fs imports here, safe for browser bundles.
 export {
   isCartArchive,
@@ -19,7 +12,6 @@ export {
   unpackBuffers,
 } from './archive-buffers'
 export { CRYPTO_OVERHEAD, decryptData, encryptData } from './crypto'
-export { type DecodeDirEntry, type DecodeResult, toDecodeResult } from './decode-result'
 // Pack types + builder (new unified Pack API)
 export { applyDiff, type DiffMeta, diffPack, type DiffPackResult, readDiffMeta } from './diff-pack'
 export { finalizeChunks } from './finalize-chunks'
@@ -34,4 +26,4 @@ export type {
   PackEntryInfo,
 } from './pack/types'
 export { type BuilderIntent, PackBuilder } from './pack-builder'
-export type { DecodeOptions, EncodeOptions, HeaderData, ImageFormat, Style } from './types'
+export type { DecodeOptions, HeaderData, ImageFormat } from './types'

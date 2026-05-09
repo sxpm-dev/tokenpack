@@ -6,8 +6,8 @@
 // wrapped in the image pipeline so it can be re-decoded as a `DiffPack`.
 
 import { compressRaw } from 'tokenpack/compressors'
-import { encodeDiff } from 'tokenpack/pack-format/encode-diff'
 import type { DirPack } from 'tokenpack/pack/types'
+import { encodeDiff } from 'tokenpack/pack-format/encode-diff'
 
 import { encode, type EncodeResult } from './encode'
 
@@ -26,6 +26,8 @@ export function buildDiffToFn(compressor: string = 'brotli-11') {
       }
     })
 
-    return encode(diffBytes, { compressionMode: 'none' })
+    // Diff bytes are already deflate-compressed inside; wrap them in a
+    // none-compressor algorithm so the pixel layer doesn't re-compress.
+    return encode(diffBytes, { algo: 'linear-none' })
   }
 }

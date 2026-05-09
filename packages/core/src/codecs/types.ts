@@ -1,3 +1,5 @@
+import type { OptionsSchema } from '../components/options'
+
 export type PixelBuffer = Uint8Array
 
 export type Friendliness = 'yes' | 'partial' | 'no'
@@ -36,6 +38,9 @@ export interface Codec {
 }
 
 export abstract class AbstractCodec implements Codec {
+  /** Tunable options for this codec. Most codecs have no per-instance options. */
+  static readonly optionsSchema: OptionsSchema = {}
+
   abstract id: number
   abstract name: string
   abstract metadata: CodecMetadata

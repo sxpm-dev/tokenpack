@@ -2,26 +2,34 @@
  * Tokenpack benchmark
  * Run: yarn tsx benchmark/run.ts
  *
- * Tests: token (max / stream) vs zip vs tar.gz vs raw brotli
- * Metrics: TTFB, fetch time, decode time, total, throughput
- * Network: throttled local HTTP server simulating 4 conditions
+ * Tests: token (per algorithm × channels) vs zip vs tar.gz vs raw brotli.
+ * Metrics: TTFB, fetch time, decode time, total, throughput.
+ * Network: throttled local HTTP server simulating 4 conditions.
+ *
+ * Data-driven: reads `packages/app/benchmark-results/encode-times.json` (and
+ * archive-times.json) to discover available token/archive fixtures. The
+ * generator (benchmark/generate.ts) populates that JSON.
  */
 
-import { decodeFromBuffer, decodeStream as createTokenDecodeStream } from '@tokenpack/node'
+import '@tokenpack/node'
+
+import { decodeStream as createTokenDecodeStream } from '@tokenpack/node'
 import AdmZip from 'adm-zip'
 import fs from 'fs'
 import http from 'http'
 import path from 'path'
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const TOKENS_DIR = path.join(HERE, 'tokens')
-const RESULTS_DIR = path.join(HERE, '..', 'packages', 'app', 'benchmark-results')
+const REPO_ROOT = path.join(HERE, '..')
+const RESULTS_DIR = path.join(REPO_ROOT, 'packages', 'app', 'benchmark-results')
 
 fs.mkdirSync(RESULTS_DIR, { recursive: true })
+
 const RUNS = 3
-const COL = 14 // summary table column width
+const COL = 14
 
 // ── Network conditions ────────────────────────────────────────────────────
 
@@ -32,17 +40,48 @@ const CONDITIONS = [
   { name: 'slow', latencyMs: 100, bandwidthBps: 2 * 1024 * 1024 },
 ]
 
-const SOURCES = [
-  'react-dom-client.development',
-  'react-dom-client.production',
-  'chunk-5mb',
-  'screenshot',
-  'fs-app-core',
-  'client-spec-map',
-  'client-spec-map.min',
-]
+// ── Fixture discovery (data-driven from encode-times.json) ────────────────
 
-// ── Throttled HTTP server ─────────────────────────────────────────────────
+interface EncodeTimeEntry {
+  source: string
+  algorithm: string
+  surface: string
+  compressor: string
+  channels: number
+  encodeMs: number
+  tokenBytes: number
+  originalBytes: number
+  tokenFile: string
+}
+
+interface ArchiveTimeEntry {
+  source: string
+  format: string
+  encodeMs: number
+  decodeMs: number
+  bytes: number
+  originalBytes: number
+}
+
+function loadEncodeTimes(): EncodeTimeEntry[] {
+  const p = path.join(RESULTS_DIR, 'encode-times.json')
+
+  if (!fs.existsSync(p)) {
+    throw new Error(`missing ${p} — run \`yarn benchmark:generate\` first`)
+  }
+
+  return JSON.parse(fs.readFileSync(p, 'utf8')) as EncodeTimeEntry[]
+}
+
+function loadArchiveTimes(): ArchiveTimeEntry[] {
+  const p = path.join(RESULTS_DIR, 'archive-times.json')
+
+  if (!fs.existsSync(p)) return []
+
+  return JSON.parse(fs.readFileSync(p, 'utf8')) as ArchiveTimeEntry[]
+}
+
+// ── HTTP server with throttling ───────────────────────────────────────────
 
 function startServer(condition: (typeof CONDITIONS)[0]): Promise<http.Server> {
   const { latencyMs, bandwidthBps } = condition
@@ -58,16 +97,13 @@ function startServer(condition: (typeof CONDITIONS)[0]): Promise<http.Server> {
 
         return
       }
-
       await sleep(latencyMs)
-
       const stat = fs.statSync(filePath)
 
       res.writeHead(200, {
         'Content-Length': stat.size,
         'Content-Type': 'application/octet-stream',
       })
-
       const stream = fs.createReadStream(filePath, { highWaterMark: CHUNK })
 
       for await (const chunk of stream) {
@@ -80,8 +116,6 @@ function startServer(condition: (typeof CONDITIONS)[0]): Promise<http.Server> {
     server.listen(0, '127.0.0.1', () => resolve(server))
   })
 }
-
-// ── HTTP helpers ──────────────────────────────────────────────────────────
 
 interface FetchResult {
   buffer: Buffer
@@ -115,12 +149,11 @@ interface RunResult {
   fetchMs: number
   decodeMs: number
   totalMs: number
-  firstByteMs: number // time to first decoded byte (equals totalMs for batch; shows streaming overlap
+  firstByteMs: number
   transferBytes: number
   decodedBytes: number
 }
 
-// Shared helper for fetch-then-decode scenarios (token-max, zip, tar.gz, brotli).
 async function runBatchDecode(
   url: string,
   decode: (buf: Buffer) => number | Promise<number>,
@@ -142,27 +175,15 @@ async function runBatchDecode(
   }
 }
 
-function runTokenMax(url: string, ext: string): Promise<RunResult> {
-  return runBatchDecode(url, buf => decodeFromBuffer(buf, undefined, ext).then(d => d.length))
+async function decodeRaw(buf: Buffer, ext: string): Promise<Buffer> {
+  const Ctor = await algorithmCatalog.detectFromBuffer(buf, ext)
+  const algo = new Ctor({})
+
+  return algo.decode(buf, { ext })
 }
 
-function runZip(url: string): Promise<RunResult> {
-  return runBatchDecode(url, buf => {
-    const zip = new AdmZip(buf)
-    let bytes = 0
-
-    for (const e of zip.getEntries()) if (!e.isDirectory) bytes += e.getData().length
-
-    return bytes
-  })
-}
-
-function runTarGz(url: string): Promise<RunResult> {
-  return runBatchDecode(url, buf => zlib.gunzipSync(buf).length)
-}
-
-function runBrotli(url: string): Promise<RunResult> {
-  return runBatchDecode(url, buf => zlib.brotliDecompressSync(buf).length)
+function runTokenBatch(url: string, ext: string): Promise<RunResult> {
+  return runBatchDecode(url, buf => decodeRaw(buf, ext).then(d => d.length))
 }
 
 async function runTokenStream(url: string): Promise<RunResult> {
@@ -203,7 +224,6 @@ async function runTokenStream(url: string): Promise<RunResult> {
   const totalMs = now() - t0
   const decodedBytes = chunks.reduce((sum, c) => sum + c.length, 0)
 
-  // decodeMs = tail after last network byte — approaches 0 when decode keeps up with download.
   return {
     ttfb,
     fetchMs,
@@ -215,55 +235,71 @@ async function runTokenStream(url: string): Promise<RunResult> {
   }
 }
 
-// ── Scenarios per source ──────────────────────────────────────────────────
+function runZip(url: string): Promise<RunResult> {
+  return runBatchDecode(url, buf => {
+    const zip = new AdmZip(buf)
+    let bytes = 0
 
-type Scenario = { name: string; file: string; run: (url: string) => Promise<RunResult> }
+    for (const e of zip.getEntries()) if (!e.isDirectory) bytes += e.getData().length
 
-function getScenarios(source: string): Scenario[] {
+    return bytes
+  })
+}
+
+function runTarGz(url: string): Promise<RunResult> {
+  return runBatchDecode(url, buf => zlib.gunzipSync(buf).length)
+}
+
+function runBrotli(url: string): Promise<RunResult> {
+  return runBatchDecode(url, buf => zlib.brotliDecompressSync(buf).length)
+}
+
+// ── Scenario assembly per source ──────────────────────────────────────────
+
+interface Scenario {
+  name: string
+  file: string
+  run: (url: string) => Promise<RunResult>
+}
+
+function isStreamSurface(surfaceId: string): boolean {
+  return surfaceId === 'png-stream'
+}
+
+function fmtScenarioName(e: EncodeTimeEntry): string {
+  return `${e.algorithm}-c${e.channels}`
+}
+
+function getScenarios(source: string, encodeTimes: EncodeTimeEntry[]): Scenario[] {
+  const TOKENS_DIR = path.join(HERE, 'tokens')
+  const scenarios: Scenario[] = []
+
+  for (const e of encodeTimes) {
+    if (e.source !== source) continue
+    if (!e.tokenFile) continue
+    const fileAbs = path.join(REPO_ROOT, 'benchmark', e.tokenFile)
+    const ext = path.extname(fileAbs) || '.png'
+
+    if (!fs.existsSync(fileAbs)) continue
+    scenarios.push({
+      name: fmtScenarioName(e),
+      file: fileAbs,
+      run: isStreamSurface(e.surface) ? runTokenStream : (u => runTokenBatch(u, ext)),
+    })
+  }
+
+  // Archive baselines (zip/tar.gz/brotli) — match by source name.
   const brExt = source.startsWith('fs-') ? '.tar.br' : '.br'
-  const scenarios: Scenario[] = [
-    {
-      name: 'max-webp3',
-      file: path.join(TOKENS_DIR, `max-webp3__${source}.webp`),
-      run: u => runTokenMax(u, '.webp'),
-    },
-    {
-      name: 'max-png3',
-      file: path.join(TOKENS_DIR, `max-png3__${source}.png`),
-      run: u => runTokenMax(u, '.png'),
-    },
-    {
-      name: 'max-png4',
-      file: path.join(TOKENS_DIR, `max-png4__${source}.png`),
-      run: u => runTokenMax(u, '.png'),
-    },
-    {
-      name: 'stream-png3',
-      file: path.join(TOKENS_DIR, `stream-png3__${source}.png`),
-      run: runTokenStream,
-    },
-    {
-      name: 'stream-png4',
-      file: path.join(TOKENS_DIR, `stream-png4__${source}.png`),
-      run: runTokenStream,
-    },
-    {
-      name: 'stream-def3',
-      file: path.join(TOKENS_DIR, `stream-def3__${source}.png`),
-      run: runTokenStream,
-    },
-    {
-      name: 'stream-def4',
-      file: path.join(TOKENS_DIR, `stream-def4__${source}.png`),
-      run: runTokenStream,
-    },
+  const archiveCandidates: { name: string; file: string; run: Scenario['run'] }[] = [
     { name: 'zip', file: path.join(TOKENS_DIR, `zip__${source}.zip`), run: runZip },
     { name: 'tar.gz', file: path.join(TOKENS_DIR, `targz__${source}.tar.gz`), run: runTarGz },
     { name: 'brotli-11', file: path.join(TOKENS_DIR, `br11__${source}${brExt}`), run: runBrotli },
     { name: 'brotli-6', file: path.join(TOKENS_DIR, `br6__${source}${brExt}`), run: runBrotli },
   ]
 
-  return scenarios.filter(s => fs.existsSync(s.file))
+  for (const a of archiveCandidates) if (fs.existsSync(a.file)) scenarios.push(a)
+
+  return scenarios
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────
@@ -279,8 +315,6 @@ const fmtBytes = (b: number) =>
       ? `${(b / 1024).toFixed(0)}KB`
       : `${(b / 1024 / 1024).toFixed(2)}MB`
 
-// ── Main ──────────────────────────────────────────────────────────────────
-
 interface ResultRow extends RunResult {
   scenario: string
   source: string
@@ -291,6 +325,18 @@ interface ResultRow extends RunResult {
 async function main() {
   console.log('Tokenpack Benchmark')
   console.log('===================')
+
+  const encodeTimes = loadEncodeTimes()
+  const sources = [...new Set(encodeTimes.map(e => e.source))]
+
+  if (sources.length === 0) {
+    console.log('No encode-times entries; run `yarn benchmark:generate` first.')
+
+    return
+  }
+
+  // Reference archives — only logged for awareness; included via getScenarios.
+  loadArchiveTimes()
 
   const allResults: ResultRow[] = []
 
@@ -303,14 +349,14 @@ async function main() {
     const port = (server.address() as { port: number }).port
     const base = `http://127.0.0.1:${port}`
 
-    for (const source of SOURCES) {
+    for (const source of sources) {
       console.log(`\n  [${source}]`)
+      const scenarios = getScenarios(source, encodeTimes)
 
-      for (const scenario of getScenarios(source)) {
+      for (const scenario of scenarios) {
         const runs: RunResult[] = []
 
         process.stdout.write(`    ${scenario.name.padEnd(COL)} `)
-
         for (let r = 0; r < RUNS; r++) {
           try {
             runs.push(await scenario.run(`${base}/${encodeURIComponent(scenario.file)}`))
@@ -319,7 +365,6 @@ async function main() {
             process.stdout.write('x')
           }
         }
-
         if (!runs.length) {
           console.log(' FAILED')
           continue
@@ -344,7 +389,6 @@ async function main() {
         }
 
         allResults.push(row)
-
         process.stdout.write(
           `  ttfb=${fmtMs(row.ttfb).padStart(8)}` +
             `  total=${fmtMs(row.totalMs).padStart(8)}` +
@@ -359,11 +403,7 @@ async function main() {
     await new Promise<void>(r => server.close(() => r()))
   }
 
-  // ── Summary ───────────────────────────────────────────────────────────
-
   console.log('\n\n══ SUMMARY (avg across all sources) ══\n')
-
-  // Derive order from first condition's results to stay in sync with getScenarios().
   const scenarioOrder = [
     ...new Set(allResults.filter(r => r.condition === CONDITIONS[0].name).map(r => r.scenario)),
   ]
@@ -377,7 +417,6 @@ async function main() {
           .join(''),
     )
     console.log('  ' + '─'.repeat(COL * 6 + 2))
-
     for (const sName of scenarioOrder) {
       const rows = allResults.filter(r => r.scenario === sName && r.condition === cond.name)
 

@@ -1,7 +1,10 @@
+import '@tokenpack/node'
+
 import fs from 'fs'
 import path from 'path'
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 
-import { jsonNoCache, SCENARIOS, SOURCE_FILES, sourcePathFor, tokenPathFor } from '../_shared'
+import { jsonNoCache, SOURCE_FILES, sourcePathFor } from '../_shared'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -28,6 +31,35 @@ function readRuntimeFixtures(): RuntimeFixtureEntry[] | null {
   }
 }
 
+interface ScenarioInfo {
+  id: string
+  available: boolean
+  mime: string | null
+}
+
+function listScenarios(firstSource: string | null): ScenarioInfo[] {
+  const out: ScenarioInfo[] = []
+
+  for (const Ctor of algorithmCatalog.list()) {
+    const surface = new (Ctor.Surface as unknown as new () => {
+      extension: string
+      mimeType: string
+    })()
+
+    for (const ch of Ctor.capabilities.channels) {
+      const id = `${Ctor.name}-c${ch}`
+      const fixture = firstSource
+        ? path.join(RUNTIME_FIXTURES, `${firstSource}.${id}${surface.extension}`)
+        : null
+      const available = fixture ? fs.existsSync(fixture) : false
+
+      out.push({ id, available, mime: available ? surface.mimeType : null })
+    }
+  }
+
+  return out
+}
+
 export async function GET() {
   const sources = Object.keys(SOURCE_FILES)
     .map(id => {
@@ -37,12 +69,7 @@ export async function GET() {
     })
     .filter((s): s is { id: string; file: string; rawBytes: number } => s !== null)
 
-  const scenarios = SCENARIOS.map(id => {
-    const sample = sources[0] ? tokenPathFor(sources[0].id, id) : null
-
-    return { id, available: !!sample, mime: sample?.mime ?? null }
-  })
-
+  const scenarios = listScenarios(sources[0]?.id ?? null)
   const runtimeFixtures = readRuntimeFixtures()
 
   return jsonNoCache({
@@ -54,7 +81,7 @@ export async function GET() {
       entries: runtimeFixtures ?? [],
       hint: runtimeFixtures
         ? null
-        : 'Run `yarn benchmark:generate:runtime` to pre-generate compressed text fixtures (used by /text endpoint when ?live=1 is omitted).',
+        : 'Run `yarn benchmark:generate:runtime` to pre-generate compressed text fixtures.',
     },
   })
 }

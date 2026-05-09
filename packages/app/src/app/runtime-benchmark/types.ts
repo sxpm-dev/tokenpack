@@ -1,5 +1,3 @@
-export type Encoding = 'raw' | 'gzip' | 'br' | 'deflate'
-
 export type Group = 'text' | 'script'
 
 export type Mode = 'static' | 'live'

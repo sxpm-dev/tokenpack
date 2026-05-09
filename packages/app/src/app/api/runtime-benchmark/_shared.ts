@@ -27,41 +27,6 @@ export const SOURCE_MIMES: Record<string, string> = {
   'client-spec-min': 'application/json; charset=utf-8',
 }
 
-export const SOURCE_TO_TOKEN_NAME: Record<string, string> = {
-  'react-dom-dev': 'react-dom-client.development',
-  'react-dom-prod': 'react-dom-client.production',
-  'chunk-5mb': 'chunk-5mb',
-  screenshot: 'screenshot',
-  'client-spec': 'client-spec-map',
-  'client-spec-min': 'client-spec-map.min',
-}
-
-export const SCENARIOS = [
-  'max-webp3',
-  'max-png3',
-  'max-def3',
-  'stream-png3',
-  'stream-def3',
-] as const
-
-export type ScenarioId = (typeof SCENARIOS)[number]
-
-export function tokenPathFor(
-  source: string,
-  scenario: string,
-): { path: string; mime: string } | null {
-  const sourceName = SOURCE_TO_TOKEN_NAME[source]
-
-  if (!sourceName) return null
-  const ext = scenario === 'max-webp3' ? '.webp' : '.png'
-  const mime = ext === '.webp' ? 'image/webp' : 'image/png'
-  const filePath = path.join(BENCH_TOKENS, `${scenario}__${sourceName}${ext}`)
-
-  if (!fs.existsSync(filePath)) return null
-
-  return { path: filePath, mime }
-}
-
 export function sourcePathFor(source: string): { path: string; size: number } | null {
   const file = SOURCE_FILES[source]
 

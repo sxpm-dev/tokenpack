@@ -1,7 +1,5 @@
 // Buffer-pure CART archive primitives. No fs deps — safe for browser bundles.
-//
-// fs-using helpers (`packDirs`, `packDir`, `unpackDir`) live in `./archive.ts`
-// alongside these but those re-export with the file-system additions on top.
+// The fs-using `packDirs` wrapper lives in `./archive.ts`.
 
 const MAGIC = 'CART'
 const MAGIC_BYTES = new TextEncoder().encode(MAGIC)

@@ -1,5 +1,6 @@
 import fs from 'fs'
 import { PNG } from 'pngjs'
+import { enumOption, type OptionsSchema } from 'tokenpack/components/options'
 import { ImageSurface } from 'tokenpack/surfaces'
 import type { SurfacePixels } from 'tokenpack/surfaces/types'
 
@@ -75,10 +76,15 @@ function parsePngjs(png: PngLike): SurfacePixels {
 }
 
 export class PngSurface extends ImageSurface {
+  static override readonly optionsSchema: OptionsSchema = {
+    channels: enumOption([3, 4], 3, { label: 'Channels per pixel' }),
+  }
+
   constructor() {
     super({
       id: 'png',
       label: 'PNG',
+      description: 'Lossless 8-bit/channel PNG. Universal browser support, full alpha.',
       format: 'png',
       extension: '.png',
       mimeType: 'image/png',
@@ -88,15 +94,17 @@ export class PngSurface extends ImageSurface {
   }
 
   async write(filePath: string, image: SurfacePixels): Promise<void> {
+    fs.writeFileSync(filePath, await this.writeBuffer(image))
+  }
+
+  async writeBuffer(image: SurfacePixels): Promise<Buffer> {
     const { pixels, width, height, fileChannels } = image
     const png = new PNG({ width, height, filterType: -1 })
 
     png.data = Buffer.alloc(width * height * 4)
     packRgba(png.data, pixels, width * height, fileChannels)
-    fs.writeFileSync(
-      filePath,
-      PNG.sync.write(png, { colorType: pngColorType(fileChannels), inputColorType: 6 }),
-    )
+
+    return PNG.sync.write(png, { colorType: pngColorType(fileChannels), inputColorType: 6 })
   }
 
   async readFile(filePath: string): Promise<SurfacePixels> {

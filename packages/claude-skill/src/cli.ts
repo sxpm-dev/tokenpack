@@ -146,19 +146,19 @@ program
   .command('diff-pack <prev> <next>')
   .description('Produce a re-applyable diff token PNG between two pack PNGs')
   .requiredOption('-o, --out <path>', 'output diff PNG path')
-  .option('--algo <name>', 'codec algorithm (default linear)')
-  .option('--compression <mode>', 'compression mode (default brotli-6)')
+  .option('--algo <name>', 'catalog algorithm name (default linear-deflate)')
+  .option('--level <n>', 'compressor level', v => parseInt(v, 10))
   .option('--key <password>', 'encryption key (applies to both inputs and output)')
   .action(
     async (
       prev: string,
       next: string,
-      opts: { out: string; algo?: string; compression?: string; key?: string },
+      opts: { out: string; algo?: string; level?: number; key?: string },
     ) => {
       try {
         const result = await packCache.produceDiffToken(prev, next, opts.out, {
           algo: opts.algo,
-          compressionMode: opts.compression,
+          level: opts.level,
           key: opts.key,
         })
 

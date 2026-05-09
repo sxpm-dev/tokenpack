@@ -58,7 +58,8 @@ function initialStatuses(variants: Variant[], runSkipped: boolean): StatusMap {
     if (!runSkipped && v.compat === 'partial') {
       m.set(v.id, {
         state: 'skipped',
-        reason: 'Partial-compat — needs DecompressionStream(\'br\'). Toggle "Run skipped" to include.',
+        reason:
+          'Partial-compat — needs DecompressionStream(\'br\'). Toggle "Run skipped" to include.',
       })
     } else {
       m.set(v.id, { state: 'pending' })
@@ -349,11 +350,7 @@ export default function RuntimeBenchmarkPage() {
           <SectionTitle>
             Source content · {mode} · {throttle} · source = <code>{source}</code>
           </SectionTitle>
-          <ResultsTable
-            statuses={textStatuses}
-            variants={TEXT_VARIANTS}
-            withExecute={false}
-          />
+          <ResultsTable statuses={textStatuses} variants={TEXT_VARIANTS} withExecute={false} />
           <RuntimeLegend withExecute={false} />
         </>
       ) : (
@@ -361,11 +358,7 @@ export default function RuntimeBenchmarkPage() {
           <SectionTitle>
             Generated script · {mode} · {throttle}
           </SectionTitle>
-          <ResultsTable
-            withExecute
-            statuses={scriptStatuses}
-            variants={SCRIPT_VARIANTS}
-          />
+          <ResultsTable withExecute statuses={scriptStatuses} variants={SCRIPT_VARIANTS} />
           <RuntimeLegend withExecute />
         </>
       )}

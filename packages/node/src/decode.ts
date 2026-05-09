@@ -8,8 +8,8 @@
 
 import fs from 'fs'
 import path from 'path'
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { compressRaw, decompressRaw } from 'tokenpack/compressors'
-import { decodeFromBuffer } from 'tokenpack/decoder'
 import { fromBytes } from 'tokenpack/pack/from-bytes'
 import type { DirPack, Pack } from 'tokenpack/pack/types'
 import { encodeDiff } from 'tokenpack/pack-format/encode-diff'
@@ -27,7 +27,9 @@ export interface DecodeOptions {
 
 export async function decode(source: DecodeSource, options: DecodeOptions = {}): Promise<Pack> {
   const { bytes, ext } = await loadSource(source)
-  const payload = await decodeFromBuffer(bytes, options.key, ext)
+  const Ctor = await algorithmCatalog.detectFromBuffer(bytes, ext)
+  const algo = new Ctor({ key: options.key })
+  const payload = await algo.decode(bytes, { key: options.key, ext })
   const payloadBytes = new Uint8Array(payload.buffer, payload.byteOffset, payload.byteLength)
 
   return fromBytes(payloadBytes, {
@@ -48,17 +50,31 @@ export async function decode(source: DecodeSource, options: DecodeOptions = {}):
       })
 
       // Wrap diff bytes through the image pipeline so the result is itself a token.
-      return encode(Buffer.from(diffBytes.buffer, diffBytes.byteOffset, diffBytes.byteLength), {
-        compressionMode: 'none',
-      })
+      return encode(Buffer.from(diffBytes.buffer, diffBytes.byteOffset, diffBytes.byteLength))
     },
   })
 }
 
+function sniffExt(buf: Buffer): string {
+  if (buf.length >= 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) {
+    return '.png'
+  }
+  if (buf.length >= 12 && buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46) {
+    if (buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50) return '.webp'
+  }
+  if (buf.length >= 12 && buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70) {
+    return '.avif'
+  }
+
+  return '.png'
+}
+
 async function loadSource(source: DecodeSource): Promise<{ bytes: Buffer; ext: string }> {
-  if (Buffer.isBuffer(source)) return { bytes: source, ext: '.png' }
+  if (Buffer.isBuffer(source)) return { bytes: source, ext: sniffExt(source) }
   if (source instanceof Uint8Array) {
-    return { bytes: Buffer.from(source.buffer, source.byteOffset, source.byteLength), ext: '.png' }
+    const buf = Buffer.from(source.buffer, source.byteOffset, source.byteLength)
+
+    return { bytes: buf, ext: sniffExt(buf) }
   }
   if (source instanceof URL || (typeof source === 'string' && /^(?:https?|file):\/\//.test(source))) {
     const url = typeof source === 'string' ? new URL(source) : source

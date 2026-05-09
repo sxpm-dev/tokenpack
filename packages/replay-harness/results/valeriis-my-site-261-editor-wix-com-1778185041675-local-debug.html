@@ -1,0 +1,1887 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Replay-harness report — valeriis-my-site-261-editor-wix-com</title>
+<style>
+  :root { color-scheme: dark light; }
+  body { font: 14px/1.4 ui-sans-serif, system-ui, sans-serif; max-width: 1600px; margin: 24px auto; padding: 0 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 24px 0 8px; border-bottom: 1px solid #8884; padding-bottom: 4px; }
+  h3 { font-size: 14px; margin: 16px 0 6px; }
+  .meta { color: #888; margin-bottom: 16px; line-height: 1.6; }
+  .meta code { background: #8881; padding: 1px 4px; border-radius: 3px; }
+  .grid { width: 100%; border-collapse: collapse; }
+  .grid th, .grid td { border: 1px solid #8884; padding: 6px 10px; text-align: left; vertical-align: top; }
+  .grid thead th { background: #8881; }
+  .grid.compact td, .grid.compact th { padding: 3px 6px; font-size: 12px; }
+  .grid.assets td.url, .grid.assets td.pack { word-break: break-all; max-width: 540px; line-height: 1.3; }
+  .grid.assets td.url code, .grid.assets td.pack code { font-size: 11px; }
+  .grid.assets td { vertical-align: middle; }
+  .grid.assets tfoot td { border-top: 2px solid #8888; background: #8881; }
+  .grid.iterations .iter-header td { background: #8882; font-size: 12px; padding: 3px 6px; }
+  .grid.iterations .iter-cell { background: #8881; vertical-align: middle; text-align: center; }
+  .grid.iterations .phase-reload { background: #8881; }
+  .dim { color: #888; font-size: 12px; }
+  .good { color: #1a7f37; }
+  .bad { color: #cf222e; }
+  .tp { color: #6a1b9a; }
+  .bl { color: #1565c0; }
+  code { font: 12px ui-monospace, monospace; }
+  ul.dim { padding-left: 20px; }
+  ul.dim li { margin-bottom: 4px; }
+  .grid.assets thead th[colspan] { text-align: center; border-bottom-width: 2px; }
+  tr.tp-effective td { background: rgba(106,27,154,0.08); }
+  .formula { font-size: 13px; line-height: 1.7; padding: 12px 16px; background: #8881; border-radius: 4px; margin-top: 8px; }
+  .formula code { background: transparent; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+  .badge.skipped { background: #fff3cd; color: #856404; border: 1px solid #ffe69c; }
+  .badge.fall { background: #ffe0b2; color: #6e3d00; border: 1px solid #ffcc80; }
+  .badge.error { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+  .badge.warn { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+  tr.skipped-threshold td { background: rgba(255,243,205,0.15); }
+  tr.fall-through td { background: rgba(255,224,178,0.10); }
+  tr.tp-missing td { background: rgba(220,53,69,0.12); }
+  tr.bl-missing td { background: rgba(13,110,253,0.10); }
+  .pack-chip { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .grid.iterations tbody.iter-group + tbody.iter-group > tr:first-child > td {
+    border-top: 6px double #8888;
+    padding-top: 8px;
+  }
+  tr.prod-row td { background: rgba(106,27,154,0.10); border-top: 2px solid #8886; }
+  .legend { margin-top: 16px; padding: 12px 16px; background: #8881; border-radius: 4px; font-size: 13px; }
+  .legend > strong { display: block; margin-bottom: 6px; }
+  .legend ul { margin: 0; padding-left: 20px; }
+</style>
+</head><body>
+<h1>Replay-harness report</h1>
+<div class="meta">
+  Target: <code>https://valeriis-my-site-261.editor.wix.com/edit/od/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b?metaSiteId=d10191ef-d39a-432d-a235-4d8a9d1e7df8&amp;http_referrer=odeditor.new&amp;debug=all</code><br>
+  Mode: <code>local</code> · Strategy: <code>extract-on-demand</code> · Throttle: <code>FAST_4G</code> · Samples: <code>5</code><br>
+  Captured: <code>2026-05-07T20:26:05.007Z</code> · Token-debug: <code>on</code> · Reload phase: <code>on</code><br>
+  Raw data: <a href="valeriis-my-site-261-editor-wix-com-1778185041675-local-debug.json"><code>valeriis-my-site-261-editor-wix-com-1778185041675-local-debug.json</code></a>
+</div>
+
+<h2>Summary</h2>
+
+<h3>Cold load (fresh browser context, no cache)</h3>
+<table class="grid">
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th class="bl">Baseline<br><span class="dim">(no intercept)</span></th>
+      <th class="bl">Baseline-CDP<br><span class="dim">(intercept + refetch)</span></th>
+      <th class="tp">TokenPack<br><span class="dim">(intercept + pack)</span></th>
+      <th>Δ TP vs BL<br><span class="dim">(prod fairness)</span></th>
+      <th>Δ TP vs BL-CDP<br><span class="dim">(tech fairness)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Total duration</td>
+      <td>avg 21502 ms<br><span class="dim">(16830 ms–38348 ms)</span></td>
+      <td>avg 15752 ms<br><span class="dim">(10254 ms–22629 ms)</span></td>
+      <td>avg 22382 ms<br><span class="dim">(20650 ms–27179 ms)</span></td>
+      <td><span class="bad">+881 ms<br><span class="dim">+4.1%</span></span></td>
+      <td><span class="bad">+6630 ms<br><span class="dim">+42.1%</span></span></td>
+    </tr>
+    <tr>
+      <td>Load event</td>
+      <td>avg 20999 ms<br><span class="dim">(16327 ms–37845 ms)</span></td>
+      <td>avg 15249 ms<br><span class="dim">(9753 ms–22128 ms)</span></td>
+      <td>avg 21881 ms<br><span class="dim">(20149 ms–26679 ms)</span></td>
+      <td><span class="bad">+882 ms<br><span class="dim">+4.2%</span></span></td>
+      <td><span class="bad">+6632 ms<br><span class="dim">+43.5%</span></span></td>
+    </tr>
+    <tr>
+      <td>Coverage (avg)</td>
+      <td>—</td>
+      <td>served 92 · fell-through 76</td>
+      <td>served 92 · fell-through 74</td>
+      <td colspan="2">—</td>
+    </tr>
+    <tr class="prod-row">
+      <td>Est. prod TP <span class="dim">(–harness)</span></td>
+      <td>—</td>
+      <td>—</td>
+      <td class="tp"><strong>11326 ms</strong><br><span class="dim">−11057 ms harness<br>(49.4% of TP)</span></td>
+      <td><span class="good">-10176 ms<br><span class="dim">-47.3%</span></span></td>
+      <td><span class="good">-4426 ms<br><span class="dim">-28.1%</span></span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Reload (warm browser HTTP cache)</h3>
+<table class="grid">
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th class="bl">Baseline<br><span class="dim">(no intercept)</span></th>
+      <th class="bl">Baseline-CDP<br><span class="dim">(intercept + refetch)</span></th>
+      <th class="tp">TokenPack<br><span class="dim">(intercept + pack)</span></th>
+      <th>Δ TP vs BL<br><span class="dim">(prod fairness)</span></th>
+      <th>Δ TP vs BL-CDP<br><span class="dim">(tech fairness)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Total duration</td>
+      <td>avg 5990 ms<br><span class="dim">(3285 ms–14794 ms)</span></td>
+      <td>avg 10004 ms<br><span class="dim">(8548 ms–12034 ms)</span></td>
+      <td>avg 26310 ms<br><span class="dim">(21110 ms–42450 ms)</span></td>
+      <td><span class="bad">+20321 ms<br><span class="dim">+339.3%</span></span></td>
+      <td><span class="bad">+16306 ms<br><span class="dim">+163.0%</span></span></td>
+    </tr>
+    <tr>
+      <td>Load event</td>
+      <td>avg 5488 ms<br><span class="dim">(2784 ms–14293 ms)</span></td>
+      <td>avg 9502 ms<br><span class="dim">(8046 ms–11529 ms)</span></td>
+      <td>avg 25809 ms<br><span class="dim">(20608 ms–41948 ms)</span></td>
+      <td><span class="bad">+20321 ms<br><span class="dim">+370.3%</span></span></td>
+      <td><span class="bad">+16307 ms<br><span class="dim">+171.6%</span></span></td>
+    </tr>
+    <tr>
+      <td>Coverage (avg)</td>
+      <td>—</td>
+      <td>served 79 · fell-through 75</td>
+      <td>served 91 · fell-through 81</td>
+      <td colspan="2">—</td>
+    </tr>
+    <tr class="prod-row">
+      <td>Est. prod TP <span class="dim">(–harness)</span></td>
+      <td>—</td>
+      <td>—</td>
+      <td class="tp"><strong>12626 ms</strong><br><span class="dim">−13684 ms harness<br>(52.0% of TP)</span></td>
+      <td><span class="bad">+6637 ms<br><span class="dim">+110.8%</span></span></td>
+      <td><span class="bad">+2622 ms<br><span class="dim">+26.2%</span></span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="legend">
+  <strong>Legend</strong>
+  <ul class="dim">
+    <li><strong>Baseline</strong> — no interception. Browser fetches assets natively. Closest to real production traffic.</li>
+    <li><strong>Baseline-CDP</strong> — same harness rig as TP (intercept + fulfill via CDP) but bytes refetched Node-side. Lets us isolate harness IPC tax. Network behaviour differs from baseline (no H/2 multiplexing on Node fetches).</li>
+    <li><strong>TokenPack</strong> — intercept + serve from packed PNG. Pays harness IPC tax on every served asset.</li>
+    <li><strong>Δ TP vs BL (prod fairness)</strong> — TP minus baseline. Real comparison <em>including</em> harness handicap. If TP wins here, it wins despite the rig.</li>
+    <li><strong>Δ TP vs BL-CDP (tech fairness)</strong> — TP minus baseline-CDP. Both pay harness tax, so this isolates pack-vs-direct. Tech-level win.</li>
+    <li><strong>Est. prod TP (–harness)</strong> — projection of TP duration with harness IPC tax stripped out. Computed as <code>TP × (1 − harnessRatio)</code> where <code>harnessRatio = sum(harness)/sum(totalMs)</code> across all served-from-pack assets. Approximates a real Service-Worker deployment where the browser delivers pack bytes directly without CDP roundtrips. <em>Estimate, not measurement.</em></li>
+  </ul>
+</div>
+
+<h2>Iterations (per-iteration cold + reload)</h2>
+
+<table class="grid iterations compact">
+  <thead>
+    <tr>
+      <th rowspan="2">Iter</th>
+      <th rowspan="2">Mode</th>
+      <th colspan="4">Cold phase</th>
+      <th colspan="4">Reload phase</th>
+    </tr>
+    <tr>
+      <th>Duration<br><span class="dim">(× vs baseline)</span></th><th>Load</th><th>Served</th><th>Fell-thru</th>
+      <th>Duration<br><span class="dim">(× vs baseline)</span></th><th>Load</th><th>Served</th><th>Fell-thru</th>
+    </tr>
+  </thead>
+  <tbody class="iter-group">
+    <tr>
+      <td>0</td>
+      <td class="bl">baseline</td>
+      <td>16955 ms<br><span class="dim ">1.00×</span></td><td>16452 ms</td><td>—</td><td>—</td>
+      <td>3285 ms<br><span class="dim ">1.00×</span></td><td>2784 ms</td><td>—</td><td>—</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td class="bl-cdp">baseline-cdp</td>
+      <td>12423 ms<br><span class="dim good">0.73×</span></td><td>11921 ms</td><td>93</td><td>76</td>
+      <td>8776 ms<br><span class="dim bad">2.67×</span></td><td>8275 ms</td><td>92</td><td>75</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td class="tp">tokenpack</td>
+      <td>20650 ms<br><span class="dim bad">1.22×</span></td><td>20149 ms</td><td>92</td><td>74</td>
+      <td>21312 ms<br><span class="dim bad">6.49×</span></td><td>20810 ms</td><td>92</td><td>84</td>
+    </tr></tbody><tbody class="iter-group">
+    <tr>
+      <td>1</td>
+      <td class="bl">baseline</td>
+      <td>16830 ms<br><span class="dim ">1.00×</span></td><td>16327 ms</td><td>—</td><td>—</td>
+      <td>3313 ms<br><span class="dim ">1.00×</span></td><td>2811 ms</td><td>—</td><td>—</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td class="bl-cdp">baseline-cdp</td>
+      <td>10254 ms<br><span class="dim good">0.61×</span></td><td>9753 ms</td><td>92</td><td>74</td>
+      <td>9124 ms<br><span class="dim bad">2.75×</span></td><td>8622 ms</td><td>93</td><td>81</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td class="tp">tokenpack</td>
+      <td>20782 ms<br><span class="dim bad">1.23×</span></td><td>20281 ms</td><td>92</td><td>73</td>
+      <td>21894 ms<br><span class="dim bad">6.61×</span></td><td>21392 ms</td><td>92</td><td>78</td>
+    </tr></tbody><tbody class="iter-group">
+    <tr>
+      <td>2</td>
+      <td class="bl">baseline</td>
+      <td>17703 ms<br><span class="dim ">1.00×</span></td><td>17202 ms</td><td>—</td><td>—</td>
+      <td>5187 ms<br><span class="dim ">1.00×</span></td><td>4685 ms</td><td>—</td><td>—</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td class="bl-cdp">baseline-cdp</td>
+      <td>22301 ms<br><span class="dim bad">1.26×</span></td><td>21800 ms</td><td>92</td><td>77</td>
+      <td>11540 ms<br><span class="dim bad">2.22×</span></td><td>11039 ms</td><td>24</td><td>57</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td class="tp">tokenpack</td>
+      <td>21986 ms<br><span class="dim bad">1.24×</span></td><td>21484 ms</td><td>92</td><td>74</td>
+      <td>21110 ms<br><span class="dim bad">4.07×</span></td><td>20608 ms</td><td>92</td><td>82</td>
+    </tr></tbody><tbody class="iter-group">
+    <tr>
+      <td>3</td>
+      <td class="bl">baseline</td>
+      <td>17673 ms<br><span class="dim ">1.00×</span></td><td>17170 ms</td><td>—</td><td>—</td>
+      <td>3368 ms<br><span class="dim ">1.00×</span></td><td>2867 ms</td><td>—</td><td>—</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td class="bl-cdp">baseline-cdp</td>
+      <td>11153 ms<br><span class="dim good">0.63×</span></td><td>10643 ms</td><td>92</td><td>77</td>
+      <td>8548 ms<br><span class="dim bad">2.54×</span></td><td>8046 ms</td><td>92</td><td>81</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td class="tp">tokenpack</td>
+      <td>21316 ms<br><span class="dim bad">1.21×</span></td><td>20814 ms</td><td>92</td><td>74</td>
+      <td>42450 ms<br><span class="dim bad">12.60×</span></td><td>41948 ms</td><td>89</td><td>81</td>
+    </tr></tbody><tbody class="iter-group">
+    <tr>
+      <td>4</td>
+      <td class="bl">baseline</td>
+      <td>38348 ms<br><span class="dim ">1.00×</span></td><td>37845 ms</td><td>—</td><td>—</td>
+      <td>14794 ms<br><span class="dim ">1.00×</span></td><td>14293 ms</td><td>—</td><td>—</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td class="bl-cdp">baseline-cdp</td>
+      <td>22629 ms<br><span class="dim good">0.59×</span></td><td>22128 ms</td><td>92</td><td>77</td>
+      <td>12034 ms<br><span class="dim good">0.81×</span></td><td>11529 ms</td><td>92</td><td>83</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td class="tp">tokenpack</td>
+      <td>27179 ms<br><span class="dim good">0.71×</span></td><td>26679 ms</td><td>92</td><td>74</td>
+      <td>24786 ms<br><span class="dim bad">1.68×</span></td><td>24285 ms</td><td>92</td><td>82</td>
+    </tr></tbody>
+</table>
+
+<h2>Per-asset comparison (last iteration, cold phase)</h2>
+
+<table class="grid compact assets">
+  <thead>
+    <tr>
+      <th rowspan="2">Asset URL</th>
+      <th rowspan="2">Pack id</th>
+      <th colspan="4" class="tp">TokenPack mode</th>
+      <th colspan="1" class="bl">Baseline mode</th>
+      <th rowspan="2">Asset size</th>
+    </tr>
+    <tr>
+      <th class="tp" title="Pack fetch + stream-decode time charged to this asset. 0 = pack already cached by an earlier sibling.">pack fetch+decode</th>
+      <th class="tp" title="pack.extract(file) — in-memory, sub-ms.">extract</th>
+      <th class="harness" title="Total − (fetch + extract). Playwright/CDP/base64/page.evaluate overhead. Zero in a real Service-Worker deployment.">harness IPC tax</th>
+      <th class="tp" title="Wall-clock time the asset was paused in the TP handler. Equals fetch + extract + harness tax.">total</th>
+      <th class="bl" title="Time to fetch this single asset over the wire in baseline mode.">asset fetch</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/document-management/1.17528.0/tb-main/dist/tb-main.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(215 70% 50%)"><span class="pack-chip" style="background:hsl(215 70% 50%)"></span><code class="dim">static.parastorage.com--services-document-management-1.17528.0-tb-main-dist</code></td>
+      <td class="">2864 ms</td>
+      <td>0 ms</td>
+      <td class="harness">60 ms</td>
+      <td>2924 ms</td>
+      <td class="good">731 ms</td>
+      <td>9.1 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/editor-ai-packages-loader/63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b/editor-ai-packages-bundle-descriptor.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(109 70% 50%)"><span class="pack-chip" style="background:hsl(109 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-ai-packages-loader-63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b</code></td>
+      <td class="good">479 ms</td>
+      <td>3 ms</td>
+      <td class="harness">39 ms</td>
+      <td>520 ms</td>
+      <td class="">843 ms</td>
+      <td>100.8 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-ai-packages-loader/63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b/async/plan-mode.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(260 70% 50%)"><span class="pack-chip" style="background:hsl(260 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-ai-packages-loader-63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b-async</code></td>
+      <td class="">1218 ms</td>
+      <td>13 ms</td>
+      <td class="harness">641 ms</td>
+      <td>1872 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/editor-elements-panel-service/1.1129.0/editor-elements-panel-service.css</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(286 70% 50%)"><span class="pack-chip" style="background:hsl(286 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-elements-panel-service-1.1129.0</code></td>
+      <td class="">5758 ms</td>
+      <td>40 ms</td>
+      <td class="harness">191 ms</td>
+      <td>5988 ms</td>
+      <td class="good">2222 ms</td>
+      <td>76.1 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/editor-elements-panel-service/1.1129.0/editor-elements-panel-service.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(286 70% 50%)"><span class="pack-chip" style="background:hsl(286 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-elements-panel-service-1.1129.0</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>107 ms</td>
+      <td class="harness">6126 ms</td>
+      <td>6233 ms</td>
+      <td class="">4709 ms</td>
+      <td>377.6 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-host-integration/1.5862.0/editor-platform-host-integration-repluggable.umd.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(273 70% 50%)"><span class="pack-chip" style="background:hsl(273 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-host-integration-1.5862.0</code></td>
+      <td class="good">11623 ms</td>
+      <td>188 ms</td>
+      <td class="harness">1611 ms</td>
+      <td>13422 ms</td>
+      <td class="">12901 ms</td>
+      <td>1.09 MB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-add-component-service-chunk--agQo7f_P.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>7 ms</td>
+      <td class="harness">543 ms</td>
+      <td>550 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-app-api-service-chunk--BckTEq-i.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">463 ms</td>
+      <td>464 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-app-dependencies-service-chunk--DB-emwbI.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">540 ms</td>
+      <td>541 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-app-manifest-service-chunk--pOZm4_lA.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">309 ms</td>
+      <td>310 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-app-market-service-chunk--BQ1U1a_F.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>2 ms</td>
+      <td class="harness">537 ms</td>
+      <td>539 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-app-pages-data-service-chunk--CMvsr90i.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>3 ms</td>
+      <td class="harness">694 ms</td>
+      <td>697 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-app-pages-ui-service-chunk--Cu3X_LOj.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">693 ms</td>
+      <td>693 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-application-data-service-chunk--Q7gTa93E.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">265 ms</td>
+      <td>266 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-application-lifecycle-service-chunk--CUqD_fDj.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">543 ms</td>
+      <td>544 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-bi-service-chunk--D7L5tbSp.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">299 ms</td>
+      <td>299 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-blocks-service-chunk--C8FbNaEa.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>5 ms</td>
+      <td class="harness">605 ms</td>
+      <td>610 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-branches-service-chunk--BH6vpzAN.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">621 ms</td>
+      <td>621 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-breakpoints-service-chunk--BqsdATvu.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">600 ms</td>
+      <td>600 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-bridge-provider-chunk--CSUSsugf.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>3 ms</td>
+      <td class="harness">661 ms</td>
+      <td>664 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-builder-components-private-service-chunk--DmWvOXqx.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">265 ms</td>
+      <td>266 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-component-layout-service-chunk--CNYy_9Sy.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">88 ms</td>
+      <td>88 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-components-private-service-chunk--BJqqSNLQ.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>2 ms</td>
+      <td class="harness">274 ms</td>
+      <td>276 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-components-ui-service-chunk--CDUg6SL1.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">544 ms</td>
+      <td>544 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-context-ui-service-chunk--C9wCsFh-.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">695 ms</td>
+      <td>696 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-custom-panel-chunk--Dyw6ehbv.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">428 ms</td>
+      <td>429 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-data-binding-service-chunk--Dk_g6pMY.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">245 ms</td>
+      <td>246 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-data-items-compatibility-service-chunk--DCh1oB6n.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">241 ms</td>
+      <td>242 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-dealer-offers-service-chunk--hS2tB9J4.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>2 ms</td>
+      <td class="harness">537 ms</td>
+      <td>539 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-declarative-installation-client-adapter-chunk--D1R5Mw5Y.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">607 ms</td>
+      <td>607 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-declarative-installation-service-chunk--pYNB4x-f.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">18 ms</td>
+      <td>18 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-deeplink-service-chunk--BYQtlBDM.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">303 ms</td>
+      <td>303 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-dependencies-chunk--Cv6kyKKb.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">69 ms</td>
+      <td>69 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-dynamic-page-nav-bar-chunk--BnIDWIPO.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">300 ms</td>
+      <td>300 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-edit-text-panel-service-chunk--DOpOtpcb.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>2 ms</td>
+      <td class="harness">454 ms</td>
+      <td>456 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-editor-pointer-service-chunk--BFys57vC.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">241 ms</td>
+      <td>242 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-elements-panel-chunk--Da90eahA.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">462 ms</td>
+      <td>462 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-events-emitter-chunk--DwWa4A5F.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">5 ms</td>
+      <td>5 ms</td>
+      <td class="">507 ms</td>
+      <td>1.2 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-experiments-service-chunk--DN70Ch58.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">667 ms</td>
+      <td>667 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-feature-store-service-chunk--LMTQ-UE3.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">5 ms</td>
+      <td>5 ms</td>
+      <td class="">810 ms</td>
+      <td>2.4 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-filter-modal-ui-service-chunk--BFOigBP5.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">457 ms</td>
+      <td>458 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-guid-service-chunk--vhVYmONP.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">483 ms</td>
+      <td>483 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-i18n-chunk--CSyWJ2IA.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">683 ms</td>
+      <td>684 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-injection-infra-chunk--k6wwcuYu.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">9 ms</td>
+      <td>9 ms</td>
+      <td class="">868 ms</td>
+      <td>14.9 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-installation-service-chunk--C9X4ppkx.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">541 ms</td>
+      <td>541 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-language-service-chunk--BHgcaQWs.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">309 ms</td>
+      <td>309 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-links-service-chunk--DW55dva4.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">269 ms</td>
+      <td>270 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-manage-apps-panel-ui-service-chunk--D8Mf2BKL.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>2 ms</td>
+      <td class="harness">477 ms</td>
+      <td>479 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-manage-data-items-ui-service-chunk--DFB-aBde.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">455 ms</td>
+      <td>456 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-modals-chunk--2_muQ6pO.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">613 ms</td>
+      <td>613 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-page-replace-data-service-chunk--hYDqDYdi.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>2 ms</td>
+      <td class="harness">306 ms</td>
+      <td>307 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-page-replace-ui-service-chunk--CVkCwB-k.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">684 ms</td>
+      <td>684 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-pages-data-service-chunk--CosT28Jm.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">680 ms</td>
+      <td>681 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-pages-service-chunk--CUNvcKqF.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>3 ms</td>
+      <td class="harness">275 ms</td>
+      <td>278 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-panorama-service-chunk--VFoUIunD.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">666 ms</td>
+      <td>667 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-plugins-market-panel-chunk--BoCiVuKy.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">286 ms</td>
+      <td>287 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-premium-data-service-chunk--Bg_V9Mu-.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">474 ms</td>
+      <td>475 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-premium-service-chunk--DM4XFVYk.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">482 ms</td>
+      <td>482 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-presets-panel-chunk--D-xsD-EY.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>8 ms</td>
+      <td class="harness">418 ms</td>
+      <td>426 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-providers-service-chunk--DOeAhJNb.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>2 ms</td>
+      <td class="harness">261 ms</td>
+      <td>263 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-routers-service-chunk--jYuovd1J.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">297 ms</td>
+      <td>298 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-services.css</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>2 ms</td>
+      <td class="harness">239 ms</td>
+      <td>241 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-services.es.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">2118 ms</td>
+      <td>1 ms</td>
+      <td class="harness">124 ms</td>
+      <td>2242 ms</td>
+      <td class="good">1689 ms</td>
+      <td>6.3 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-site-settings-service-chunk--yzmdBKBp.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">297 ms</td>
+      <td>297 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-sort-modal-ui-service-chunk--C0Q8BCT3.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">463 ms</td>
+      <td>463 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-text-panel-ui-service-chunk--TPltiYE_.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">468 ms</td>
+      <td>468 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-ui-listeners-chunk--D0048c4R.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">432 ms</td>
+      <td>432 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-ui-state-service-chunk--CsIisXUw.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">421 ms</td>
+      <td>421 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-uninstall-service-chunk--BKA3gfpI.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">624 ms</td>
+      <td>624 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-upgrade-ui-service-chunk--DR_d9Hof.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">539 ms</td>
+      <td>539 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/editor-platform-wix-code-service-chunk--CX-QhGXR.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">542 ms</td>
+      <td>543 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/translations-chunk--CsmJ2fSj.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>5 ms</td>
+      <td class="harness">71 ms</td>
+      <td>76 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-services/c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690/vendors-commonjs-helpers-BhWcALO8.mjs</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(81 70% 50%)"><span class="pack-chip" style="background:hsl(81 70% 50%)"></span><code class="dim">static.parastorage.com--services-editor-platform-services-c6494be8c5cb999c82642936c1acfb3070c4799ee249676a527d7690</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>0 ms</td>
+      <td class="harness">2 ms</td>
+      <td>2 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/marketplace-editor-container/1.2405.3596//add-panel-marketplace.umd.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(120 70% 50%)"><span class="pack-chip" style="background:hsl(120 70% 50%)"></span><code class="dim">static.parastorage.com--services-marketplace-editor-container-1.2405.3596</code></td>
+      <td class="good">10098 ms</td>
+      <td>40 ms</td>
+      <td class="harness">846 ms</td>
+      <td>10984 ms</td>
+      <td class="">13152 ms</td>
+      <td>1.19 MB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/odeditor-packages/dist/39675.4ed4acd9.min.css</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(236 70% 50%)"><span class="pack-chip" style="background:hsl(236 70% 50%)"></span><code class="dim">static.parastorage.com--services-odeditor-packages-dist</code></td>
+      <td class="">10684 ms</td>
+      <td>145 ms</td>
+      <td class="harness">523 ms</td>
+      <td>11352 ms</td>
+      <td class="good">2082 ms</td>
+      <td>75.2 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/odeditor-packages/dist/39675.f75972ac.min.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(236 70% 50%)"><span class="pack-chip" style="background:hsl(236 70% 50%)"></span><code class="dim">static.parastorage.com--services-odeditor-packages-dist</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>208 ms</td>
+      <td class="harness">11131 ms</td>
+      <td>11339 ms</td>
+      <td class="">5161 ms</td>
+      <td>409.1 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/odeditor-packages/dist/odeditor-packages.08cc9cf3.css</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(236 70% 50%)"><span class="pack-chip" style="background:hsl(236 70% 50%)"></span><code class="dim">static.parastorage.com--services-odeditor-packages-dist</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>97 ms</td>
+      <td class="harness">11231 ms</td>
+      <td>11329 ms</td>
+      <td class="">1707 ms</td>
+      <td>38.3 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/odeditor-packages/dist/odeditor-packages.d7e04ecf.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(236 70% 50%)"><span class="pack-chip" style="background:hsl(236 70% 50%)"></span><code class="dim">static.parastorage.com--services-odeditor-packages-dist</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>427 ms</td>
+      <td class="harness">11729 ms</td>
+      <td>12156 ms</td>
+      <td class="">12858 ms</td>
+      <td>837.1 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/responsive-editor-common-infra/1.3145.0/responsive-editor-common-infra.bundle.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(29 70% 50%)"><span class="pack-chip" style="background:hsl(29 70% 50%)"></span><code class="dim">static.parastorage.com--services-responsive-editor-common-infra-1.3145.0</code></td>
+      <td class="">4435 ms</td>
+      <td>18 ms</td>
+      <td class="harness">603 ms</td>
+      <td>5055 ms</td>
+      <td class="good">3133 ms</td>
+      <td>105.4 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/responsive-editor-packages/1.18479.0/responsive-editor-packages.css</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(284 70% 50%)"><span class="pack-chip" style="background:hsl(284 70% 50%)"></span><code class="dim">static.parastorage.com--services-responsive-editor-packages-1.18479.0__1__1</code></td>
+      <td class="good">2398 ms</td>
+      <td>105 ms</td>
+      <td class="harness">868 ms</td>
+      <td>3370 ms</td>
+      <td class="">2953 ms</td>
+      <td>172.5 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/responsive-editor-packages/1.18479.0/editor-debug-tools.545e5a38.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(126 70% 50%)"><span class="pack-chip" style="background:hsl(126 70% 50%)"></span><code class="dim">static.parastorage.com--services-responsive-editor-packages-1.18479.0__2</code></td>
+      <td class="">332 ms</td>
+      <td>2 ms</td>
+      <td class="harness">129 ms</td>
+      <td>463 ms</td>
+      <td class="good">182 ms</td>
+      <td>18.5 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/responsive-editor-packages/1.18479.0/wix-richtext.a9361324.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(126 70% 50%)"><span class="pack-chip" style="background:hsl(126 70% 50%)"></span><code class="dim">static.parastorage.com--services-responsive-editor-packages-1.18479.0__2</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>2 ms</td>
+      <td class="harness">469 ms</td>
+      <td>471 ms</td>
+      <td class="">1703 ms</td>
+      <td>27.9 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/responsive-editor-packages/1.18479.0/ai-assistant-chat-ui/ai-assistant-chat.07deea1e.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(46 70% 50%)"><span class="pack-chip" style="background:hsl(46 70% 50%)"></span><code class="dim">static.parastorage.com--services-responsive-editor-packages-1.18479.0-ai-assistant-chat-ui</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>14 ms</td>
+      <td class="harness">710 ms</td>
+      <td>725 ms</td>
+      <td class="">173 ms</td>
+      <td>117.5 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/services/responsive-editor-packages/1.18479.0/ai-assistant-chat-ui/ai-assistant-chat.b1f58b88.css</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(46 70% 50%)"><span class="pack-chip" style="background:hsl(46 70% 50%)"></span><code class="dim">static.parastorage.com--services-responsive-editor-packages-1.18479.0-ai-assistant-chat-ui</code></td>
+      <td class="">547 ms</td>
+      <td>3 ms</td>
+      <td class="harness">140 ms</td>
+      <td>689 ms</td>
+      <td class="good">18 ms</td>
+      <td>22.0 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/unpkg/react-dom@18.3.1/umd/react-dom.development.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(135 70% 50%)"><span class="pack-chip" style="background:hsl(135 70% 50%)"></span><code class="dim">static.parastorage.com--unpkg-react-dom-18.3.1-umd</code></td>
+      <td class="good">3031 ms</td>
+      <td>19 ms</td>
+      <td class="harness">554 ms</td>
+      <td>3604 ms</td>
+      <td class="">3308 ms</td>
+      <td>206.7 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/react-dom@18.3.1/umd/react-dom.production.min.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(135 70% 50%)"><span class="pack-chip" style="background:hsl(135 70% 50%)"></span><code class="dim">static.parastorage.com--unpkg-react-dom-18.3.1-umd</code></td>
+      <td class="">0 ms<br><span class="dim">cached</span></td>
+      <td>1 ms</td>
+      <td class="harness">6 ms</td>
+      <td>7 ms</td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/design-system@1.260.0/dist/statics/design-system.umd.min.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(280 70% 50%)"><span class="pack-chip" style="background:hsl(280 70% 50%)"></span><code class="dim">static.parastorage.com--unpkg-wix-design-system-1.260.0-dist-statics</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>65 ms</td>
+      <td class="harness">7270 ms</td>
+      <td>7335 ms</td>
+      <td class="">8260 ms</td>
+      <td>776.5 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/design-system@1.260.0/dist/statics/styles.global.css</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(280 70% 50%)"><span class="pack-chip" style="background:hsl(280 70% 50%)"></span><code class="dim">static.parastorage.com--unpkg-wix-design-system-1.260.0-dist-statics</code></td>
+      <td class="">7010 ms</td>
+      <td>26 ms</td>
+      <td class="harness">167 ms</td>
+      <td>7202 ms</td>
+      <td class="good">1348 ms</td>
+      <td>81.8 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/responsive-editor-symbols@1.0.1184/dist/statics/symbols.bundle.min.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(4 70% 50%)"><span class="pack-chip" style="background:hsl(4 70% 50%)"></span><code class="dim">static.parastorage.com--unpkg-wix-responsive-editor-symbols-1.0.1184-dist-statics</code></td>
+      <td class="">3413 ms</td>
+      <td>8 ms</td>
+      <td class="harness">188 ms</td>
+      <td>3609 ms</td>
+      <td class="good">2648 ms</td>
+      <td>98.5 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/wix-base-ui@4.153.4/dist/base-ui.css</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(51 70% 50%)"><span class="pack-chip" style="background:hsl(51 70% 50%)"></span><code class="dim">static.parastorage.com--unpkg-wix-wix-base-ui-4.153.4-dist</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>10 ms</td>
+      <td class="harness">5523 ms</td>
+      <td>5534 ms</td>
+      <td class="">517 ms</td>
+      <td>37.1 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/wix-base-ui@4.153.4/dist/base-ui.js</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(51 70% 50%)"><span class="pack-chip" style="background:hsl(51 70% 50%)"></span><code class="dim">static.parastorage.com--unpkg-wix-wix-base-ui-4.153.4-dist</code></td>
+      <td class="good">0 ms<br><span class="dim">cached</span></td>
+      <td>85 ms</td>
+      <td class="harness">5743 ms</td>
+      <td>5828 ms</td>
+      <td class="">6098 ms</td>
+      <td>628.6 KB</td>
+    </tr>
+    <tr class="">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/wix-base-ui@4.153.4/dist/style.css</code></td>
+      <td class="pack" style="border-left: 4px solid hsl(51 70% 50%)"><span class="pack-chip" style="background:hsl(51 70% 50%)"></span><code class="dim">static.parastorage.com--unpkg-wix-wix-base-ui-4.153.4-dist</code></td>
+      <td class="">5388 ms</td>
+      <td>26 ms</td>
+      <td class="harness">189 ms</td>
+      <td>5603 ms</td>
+      <td class="good">368 ms</td>
+      <td>59.5 KB</td>
+    </tr>
+    <tr class="tp-missing">
+      <td class="url"><code>blob:https://valeriis-my-site-261.editor.wix.com/d411e948-db56-41b1-8ed3-7a82bf3c852c</code></td>
+      <td class="pack"><span class="badge error">TP did not load</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">483 ms</td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://frog.wix.com/ds-performance?src=72&amp;evid=31&amp;appName=tb-ds&amp;msid=d10191ef-d39a-432d-a235-4d8a9d1e7df8&amp;ownerId=5f9673f1-01b6-4572-8620-f577d13908b3&amp;_visitorId=afc0d299-9b23-49b8-ba6f-e3524fe0e874&amp;session_id=afc0d299-9b23-49b8-ba6f-e3524fe0e874&amp;esi=afc0d299-9b23-49b8-ba6f-e3524fe0e874&amp;origin=odeditor&amp;ts=0&amp;ms=743&amp;dm_version=1.17528.0&amp;isDraft=false&amp;is_dac_rollout=1</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://frog.wix.com/p?src=19&amp;evid=3&amp;vsi=20959eff-6039-4ba0-b652-c2206e99e0cd&amp;_brandId=wix&amp;_siteBranchId=00000000-0000-0000-0000-000000000000&amp;_ms=21500&amp;_isHeadless=undefined&amp;_hostingPlatform=EDITOR3&amp;_lv=2.0.985%7CC&amp;_client_id=6e877ee9-09e6-4d91-b03d-5e0aa57192e0&amp;_uuid=5f9673f1-01b6-4572-8620-f577d13908b3&amp;from=&amp;to=https%3A%2F%2Fvaleriis-my-site-261.editor.wix.com%2Fedit%2Fod%2Fc3eee97d-b623-4f0f-80b2-a22eaf7fff3b%3FmetaSiteId%3Dd10191ef-d39a-432d-a235-4d8a9d1e7df8%26http_referrer%3Dodeditor.new%26debug%3Dall&amp;fis=1&amp;sr=1280x720&amp;wr=1280x720&amp;_isca=1&amp;_iscf=1&amp;_ispd=0&amp;_ise=0&amp;_=17781855346540</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://frog.wix.com/p?src=19&amp;evid=3&amp;vsi=20959eff-6039-4ba0-b652-c2206e99e0cd&amp;_brandId=wix&amp;_siteBranchId=00000000-0000-0000-0000-000000000000&amp;_ms=21746&amp;_isHeadless=undefined&amp;_hostingPlatform=EDITOR3&amp;_lv=2.0.985%7CC&amp;_client_id=6e877ee9-09e6-4d91-b03d-5e0aa57192e0&amp;_uuid=5f9673f1-01b6-4572-8620-f577d13908b3&amp;from=https%3A%2F%2Fvaleriis-my-site-261.editor.wix.com%2Fedit%2Fod%2Fc3eee97d-b623-4f0f-80b2-a22eaf7fff3b%3FmetaSiteId%3Dd10191ef-d39a-432d-a235-4d8a9d1e7df8%26http_referrer%3Dodeditor.new%26debug%3Dall&amp;to=https%3A%2F%2Fvaleriis-my-site-261.editor.wix.com%2Fedit%2Fod%2Fc3eee97d-b623-4f0f-80b2-a22eaf7fff3b%3FmetaSiteId%3Dd10191ef-d39a-432d-a235-4d8a9d1e7df8%26http_referrer%3Dodeditor.new%26debug%3Dall&amp;fis=0&amp;sr=1280x720&amp;wr=1280x720&amp;_isca=1&amp;_iscf=1&amp;_ispd=0&amp;_ise=0&amp;_=17781855347101</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/cookie-consent-policy-client/1.972.0/app.bundle.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1093 ms</td>
+      <td>3.5 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/dm-ajv/8.1.3/browser/index.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-host-integration/a829e469fdaf6ba27aca4b51e29085c57858e86ed02a5f5b96e94966/1031.chunk.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">229 ms</td>
+      <td>3.5 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-host-integration/a829e469fdaf6ba27aca4b51e29085c57858e86ed02a5f5b96e94966/1755.chunk.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">247 ms</td>
+      <td>1.4 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/editor-platform-host-integration/a829e469fdaf6ba27aca4b51e29085c57858e86ed02a5f5b96e94966/9632.chunk.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">308 ms</td>
+      <td>6.7 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/editor-web-server/1.169.0/assets/odeditor-wix-logo-black.svg</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">371 ms</td>
+      <td>1.6 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/js-platform-apps-configuration/1.235.0/platform-apps-editor.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/js-platform-editor-sdk/1.4706.0/lib/platform-api.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/js-platform-editor-sdk/1.4706.0/lib/platformEvents.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/odeditor-packages/dist/async/11607.b573ceb4.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1440 ms</td>
+      <td>967 B</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/odeditor-packages/dist/async/66345.17ce751f.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">155 ms</td>
+      <td>1.1 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/odeditor-packages/dist/async/messages_en-json.9a4a420c.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">328 ms</td>
+      <td>53.4 KB</td>
+    </tr>
+    <tr class="fall-through">
+      <td class="url"><code>https://static.parastorage.com/services/responsive-editor-packages/1.18479.0/responsive-editor-packages.bundle.js</code></td>
+      <td class="pack"><span class="badge fall">fall-through</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">17381 ms</td>
+      <td>4.74 MB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/responsive-editor-startup/1.301.177/startup.bundle.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">3289 ms</td>
+      <td>20.7 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/tag-manager-client/1.1028.0/hostTags.bundle.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1082 ms</td>
+      <td>2.6 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/third-party/requirejs/2.1.15/require.min.js?v=2</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">753 ms</td>
+      <td>6.8 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/services/wix-ck-editor/1.663.0/dist/ckeditor/ckeditor.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/wix-ck-editor/1.663.0/dist/wixckloader.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">516 ms</td>
+      <td>4.1 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/services/wix-recorder/1.20.0/app.bundle.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1172 ms</td>
+      <td>7.2 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/edicore-base@2.42.0/dist/statics/edicore-base.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1397 ms</td>
+      <td>12.6 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/fedops-logger@5.515.0/dist/statics/fedops-logger.bundle.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1628 ms</td>
+      <td>20.0 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/font-picker@1.332.0/dist/statics/font-picker.min.css</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">691 ms</td>
+      <td>2.2 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/font-picker@1.332.0/dist/statics/font-picker.umd.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1783 ms</td>
+      <td>15.3 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/http-client@2.78.0/dist/statics/index.bundle.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1424 ms</td>
+      <td>12.3 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/santa-bundle@1.1062.0/dist/bundle.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/santa-components@1.1984.0/dist/santa-components.prod.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/santa-core-utils@1.2722.0/dist/coreUtils.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/santa-core-utils@1.2722.0/dist/warmupUtils.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/santa-editor-symbols@1.3653.0/dist/santa-editor-symbols.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">2594 ms</td>
+      <td>37.1 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/santa-external-modules@1.644.0/color-convert/0.2.0/color.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/sentry-browser@7.121.13/dist/statics/sentry-browser.umd.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1700 ms</td>
+      <td>25.5 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/tour-maker@2.0.166/dist/statics/tour-maker.bundle.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">2009 ms</td>
+      <td>36.6 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/web-bi-logger@2.1.21/dist/statics/app.bundle.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1332 ms</td>
+      <td>9.5 KB</td>
+    </tr>
+    <tr class="fall-through">
+      <td class="url"><code>https://static.parastorage.com/unpkg/@wix/wix-fonts@1.14.0/media/WixMadeforDisplayVF_W_Wght.ab35e4df.woff2</code></td>
+      <td class="pack"><span class="badge fall">fall-through</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1705 ms</td>
+      <td>38.8 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/classnames@2.5.1/index.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1204 ms</td>
+      <td>1.4 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/data-capsule@1.0.83/dist/statics/frame-listener.bundle.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/es-module-shims@1.8.2</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1500 ms</td>
+      <td>16.5 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/i18next@25.6.3/i18next.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1738 ms</td>
+      <td>18.4 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/immutable@3.8.2/dist/immutable.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/lodash@4.17.21/lodash.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1991 ms</td>
+      <td>26.1 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/pm-rpc@3.2.7/build/pm-rpc.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/react-i18next@13.5.0/dist/umd/react-i18next.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1224 ms</td>
+      <td>6.5 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/react-redux@8.1.3/dist/react-redux.min.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1235 ms</td>
+      <td>6.2 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/react@18.3.1/umd/react.development.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1772 ms</td>
+      <td>27.0 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/react@18.3.1/umd/react.production.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/redux@4.2.1/dist/redux.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1260 ms</td>
+      <td>8.5 KB</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://static.parastorage.com/unpkg/repluggable@1.302.84/dist/statics/repluggable.bundle.js</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1936 ms</td>
+      <td>23.9 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/soundmanager2@2.97.20150601-a/script/soundmanager2-nodebug-jsmin.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/xss@0.2.18/dist/xss.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://static.parastorage.com/unpkg/zepto@1.2.0/dist/zepto.min.js</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="fall-through">
+      <td class="url"><code>https://valeriis-my-site-261.editor.wix.com/_api/editor-web-server-versions/v1/versions</code></td>
+      <td class="pack"><span class="badge fall">fall-through</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">930 ms</td>
+      <td>601 B</td>
+    </tr>
+    <tr class="fall-through">
+      <td class="url"><code>https://valeriis-my-site-261.editor.wix.com/_api/wix-laboratory-server/laboratory/conductExperiment?key=specs.mdst.openerWs3CrossDomain&amp;fallback=false</code></td>
+      <td class="pack"><span class="badge fall">fall-through</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">657 ms</td>
+      <td>23 B</td>
+    </tr>
+    <tr class="skipped-threshold">
+      <td class="url"><code>https://valeriis-my-site-261.editor.wix.com/_api/wix-laboratory-server/v1/laboratory/platform/conductExperiment?key=specs.fedinfra.Glassbox&amp;fallbackValue=false</code></td>
+      <td class="pack"><span class="badge skipped">skipped (below threshold)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1019 ms</td>
+      <td>494 B</td>
+    </tr>
+    <tr class="fall-through">
+      <td class="url"><code>https://valeriis-my-site-261.editor.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForKey/htmlEditor/global_preferences</code></td>
+      <td class="pack"><span class="badge fall">fall-through</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1977 ms</td>
+      <td>925 B</td>
+    </tr>
+    <tr class="fall-through">
+      <td class="url"><code>https://valeriis-my-site-261.editor.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefsForSite/htmlEditor/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b</code></td>
+      <td class="pack"><span class="badge fall">fall-through</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">2034 ms</td>
+      <td>104 B</td>
+    </tr>
+    <tr class="fall-through">
+      <td class="url"><code>https://valeriis-my-site-261.editor.wix.com/edit/od/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b?metaSiteId=d10191ef-d39a-432d-a235-4d8a9d1e7df8&amp;http_referrer=odeditor.new&amp;debug=all</code></td>
+      <td class="pack"><span class="badge fall">fall-through</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">1518 ms</td>
+      <td>145.6 KB</td>
+    </tr>
+    <tr class="bl-missing">
+      <td class="url"><code>https://valeriis-my-site-261.editor.wix.com/html/editor/web/renderer/render/document/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b?metaSiteId=d10191ef-d39a-432d-a235-4d8a9d1e7df8&amp;editorSessionId=afc0d299-9b23-49b8-ba6f-e3524fe0e874&amp;esi=afc0d299-9b23-49b8-ba6f-e3524fe0e874&amp;isEdited=true&amp;isSantaEditor=true&amp;dsOrigin=odeditor&amp;languages=&amp;ds=true&amp;forceResponsive=true&amp;configName=editor3&amp;commonConfig=%7B%22host%22%3A%22EDITOR3%22%2C%22brand%22%3A%22wix%22%2C%22branchId%22%3A%2200000000-0000-0000-0000-000000000000%22%7D&amp;enableScopes=true&amp;consent-policy=%7B%22func%22%3A1%2C%22anl%22%3A1%2C%22adv%22%3A0%2C%22dt3%22%3A0%2C%22ess%22%3A1%7D&amp;http_referrer=odeditor.new</code></td>
+      <td class="pack"><span class="badge warn">TP-only (not in BL)</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td>—</td>
+    </tr>
+    <tr class="tp-missing">
+      <td class="url"><code>https://valeriis-my-site-261.editor.wix.com/html/editor/web/renderer/render/document/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b?metaSiteId=d10191ef-d39a-432d-a235-4d8a9d1e7df8&amp;editorSessionId=c978129a-04e2-4c4d-8a67-455984ff6d90&amp;esi=c978129a-04e2-4c4d-8a67-455984ff6d90&amp;isEdited=true&amp;isSantaEditor=true&amp;dsOrigin=odeditor&amp;languages=&amp;ds=true&amp;forceResponsive=true&amp;configName=editor3&amp;commonConfig=%7B%22host%22%3A%22EDITOR3%22%2C%22brand%22%3A%22wix%22%2C%22branchId%22%3A%2200000000-0000-0000-0000-000000000000%22%7D&amp;enableScopes=true&amp;consent-policy=%7B%22func%22%3A1%2C%22anl%22%3A1%2C%22adv%22%3A0%2C%22dt3%22%3A0%2C%22ess%22%3A1%7D&amp;http_referrer=odeditor.new</code></td>
+      <td class="pack"><span class="badge error">TP did not load</span></td>
+      <td class=""><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="harness"><span class="dim">—</span></td>
+      <td><span class="dim">—</span></td>
+      <td class="">2365 ms</td>
+      <td>143.2 KB</td>
+    </tr></tbody>
+  <tfoot>
+    <tr class="totals">
+      <td colspan="2"><strong>TOTAL</strong><br><span class="dim">column sums</span></td>
+      <td class="tp"><strong>71394 ms</strong><br><span class="dim">16 pack fetches paid<br>· rest cached</span></td>
+      <td class="tp"><strong>1722 ms</strong></td>
+      <td class="harness"><strong>93852 ms</strong></td>
+      <td class="tp"><strong>166968 ms</strong></td>
+      <td class="bl"><strong>160416 ms</strong><br><span class="dim">68 asset fetches</span></td>
+      <td><strong>11.95 MB</strong></td>
+    </tr>
+    <tr class="totals tp-effective">
+      <td colspan="2"><strong>TP EFFECTIVE TOTAL</strong><br><span class="dim">incl. fall-through cost</span></td>
+      <td colspan="4" class="tp" style="text-align:center"><strong>233588 ms</strong></td>
+      <td colspan="2" class="dim">vs Baseline 160416 ms</td>
+    </tr>
+  </tfoot>
+</table>
+<h3 style="margin-top:12px">Reading the totals</h3>
+<div class="formula">
+  <strong>TP TOTAL</strong> = sum of <code>fetch + extract + harness</code> across served-from-pack assets =
+  <strong>71394 ms</strong> + <strong>1722 ms</strong> + <strong>93852 ms</strong>
+  = <strong>166968 ms</strong>
+  <br><br>
+  <strong>TP EFFECTIVE TOTAL</strong> = TP TOTAL + sum of baseline-fetch ms for assets TP fell through on
+  <br>= <strong>166968 ms</strong> + <strong>66620 ms</strong> <span class="dim">(39 fall-throughs paid network cost)</span>
+  = <strong>233588 ms</strong>
+  <br><br>
+  <strong>BL TOTAL</strong> = sum of all asset-fetch ms in baseline =
+  <strong>160416 ms</strong>
+  <br><br>
+  These are <em>column sums</em> — overstate wall-clock because requests run in parallel. Use iteration durations as the real wall-clock answer; use these to understand <em>where time is spent</em>.
+</div>
+<h3 style="margin-top:12px">Reading this table</h3>
+<ul class="dim">
+  <li><strong>Pack fetch+decode</strong> — pack download + stream-decode time, charged to this asset only on the FIRST hit per pack (subsequent hits show <code>0 ms · cached</code>).</li>
+  <li><strong>Baseline asset fetch</strong> — time to fetch this single asset over the wire in baseline mode. Adjacent for direct comparison.</li>
+  <li><strong>Extract</strong> — <code>pack.extract(file)</code>, in-memory, sub-millisecond.</li>
+  <li><strong>Harness IPC tax</strong> — <code>total − fetch − extract</code>. Pure overhead from this measurement rig: Playwright <code>page.evaluate</code> CDP roundtrip, base64 encode in browser, base64 decode in Node, base64 re-encode for <code>Fetch.fulfillRequest</code>, and queueing when many requests fire concurrently. <strong>Zero in a real Service-Worker deployment.</strong></li>
+  <li><strong>TokenPack total</strong> — fetch + extract + harness tax. The wall-clock time the asset was paused in our handler.</li>
+  <li><strong>Green/red coloring</strong> compares <em>real work</em> (fetch + extract) vs baseline fetch — i.e., what TokenPack would cost without the harness tax. Green on the TokenPack side = real work was faster than the baseline fetch.</li>
+  <li><strong><span class="badge error">TP did not load</span></strong> — baseline fetched this URL, but TokenPack never even requested it. Means the page broke during TP boot before reaching the code that imports this asset (likely a pack-decode failure or wrong response headers earlier in the load).</li>
+  <li><strong><span class="badge warn">TP-only (not in BL)</span></strong> — TokenPack requested this URL but baseline never did. Different code path got executed (feature flag, A/B variant, error-recovery branch).</li>
+</ul>
+<p class="dim">
+  Column sums overstate wall-clock because requests run in parallel. Iteration durations are the real answer.
+</p>
+
+</body></html>

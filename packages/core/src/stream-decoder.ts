@@ -15,8 +15,6 @@
  * Only PNG format (WebP/AVIF have no streaming decoder in Node.js).
  */
 
-import './algorithms/register-all'
-
 import { Duplex, type Transform } from 'stream'
 import zlib from 'zlib'
 
@@ -212,7 +210,10 @@ export function createTokenDecodeStream(_key?: string): Duplex {
         compressionLevel = ch.flags & 0b10 ? 2 : 0
         dataLength = ch.dataLength
         headerBytes = needed
-        activeCodec = getAlgorithmById(ch.algoId).codec ?? null
+        // Instantiate just the bound Codec class — full algorithm Ctor would
+        // also build Surface, Compressor, Drawer, Fec which streaming decode
+        // doesn't use.
+        activeCodec = new (getAlgorithmById(ch.algoId).Codec as new () => Codec)() ?? null
         finishHeader()
       } else if (pixelBuf.length >= HEADER_PIXELS * fileChannels) {
         const needed = HEADER_PIXELS * fileChannels
@@ -237,7 +238,7 @@ export function createTokenDecodeStream(_key?: string): Duplex {
         compressionLevel = h.compressionLevel
         dataLength = h.fileLength
         headerBytes = needed
-        activeCodec = getAlgorithmById(h.algorithmId).codec ?? null
+        activeCodec = new (getAlgorithmById(h.algorithmId).Codec as new () => Codec)() ?? null
         finishHeader()
       }
 

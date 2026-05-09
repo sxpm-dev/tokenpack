@@ -1,0 +1,3767 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Replay-harness report — valeriis-my-site-261-editor-wix-com</title>
+<style>
+  :root { color-scheme: dark light; }
+  body { font: 14px/1.4 ui-sans-serif, system-ui, sans-serif; max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 24px 0 8px; border-bottom: 1px solid #8884; padding-bottom: 4px; }
+  .meta { color: #888; margin-bottom: 16px; }
+  .meta code { background: #8881; padding: 1px 4px; border-radius: 3px; }
+  .grid { width: 100%; border-collapse: collapse; }
+  .grid th, .grid td { border: 1px solid #8884; padding: 6px 10px; text-align: left; vertical-align: top; }
+  .grid thead th { background: #8881; }
+  .grid.compact td, .grid.compact th { padding: 3px 6px; font-size: 12px; }
+  .dim { color: #888; font-size: 12px; }
+  .good { color: #1a7f37; }
+  .bad { color: #cf222e; }
+  .tp { color: #6a1b9a; }
+  .bl { color: #1565c0; }
+  .src { padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+  .src.pack { background: #c8e6c9; color: #1b5e20; }
+  .src.origin { background: #bbdefb; color: #0d47a1; }
+  .src\.fall-through { background: #ffe0b2; color: #e65100; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; padding: 6px 0; }
+  code { font: 12px ui-monospace, monospace; }
+</style>
+</head><body>
+<h1>Replay-harness report</h1>
+<div class="meta">
+  Target: <code>https://valeriis-my-site-261.editor.wix.com/edit/od/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b?metaSiteId=d10191ef-d39a-432d-a235-4d8a9d1e7df8&amp;http_referrer=odeditor.new&amp;debug=all</code><br>
+  Mode: <code>local</code> · Throttle: <code>NONE</code> · Samples: <code>5</code> · Captured: <code>2026-05-07T06:10:01.732Z</code><br>
+  Raw data: <a href="valeriis-my-site-261-editor-wix-com-1778134004975-local-debug.json"><code>valeriis-my-site-261-editor-wix-com-1778134004975-local-debug.json</code></a>
+</div>
+
+<h2>Summary</h2>
+
+<table class="grid">
+  <thead>
+    <tr><th>Metric</th><th>Baseline</th><th>TokenPack</th><th>Δ</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Total duration</td>
+      <td>avg 9743 ms<br><span class="dim">(9224 ms–10198 ms)</span></td>
+      <td>avg 29148 ms<br><span class="dim">(9365 ms–42344 ms)</span></td>
+      <td class="bad">+19405 ms<br><span class="dim">+199.2%</span></td>
+    </tr>
+    <tr>
+      <td>Load event</td>
+      <td>avg 5505 ms<br><span class="dim">(5145 ms–5826 ms)</span></td>
+      <td>avg 25717 ms<br><span class="dim">(8767 ms–37177 ms)</span></td>
+      <td class="bad">+20212 ms<br><span class="dim">+367.2%</span></td>
+    </tr>
+    <tr>
+      <td>Coverage (avg)</td>
+      <td>—</td>
+      <td>served 166 · fell-through 30 · emitted 478</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Iterations</h2>
+
+<table class="grid">
+  <thead>
+    <tr><th>Iter</th><th>Mode</th><th>Duration</th><th>Load</th><th>Served</th><th>Fell-through</th><th>Emitted</th><th>Bytes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td class="bl">baseline</td>
+      <td>9978 ms</td>
+      <td>5826 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td class="tp">tokenpack</td>
+      <td>42322 ms</td>
+      <td>36655 ms</td>
+      <td>170</td>
+      <td>34</td>
+      <td>552</td>
+      <td>207.49 MB</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td class="bl">baseline</td>
+      <td>9853 ms</td>
+      <td>5715 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td class="tp">tokenpack</td>
+      <td>9421 ms</td>
+      <td>8834 ms</td>
+      <td>159</td>
+      <td>25</td>
+      <td>368</td>
+      <td>138.33 MB</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td class="bl">baseline</td>
+      <td>10198 ms</td>
+      <td>5529 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td class="tp">tokenpack</td>
+      <td>42344 ms</td>
+      <td>37177 ms</td>
+      <td>170</td>
+      <td>33</td>
+      <td>552</td>
+      <td>207.49 MB</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td class="bl">baseline</td>
+      <td>9460 ms</td>
+      <td>5310 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td class="tp">tokenpack</td>
+      <td>42287 ms</td>
+      <td>37154 ms</td>
+      <td>170</td>
+      <td>34</td>
+      <td>552</td>
+      <td>207.49 MB</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td class="bl">baseline</td>
+      <td>9224 ms</td>
+      <td>5145 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td class="tp">tokenpack</td>
+      <td>9365 ms</td>
+      <td>8767 ms</td>
+      <td>159</td>
+      <td>25</td>
+      <td>368</td>
+      <td>138.33 MB</td>
+    </tr></tbody>
+</table>
+
+<h2>Per-pack markers (last tokenpack iteration)</h2>
+
+<table class="grid">
+  <thead>
+    <tr>
+      <th>Pack</th><th>Src</th><th>Start</th><th>Fetch/load</th>
+      <th>Decode</th><th>Extract</th><th>Emit</th><th>Pack size</th><th>Emitted</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td title="--https-valeriis-my-site-261.editor.wix.com">--https-valeriis-my-site-261.editor.wix.com</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>16 ms</td>
+      <td>2 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>466 B</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-cookie-consent-policy-client-1.972.0">static.parastorage.com--services-cookie-consent-policy-cl...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>27 ms</td>
+      <td>1 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>3.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="pages.parastorage.com--sites">pages.parastorage.com--sites</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>83 ms</td>
+      <td>1 ms</td>
+      <td>1 ms</td>
+      <td>3 ms</td>
+      <td>33.2 KB</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td title="--https-valeriis-my-site-261.editor.wix.com">--https-valeriis-my-site-261.editor.wix.com</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>84 ms</td>
+      <td>5 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>466 B</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-dm-ajv-8.1.3-browser">static.parastorage.com--services-dm-ajv-8.1.3-browser</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>96 ms</td>
+      <td>1 ms</td>
+      <td>0 ms</td>
+      <td>2 ms</td>
+      <td>42.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-elements-1.15095.0">static.parastorage.com--services-editor-elements-1.15095.0</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>96 ms</td>
+      <td>3 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>3.1 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-ai-packages-loader-63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b">static.parastorage.com--services-editor-ai-packages-loade...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>101 ms</td>
+      <td>10 ms</td>
+      <td>1 ms</td>
+      <td>10 ms</td>
+      <td>151.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-elements-design-systems-dist-documentmanagement">static.parastorage.com--services-editor-elements-design-s...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>102 ms</td>
+      <td>24 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>29.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-elements-library-dist-documentmanagement">static.parastorage.com--services-editor-elements-library-...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>103 ms</td>
+      <td>29 ms</td>
+      <td>1 ms</td>
+      <td>4 ms</td>
+      <td>79.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-ai-packages-loader-63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b-async">static.parastorage.com--services-editor-ai-packages-loade...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>107 ms</td>
+      <td>37 ms</td>
+      <td>2 ms</td>
+      <td>40 ms</td>
+      <td>297.3 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-platform-host-integration-78895c57cd6eecb015e11ad34761633c83a93496f75fd8b1d4de249f">static.parastorage.com--services-editor-platform-host-int...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>108 ms</td>
+      <td>79 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>11.1 KB</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-js-platform-apps-configuration-1.235.0">static.parastorage.com--services-js-platform-apps-configu...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>108 ms</td>
+      <td>79 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>2.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-js-platform-editor-sdk-1.4706.0-lib">static.parastorage.com--services-js-platform-editor-sdk-1...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>109 ms</td>
+      <td>79 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>24.7 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-elements-panel-service-1.1129.0">static.parastorage.com--services-editor-elements-panel-se...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>198 ms</td>
+      <td>386 ms</td>
+      <td>12 ms</td>
+      <td>84 ms</td>
+      <td>753.6 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-platform-host-integration-1.5854.0">static.parastorage.com--services-editor-platform-host-int...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>418 ms</td>
+      <td>617 ms</td>
+      <td>12 ms</td>
+      <td>250 ms</td>
+      <td>1.62 MB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-platform-services-4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31">static.parastorage.com--services-editor-platform-services...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>467 ms</td>
+      <td>846 ms</td>
+      <td>19 ms</td>
+      <td>222 ms</td>
+      <td>1.96 MB</td>
+      <td>83</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-document-management-1.17520.0-tb-main-dist">static.parastorage.com--services-document-management-1.17...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>495 ms</td>
+      <td>1072 ms</td>
+      <td>14 ms</td>
+      <td>261 ms</td>
+      <td>2.00 MB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-odeditor-packages-dist-async">static.parastorage.com--services-odeditor-packages-dist-a...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>110 ms</td>
+      <td>94 ms</td>
+      <td>1 ms</td>
+      <td>3 ms</td>
+      <td>72.4 KB</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-common-infra-1.3145.0">static.parastorage.com--services-responsive-editor-common...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>124 ms</td>
+      <td>133 ms</td>
+      <td>2 ms</td>
+      <td>60 ms</td>
+      <td>147.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-packages-1.18467.0__2">static.parastorage.com--services-responsive-editor-packag...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>125 ms</td>
+      <td>194 ms</td>
+      <td>0 ms</td>
+      <td>3 ms</td>
+      <td>54.6 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-packages-1.18467.0__1__1">static.parastorage.com--services-responsive-editor-packag...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>130 ms</td>
+      <td>209 ms</td>
+      <td>2 ms</td>
+      <td>56 ms</td>
+      <td>246.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-startup-1.301.177">static.parastorage.com--services-responsive-editor-startu...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>137 ms</td>
+      <td>285 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>23.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-tag-manager-client-1.1028.0">static.parastorage.com--services-tag-manager-client-1.1028.0</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>138 ms</td>
+      <td>286 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>2.4 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-third-party-requirejs-2.1.15">static.parastorage.com--services-third-party-requirejs-2....</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>138 ms</td>
+      <td>286 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-ck-editor-1.663.0-dist">static.parastorage.com--services-wix-ck-editor-1.663.0-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>139 ms</td>
+      <td>286 ms</td>
+      <td>1 ms</td>
+      <td>5 ms</td>
+      <td>71.4 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-packages-1.18467.0-ai-assistant-chat-ui">static.parastorage.com--services-responsive-editor-packag...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>141 ms</td>
+      <td>290 ms</td>
+      <td>1 ms</td>
+      <td>10 ms</td>
+      <td>169.6 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-ck-editor-1.663.0-dist-ckeditor-lang">static.parastorage.com--services-wix-ck-editor-1.663.0-di...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>200 ms</td>
+      <td>480 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>2.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-ck-editor-1.663.0-dist-ckeditor-skins-empty">static.parastorage.com--services-wix-ck-editor-1.663.0-di...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>200 ms</td>
+      <td>480 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>2.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-ck-editor-1.663.0-dist-ckeditor">static.parastorage.com--services-wix-ck-editor-1.663.0-di...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>202 ms</td>
+      <td>480 ms</td>
+      <td>1 ms</td>
+      <td>5 ms</td>
+      <td>117.1 KB</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-recorder-1.20.0">static.parastorage.com--services-wix-recorder-1.20.0</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>202 ms</td>
+      <td>485 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.7 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-thunderbolt-ds-1.11856.0">static.parastorage.com--services-wix-thunderbolt-ds-1.118...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>202 ms</td>
+      <td>485 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>852 B</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-marketplace-editor-container-1.2405.3596">static.parastorage.com--services-marketplace-editor-conta...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>520 ms</td>
+      <td>1333 ms</td>
+      <td>18 ms</td>
+      <td>0 ms</td>
+      <td>1.63 MB</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-odeditor-packages-dist">static.parastorage.com--services-odeditor-packages-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>548 ms</td>
+      <td>1354 ms</td>
+      <td>14 ms</td>
+      <td>299 ms</td>
+      <td>1.98 MB</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-cookie-consent-policy-client-1.972.0">static.parastorage.com--services-cookie-consent-policy-cl...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>17 ms</td>
+      <td>2 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>3.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="pages.parastorage.com--sites">pages.parastorage.com--sites</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>78 ms</td>
+      <td>3 ms</td>
+      <td>1 ms</td>
+      <td>7 ms</td>
+      <td>33.2 KB</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-dm-ajv-8.1.3-browser">static.parastorage.com--services-dm-ajv-8.1.3-browser</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>79 ms</td>
+      <td>10 ms</td>
+      <td>0 ms</td>
+      <td>2 ms</td>
+      <td>42.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-ai-packages-loader-63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b">static.parastorage.com--services-editor-ai-packages-loade...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>93 ms</td>
+      <td>38 ms</td>
+      <td>1 ms</td>
+      <td>13 ms</td>
+      <td>151.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-ai-packages-loader-63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b-async">static.parastorage.com--services-editor-ai-packages-loade...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>99 ms</td>
+      <td>73 ms</td>
+      <td>2 ms</td>
+      <td>35 ms</td>
+      <td>297.3 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-document-management-1.17520.0-tb-main-dist">static.parastorage.com--services-document-management-1.17...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>415 ms</td>
+      <td>603 ms</td>
+      <td>14 ms</td>
+      <td>278 ms</td>
+      <td>2.00 MB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg">static.parastorage.com--unpkg</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>207 ms</td>
+      <td>481 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>17.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-data-capsule-1.0.83-dist-statics">static.parastorage.com--unpkg-data-capsule-1.0.83-dist-st...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>207 ms</td>
+      <td>481 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>4.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-i18next-25.6.3">static.parastorage.com--unpkg-i18next-25.6.3</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>208 ms</td>
+      <td>481 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>18.4 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-classnames-2.5.1">static.parastorage.com--unpkg-classnames-2.5.1</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>208 ms</td>
+      <td>482 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>1.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-immutable-3.8.2-dist">static.parastorage.com--unpkg-immutable-3.8.2-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>208 ms</td>
+      <td>482 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>16.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-pm-rpc-3.2.7-build">static.parastorage.com--unpkg-pm-rpc-3.2.7-build</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>208 ms</td>
+      <td>483 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>8.7 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-lodash-4.17.21">static.parastorage.com--unpkg-lodash-4.17.21</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>209 ms</td>
+      <td>483 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>26.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-react-18.3.1-umd">static.parastorage.com--unpkg-react-18.3.1-umd</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>209 ms</td>
+      <td>484 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>32.9 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-image-client-api-1.4060.0-dist">static.parastorage.com--unpkg-image-client-api-1.4060.0-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>210 ms</td>
+      <td>485 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>10.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-react-i18next-13.5.0-dist-umd">static.parastorage.com--unpkg-react-i18next-13.5.0-dist-umd</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>210 ms</td>
+      <td>486 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-redux-4.2.1-dist">static.parastorage.com--unpkg-redux-4.2.1-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>210 ms</td>
+      <td>486 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>8.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-react-dom-18.3.1-umd">static.parastorage.com--unpkg-react-dom-18.3.1-umd</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>213 ms</td>
+      <td>486 ms</td>
+      <td>2 ms</td>
+      <td>22 ms</td>
+      <td>274.3 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-repluggable-1.302.84-dist-statics">static.parastorage.com--unpkg-repluggable-1.302.84-dist-s...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>214 ms</td>
+      <td>509 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>25.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-soundmanager2-2.97.20150601-a-script">static.parastorage.com--unpkg-soundmanager2-2.97.20150601...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>214 ms</td>
+      <td>510 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>12.9 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-react-redux-8.1.3-dist">static.parastorage.com--unpkg-react-redux-8.1.3-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>215 ms</td>
+      <td>511 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>5.8 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-edicore-base-2.42.0-dist-statics">static.parastorage.com--unpkg-wix-edicore-base-2.42.0-dis...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>215 ms</td>
+      <td>511 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>12.7 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-font-picker-1.332.0-dist-statics">static.parastorage.com--unpkg-wix-font-picker-1.332.0-dis...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>215 ms</td>
+      <td>511 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>16.8 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-fedops-logger-5.515.0-dist-statics">static.parastorage.com--unpkg-wix-fedops-logger-5.515.0-d...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>216 ms</td>
+      <td>512 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>19.8 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-http-client-2.78.0-dist-statics">static.parastorage.com--unpkg-wix-http-client-2.78.0-dist...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>216 ms</td>
+      <td>513 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>12.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-thunderbolt-ds-dist">static.parastorage.com--services-wix-thunderbolt-ds-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>231 ms</td>
+      <td>523 ms</td>
+      <td>7 ms</td>
+      <td>126 ms</td>
+      <td>923.6 KB</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-design-system-1.260.0-dist-statics">static.parastorage.com--unpkg-wix-design-system-1.260.0-d...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>334 ms</td>
+      <td>576 ms</td>
+      <td>10 ms</td>
+      <td>99 ms</td>
+      <td>972.3 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-elements-1.15095.0">static.parastorage.com--services-editor-elements-1.15095.0</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>80 ms</td>
+      <td>12 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>3.1 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-elements-design-systems-dist-documentmanagement">static.parastorage.com--services-editor-elements-design-s...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>88 ms</td>
+      <td>20 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>29.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-elements-library-dist-documentmanagement">static.parastorage.com--services-editor-elements-library-...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>95 ms</td>
+      <td>56 ms</td>
+      <td>1 ms</td>
+      <td>4 ms</td>
+      <td>79.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-platform-host-integration-78895c57cd6eecb015e11ad34761633c83a93496f75fd8b1d4de249f">static.parastorage.com--services-editor-platform-host-int...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>101 ms</td>
+      <td>111 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>11.1 KB</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-js-platform-apps-configuration-1.235.0">static.parastorage.com--services-js-platform-apps-configu...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>101 ms</td>
+      <td>112 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>2.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-js-platform-editor-sdk-1.4706.0-lib">static.parastorage.com--services-js-platform-editor-sdk-1...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>101 ms</td>
+      <td>112 ms</td>
+      <td>0 ms</td>
+      <td>2 ms</td>
+      <td>24.7 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-odeditor-packages-dist-async">static.parastorage.com--services-odeditor-packages-dist-a...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>102 ms</td>
+      <td>113 ms</td>
+      <td>1 ms</td>
+      <td>3 ms</td>
+      <td>72.4 KB</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-elements-panel-service-1.1129.0">static.parastorage.com--services-editor-elements-panel-se...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>125 ms</td>
+      <td>301 ms</td>
+      <td>5 ms</td>
+      <td>87 ms</td>
+      <td>753.6 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-platform-host-integration-1.5854.0">static.parastorage.com--services-editor-platform-host-int...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>547 ms</td>
+      <td>775 ms</td>
+      <td>13 ms</td>
+      <td>321 ms</td>
+      <td>1.62 MB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-editor-platform-services-4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31">static.parastorage.com--services-editor-platform-services...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>575 ms</td>
+      <td>1092 ms</td>
+      <td>16 ms</td>
+      <td>216 ms</td>
+      <td>1.96 MB</td>
+      <td>83</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-marketplace-editor-container-1.2405.3596">static.parastorage.com--services-marketplace-editor-conta...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>615 ms</td>
+      <td>1295 ms</td>
+      <td>13 ms</td>
+      <td>0 ms</td>
+      <td>1.63 MB</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-odeditor-packages-dist">static.parastorage.com--services-odeditor-packages-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>699 ms</td>
+      <td>1326 ms</td>
+      <td>15 ms</td>
+      <td>337 ms</td>
+      <td>1.98 MB</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-components-1.1984.0-dist">static.parastorage.com--unpkg-wix-santa-components-1.1984...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>217 ms</td>
+      <td>513 ms</td>
+      <td>1 ms</td>
+      <td>5 ms</td>
+      <td>92.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-bundle-1.1062.0-dist">static.parastorage.com--unpkg-wix-santa-bundle-1.1062.0-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>218 ms</td>
+      <td>518 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>20.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-responsive-editor-symbols-1.0.1184-dist-statics">static.parastorage.com--unpkg-wix-responsive-editor-symbo...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>219 ms</td>
+      <td>521 ms</td>
+      <td>1 ms</td>
+      <td>5 ms</td>
+      <td>113.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-skin-utils-1.1686.0-dist">static.parastorage.com--unpkg-wix-santa-skin-utils-1.1686...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>234 ms</td>
+      <td>653 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>5.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-core-utils-1.2722.0-dist">static.parastorage.com--unpkg-wix-santa-core-utils-1.2722...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>235 ms</td>
+      <td>653 ms</td>
+      <td>1 ms</td>
+      <td>3 ms</td>
+      <td>73.3 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-editor-symbols-1.3653.0-dist">static.parastorage.com--unpkg-wix-santa-editor-symbols-1....</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>236 ms</td>
+      <td>655 ms</td>
+      <td>0 ms</td>
+      <td>2 ms</td>
+      <td>37.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-external-modules-1.644.0-color-convert-0.2.0">static.parastorage.com--unpkg-wix-santa-external-modules-...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>236 ms</td>
+      <td>657 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-tour-maker-2.0.166-dist-statics">static.parastorage.com--unpkg-wix-tour-maker-2.0.166-dist...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>237 ms</td>
+      <td>657 ms</td>
+      <td>0 ms</td>
+      <td>3 ms</td>
+      <td>40.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-web-bi-logger-2.1.21-dist-statics">static.parastorage.com--unpkg-wix-web-bi-logger-2.1.21-di...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>238 ms</td>
+      <td>660 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>9.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-sentry-browser-7.121.13-dist-statics">static.parastorage.com--unpkg-wix-sentry-browser-7.121.13...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>238 ms</td>
+      <td>660 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>25.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-wix-fonts-1.14.0-media">static.parastorage.com--unpkg-wix-wix-fonts-1.14.0-media</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>239 ms</td>
+      <td>660 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>39.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-xss-0.2.18-dist">static.parastorage.com--unpkg-xss-0.2.18-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>240 ms</td>
+      <td>660 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.9 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-zepto-1.2.0-dist">static.parastorage.com--unpkg-zepto-1.2.0-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>241 ms</td>
+      <td>660 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>10.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="valeriis-my-site-261.editor.wix.com--_api-account-server-v1-accounts">valeriis-my-site-261.editor.wix.com--_api-account-server-...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>241 ms</td>
+      <td>660 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>659 B</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="valeriis-my-site-261.editor.wix.com--_api-editor-document-store-v1">valeriis-my-site-261.editor.wix.com--_api-editor-document...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>241 ms</td>
+      <td>660 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>2.6 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="valeriis-my-site-261.editor.wix.com--_api-wix-laboratory-server-v1-laboratory-platform">valeriis-my-site-261.editor.wix.com--_api-wix-laboratory-...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>337 ms</td>
+      <td>685 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>466 B</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-wix-base-ui-4.153.4-dist">static.parastorage.com--unpkg-wix-wix-base-ui-4.153.4-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>562 ms</td>
+      <td>1659 ms</td>
+      <td>6 ms</td>
+      <td>79 ms</td>
+      <td>741.7 KB</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-packages-1.18467.0__2">static.parastorage.com--services-responsive-editor-packag...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>103 ms</td>
+      <td>116 ms</td>
+      <td>0 ms</td>
+      <td>3 ms</td>
+      <td>54.6 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-common-infra-1.3145.0">static.parastorage.com--services-responsive-editor-common...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>105 ms</td>
+      <td>119 ms</td>
+      <td>2 ms</td>
+      <td>41 ms</td>
+      <td>147.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-startup-1.301.177">static.parastorage.com--services-responsive-editor-startu...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>106 ms</td>
+      <td>174 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>23.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-packages-1.18467.0-ai-assistant-chat-ui">static.parastorage.com--services-responsive-editor-packag...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>111 ms</td>
+      <td>186 ms</td>
+      <td>1 ms</td>
+      <td>16 ms</td>
+      <td>169.6 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-responsive-editor-packages-1.18467.0__1__1">static.parastorage.com--services-responsive-editor-packag...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>115 ms</td>
+      <td>202 ms</td>
+      <td>2 ms</td>
+      <td>72 ms</td>
+      <td>246.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-third-party-requirejs-2.1.15">static.parastorage.com--services-third-party-requirejs-2....</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>127 ms</td>
+      <td>391 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-ck-editor-1.663.0-dist">static.parastorage.com--services-wix-ck-editor-1.663.0-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>128 ms</td>
+      <td>392 ms</td>
+      <td>1 ms</td>
+      <td>4 ms</td>
+      <td>71.4 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-tag-manager-client-1.1028.0">static.parastorage.com--services-tag-manager-client-1.1028.0</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>128 ms</td>
+      <td>396 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>2.4 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-ck-editor-1.663.0-dist-ckeditor-lang">static.parastorage.com--services-wix-ck-editor-1.663.0-di...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>129 ms</td>
+      <td>396 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>2.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-ck-editor-1.663.0-dist-ckeditor-skins-empty">static.parastorage.com--services-wix-ck-editor-1.663.0-di...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>129 ms</td>
+      <td>396 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>2.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-recorder-1.20.0">static.parastorage.com--services-wix-recorder-1.20.0</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>129 ms</td>
+      <td>397 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.7 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-thunderbolt-ds-1.11856.0">static.parastorage.com--services-wix-thunderbolt-ds-1.118...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>129 ms</td>
+      <td>397 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>852 B</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-ck-editor-1.663.0-dist-ckeditor">static.parastorage.com--services-wix-ck-editor-1.663.0-di...</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>146 ms</td>
+      <td>435 ms</td>
+      <td>1 ms</td>
+      <td>4 ms</td>
+      <td>117.1 KB</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--services-wix-thunderbolt-ds-dist">static.parastorage.com--services-wix-thunderbolt-ds-dist</td>
+      <td>bridge</td>
+      <td>0 ms</td>
+      <td>277 ms</td>
+      <td>447 ms</td>
+      <td>7 ms</td>
+      <td>132 ms</td>
+      <td>923.6 KB</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg">static.parastorage.com--unpkg</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>129 ms</td>
+      <td>397 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>17.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-classnames-2.5.1">static.parastorage.com--unpkg-classnames-2.5.1</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>146 ms</td>
+      <td>440 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>1.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-data-capsule-1.0.83-dist-statics">static.parastorage.com--unpkg-data-capsule-1.0.83-dist-st...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>147 ms</td>
+      <td>440 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>4.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-i18next-25.6.3">static.parastorage.com--unpkg-i18next-25.6.3</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>147 ms</td>
+      <td>440 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>18.4 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-image-client-api-1.4060.0-dist">static.parastorage.com--unpkg-image-client-api-1.4060.0-dist</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>147 ms</td>
+      <td>441 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>10.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-immutable-3.8.2-dist">static.parastorage.com--unpkg-immutable-3.8.2-dist</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>148 ms</td>
+      <td>441 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>16.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-pm-rpc-3.2.7-build">static.parastorage.com--unpkg-pm-rpc-3.2.7-build</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>148 ms</td>
+      <td>442 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>8.7 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-lodash-4.17.21">static.parastorage.com--unpkg-lodash-4.17.21</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>148 ms</td>
+      <td>442 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>26.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-react-18.3.1-umd">static.parastorage.com--unpkg-react-18.3.1-umd</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>149 ms</td>
+      <td>443 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>32.9 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-react-i18next-13.5.0-dist-umd">static.parastorage.com--unpkg-react-i18next-13.5.0-dist-umd</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>149 ms</td>
+      <td>444 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-react-redux-8.1.3-dist">static.parastorage.com--unpkg-react-redux-8.1.3-dist</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>149 ms</td>
+      <td>445 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>5.8 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-react-dom-18.3.1-umd">static.parastorage.com--unpkg-react-dom-18.3.1-umd</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>160 ms</td>
+      <td>480 ms</td>
+      <td>2 ms</td>
+      <td>13 ms</td>
+      <td>274.3 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-redux-4.2.1-dist">static.parastorage.com--unpkg-redux-4.2.1-dist</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>150 ms</td>
+      <td>445 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>8.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-repluggable-1.302.84-dist-statics">static.parastorage.com--unpkg-repluggable-1.302.84-dist-s...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>156 ms</td>
+      <td>477 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>25.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-soundmanager2-2.97.20150601-a-script">static.parastorage.com--unpkg-soundmanager2-2.97.20150601...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>156 ms</td>
+      <td>478 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>12.9 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-edicore-base-2.42.0-dist-statics">static.parastorage.com--unpkg-wix-edicore-base-2.42.0-dis...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>157 ms</td>
+      <td>479 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>12.7 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-fedops-logger-5.515.0-dist-statics">static.parastorage.com--unpkg-wix-fedops-logger-5.515.0-d...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>157 ms</td>
+      <td>479 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>19.8 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-font-picker-1.332.0-dist-statics">static.parastorage.com--unpkg-wix-font-picker-1.332.0-dis...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>157 ms</td>
+      <td>480 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>16.8 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-http-client-2.78.0-dist-statics">static.parastorage.com--unpkg-wix-http-client-2.78.0-dist...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>161 ms</td>
+      <td>494 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>12.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-bundle-1.1062.0-dist">static.parastorage.com--unpkg-wix-santa-bundle-1.1062.0-dist</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>162 ms</td>
+      <td>495 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>20.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-responsive-editor-symbols-1.0.1184-dist-statics">static.parastorage.com--unpkg-wix-responsive-editor-symbo...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>163 ms</td>
+      <td>496 ms</td>
+      <td>1 ms</td>
+      <td>6 ms</td>
+      <td>113.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-components-1.1984.0-dist">static.parastorage.com--unpkg-wix-santa-components-1.1984...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>164 ms</td>
+      <td>501 ms</td>
+      <td>1 ms</td>
+      <td>5 ms</td>
+      <td>92.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-editor-symbols-1.3653.0-dist">static.parastorage.com--unpkg-wix-santa-editor-symbols-1....</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>165 ms</td>
+      <td>506 ms</td>
+      <td>0 ms</td>
+      <td>2 ms</td>
+      <td>37.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-core-utils-1.2722.0-dist">static.parastorage.com--unpkg-wix-santa-core-utils-1.2722...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>166 ms</td>
+      <td>538 ms</td>
+      <td>1 ms</td>
+      <td>3 ms</td>
+      <td>73.3 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-external-modules-1.644.0-color-convert-0.2.0">static.parastorage.com--unpkg-wix-santa-external-modules-...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>168 ms</td>
+      <td>540 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-santa-skin-utils-1.1686.0-dist">static.parastorage.com--unpkg-wix-santa-skin-utils-1.1686...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>168 ms</td>
+      <td>540 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>5.6 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-design-system-1.260.0-dist-statics">static.parastorage.com--unpkg-wix-design-system-1.260.0-d...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>293 ms</td>
+      <td>576 ms</td>
+      <td>7 ms</td>
+      <td>128 ms</td>
+      <td>972.3 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-tour-maker-2.0.166-dist-statics">static.parastorage.com--unpkg-wix-tour-maker-2.0.166-dist...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>168 ms</td>
+      <td>541 ms</td>
+      <td>0 ms</td>
+      <td>3 ms</td>
+      <td>40.1 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-web-bi-logger-2.1.21-dist-statics">static.parastorage.com--unpkg-wix-web-bi-logger-2.1.21-di...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>169 ms</td>
+      <td>544 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>9.2 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-sentry-browser-7.121.13-dist-statics">static.parastorage.com--unpkg-wix-sentry-browser-7.121.13...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>169 ms</td>
+      <td>544 ms</td>
+      <td>0 ms</td>
+      <td>1 ms</td>
+      <td>25.5 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-wix-fonts-1.14.0-media">static.parastorage.com--unpkg-wix-wix-fonts-1.14.0-media</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>210 ms</td>
+      <td>506 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>39.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-xss-0.2.18-dist">static.parastorage.com--unpkg-xss-0.2.18-dist</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>210 ms</td>
+      <td>506 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>6.9 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-zepto-1.2.0-dist">static.parastorage.com--unpkg-zepto-1.2.0-dist</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>211 ms</td>
+      <td>506 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>10.0 KB</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="valeriis-my-site-261.editor.wix.com--_api-account-server-v1-accounts">valeriis-my-site-261.editor.wix.com--_api-account-server-...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>211 ms</td>
+      <td>506 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>659 B</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="valeriis-my-site-261.editor.wix.com--_api-editor-document-store-v1">valeriis-my-site-261.editor.wix.com--_api-editor-document...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>211 ms</td>
+      <td>506 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>2.6 KB</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td title="valeriis-my-site-261.editor.wix.com--_api-wix-laboratory-server-v1-laboratory-platform">valeriis-my-site-261.editor.wix.com--_api-wix-laboratory-...</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>211 ms</td>
+      <td>506 ms</td>
+      <td>0 ms</td>
+      <td>0 ms</td>
+      <td>466 B</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td title="static.parastorage.com--unpkg-wix-wix-base-ui-4.153.4-dist">static.parastorage.com--unpkg-wix-wix-base-ui-4.153.4-dist</td>
+      <td>bridge</td>
+      <td>1 ms</td>
+      <td>630 ms</td>
+      <td>1300 ms</td>
+      <td>5 ms</td>
+      <td>75 ms</td>
+      <td>741.7 KB</td>
+      <td>3</td>
+    </tr></tbody>
+</table>
+<p class="dim">Phase deltas: <code>fetch/load</code> = decode start → first byte; <code>decode</code> = first byte → stream resolved; <code>extract</code> = stream resolved → entries materialized; <code>emit</code> = entries → all assets shipped to bridge.</p>
+
+<h2>Per-asset markers (last tokenpack iteration)</h2>
+
+<details>
+  <summary>Asset markers (184)</summary>
+  <table class="grid compact">
+    <thead>
+      <tr>
+        <th>Source</th><th>URL</th><th>Pack</th>
+        <th>Observed</th><th>Bridge ready</th><th>Fulfilled</th>
+        <th>Total</th><th>Bytes</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://valeriis-my-site-261.editor.wix.com/edit/od/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b?metaSiteId=d10191ef-d39a-432d-a235-4d8a9d1e7df8&amp;http_referrer=odeditor.new&amp;debug=all"><code>…ef-d39a-432d-a235-4d8a9d1e7df8&amp;http_referrer=odeditor.new&amp;debug=all</code></td>
+      <td>—</td>
+      <td>2 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/sentry-browser@7.121.13/dist/statics/sentry-browser.umd.min.js"><code>…@wix/sentry-browser@7.121.13/dist/statics/sentry-browser.umd.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>904 ms</td>
+      <td>1624 ms</td>
+      <td>1626 ms</td>
+      <td>722 ms</td>
+      <td>75.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/fedops-logger@5.515.0/dist/statics/fedops-logger.bundle.min.js"><code>…@wix/fedops-logger@5.515.0/dist/statics/fedops-logger.bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>904 ms</td>
+      <td>1546 ms</td>
+      <td>1549 ms</td>
+      <td>645 ms</td>
+      <td>76.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/es-module-shims@1.8.2"><code>https://static.parastorage.com/unpkg/es-module-shims@1.8.2</code></td>
+      <td><code class="dim">static.parastorage.com--unpkg</code></td>
+      <td>2933 ms</td>
+      <td>2933 ms</td>
+      <td>2934 ms</td>
+      <td>1 ms</td>
+      <td>56.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/wix-base-ui@4.153.4/dist/style.css"><code>…tatic.parastorage.com/unpkg/@wix/wix-base-ui@4.153.4/dist/style.css</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3328 ms</td>
+      <td>3328 ms</td>
+      <td>3519 ms</td>
+      <td>191 ms</td>
+      <td>760.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/wix-base-ui@4.153.4/dist/base-ui.css"><code>…tic.parastorage.com/unpkg/@wix/wix-base-ui@4.153.4/dist/base-ui.css</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3329 ms</td>
+      <td>3329 ms</td>
+      <td>3521 ms</td>
+      <td>192 ms</td>
+      <td>322.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/design-system@1.260.0/dist/statics/styles.global.css"><code>…com/unpkg/@wix/design-system@1.260.0/dist/statics/styles.global.css</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3329 ms</td>
+      <td>3329 ms</td>
+      <td>3527 ms</td>
+      <td>198 ms</td>
+      <td>985.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/font-picker@1.332.0/dist/statics/font-picker.min.css"><code>…com/unpkg/@wix/font-picker@1.332.0/dist/statics/font-picker.min.css</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3329 ms</td>
+      <td>3329 ms</td>
+      <td>3527 ms</td>
+      <td>198 ms</td>
+      <td>6.4 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/responsive-editor-packages/1.18467.0/responsive-editor-packages.css"><code>…responsive-editor-packages/1.18467.0/responsive-editor-packages.css</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3329 ms</td>
+      <td>3329 ms</td>
+      <td>3543 ms</td>
+      <td>214 ms</td>
+      <td>2.57 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-elements-panel-service/1.1129.0/editor-elements-panel-service.css"><code>…r-elements-panel-service/1.1129.0/editor-elements-panel-service.css</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3330 ms</td>
+      <td>3330 ms</td>
+      <td>3549 ms</td>
+      <td>219 ms</td>
+      <td>1002.4 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/odeditor-packages/dist/8146.74bd4ce8.min.css"><code>…rastorage.com/services/odeditor-packages/dist/8146.74bd4ce8.min.css</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3331 ms</td>
+      <td>3331 ms</td>
+      <td>3555 ms</td>
+      <td>225 ms</td>
+      <td>1020.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/odeditor-packages/dist/odeditor-packages.188b3b35.css"><code>….com/services/odeditor-packages/dist/odeditor-packages.188b3b35.css</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3351 ms</td>
+      <td>3351 ms</td>
+      <td>3557 ms</td>
+      <td>206 ms</td>
+      <td>302.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/cookie-consent-policy-client/1.972.0/app.bundle.min.js"><code>…com/services/cookie-consent-policy-client/1.972.0/app.bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3351 ms</td>
+      <td>3351 ms</td>
+      <td>3557 ms</td>
+      <td>206 ms</td>
+      <td>7.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/tag-manager-client/1.1028.0/hostTags.bundle.min.js"><code>…age.com/services/tag-manager-client/1.1028.0/hostTags.bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3351 ms</td>
+      <td>3351 ms</td>
+      <td>3557 ms</td>
+      <td>206 ms</td>
+      <td>4.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/wix-recorder/1.20.0/app.bundle.min.js"><code>…atic.parastorage.com/services/wix-recorder/1.20.0/app.bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3351 ms</td>
+      <td>3351 ms</td>
+      <td>3557 ms</td>
+      <td>206 ms</td>
+      <td>22.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/react@18.3.1/umd/react.development.js"><code>…/static.parastorage.com/unpkg/react@18.3.1/umd/react.development.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3351 ms</td>
+      <td>3351 ms</td>
+      <td>3558 ms</td>
+      <td>207 ms</td>
+      <td>107.4 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/react-dom@18.3.1/umd/react-dom.development.js"><code>…parastorage.com/unpkg/react-dom@18.3.1/umd/react-dom.development.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3351 ms</td>
+      <td>3351 ms</td>
+      <td>3565 ms</td>
+      <td>213 ms</td>
+      <td>1.03 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/i18next@25.6.3/i18next.js"><code>https://static.parastorage.com/unpkg/i18next@25.6.3/i18next.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3351 ms</td>
+      <td>3351 ms</td>
+      <td>3565 ms</td>
+      <td>214 ms</td>
+      <td>82.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/react-i18next@13.5.0/dist/umd/react-i18next.min.js"><code>…torage.com/unpkg/react-i18next@13.5.0/dist/umd/react-i18next.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3351 ms</td>
+      <td>3351 ms</td>
+      <td>3565 ms</td>
+      <td>214 ms</td>
+      <td>14.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/editor-web-server/1.168.0/assets/odeditor-wix-logo-black.svg"><code>…rvices/editor-web-server/1.168.0/assets/odeditor-wix-logo-black.svg</code></td>
+      <td>—</td>
+      <td>3351 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/redux@4.2.1/dist/redux.js"><code>https://static.parastorage.com/unpkg/redux@4.2.1/dist/redux.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3356 ms</td>
+      <td>3356 ms</td>
+      <td>3566 ms</td>
+      <td>209 ms</td>
+      <td>26.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/react-redux@8.1.3/dist/react-redux.min.js"><code>…tic.parastorage.com/unpkg/react-redux@8.1.3/dist/react-redux.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3357 ms</td>
+      <td>3357 ms</td>
+      <td>3566 ms</td>
+      <td>209 ms</td>
+      <td>15.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/lodash@4.17.21/lodash.min.js"><code>https://static.parastorage.com/unpkg/lodash@4.17.21/lodash.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3357 ms</td>
+      <td>3357 ms</td>
+      <td>3566 ms</td>
+      <td>209 ms</td>
+      <td>71.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/classnames@2.5.1/index.js"><code>https://static.parastorage.com/unpkg/classnames@2.5.1/index.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3357 ms</td>
+      <td>3357 ms</td>
+      <td>3566 ms</td>
+      <td>210 ms</td>
+      <td>1.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-8.webp"><code>…-resources/dist/editor/responsive/odeditor-loader/site-frame-8.webp</code></td>
+      <td>—</td>
+      <td>3357 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/responsive-editor-symbols@1.0.1184/dist/statics/symbols.bundle.min.js"><code>…sponsive-editor-symbols@1.0.1184/dist/statics/symbols.bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3357 ms</td>
+      <td>3357 ms</td>
+      <td>3569 ms</td>
+      <td>212 ms</td>
+      <td>516.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-3.webp"><code>…-resources/dist/editor/responsive/odeditor-loader/site-frame-3.webp</code></td>
+      <td>—</td>
+      <td>3357 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/http-client@2.78.0/dist/statics/index.bundle.min.js"><code>….com/unpkg/@wix/http-client@2.78.0/dist/statics/index.bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3357 ms</td>
+      <td>3357 ms</td>
+      <td>3570 ms</td>
+      <td>212 ms</td>
+      <td>33.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/web-bi-logger@2.1.21/dist/statics/app.bundle.min.js"><code>….com/unpkg/@wix/web-bi-logger@2.1.21/dist/statics/app.bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3357 ms</td>
+      <td>3357 ms</td>
+      <td>3570 ms</td>
+      <td>212 ms</td>
+      <td>32.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/tour-maker@2.0.166/dist/statics/tour-maker.bundle.js"><code>…com/unpkg/@wix/tour-maker@2.0.166/dist/statics/tour-maker.bundle.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3360 ms</td>
+      <td>3360 ms</td>
+      <td>3571 ms</td>
+      <td>212 ms</td>
+      <td>252.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/repluggable@1.302.84/dist/statics/repluggable.bundle.js"><code>…e.com/unpkg/repluggable@1.302.84/dist/statics/repluggable.bundle.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3360 ms</td>
+      <td>3360 ms</td>
+      <td>3572 ms</td>
+      <td>212 ms</td>
+      <td>115.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/edicore-base@2.42.0/dist/statics/edicore-base.js"><code>…age.com/unpkg/@wix/edicore-base@2.42.0/dist/statics/edicore-base.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3360 ms</td>
+      <td>3360 ms</td>
+      <td>3572 ms</td>
+      <td>212 ms</td>
+      <td>53.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/wix-base-ui@4.153.4/dist/base-ui.js"><code>…atic.parastorage.com/unpkg/@wix/wix-base-ui@4.153.4/dist/base-ui.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3360 ms</td>
+      <td>3360 ms</td>
+      <td>3587 ms</td>
+      <td>227 ms</td>
+      <td>2.51 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-1.webp"><code>…-resources/dist/editor/responsive/odeditor-loader/site-frame-1.webp</code></td>
+      <td>—</td>
+      <td>3361 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/design-system@1.260.0/dist/statics/design-system.umd.min.js"><code>…kg/@wix/design-system@1.260.0/dist/statics/design-system.umd.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3361 ms</td>
+      <td>3361 ms</td>
+      <td>3606 ms</td>
+      <td>246 ms</td>
+      <td>3.01 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/font-picker@1.332.0/dist/statics/font-picker.umd.min.js"><code>…/unpkg/@wix/font-picker@1.332.0/dist/statics/font-picker.umd.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3361 ms</td>
+      <td>3361 ms</td>
+      <td>3607 ms</td>
+      <td>246 ms</td>
+      <td>49.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-10.webp"><code>…resources/dist/editor/responsive/odeditor-loader/site-frame-10.webp</code></td>
+      <td>—</td>
+      <td>3361 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/santa-editor-symbols@1.3653.0/dist/santa-editor-symbols.js"><code>…pkg/@wix/santa-editor-symbols@1.3653.0/dist/santa-editor-symbols.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3361 ms</td>
+      <td>3361 ms</td>
+      <td>3608 ms</td>
+      <td>247 ms</td>
+      <td>192.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-elements-panel-service/1.1129.0/editor-elements-panel-service.js"><code>…or-elements-panel-service/1.1129.0/editor-elements-panel-service.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3386 ms</td>
+      <td>3386 ms</td>
+      <td>3625 ms</td>
+      <td>239 ms</td>
+      <td>2.78 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/marketplace-editor-container/1.2405.3596//add-panel-marketplace.umd.js"><code>…ketplace-editor-container/1.2405.3596//add-panel-marketplace.umd.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3386 ms</td>
+      <td>3386 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/responsive-editor-common-infra/1.3145.0/responsive-editor-common-infra.bundle.js"><code>…itor-common-infra/1.3145.0/responsive-editor-common-infra.bundle.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3387 ms</td>
+      <td>3387 ms</td>
+      <td>3636 ms</td>
+      <td>249 ms</td>
+      <td>1.69 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/responsive-editor-packages/1.18467.0/responsive-editor-packages.bundle.js"><code>…sive-editor-packages/1.18467.0/responsive-editor-packages.bundle.js</code></td>
+      <td>—</td>
+      <td>3387 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-host-integration/1.5854.0/editor-platform-host-integration-repluggable.umd.js"><code>…ration/1.5854.0/editor-platform-host-integration-repluggable.umd.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3387 ms</td>
+      <td>3387 ms</td>
+      <td>3688 ms</td>
+      <td>301 ms</td>
+      <td>8.54 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/odeditor-packages/dist/8146.4f1eaeb1.min.js"><code>…arastorage.com/services/odeditor-packages/dist/8146.4f1eaeb1.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3433 ms</td>
+      <td>3433 ms</td>
+      <td>3702 ms</td>
+      <td>268 ms</td>
+      <td>2.22 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/odeditor-packages/dist/odeditor-packages.35a11d88.js"><code>…e.com/services/odeditor-packages/dist/odeditor-packages.35a11d88.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3434 ms</td>
+      <td>3434 ms</td>
+      <td>3749 ms</td>
+      <td>315 ms</td>
+      <td>7.69 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/responsive-editor-startup/1.301.177/startup.bundle.min.js"><code>…/services/responsive-editor-startup/1.301.177/startup.bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>3472 ms</td>
+      <td>3472 ms</td>
+      <td>3750 ms</td>
+      <td>278 ms</td>
+      <td>70.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-12.webp"><code>…resources/dist/editor/responsive/odeditor-loader/site-frame-12.webp</code></td>
+      <td>—</td>
+      <td>3473 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-0.webp"><code>…-resources/dist/editor/responsive/odeditor-loader/site-frame-0.webp</code></td>
+      <td>—</td>
+      <td>3473 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-13.webp"><code>…resources/dist/editor/responsive/odeditor-loader/site-frame-13.webp</code></td>
+      <td>—</td>
+      <td>3474 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-5.webp"><code>…-resources/dist/editor/responsive/odeditor-loader/site-frame-5.webp</code></td>
+      <td>—</td>
+      <td>3474 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-6.webp"><code>…-resources/dist/editor/responsive/odeditor-loader/site-frame-6.webp</code></td>
+      <td>—</td>
+      <td>3474 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-14.webp"><code>…resources/dist/editor/responsive/odeditor-loader/site-frame-14.webp</code></td>
+      <td>—</td>
+      <td>3474 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-7.webp"><code>…-resources/dist/editor/responsive/odeditor-loader/site-frame-7.webp</code></td>
+      <td>—</td>
+      <td>3474 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/santa-resources/dist/editor/responsive/odeditor-loader/site-frame-11.webp"><code>…resources/dist/editor/responsive/odeditor-loader/site-frame-11.webp</code></td>
+      <td>—</td>
+      <td>3474 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/wix-fonts@1.14.0/media/WixMadeforDisplayVF_W_Wght.ab35e4df.woff2"><code>…ix/wix-fonts@1.14.0/media/WixMadeforDisplayVF_W_Wght.ab35e4df.woff2</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>3558 ms</td>
+      <td>3558 ms</td>
+      <td>3750 ms</td>
+      <td>192 ms</td>
+      <td>38.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://valeriis-my-site-261.editor.wix.com/_api/wix-laboratory-server/v1/laboratory/platform/conductExperiment?key=specs.fedinfra.Glassbox&amp;fallbackValue=false"><code>…m/conductExperiment?key=specs.fedinfra.Glassbox&amp;fallbackValue=false</code></td>
+      <td><code class="dim">valeriis-my-site-261.editor...</code></td>
+      <td>3702 ms</td>
+      <td>3702 ms</td>
+      <td>3750 ms</td>
+      <td>48 ms</td>
+      <td>17 B</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://frog.wix.com/p?src=19&amp;evid=3&amp;vsi=6f3d2889-cecb-4349-9ba8-638e8e40e974&amp;_brandId=wix&amp;_siteBranchId=00000000-0000-0000-0000-000000000000&amp;_ms=4514&amp;_isHeadless=undefined&amp;_hostingPlatform=EDITOR3&amp;_lv=2.0.985%7CC&amp;_client_id=6e877ee9-09e6-4d91-b03d-5e0aa57192e0&amp;_uuid=5f9673f1-01b6-4572-8620-f577d13908b3&amp;from=&amp;to=https%3A%2F%2Fvaleriis-my-site-261.editor.wix.com%2Fedit%2Fod%2Fc3eee97d-b623-4f0f-80b2-a22eaf7fff3b%3FmetaSiteId%3Dd10191ef-d39a-432d-a235-4d8a9d1e7df8%26http_referrer%3Dodeditor.new%26debug%3Dall&amp;fis=1&amp;sr=1280x720&amp;wr=1280x720&amp;_isca=1&amp;_iscf=1&amp;_ispd=0&amp;_ise=0&amp;_=17781341968470"><code>…280x720&amp;wr=1280x720&amp;_isca=1&amp;_iscf=1&amp;_ispd=0&amp;_ise=0&amp;_=17781341968470</code></td>
+      <td>—</td>
+      <td>4517 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://valeriis-my-site-261.editor.wix.com/_api/wix-laboratory-server/laboratory/conductExperiment?key=specs.mdst.openerWs3CrossDomain&amp;fallback=false"><code>…onductExperiment?key=specs.mdst.openerWs3CrossDomain&amp;fallback=false</code></td>
+      <td>—</td>
+      <td>5786 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://frog.wix.com/p?src=19&amp;evid=3&amp;vsi=6f3d2889-cecb-4349-9ba8-638e8e40e974&amp;_brandId=wix&amp;_siteBranchId=00000000-0000-0000-0000-000000000000&amp;_ms=5822&amp;_isHeadless=undefined&amp;_hostingPlatform=EDITOR3&amp;_lv=2.0.985%7CC&amp;_client_id=6e877ee9-09e6-4d91-b03d-5e0aa57192e0&amp;_uuid=5f9673f1-01b6-4572-8620-f577d13908b3&amp;from=https%3A%2F%2Fvaleriis-my-site-261.editor.wix.com%2Fedit%2Fod%2Fc3eee97d-b623-4f0f-80b2-a22eaf7fff3b%3FmetaSiteId%3Dd10191ef-d39a-432d-a235-4d8a9d1e7df8%26http_referrer%3Dodeditor.new%26debug%3Dall&amp;to=https%3A%2F%2Fvaleriis-my-site-261.editor.wix.com%2Fedit%2Fod%2Fc3eee97d-b623-4f0f-80b2-a22eaf7fff3b%3FmetaSiteId%3Dd10191ef-d39a-432d-a235-4d8a9d1e7df8%26http_referrer%3Dodeditor.new%26debug%3Dall&amp;fis=0&amp;sr=1280x720&amp;wr=1280x720&amp;_isca=1&amp;_iscf=1&amp;_ispd=0&amp;_ise=0&amp;_=17781341982011"><code>…280x720&amp;wr=1280x720&amp;_isca=1&amp;_iscf=1&amp;_ispd=0&amp;_ise=0&amp;_=17781341982011</code></td>
+      <td>—</td>
+      <td>5871 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/odeditor-packages/dist/async/messages_en-json.57f08a5c.min.js"><code>…vices/odeditor-packages/dist/async/messages_en-json.57f08a5c.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5885 ms</td>
+      <td>5885 ms</td>
+      <td>5891 ms</td>
+      <td>7 ms</td>
+      <td>255.4 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-host-integration/78895c57cd6eecb015e11ad34761633c83a93496f75fd8b1d4de249f/9632.chunk.js"><code>…95c57cd6eecb015e11ad34761633c83a93496f75fd8b1d4de249f/9632.chunk.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5887 ms</td>
+      <td>5887 ms</td>
+      <td>5892 ms</td>
+      <td>4 ms</td>
+      <td>30.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-host-integration/78895c57cd6eecb015e11ad34761633c83a93496f75fd8b1d4de249f/1031.chunk.js"><code>…95c57cd6eecb015e11ad34761633c83a93496f75fd8b1d4de249f/1031.chunk.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5888 ms</td>
+      <td>5888 ms</td>
+      <td>5892 ms</td>
+      <td>4 ms</td>
+      <td>11.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-host-integration/78895c57cd6eecb015e11ad34761633c83a93496f75fd8b1d4de249f/1755.chunk.js"><code>…95c57cd6eecb015e11ad34761633c83a93496f75fd8b1d4de249f/1755.chunk.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5889 ms</td>
+      <td>5889 ms</td>
+      <td>5892 ms</td>
+      <td>3 ms</td>
+      <td>1.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/responsive-editor-packages/1.18467.0/ai-assistant-chat-ui/ai-assistant-chat.b1f58b88.css"><code>…kages/1.18467.0/ai-assistant-chat-ui/ai-assistant-chat.b1f58b88.css</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5961 ms</td>
+      <td>5961 ms</td>
+      <td>5968 ms</td>
+      <td>7 ms</td>
+      <td>265.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/responsive-editor-packages/1.18467.0/ai-assistant-chat-ui/ai-assistant-chat.07deea1e.js"><code>…ckages/1.18467.0/ai-assistant-chat-ui/ai-assistant-chat.07deea1e.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5962 ms</td>
+      <td>5962 ms</td>
+      <td>5973 ms</td>
+      <td>10 ms</td>
+      <td>692.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/odeditor-packages/dist/async/66345.17ce751f.min.js"><code>…age.com/services/odeditor-packages/dist/async/66345.17ce751f.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5963 ms</td>
+      <td>5963 ms</td>
+      <td>5973 ms</td>
+      <td>10 ms</td>
+      <td>506 B</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/responsive-editor-packages/1.18467.0/editor-debug-tools.341ba461.js"><code>…responsive-editor-packages/1.18467.0/editor-debug-tools.341ba461.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5974 ms</td>
+      <td>5974 ms</td>
+      <td>5976 ms</td>
+      <td>2 ms</td>
+      <td>98.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/responsive-editor-packages/1.18467.0/wix-richtext.a9361324.js"><code>…vices/responsive-editor-packages/1.18467.0/wix-richtext.a9361324.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5994 ms</td>
+      <td>5994 ms</td>
+      <td>5997 ms</td>
+      <td>3 ms</td>
+      <td>134.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-services.es.js"><code>…5651870804fac456b7d0a5a30fb6428f3f31/editor-platform-services.es.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>5995 ms</td>
+      <td>5995 ms</td>
+      <td>5997 ms</td>
+      <td>2 ms</td>
+      <td>44.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://valeriis-my-site-261.editor.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForKey/htmlEditor/global_preferences"><code>…ferences-webapp/getVolatilePrefForKey/htmlEditor/global_preferences</code></td>
+      <td>—</td>
+      <td>5998 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://valeriis-my-site-261.editor.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefsForSite/htmlEditor/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b"><code>…olatilePrefsForSite/htmlEditor/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b</code></td>
+      <td>—</td>
+      <td>5999 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://valeriis-my-site-261.editor.wix.com/html/editor/web/renderer/render/document/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b?metaSiteId=d10191ef-d39a-432d-a235-4d8a9d1e7df8&amp;editorSessionId=dae6336a-17fd-40c3-a3d6-419dd4395d17&amp;esi=dae6336a-17fd-40c3-a3d6-419dd4395d17&amp;isEdited=true&amp;isSantaEditor=true&amp;dsOrigin=odeditor&amp;languages=&amp;ds=true&amp;forceResponsive=true&amp;configName=editor3&amp;commonConfig=%7B%22host%22%3A%22EDITOR3%22%2C%22brand%22%3A%22wix%22%2C%22branchId%22%3A%2200000000-0000-0000-0000-000000000000%22%7D&amp;enableScopes=true&amp;consent-policy=%7B%22func%22%3A1%2C%22anl%22%3A1%2C%22adv%22%3A0%2C%22dt3%22%3A0%2C%22ess%22%3A1%7D&amp;http_referrer=odeditor.new"><code>…2%3A0%2C%22dt3%22%3A0%2C%22ess%22%3A1%7D&amp;http_referrer=odeditor.new</code></td>
+      <td>—</td>
+      <td>6024 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/odeditor-packages/dist/async/11607.b573ceb4.min.js"><code>…age.com/services/odeditor-packages/dist/async/11607.b573ceb4.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>6040 ms</td>
+      <td>6040 ms</td>
+      <td>6044 ms</td>
+      <td>5 ms</td>
+      <td>340 B</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://valeriis-my-site-261.editor.wix.com/_api/editor-web-server-versions/v1/versions"><code>…site-261.editor.wix.com/_api/editor-web-server-versions/v1/versions</code></td>
+      <td>—</td>
+      <td>6043 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-events-emitter-chunk--DwWa4A5F.mjs"><code>…a5a30fb6428f3f31/editor-platform-events-emitter-chunk--DwWa4A5F.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>6044 ms</td>
+      <td>6044 ms</td>
+      <td>6045 ms</td>
+      <td>1 ms</td>
+      <td>1.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-feature-store-service-chunk--D06_SCae.mjs"><code>…6428f3f31/editor-platform-feature-store-service-chunk--D06_SCae.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>6044 ms</td>
+      <td>6044 ms</td>
+      <td>6045 ms</td>
+      <td>1 ms</td>
+      <td>6.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-injection-infra-chunk--BGWFbHTS.mjs"><code>…5a30fb6428f3f31/editor-platform-injection-infra-chunk--BGWFbHTS.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>6044 ms</td>
+      <td>6044 ms</td>
+      <td>6045 ms</td>
+      <td>1 ms</td>
+      <td>5.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/vendors-edicore-core-Bu__0zSE.mjs"><code>…1870804fac456b7d0a5a30fb6428f3f31/vendors-edicore-core-Bu__0zSE.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>6044 ms</td>
+      <td>6044 ms</td>
+      <td>6045 ms</td>
+      <td>1 ms</td>
+      <td>49.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/wix-ck-editor/1.663.0/dist/wixckloader.js"><code>….parastorage.com/services/wix-ck-editor/1.663.0/dist/wixckloader.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>6107 ms</td>
+      <td>6107 ms</td>
+      <td>6207 ms</td>
+      <td>100 ms</td>
+      <td>14.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-ai-packages-loader/63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b/editor-ai-packages-bundle-descriptor.js"><code>…a954abe8d21d81191574858107b/editor-ai-packages-bundle-descriptor.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>6107 ms</td>
+      <td>6107 ms</td>
+      <td>6210 ms</td>
+      <td>103 ms</td>
+      <td>548.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/vendors-commonjs-helpers-CCIqAdii.mjs"><code>…804fac456b7d0a5a30fb6428f3f31/vendors-commonjs-helpers-CCIqAdii.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>6111 ms</td>
+      <td>6111 ms</td>
+      <td>6210 ms</td>
+      <td>99 ms</td>
+      <td>1.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/vendors-9G_urLGW.mjs"><code>…a45240dee35651870804fac456b7d0a5a30fb6428f3f31/vendors-9G_urLGW.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>6112 ms</td>
+      <td>6112 ms</td>
+      <td>6224 ms</td>
+      <td>113 ms</td>
+      <td>2.32 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-ai-packages-loader/63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b/async/plan-mode.js"><code>…788730884af06ec3dcd70a954abe8d21d81191574858107b/async/plan-mode.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8347 ms</td>
+      <td>8347 ms</td>
+      <td>8380 ms</td>
+      <td>33 ms</td>
+      <td>1.83 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/third-party/requirejs/2.1.15/require.min.js?v=2"><code>…torage.com/services/third-party/requirejs/2.1.15/require.min.js?v=2</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8367 ms</td>
+      <td>8367 ms</td>
+      <td>8380 ms</td>
+      <td>13 ms</td>
+      <td>14.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/document-management/1.17520.0/tb-main/dist/tb-main.js"><code>….com/services/document-management/1.17520.0/tb-main/dist/tb-main.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8367 ms</td>
+      <td>8367 ms</td>
+      <td>8380 ms</td>
+      <td>13 ms</td>
+      <td>36.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://static.parastorage.com/services/editor-ai-packages-loader/63ed545c788730884af06ec3dcd70a954abe8d21d81191574858107b/static/media/generation-notification-sound.78e06db2.wav"><code>…1574858107b/static/media/generation-notification-sound.78e06db2.wav</code></td>
+      <td>—</td>
+      <td>8381 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-services.css"><code>…e35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-services.css</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8415 ms</td>
+      <td>8415 ms</td>
+      <td>8417 ms</td>
+      <td>1 ms</td>
+      <td>43.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-data-binding-service-chunk--CIrJBpCj.mjs"><code>…b6428f3f31/editor-platform-data-binding-service-chunk--CIrJBpCj.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8420 ms</td>
+      <td>8420 ms</td>
+      <td>8424 ms</td>
+      <td>4 ms</td>
+      <td>27.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-data-items-compatibility-service-chunk--zvJupW7l.mjs"><code>…ditor-platform-data-items-compatibility-service-chunk--zvJupW7l.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8420 ms</td>
+      <td>8420 ms</td>
+      <td>8428 ms</td>
+      <td>7 ms</td>
+      <td>11.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-editor-pointer-service-chunk--D6x8IQ83.mjs"><code>…428f3f31/editor-platform-editor-pointer-service-chunk--D6x8IQ83.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8420 ms</td>
+      <td>8420 ms</td>
+      <td>8428 ms</td>
+      <td>7 ms</td>
+      <td>4.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-providers-service-chunk--BH3NioXm.mjs"><code>…30fb6428f3f31/editor-platform-providers-service-chunk--BH3NioXm.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8420 ms</td>
+      <td>8420 ms</td>
+      <td>8432 ms</td>
+      <td>12 ms</td>
+      <td>35.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-application-data-service-chunk--BUD2qOrp.mjs"><code>…8f3f31/editor-platform-application-data-service-chunk--BUD2qOrp.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8421 ms</td>
+      <td>8421 ms</td>
+      <td>8432 ms</td>
+      <td>11 ms</td>
+      <td>3.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-links-service-chunk--CusCxTEn.mjs"><code>…0a5a30fb6428f3f31/editor-platform-links-service-chunk--CusCxTEn.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8421 ms</td>
+      <td>8421 ms</td>
+      <td>8432 ms</td>
+      <td>11 ms</td>
+      <td>3.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-pages-service-chunk--pOrFK_xs.mjs"><code>…0a5a30fb6428f3f31/editor-platform-pages-service-chunk--pOrFK_xs.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8421 ms</td>
+      <td>8421 ms</td>
+      <td>8433 ms</td>
+      <td>12 ms</td>
+      <td>6.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-components-private-service-chunk--CRyBdSPs.mjs"><code>…3f31/editor-platform-components-private-service-chunk--CRyBdSPs.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8421 ms</td>
+      <td>8421 ms</td>
+      <td>8433 ms</td>
+      <td>11 ms</td>
+      <td>3.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-plugins-market-panel-chunk--JTMTRqie.mjs"><code>…b6428f3f31/editor-platform-plugins-market-panel-chunk--JTMTRqie.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8421 ms</td>
+      <td>8421 ms</td>
+      <td>8433 ms</td>
+      <td>12 ms</td>
+      <td>49.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-bi-service-chunk--Kpe6paXh.mjs"><code>…b7d0a5a30fb6428f3f31/editor-platform-bi-service-chunk--Kpe6paXh.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8421 ms</td>
+      <td>8421 ms</td>
+      <td>8433 ms</td>
+      <td>12 ms</td>
+      <td>3.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-deeplink-service-chunk--BXwumWzj.mjs"><code>…a30fb6428f3f31/editor-platform-deeplink-service-chunk--BXwumWzj.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8421 ms</td>
+      <td>8421 ms</td>
+      <td>8433 ms</td>
+      <td>12 ms</td>
+      <td>9.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-site-settings-service-chunk--B4P39Ta5.mjs"><code>…6428f3f31/editor-platform-site-settings-service-chunk--B4P39Ta5.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8421 ms</td>
+      <td>8421 ms</td>
+      <td>8433 ms</td>
+      <td>12 ms</td>
+      <td>2.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-routers-service-chunk--Cx-IMGvo.mjs"><code>…5a30fb6428f3f31/editor-platform-routers-service-chunk--Cx-IMGvo.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8421 ms</td>
+      <td>8421 ms</td>
+      <td>8433 ms</td>
+      <td>12 ms</td>
+      <td>8.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-dynamic-page-nav-bar-chunk--EY013oeZ.mjs"><code>…b6428f3f31/editor-platform-dynamic-page-nav-bar-chunk--EY013oeZ.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8422 ms</td>
+      <td>8422 ms</td>
+      <td>8433 ms</td>
+      <td>11 ms</td>
+      <td>22.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-page-replace-data-service-chunk--Sq6p5ZAM.mjs"><code>…f3f31/editor-platform-page-replace-data-service-chunk--Sq6p5ZAM.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8422 ms</td>
+      <td>8422 ms</td>
+      <td>8433 ms</td>
+      <td>11 ms</td>
+      <td>18.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-app-manifest-service-chunk--cTkHg-2K.mjs"><code>…b6428f3f31/editor-platform-app-manifest-service-chunk--cTkHg-2K.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8422 ms</td>
+      <td>8422 ms</td>
+      <td>8433 ms</td>
+      <td>11 ms</td>
+      <td>4.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-language-service-chunk--CsFhKa0g.mjs"><code>…a30fb6428f3f31/editor-platform-language-service-chunk--CsFhKa0g.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8423 ms</td>
+      <td>8423 ms</td>
+      <td>8433 ms</td>
+      <td>10 ms</td>
+      <td>2.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-presets-panel-chunk--DH6_Di54.mjs"><code>…0a5a30fb6428f3f31/editor-platform-presets-panel-chunk--DH6_Di54.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8423 ms</td>
+      <td>8423 ms</td>
+      <td>8433 ms</td>
+      <td>10 ms</td>
+      <td>52.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-ui-state-service-chunk--B20fZxdt.mjs"><code>…a30fb6428f3f31/editor-platform-ui-state-service-chunk--B20fZxdt.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8423 ms</td>
+      <td>8423 ms</td>
+      <td>8433 ms</td>
+      <td>10 ms</td>
+      <td>2.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-builder-components-private-service-chunk--3zL4PU0-.mjs"><code>…tor-platform-builder-components-private-service-chunk--3zL4PU0-.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8423 ms</td>
+      <td>8423 ms</td>
+      <td>8433 ms</td>
+      <td>10 ms</td>
+      <td>1.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-ui-listeners-chunk--D_SiL4R7.mjs"><code>…d0a5a30fb6428f3f31/editor-platform-ui-listeners-chunk--D_SiL4R7.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8433 ms</td>
+      <td>10 ms</td>
+      <td>2.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-custom-panel-chunk--CFrTHRjT.mjs"><code>…d0a5a30fb6428f3f31/editor-platform-custom-panel-chunk--CFrTHRjT.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8433 ms</td>
+      <td>9 ms</td>
+      <td>1.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-edit-text-panel-service-chunk--DBLImLua.mjs"><code>…28f3f31/editor-platform-edit-text-panel-service-chunk--DBLImLua.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8433 ms</td>
+      <td>9 ms</td>
+      <td>14.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-text-panel-ui-service-chunk--DwRebYJ-.mjs"><code>…6428f3f31/editor-platform-text-panel-ui-service-chunk--DwRebYJ-.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8433 ms</td>
+      <td>9 ms</td>
+      <td>13.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-sort-modal-ui-service-chunk--kj_Ztyh3.mjs"><code>…6428f3f31/editor-platform-sort-modal-ui-service-chunk--kj_Ztyh3.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8433 ms</td>
+      <td>9 ms</td>
+      <td>26.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-elements-panel-chunk--DXg23VQd.mjs"><code>…a5a30fb6428f3f31/editor-platform-elements-panel-chunk--DXg23VQd.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8433 ms</td>
+      <td>9 ms</td>
+      <td>16.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-app-api-service-chunk--CU0XtRCk.mjs"><code>…5a30fb6428f3f31/editor-platform-app-api-service-chunk--CU0XtRCk.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8434 ms</td>
+      <td>9 ms</td>
+      <td>2.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-manage-data-items-ui-service-chunk--BnprnA80.mjs"><code>…31/editor-platform-manage-data-items-ui-service-chunk--BnprnA80.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8434 ms</td>
+      <td>9 ms</td>
+      <td>47.4 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-filter-modal-ui-service-chunk--XE2f4ID9.mjs"><code>…28f3f31/editor-platform-filter-modal-ui-service-chunk--XE2f4ID9.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8434 ms</td>
+      <td>10 ms</td>
+      <td>50.4 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-manage-apps-panel-ui-service-chunk--BrocOvRQ.mjs"><code>…31/editor-platform-manage-apps-panel-ui-service-chunk--BrocOvRQ.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8424 ms</td>
+      <td>8424 ms</td>
+      <td>8437 ms</td>
+      <td>12 ms</td>
+      <td>275.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-premium-data-service-chunk--DUF1E94e.mjs"><code>…b6428f3f31/editor-platform-premium-data-service-chunk--DUF1E94e.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8425 ms</td>
+      <td>8425 ms</td>
+      <td>8437 ms</td>
+      <td>12 ms</td>
+      <td>4.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-premium-service-chunk--BSG0q2iE.mjs"><code>…5a30fb6428f3f31/editor-platform-premium-service-chunk--BSG0q2iE.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8425 ms</td>
+      <td>8425 ms</td>
+      <td>8437 ms</td>
+      <td>12 ms</td>
+      <td>3.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-guid-service-chunk--vhVYmONP.mjs"><code>…d0a5a30fb6428f3f31/editor-platform-guid-service-chunk--vhVYmONP.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8426 ms</td>
+      <td>8426 ms</td>
+      <td>8437 ms</td>
+      <td>11 ms</td>
+      <td>585 B</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-app-market-service-chunk--QrdoIg_V.mjs"><code>…0fb6428f3f31/editor-platform-app-market-service-chunk--QrdoIg_V.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8426 ms</td>
+      <td>8426 ms</td>
+      <td>8437 ms</td>
+      <td>11 ms</td>
+      <td>13.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-upgrade-ui-service-chunk--DkddrAZ9.mjs"><code>…0fb6428f3f31/editor-platform-upgrade-ui-service-chunk--DkddrAZ9.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8426 ms</td>
+      <td>8426 ms</td>
+      <td>8437 ms</td>
+      <td>11 ms</td>
+      <td>4.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-components-ui-service-chunk--DqDO1oRM.mjs"><code>…6428f3f31/editor-platform-components-ui-service-chunk--DqDO1oRM.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8426 ms</td>
+      <td>8426 ms</td>
+      <td>8437 ms</td>
+      <td>11 ms</td>
+      <td>4.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-dealer-offers-service-chunk--BDFqu0cl.mjs"><code>…6428f3f31/editor-platform-dealer-offers-service-chunk--BDFqu0cl.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8426 ms</td>
+      <td>8426 ms</td>
+      <td>8437 ms</td>
+      <td>11 ms</td>
+      <td>2.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-application-lifecycle-service-chunk--DaY6FQlU.mjs"><code>…1/editor-platform-application-lifecycle-service-chunk--DaY6FQlU.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8426 ms</td>
+      <td>8426 ms</td>
+      <td>8438 ms</td>
+      <td>11 ms</td>
+      <td>104.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-app-dependencies-service-chunk--BXU8PRRl.mjs"><code>…8f3f31/editor-platform-app-dependencies-service-chunk--BXU8PRRl.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8427 ms</td>
+      <td>8427 ms</td>
+      <td>8438 ms</td>
+      <td>11 ms</td>
+      <td>11.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-installation-service-chunk--oykH-SsI.mjs"><code>…b6428f3f31/editor-platform-installation-service-chunk--oykH-SsI.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8427 ms</td>
+      <td>8427 ms</td>
+      <td>8438 ms</td>
+      <td>12 ms</td>
+      <td>7.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-wix-code-service-chunk--Cmz5bBFb.mjs"><code>…a30fb6428f3f31/editor-platform-wix-code-service-chunk--Cmz5bBFb.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8427 ms</td>
+      <td>8427 ms</td>
+      <td>8438 ms</td>
+      <td>11 ms</td>
+      <td>1.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-add-component-service-chunk--PvXwvswY.mjs"><code>…6428f3f31/editor-platform-add-component-service-chunk--PvXwvswY.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8427 ms</td>
+      <td>8427 ms</td>
+      <td>8439 ms</td>
+      <td>12 ms</td>
+      <td>39.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-breakpoints-service-chunk--D4UdNfUj.mjs"><code>…fb6428f3f31/editor-platform-breakpoints-service-chunk--D4UdNfUj.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8427 ms</td>
+      <td>8427 ms</td>
+      <td>8439 ms</td>
+      <td>12 ms</td>
+      <td>1.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-blocks-service-chunk--BeBhyrKF.mjs"><code>…a5a30fb6428f3f31/editor-platform-blocks-service-chunk--BeBhyrKF.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8427 ms</td>
+      <td>8427 ms</td>
+      <td>8439 ms</td>
+      <td>11 ms</td>
+      <td>1.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-modals-chunk--CsBTJAbq.mjs"><code>…c456b7d0a5a30fb6428f3f31/editor-platform-modals-chunk--CsBTJAbq.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8427 ms</td>
+      <td>8427 ms</td>
+      <td>8439 ms</td>
+      <td>11 ms</td>
+      <td>17.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-branches-service-chunk--BRmzbU_v.mjs"><code>…a30fb6428f3f31/editor-platform-branches-service-chunk--BRmzbU_v.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8439 ms</td>
+      <td>11 ms</td>
+      <td>1.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-uninstall-service-chunk--CS-gRcYd.mjs"><code>…30fb6428f3f31/editor-platform-uninstall-service-chunk--CS-gRcYd.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8439 ms</td>
+      <td>11 ms</td>
+      <td>5.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-app-pages-data-service-chunk--PMGYEbey.mjs"><code>…428f3f31/editor-platform-app-pages-data-service-chunk--PMGYEbey.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8439 ms</td>
+      <td>11 ms</td>
+      <td>10.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-context-ui-service-chunk--BGaMia-j.mjs"><code>…0fb6428f3f31/editor-platform-context-ui-service-chunk--BGaMia-j.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8439 ms</td>
+      <td>11 ms</td>
+      <td>34.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-app-pages-ui-service-chunk--mWDAy7WR.mjs"><code>…b6428f3f31/editor-platform-app-pages-ui-service-chunk--mWDAy7WR.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8439 ms</td>
+      <td>12 ms</td>
+      <td>14.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-i18n-chunk--B3GeRd7D.mjs"><code>…fac456b7d0a5a30fb6428f3f31/editor-platform-i18n-chunk--B3GeRd7D.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8440 ms</td>
+      <td>11 ms</td>
+      <td>7.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-page-replace-ui-service-chunk--BhQjcXqe.mjs"><code>…28f3f31/editor-platform-page-replace-ui-service-chunk--BhQjcXqe.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8440 ms</td>
+      <td>12 ms</td>
+      <td>17.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-pages-data-service-chunk--CD1vqdV8.mjs"><code>…0fb6428f3f31/editor-platform-pages-data-service-chunk--CD1vqdV8.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8440 ms</td>
+      <td>12 ms</td>
+      <td>4.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-panorama-service-chunk--CWMEyrUs.mjs"><code>…a30fb6428f3f31/editor-platform-panorama-service-chunk--CWMEyrUs.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8440 ms</td>
+      <td>12 ms</td>
+      <td>4.4 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-experiments-service-chunk--DRCVDTMa.mjs"><code>…fb6428f3f31/editor-platform-experiments-service-chunk--DRCVDTMa.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8440 ms</td>
+      <td>12 ms</td>
+      <td>1.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-bridge-provider-chunk--BtNsvx-B.mjs"><code>…5a30fb6428f3f31/editor-platform-bridge-provider-chunk--BtNsvx-B.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8428 ms</td>
+      <td>8428 ms</td>
+      <td>8440 ms</td>
+      <td>11 ms</td>
+      <td>2.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src fall-through">fall-through</span></td>
+      <td title="https://frog.wix.com/ds-performance?src=72&amp;evid=31&amp;appName=tb-ds&amp;msid=d10191ef-d39a-432d-a235-4d8a9d1e7df8&amp;ownerId=5f9673f1-01b6-4572-8620-f577d13908b3&amp;_visitorId=dae6336a-17fd-40c3-a3d6-419dd4395d17&amp;session_id=dae6336a-17fd-40c3-a3d6-419dd4395d17&amp;esi=dae6336a-17fd-40c3-a3d6-419dd4395d17&amp;origin=odeditor&amp;ts=0&amp;ms=2402&amp;dm_version=1.17520.0&amp;isDraft=false&amp;is_dac_rollout=0"><code>…or&amp;ts=0&amp;ms=2402&amp;dm_version=1.17520.0&amp;isDraft=false&amp;is_dac_rollout=0</code></td>
+      <td>—</td>
+      <td>8432 ms</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-dependencies-chunk--Cv6kyKKb.mjs"><code>…d0a5a30fb6428f3f31/editor-platform-dependencies-chunk--Cv6kyKKb.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8440 ms</td>
+      <td>8440 ms</td>
+      <td>8458 ms</td>
+      <td>18 ms</td>
+      <td>1.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/vendors-wix-DJw9Rf2o.mjs"><code>…40dee35651870804fac456b7d0a5a30fb6428f3f31/vendors-wix-DJw9Rf2o.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8442 ms</td>
+      <td>8442 ms</td>
+      <td>8521 ms</td>
+      <td>79 ms</td>
+      <td>4.06 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-devcenter-appsruntimereader-v1-app-runtime-data-chunk--BhBI0YPh.mjs"><code>…devcenter-appsruntimereader-v1-app-runtime-data-chunk--BhBI0YPh.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8443 ms</td>
+      <td>8443 ms</td>
+      <td>8523 ms</td>
+      <td>80 ms</td>
+      <td>135.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-devcenter-components-v1-component-chunk--17g-_CX9.mjs"><code>…31/ambassador-devcenter-components-v1-component-chunk--17g-_CX9.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8458 ms</td>
+      <td>8458 ms</td>
+      <td>8523 ms</td>
+      <td>64 ms</td>
+      <td>128.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/vendors-editor-platform-3UlrYvy_.mjs"><code>…0804fac456b7d0a5a30fb6428f3f31/vendors-editor-platform-3UlrYvy_.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8459 ms</td>
+      <td>8459 ms</td>
+      <td>8526 ms</td>
+      <td>67 ms</td>
+      <td>146.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/react@18.3.1/umd/react.production.min.js"><code>…atic.parastorage.com/unpkg/react@18.3.1/umd/react.production.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8461 ms</td>
+      <td>8461 ms</td>
+      <td>8526 ms</td>
+      <td>65 ms</td>
+      <td>10.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/react-dom@18.3.1/umd/react-dom.production.min.js"><code>…astorage.com/unpkg/react-dom@18.3.1/umd/react-dom.production.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8461 ms</td>
+      <td>8461 ms</td>
+      <td>8526 ms</td>
+      <td>65 ms</td>
+      <td>128.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/lodash@4.17.21/lodash.min.js"><code>https://static.parastorage.com/unpkg/lodash@4.17.21/lodash.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8461 ms</td>
+      <td>8461 ms</td>
+      <td>8526 ms</td>
+      <td>64 ms</td>
+      <td>71.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/zepto@1.2.0/dist/zepto.min.js"><code>https://static.parastorage.com/unpkg/zepto@1.2.0/dist/zepto.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8461 ms</td>
+      <td>8461 ms</td>
+      <td>8526 ms</td>
+      <td>64 ms</td>
+      <td>25.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/santa-components@1.1984.0/dist/santa-components.prod.js"><code>…/unpkg/@wix/santa-components@1.1984.0/dist/santa-components.prod.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8461 ms</td>
+      <td>8461 ms</td>
+      <td>8527 ms</td>
+      <td>66 ms</td>
+      <td>445.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/santa-bundle@1.1062.0/dist/bundle.min.js"><code>…parastorage.com/unpkg/@wix/santa-bundle@1.1062.0/dist/bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8464 ms</td>
+      <td>8464 ms</td>
+      <td>8528 ms</td>
+      <td>65 ms</td>
+      <td>63.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/pm-rpc@3.2.7/build/pm-rpc.min.js"><code>https://static.parastorage.com/unpkg/pm-rpc@3.2.7/build/pm-rpc.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8464 ms</td>
+      <td>8464 ms</td>
+      <td>8528 ms</td>
+      <td>65 ms</td>
+      <td>29.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/data-capsule@1.0.83/dist/statics/frame-listener.bundle.min.js"><code>…unpkg/data-capsule@1.0.83/dist/statics/frame-listener.bundle.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8464 ms</td>
+      <td>8464 ms</td>
+      <td>8528 ms</td>
+      <td>65 ms</td>
+      <td>12.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/santa-core-utils@1.2722.0/dist/coreUtils.js"><code>…astorage.com/unpkg/@wix/santa-core-utils@1.2722.0/dist/coreUtils.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8464 ms</td>
+      <td>8464 ms</td>
+      <td>8529 ms</td>
+      <td>65 ms</td>
+      <td>106.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/immutable@3.8.2/dist/immutable.min.js"><code>…/static.parastorage.com/unpkg/immutable@3.8.2/dist/immutable.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8464 ms</td>
+      <td>8464 ms</td>
+      <td>8529 ms</td>
+      <td>65 ms</td>
+      <td>55.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/js-platform-apps-configuration/1.235.0/platform-apps-editor.min.js"><code>…/js-platform-apps-configuration/1.235.0/platform-apps-editor.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8464 ms</td>
+      <td>8464 ms</td>
+      <td>8529 ms</td>
+      <td>66 ms</td>
+      <td>7.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/js-platform-editor-sdk/1.4706.0/lib/platformEvents.min.js"><code>…/services/js-platform-editor-sdk/1.4706.0/lib/platformEvents.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8464 ms</td>
+      <td>8464 ms</td>
+      <td>8530 ms</td>
+      <td>66 ms</td>
+      <td>40.4 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/js-platform-editor-sdk/1.4706.0/lib/platform-api.min.js"><code>…om/services/js-platform-editor-sdk/1.4706.0/lib/platform-api.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8464 ms</td>
+      <td>8464 ms</td>
+      <td>8531 ms</td>
+      <td>67 ms</td>
+      <td>55.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/dm-ajv/8.1.3/browser/index.js"><code>https://static.parastorage.com/services/dm-ajv/8.1.3/browser/index.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8464 ms</td>
+      <td>8464 ms</td>
+      <td>8532 ms</td>
+      <td>68 ms</td>
+      <td>144.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-declarative-installation-client-adapter-chunk--Dsilwr9j.mjs"><code>…latform-declarative-installation-client-adapter-chunk--Dsilwr9j.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8467 ms</td>
+      <td>8467 ms</td>
+      <td>8532 ms</td>
+      <td>65 ms</td>
+      <td>2.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-devcenter-dependencies-v1-app-dependency-chunk--Fy4Jus0y.mjs"><code>…ssador-devcenter-dependencies-v1-app-dependency-chunk--Fy4Jus0y.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8467 ms</td>
+      <td>8467 ms</td>
+      <td>8532 ms</td>
+      <td>65 ms</td>
+      <td>3.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-devcenter-app-market-listing-v1-market-listing-chunk--CBLYNoOP.mjs"><code>…-devcenter-app-market-listing-v1-market-listing-chunk--CBLYNoOP.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8467 ms</td>
+      <td>8467 ms</td>
+      <td>8532 ms</td>
+      <td>65 ms</td>
+      <td>6.1 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-devcenter-apps-v1-app-old-chunk--DG0qTAn5.mjs"><code>…b6428f3f31/ambassador-devcenter-apps-v1-app-old-chunk--DG0qTAn5.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8468 ms</td>
+      <td>8468 ms</td>
+      <td>8532 ms</td>
+      <td>64 ms</td>
+      <td>21.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-app-service-webapp-chunk--ComDLvPT.mjs"><code>…0a5a30fb6428f3f31/ambassador-app-service-webapp-chunk--ComDLvPT.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8468 ms</td>
+      <td>8468 ms</td>
+      <td>8533 ms</td>
+      <td>65 ms</td>
+      <td>169.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-dealer-v1-serving-offer-chunk--CPprmGAo.mjs"><code>…0fb6428f3f31/ambassador-dealer-v1-serving-offer-chunk--CPprmGAo.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8469 ms</td>
+      <td>8469 ms</td>
+      <td>8533 ms</td>
+      <td>64 ms</td>
+      <td>4.8 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-dealer-v1-offer-event-chunk--BSPHF1Ju.mjs"><code>…a30fb6428f3f31/ambassador-dealer-v1-offer-event-chunk--BSPHF1Ju.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8469 ms</td>
+      <td>8469 ms</td>
+      <td>8533 ms</td>
+      <td>64 ms</td>
+      <td>5.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-premium-features-manager-v1-feature-chunk--DaVWrz99.mjs"><code>…/ambassador-premium-features-manager-v1-feature-chunk--DaVWrz99.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8469 ms</td>
+      <td>8469 ms</td>
+      <td>8533 ms</td>
+      <td>64 ms</td>
+      <td>3.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-devcenter-v1-component-chunk--V2X73hyL.mjs"><code>…30fb6428f3f31/ambassador-devcenter-v1-component-chunk--V2X73hyL.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8469 ms</td>
+      <td>8469 ms</td>
+      <td>8533 ms</td>
+      <td>64 ms</td>
+      <td>130.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/santa-external-modules@1.644.0/color-convert/0.2.0/color.min.js"><code>…wix/santa-external-modules@1.644.0/color-convert/0.2.0/color.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8470 ms</td>
+      <td>8470 ms</td>
+      <td>8534 ms</td>
+      <td>64 ms</td>
+      <td>18.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/xss@0.2.18/dist/xss.min.js"><code>https://static.parastorage.com/unpkg/xss@0.2.18/dist/xss.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8470 ms</td>
+      <td>8470 ms</td>
+      <td>8534 ms</td>
+      <td>64 ms</td>
+      <td>27.3 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/soundmanager2@2.97.20150601-a/script/soundmanager2-nodebug-jsmin.js"><code>…soundmanager2@2.97.20150601-a/script/soundmanager2-nodebug-jsmin.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8470 ms</td>
+      <td>8470 ms</td>
+      <td>8534 ms</td>
+      <td>64 ms</td>
+      <td>35.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/santa-skin-utils@1.1686.0/dist/skin-utils.js"><code>…storage.com/unpkg/@wix/santa-skin-utils@1.1686.0/dist/skin-utils.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8553 ms</td>
+      <td>8553 ms</td>
+      <td>8554 ms</td>
+      <td>1 ms</td>
+      <td>14.0 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/image-client-api@1.4060.0/dist/imageClientApi.js"><code>…astorage.com/unpkg/image-client-api@1.4060.0/dist/imageClientApi.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8553 ms</td>
+      <td>8553 ms</td>
+      <td>8554 ms</td>
+      <td>1 ms</td>
+      <td>35.2 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-declarative-installation-service-chunk--4Add4uoJ.mjs"><code>…ditor-platform-declarative-installation-service-chunk--4Add4uoJ.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8554 ms</td>
+      <td>8555 ms</td>
+      <td>8556 ms</td>
+      <td>1 ms</td>
+      <td>17.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/unpkg/@wix/santa-core-utils@1.2722.0/dist/warmupUtils.js"><code>…torage.com/unpkg/@wix/santa-core-utils@1.2722.0/dist/warmupUtils.js</code></td>
+      <td><code class="dim">static.parastorage.com--unp...</code></td>
+      <td>8555 ms</td>
+      <td>8555 ms</td>
+      <td>8557 ms</td>
+      <td>2 ms</td>
+      <td>132.9 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-chunk--B21SXPZi.mjs"><code>…5651870804fac456b7d0a5a30fb6428f3f31/ambassador-chunk--B21SXPZi.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8561 ms</td>
+      <td>8561 ms</td>
+      <td>8562 ms</td>
+      <td>1 ms</td>
+      <td>14.5 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/editor-platform-component-layout-service-chunk--CNYy_9Sy.mjs"><code>…8f3f31/editor-platform-component-layout-service-chunk--CNYy_9Sy.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8566 ms</td>
+      <td>8566 ms</td>
+      <td>8566 ms</td>
+      <td>0 ms</td>
+      <td>4.7 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/ambassador-conductor-exposure-v1-exposure-record-chunk--DUnz7oc9.mjs"><code>…mbassador-conductor-exposure-v1-exposure-record-chunk--DUnz7oc9.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8603 ms</td>
+      <td>8603 ms</td>
+      <td>8648 ms</td>
+      <td>45 ms</td>
+      <td>2.6 KB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/document-management/1.17520.0/tb-main/dist/tb-main-internal.min.js"><code>…/document-management/1.17520.0/tb-main/dist/tb-main-internal.min.js</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8604 ms</td>
+      <td>8604 ms</td>
+      <td>8738 ms</td>
+      <td>134 ms</td>
+      <td>9.17 MB</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td><span class="src pack">pack</span></td>
+      <td title="https://static.parastorage.com/services/editor-platform-services/4bc56c81aba45240dee35651870804fac456b7d0a5a30fb6428f3f31/translations-chunk--BpjXv-ZF.mjs"><code>…51870804fac456b7d0a5a30fb6428f3f31/translations-chunk--BpjXv-ZF.mjs</code></td>
+      <td><code class="dim">static.parastorage.com--ser...</code></td>
+      <td>8760 ms</td>
+      <td>8760 ms</td>
+      <td>8783 ms</td>
+      <td>24 ms</td>
+      <td>1.71 MB</td>
+      <td>200</td>
+    </tr></tbody>
+  </table>
+</details>
+
+</body></html>

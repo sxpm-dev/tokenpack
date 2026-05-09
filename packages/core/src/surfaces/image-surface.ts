@@ -4,6 +4,7 @@ import { AbstractSurface, type SurfaceId, type SurfacePixels } from './types'
 export interface ImageSurfaceInit {
   id: SurfaceId
   label: string
+  description?: string
   format: ImageFormat
   extension: string
   mimeType: string
@@ -19,6 +20,7 @@ export interface ImageSurfaceInit {
 export abstract class ImageSurface extends AbstractSurface {
   readonly id: SurfaceId
   readonly label: string
+  readonly description: string
   readonly format: ImageFormat
   readonly extension: string
   readonly mimeType: string
@@ -33,6 +35,7 @@ export abstract class ImageSurface extends AbstractSurface {
     super()
     this.id = init.id
     this.label = init.label
+    this.description = init.description ?? ''
     this.format = init.format
     this.extension = init.extension
     this.mimeType = init.mimeType
@@ -44,4 +47,5 @@ export abstract class ImageSurface extends AbstractSurface {
   abstract write(filePath: string, image: SurfacePixels): Promise<void>
   abstract readFile(filePath: string): Promise<SurfacePixels>
   abstract readBuffer(buffer: Buffer): Promise<SurfacePixels>
+  abstract writeBuffer(image: SurfacePixels): Promise<Buffer>
 }

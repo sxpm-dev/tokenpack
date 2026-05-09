@@ -121,48 +121,6 @@ function Profile({ src }: { src: string }) {
 }
 ```
 
-### Service Worker — serve TokenPack-cached assets
-
-```ts
-// sw.js
-import { handleTokenpackRequest } from '@tokenpack/browser/sw'
-
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url)
-  if (url.pathname.endsWith('.tpk.png')) {
-    event.respondWith(handleTokenpackRequest(event.request))
-  }
-})
-```
-
-### postMessage — compressed cross-context transport
-
-```ts
-// Sender
-import { sendPack } from '@tokenpack/browser/postMessage'
-sendPack(targetWindow, JSON.stringify(largePayload), { transfer: true })
-
-// Receiver
-import { onPack } from '@tokenpack/browser/postMessage'
-const cleanup = onPack(window, async (pack, event) => {
-  if (!pack.isPack() && !pack.isDiff()) {
-    const obj = await pack.json()
-    // …
-  }
-})
-```
-
-### Inline data URI
-
-```ts
-import { encodeInline, decodeInline } from '@tokenpack/browser/inline'
-
-const dataUrl = await encodeInline('{"big":"json"}')
-// <img src={dataUrl} /> OR background-image: url(...) in CSS
-
-const pack = await decodeInline(dataUrl)
-```
-
 ### Diff round-trip in browser
 
 ```ts
@@ -207,9 +165,9 @@ For non-PNG (WebP/AVIF) the helper transparently falls back to the buffered
 | `encode(content \| builder, opts?)` | string / Uint8Array / ArrayBuffer / Blob / `PackBuilder` |
 | `decode(source, opts?)` | URL string / Blob / Uint8Array / ArrayBuffer / HTMLImageElement / ImageBitmap |
 | `decodeStream(source, opts?)` | ReadableStream / Blob / URL string |
+| `inspect(source, opts?)` | Returns the algorithm binding + (optional) pixel-header info for a token |
 | `PackBuilder` | re-exported from core |
 | Pack types | `Pack`, `FilePack`, `DirPack`, `DiffPack`, `DiffEntry`, `DiffOpKind`, `PackEntryInfo` |
-| `registerBrowserDefaults` | Manual registration entry-point for unusual setups |
 
 ### Subpath imports
 
@@ -217,24 +175,18 @@ For non-PNG (WebP/AVIF) the helper transparently falls back to the buffered
 |---|---|
 | `@tokenpack/browser/components` | `<TokenImage>`, `<TokenAsImage>` |
 | `@tokenpack/browser/hooks` | `useTokenPack` |
-| `@tokenpack/browser/sw` | `handleTokenpackRequest` |
-| `@tokenpack/browser/postMessage` | `sendPack`, `onPack` |
-| `@tokenpack/browser/inline` | `encodeInline`, `decodeInline` |
 
 ### Encode options
 
 ```ts
 interface EncodeBrowserOptions {
-  algo?: string                     // codec name; default 'linear'
-  compressor?: string               // per-file compressor for pack format; default 'brotli-11'
-  compressionMode?: string          // outer compression mode; 'none' for pack format
-  cellSize?: number
-  channels?: 1 | 2 | 3 | 4
-  fecMode?: 'none' | 'rs-5' | 'rs-15' | 'rs-25'
+  algo?: string                     // catalog algorithm name; default 'linear'
+  compressor?: string               // per-file compressor for PackBuilder; default 'deflate-9'
+  algoOptions?: {                   // nested per-component overrides
+    compressor?: { level?: number }
+    surface?: { channels?: 1 | 2 | 3 | 4 }
+  }
   key?: string                      // AES-256-GCM passphrase
-  streaming?: boolean
-  style?: { gradient?: unknown; background?: unknown; opacity: number }
-  width?: number
   name?: string                     // file-format only — wraps payload with name
 }
 ```

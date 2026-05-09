@@ -12,10 +12,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./components": "./src/components/index.ts",
-    "./hooks": "./src/hooks/index.ts",
-    "./sw": "./src/helpers/sw.ts",
-    "./postMessage": "./src/helpers/postMessage.ts",
-    "./inline": "./src/helpers/inline.ts"
+    "./hooks": "./src/hooks/index.ts"
   },
   "scripts": {
     "lint": "eslint src",

@@ -1,59 +1,121 @@
+// Variants are generated from the live algorithm catalog: every browser-
+// registered algorithm × supported channel counts, plus the four HTTP
+// encodings. Importing `@tokenpack/browser` populates the catalog as a side
+// effect (its `register.ts` auto-runs).
+
+import '@tokenpack/browser'
+
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import type { AlgorithmCtor } from 'tokenpack/algorithms/types'
+
 import type { Variant } from './types'
 
 const ENCODINGS = ['raw', 'gzip', 'br', 'deflate'] as const
-const SCENARIOS = ['max-webp3', 'max-png3', 'max-def3', 'stream-png3', 'stream-def3'] as const
-
-// Which scenarios were encoded with streaming-PNG (small IDAT chunks, deflateLevel=0).
-// The runner uses `decodeStream(response.body)` for these so the JS-side decode
-// overlaps with download.
-const STREAMABLE_SCENARIOS = new Set<(typeof SCENARIOS)[number]>(['stream-png3', 'stream-def3'])
 
 const ENCODING_COMPAT: Record<
   (typeof ENCODINGS)[number],
   { compat: 'full' | 'partial'; note: string }
 > = {
-  raw: {
-    compat: 'full',
-    note: 'No compression — universal.',
-  },
-  gzip: {
-    compat: 'full',
-    note: 'gzip via Content-Encoding — universal browser support.',
-  },
+  raw: { compat: 'full', note: 'No compression — universal.' },
+  gzip: { compat: 'full', note: 'gzip via Content-Encoding — universal browser support.' },
   br: {
     compat: 'partial',
     note: 'brotli via Content-Encoding — Chromium ≥ 50, Firefox ≥ 44, Safari ≥ 11. Wide support, slight asterisk on very old browsers.',
   },
-  deflate: {
-    compat: 'full',
-    note: 'deflate via Content-Encoding — universal browser support.',
-  },
+  deflate: { compat: 'full', note: 'deflate via Content-Encoding — universal browser support.' },
 }
 
-const SCENARIO_COMPAT: Record<
-  (typeof SCENARIOS)[number],
-  { compat: 'full' | 'partial'; note: string }
-> = {
-  'max-webp3': {
-    compat: 'partial',
-    note: 'Brotli-11 inner compression — needs DecompressionStream("br") (Chromium ≥ 124, Firefox ≥ 126, Safari ≥ 18). WebP wrapper + max compression = smallest wire bytes.',
-  },
-  'max-png3': {
-    compat: 'partial',
-    note: 'Brotli-11 inner compression — same caveat as max-webp3. PNG wrapper, max compression, non-streaming.',
-  },
-  'max-def3': {
+interface CatalogBinding {
+  Ctor: AlgorithmCtor
+  algoName: string
+  compressorFamily: string
+  streamable: boolean
+  channels: ReadonlyArray<1 | 2 | 3 | 4>
+}
+
+function readBinding(Ctor: AlgorithmCtor): CatalogBinding {
+  const compressor = Ctor.Compressor as unknown as { familyId: string }
+  const caps = Ctor.capabilities
+
+  return {
+    Ctor,
+    algoName: Ctor.name,
+    compressorFamily: compressor.familyId,
+    streamable: caps.streamable,
+    channels: caps.channels,
+  }
+}
+
+/** Every algorithm registered in the browser catalog. */
+function listBindings(): CatalogBinding[] {
+  return algorithmCatalog.list().map(readBinding)
+}
+
+function tokenCompat(b: CatalogBinding): { compat: 'full' | 'partial'; note: string } {
+  // Browser decode of brotli requires DecompressionStream('br') —
+  // Chromium ≥ 124, Firefox ≥ 126, Safari ≥ 18.
+  if (b.compressorFamily === 'brotli') {
+    return {
+      compat: 'partial',
+      note: `${b.algoName}: brotli outer compression — needs DecompressionStream("br"). Chromium ≥ 124 / Firefox ≥ 126 / Safari ≥ 18.`,
+    }
+  }
+
+  if (b.algoName.startsWith('pixel-range')) {
+    return {
+      compat: 'partial',
+      note: `${b.algoName}: pack data lives in a tpAK chunk; inner compressor is brotli (same browser caveat).`,
+    }
+  }
+
+  return {
     compat: 'full',
-    note: 'Deflate-6 inner compression, non-streaming PNG (one big IDAT block). Universal browser support — pair with stream-def3 to compare with vs without streaming.',
-  },
-  'stream-png3': {
-    compat: 'partial',
-    note: 'Brotli-6 inner compression with streaming PNG (small IDAT chunks). Same brotli caveat; benefit is decompress-on-flight.',
-  },
-  'stream-def3': {
-    compat: 'full',
-    note: 'Universal: PNG + deflate everywhere. DecompressionStream("deflate") in Chrome ≥ 80, Safari ≥ 16.4, Firefox ≥ 113. The decompress-on-flight sweet spot.',
-  },
+    note: `${b.algoName}: ${b.compressorFamily} outer compression — works in every shipping browser. ${b.streamable ? 'Streamable (decode-as-you-fetch).' : 'Non-streaming (full PNG → decode).'}`,
+  }
+}
+
+function variantId(algoName: string, ch: number): string {
+  return `${algoName}-c${ch}`
+}
+
+function tokenUrl(
+  endpoint: string,
+  algo: string,
+  ch: number,
+  query: { source?: string } = {},
+): string {
+  const params = new URLSearchParams()
+
+  params.set('algo', algo)
+  params.set('ch', String(ch))
+  if (query.source) params.set('source', query.source)
+
+  return `${endpoint}?${params.toString()}`
+}
+
+function buildTokenVariants(group: 'text' | 'script', sourceful: boolean): Variant[] {
+  const endpoint =
+    group === 'text' ? '/api/runtime-benchmark/token' : '/api/runtime-benchmark/script-token'
+  const out: Variant[] = []
+
+  for (const b of listBindings()) {
+    const compatInfo = tokenCompat(b)
+
+    for (const ch of b.channels) {
+      out.push({
+        group,
+        id: variantId(b.algoName, ch),
+        label: variantId(b.algoName, ch),
+        isToken: true,
+        isStreamable: b.streamable,
+        url: ({ source }) => tokenUrl(endpoint, b.algoName, ch, sourceful ? { source } : {}),
+        compat: compatInfo.compat,
+        compatNote: compatInfo.note,
+      })
+    }
+  }
+
+  return out
 }
 
 export const TEXT_VARIANTS: Variant[] = [
@@ -66,16 +128,7 @@ export const TEXT_VARIANTS: Variant[] = [
     compat: ENCODING_COMPAT[e].compat,
     compatNote: ENCODING_COMPAT[e].note,
   })),
-  ...SCENARIOS.map<Variant>(s => ({
-    group: 'text',
-    id: s,
-    label: s,
-    isToken: true,
-    isStreamable: STREAMABLE_SCENARIOS.has(s),
-    url: ({ source }) => `/api/runtime-benchmark/token?source=${source}&scenario=${s}`,
-    compat: SCENARIO_COMPAT[s].compat,
-    compatNote: SCENARIO_COMPAT[s].note,
-  })),
+  ...buildTokenVariants('text', /* sourceful */ true),
 ]
 
 export const SCRIPT_VARIANTS: Variant[] = [
@@ -88,14 +141,5 @@ export const SCRIPT_VARIANTS: Variant[] = [
     compat: ENCODING_COMPAT[e].compat,
     compatNote: ENCODING_COMPAT[e].note,
   })),
-  ...SCENARIOS.map<Variant>(s => ({
-    group: 'script',
-    id: s,
-    label: s,
-    isToken: true,
-    isStreamable: STREAMABLE_SCENARIOS.has(s),
-    url: () => `/api/runtime-benchmark/script-token?scenario=${s}`,
-    compat: SCENARIO_COMPAT[s].compat,
-    compatNote: SCENARIO_COMPAT[s].note,
-  })),
+  ...buildTokenVariants('script', /* sourceful */ false),
 ]

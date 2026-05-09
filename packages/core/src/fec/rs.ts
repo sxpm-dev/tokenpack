@@ -257,5 +257,3 @@ export function rsDecode(input: Buffer, parityBytes: number, originalLength: num
 
   return out.subarray(0, originalLength) as Buffer
 }
-
-export const RS_BLOCK_SIZE = BLOCK_SIZE

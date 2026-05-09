@@ -1,53 +1,45 @@
-import { encode, PackBuilder } from '@tokenpack/node'
+import '@tokenpack/node'
+
+import { PackBuilder } from '@tokenpack/node'
 import { NextRequest, NextResponse } from 'next/server'
-import type { Style } from 'tokenpack/types'
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { compressRaw } from 'tokenpack/compressors'
+import { encodePack } from 'tokenpack/pack-format/encode-pack'
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib'
-
-function parseStyle(value: FormDataEntryValue | null): Partial<Style> | undefined {
-  if (typeof value !== 'string' || value.length === 0) return undefined
-
-  return JSON.parse(value) as Partial<Style>
-}
 
 interface ResolvedOptions {
   algo: string
-  compressionMode?: string
-  cellSize?: number
-  channels?: 1 | 2 | 3 | 4
-  format?: 'png' | 'webp' | 'avif'
-  streaming?: boolean
-  fecMode?: string
-  style?: Partial<Style>
+  algoOptions: Record<string, unknown>
   key?: string
 }
 
+function nestAlgoOptions(flat: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+
+  for (const [key, value] of Object.entries(flat)) {
+    const dotIdx = key.indexOf('.')
+
+    if (dotIdx === -1) {
+      out[key] = value
+      continue
+    }
+    const ns = key.slice(0, dotIdx)
+    const sub = key.slice(dotIdx + 1)
+
+    out[ns] ??= {}
+    ;(out[ns] as Record<string, unknown>)[sub] = value
+  }
+
+  return out
+}
+
 function resolveOptions(form: FormData): ResolvedOptions {
-  const preset = form.get('preset') as string | null
   const algo = (form.get('algo') as string | null) ?? 'linear'
-  const compressionMode = (form.get('compressionMode') as string | null) ?? undefined
-  const cellSizeRaw = form.get('cellSize') as string | null
-  const channelsRaw = form.get('channels') as string | null
-  const format = form.get('format') as 'png' | 'webp' | 'avif' | null
-  const streaming = form.get('streaming') === 'true'
-  const fecMode = (form.get('fecMode') as string | null) ?? undefined
-  const style = parseStyle(form.get('style'))
   const key = (form.get('key') as string | null) ?? undefined
+  const algoOptionsRaw = form.get('algoOptions') as string | null
+  const flat: Record<string, unknown> = algoOptionsRaw ? JSON.parse(algoOptionsRaw) : {}
 
-  if (preset && preset !== 'none') {
-    return { algo: preset, compressionMode, key }
-  }
-
-  return {
-    algo,
-    compressionMode,
-    cellSize: cellSizeRaw ? parseInt(cellSizeRaw, 10) : 1,
-    channels: channelsRaw ? (parseInt(channelsRaw, 10) as 1 | 2 | 3 | 4) : 3,
-    format: format ?? 'png',
-    streaming,
-    fecMode,
-    style,
-    key,
-  }
+  return { algo, algoOptions: nestAlgoOptions(flat), key }
 }
 
 async function readEntries(
@@ -78,12 +70,9 @@ async function readEntries(
       builder.withBuffer(path, new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength))
       parts.push(buf)
       inputBytes += buf.length
-    } else {
-      throw new Error(`entry ${i} (${path}) has no text or file payload`)
     }
     i++
   }
-  if (i === 0) throw new Error('no entries provided')
 
   return { builder, concatenated: Buffer.concat(parts), inputBytes }
 }
@@ -93,7 +82,25 @@ export async function POST(req: NextRequest) {
     const form = await req.formData()
     const { builder, concatenated, inputBytes } = await readEntries(form)
     const opts = resolveOptions(form)
-    const tokenBuf = await encode(builder, opts)
+
+    // 1. Pack entries via per-file brotli compression (the pack-format flow).
+    const entries = await builder.build()
+    const packBytes = await encodePack(entries, async bytes => {
+      const r = await compressRaw(bytes, 'brotli-11')
+
+      return {
+        bytes: r.bytes,
+        compressor: r.compressor,
+        level: r.level,
+        originalSize: r.originalSize,
+      }
+    })
+
+    // 2. Run through the algorithm — pure dispatch + delegate.
+    const Ctor = algorithmCatalog.getByName(opts.algo)
+    const algoInit = { ...opts.algoOptions, key: opts.key }
+    const algorithm = new Ctor(algoInit)
+    const tokenBuf = Buffer.from(await algorithm.encode(packBytes, algoInit))
 
     const gzipSize = gzipSync(concatenated, { level: 6 }).length
     const brotliSize = brotliCompressSync(concatenated, {

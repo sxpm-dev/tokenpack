@@ -2,7 +2,7 @@
 
 import { Button, Surface } from '@heroui/react'
 import { CaretUpIcon } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { BenchmarkFilters } from './components/BenchmarkFilters'
 import { BestComparison } from './components/BestComparison'
@@ -32,6 +32,9 @@ export default function BenchmarkPage() {
       })
       .catch(e => setError(String(e)))
   }, [])
+
+  // All hooks before any early return — react-hooks/rules-of-hooks.
+  const scenarioIds = useMemo(() => data.map(d => d.scenario), [data])
 
   if (error) {
     return (
@@ -92,7 +95,7 @@ export default function BenchmarkPage() {
       {aboutOpen && (
         <>
           <Legend />
-          <ScenarioConfigTable />
+          <ScenarioConfigTable scenarioIds={scenarioIds} />
         </>
       )}
 
@@ -136,9 +139,7 @@ function CollapsibleSection({
           size={14}
         />
       </Button>
-      <span className="text-xs font-semibold text-white/35 uppercase tracking-widest">
-        {label}
-      </span>
+      <span className="text-xs font-semibold text-white/35 uppercase tracking-widest">{label}</span>
     </div>
   )
 }

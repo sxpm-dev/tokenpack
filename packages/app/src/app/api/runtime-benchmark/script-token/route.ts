@@ -1,91 +1,53 @@
 // Returns a TokenPack-encoded benchmark script.
 //
-//   GET /api/runtime-benchmark/script-token?scenario=stream-def3        → static (pre-generated)
-//   GET /api/runtime-benchmark/script-token?scenario=stream-def3&live=1 → encode on-the-fly
+//   GET /api/runtime-benchmark/script-token?algo=linear-stream-deflate&ch=3
+//   GET /api/runtime-benchmark/script-token?...&live=1 → encode on-the-fly
+
+import '@tokenpack/node'
 
 import { encode as tokenpackEncode } from '@tokenpack/node'
 import fs from 'fs'
 import { type NextRequest, NextResponse } from 'next/server'
 import path from 'path'
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 
 import { buildScript } from '../_script-builder'
-import { networkConditionFor, NO_CACHE_HEADERS, param, SCENARIOS, throttledBody } from '../_shared'
+import { networkConditionFor, NO_CACHE_HEADERS, param, throttledBody } from '../_shared'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 const RUNTIME_FIXTURES = path.join(process.cwd(), 'runtime-fixtures')
 
-interface ScenarioOpts {
-  algo: string
-  compressionMode: string
-  format: 'png' | 'webp'
-  channels: 1 | 2 | 3 | 4
-  streaming: boolean
-}
-
-const SCENARIO_OPTS: Record<string, ScenarioOpts> = {
-  'max-webp3': {
-    algo: 'linear',
-    compressionMode: 'brotli-11',
-    format: 'webp',
-    channels: 3,
-    streaming: false,
-  },
-  'max-png3': {
-    algo: 'linear',
-    compressionMode: 'brotli-11',
-    format: 'png',
-    channels: 3,
-    streaming: false,
-  },
-  'max-def3': {
-    algo: 'linear',
-    compressionMode: 'deflate-6',
-    format: 'png',
-    channels: 3,
-    streaming: false,
-  },
-  'stream-png3': {
-    algo: 'linear',
-    compressionMode: 'brotli-6',
-    format: 'png',
-    channels: 3,
-    streaming: true,
-  },
-  'stream-def3': {
-    algo: 'linear',
-    compressionMode: 'deflate-6',
-    format: 'png',
-    channels: 3,
-    streaming: true,
-  },
-}
-
 export async function GET(req: NextRequest) {
-  const scenario = param(req, 'scenario') ?? 'stream-def3'
+  const algoName = param(req, 'algo') ?? 'linear-stream-deflate'
+  const channels = (Number(param(req, 'ch') ?? '3') as 1 | 2 | 3 | 4) || 3
   const live = param(req, 'live') === '1'
   const condition = networkConditionFor(param(req, 'throttle'))
 
-  if (!(SCENARIOS as readonly string[]).includes(scenario)) {
-    return NextResponse.json({ error: `unknown scenario: ${scenario}` }, { status: 400 })
-  }
+  let Ctor
 
-  const opts = SCENARIO_OPTS[scenario]
-  const mime = opts.format === 'webp' ? 'image/webp' : 'image/png'
+  try {
+    Ctor = algorithmCatalog.getByName(algoName)
+  } catch {
+    return NextResponse.json({ error: `unknown algorithm: ${algoName}` }, { status: 400 })
+  }
+  const surface = new (Ctor.Surface as unknown as new () => { extension: string; mimeType: string })()
   const headers: Record<string, string> = {
     ...NO_CACHE_HEADERS,
-    'content-type': mime,
+    'content-type': surface.mimeType,
   }
 
   if (!live) {
-    const ext = opts.format === 'webp' ? '.webp' : '.png'
-    const fixturePath = path.join(RUNTIME_FIXTURES, `script.${scenario}${ext}`)
+    const fixturePath = path.join(
+      RUNTIME_FIXTURES,
+      `script.${algoName}-c${channels}${surface.extension}`,
+    )
 
     if (!fs.existsSync(fixturePath)) {
       return NextResponse.json(
         {
-          error: `pre-generated fixture not found: ${fixturePath}. Run \`yarn benchmark:generate:runtime\``,
+          error: `pre-generated fixture not found: ${fixturePath}. Run \`yarn benchmark:generate:runtime\` or use \`?live=1\`.`,
         },
         { status: 404 },
       )
@@ -100,9 +62,11 @@ export async function GET(req: NextRequest) {
     return new NextResponse(throttledBody(body, condition), { headers })
   }
 
-  // Live: encode fresh per request (server timestamp = request time).
   const script = buildScript(performance.now())
-  const body = await tokenpackEncode(Buffer.from(script, 'utf-8'), opts)
+  const body = await tokenpackEncode(Buffer.from(script, 'utf-8'), {
+    algo: algoName,
+    algoOptions: { surface: { channels } },
+  })
 
   headers['content-length'] = String(body.length)
   headers['x-runtime-bench-mode'] = 'live'

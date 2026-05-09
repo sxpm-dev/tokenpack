@@ -93,4 +93,3 @@ export function fromBytes(bytes: Uint8Array, opts: FromBytesOptions): Pack {
 
   throw new Error(`fromBytes: unknown format byte 0x${(fmt as number).toString(16)}`)
 }
-

@@ -1,6 +1,6 @@
 import type { AbstractCodec } from '../codecs/types'
+import type { OptionsSchema } from '../components/options'
 import type { AbstractSurface, SurfacePixels } from '../surfaces/types'
-import type { Style } from '../types'
 
 export interface DrawerCapabilities {
   streamable: boolean
@@ -11,10 +11,14 @@ export interface DrawerCapabilities {
 }
 
 export interface DrawContext {
+  /** Algorithm catalog id — written into the pixel header for dispatch on
+   *  decode. The reader (canHandle / detectFromBuffer / stream-decoder) looks
+   *  up the algorithm Ctor by this id, NOT the codec id; the codec id only
+   *  identifies the codec family inside core. */
+  algorithmId: number
   codec: AbstractCodec
   surface: AbstractSurface
   bpp: 1 | 2 | 3 | 4
-  style?: Partial<Style>
   compressionLevel: number
   uncompressedLength: number
   encrypted: boolean
@@ -45,16 +49,18 @@ export interface ChunkReadResult {
   compressionLevel: number
   uncompressedLength: number
   encrypted: boolean
-  chunkIndex: number
-  chunkTotal: number
-  streamId: number
   fecLevel: number
   preFecLength: number
 }
 
 export abstract class AbstractDrawer {
+  /** Tunable options for this drawer (e.g. cellSize for dot drawer). */
+  static readonly optionsSchema: OptionsSchema = {}
+
   abstract readonly id: string
   abstract readonly label: string
+  /** Short human-readable explanation for UI tooltips. Subclasses override. */
+  readonly description: string = ''
   abstract readonly outputKind: 'raster-pixels'
   abstract readonly capabilities: DrawerCapabilities
 

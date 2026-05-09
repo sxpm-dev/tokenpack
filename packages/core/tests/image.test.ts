@@ -1,5 +1,6 @@
 // Concrete PngSurface lives in @tokenpack/node — core ships only the abstract base.
-import { PngSurface } from '@tokenpack/node'
+import '@tokenpack/node'
+import { PngSurface } from '@tokenpack/node/surfaces/png'
 import os from 'os'
 import path from 'path'
 import { describe, expect, it } from 'vitest'

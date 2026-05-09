@@ -1,5 +1,7 @@
-import { decodeFromBuffer } from '@tokenpack/node'
+import '@tokenpack/node'
+
 import { NextRequest, NextResponse } from 'next/server'
+import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 
 export async function POST(req: NextRequest) {
   const form = await req.formData()
@@ -11,7 +13,9 @@ export async function POST(req: NextRequest) {
   try {
     const imgBuf = Buffer.from(await file.arrayBuffer())
     const ext = file.name ? '.' + (file.name.split('.').pop()?.toLowerCase() ?? 'png') : '.png'
-    const decoded = await decodeFromBuffer(imgBuf, key ?? undefined, ext)
+    const Ctor = await algorithmCatalog.detectFromBuffer(imgBuf, ext)
+    const algo = new Ctor({ key: key ?? undefined })
+    const decoded = await algo.decode(imgBuf, { key: key ?? undefined, ext })
 
     return NextResponse.json({
       bytes: decoded.toString('base64'),

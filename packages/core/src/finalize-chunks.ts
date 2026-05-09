@@ -1,8 +1,10 @@
 // Pure (browser-safe) decode finalization: combine chunks → optional FEC →
 // optional decryption → decompress → original payload bytes.
 //
-// Extracted from decoder.ts so callers that don't need fs (browser, in-memory
-// flows) can use it without pulling Node `fs`/`os`/`path`.
+// Multi-chunk encoding is not supported in the bound-recipe model — large
+// payloads flow through PackBuilder regions. The decoder still accepts an
+// array of `ChunkReadResult` so the call shape stays uniform; in practice
+// `chunks.length === 1` and the loop is a no-op concat.
 
 import { compressorRegistry } from './compressors/registry'
 import { decryptData } from './crypto'
@@ -10,16 +12,6 @@ import type { ChunkReadResult } from './drawers/types'
 import { fecRegistry } from './fec/registry'
 
 export async function finalizeChunks(chunks: ChunkReadResult[], key?: string): Promise<Buffer> {
-  chunks.sort((a, b) => a.chunkIndex - b.chunkIndex)
-  if (chunks.length > 1) {
-    const sid = chunks[0].streamId
-
-    for (const c of chunks) {
-      if (c.streamId !== sid)
-        throw new Error('Stream ID mismatch — chunks are from different tokens')
-    }
-  }
-
   const { compressionLevel, encrypted, fecLevel, preFecLength } = chunks[0]
   let combined: Buffer = Buffer.concat(chunks.map(c => c.bytes))
 

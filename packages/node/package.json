@@ -10,7 +10,9 @@
     "README.md"
   ],
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./surfaces/png": "./src/surfaces/png.ts",
+    "./codecs/zstdpix": "./src/codecs/zstdpix.ts"
   },
   "scripts": {
     "lint": "eslint src",

@@ -49,16 +49,17 @@ export function BestComparison({ data, condition, source }: BestComparisonProps)
     return { group: Array.isArray(prefix) ? prefix[0] : prefix, ...best }
   }
 
+  // "Token" = anything not zip/tar.gz/brotli-*. We bucket all token scenarios
+  // into one bestOf bucket because the new catalog produces many algorithm
+  // variants (linear-c3, linear-stream-c3, linear-deflate-c3, ...) and showing
+  // the single fastest token variant is more useful than splitting by prefix.
+  const archiveIds = ['zip', 'tar.gz', 'brotli-11', 'brotli-6']
+  const tokenIds = [...new Set(filtered.map(r => r.scenario))].filter(s => !archiveIds.includes(s))
   const entries: LabeledBestEntry[] = [
     {
-      label: 'Best token-max',
+      label: 'Best token',
       color: '#60a5fa',
-      ...(bestOf('max-') ?? { group: 'max-', ...PLACEHOLDER }),
-    },
-    {
-      label: 'Best token-stream',
-      color: '#6366f1',
-      ...(bestOf('stream-') ?? { group: 'stream-', ...PLACEHOLDER }),
+      ...(bestOf(tokenIds) ?? { group: 'token', ...PLACEHOLDER }),
     },
     {
       label: 'Best zip',
@@ -69,6 +70,11 @@ export function BestComparison({ data, condition, source }: BestComparisonProps)
       label: 'Best tar.gz',
       color: '#f97316',
       ...(bestOf(['tar.gz']) ?? { group: 'tar.gz', ...PLACEHOLDER }),
+    },
+    {
+      label: 'Best brotli (raw)',
+      color: '#10b981',
+      ...(bestOf(['brotli-11', 'brotli-6']) ?? { group: 'brotli', ...PLACEHOLDER }),
     },
   ].filter(e => e.scenario !== '—')
 

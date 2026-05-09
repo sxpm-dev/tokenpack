@@ -4,6 +4,8 @@
 //   compress → encrypt → fec.encode → drawer.write
 // On decode it runs first, before decrypt+decompress, so it can recover ciphertext.
 
+import type { OptionsSchema } from '../components/options'
+
 export type FecMode = 'none' | 'rs-5' | 'rs-15' | 'rs-25'
 
 export interface FecResult {
@@ -20,6 +22,9 @@ export class FecDecodeError extends Error {
 }
 
 export abstract class AbstractFec {
+  /** Tunable options for this FEC scheme. Subclasses override. */
+  static readonly optionsSchema: OptionsSchema = {}
+
   abstract readonly id: FecMode
   abstract readonly label: string
   abstract readonly headerLevel: number

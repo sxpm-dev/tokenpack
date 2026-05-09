@@ -50,9 +50,7 @@ describe('fromBytes — format dispatch', () => {
     // Signature + arbitrary byte not in {0x01, 0x02, 0x03}
     const buf = new Uint8Array([0xc0, 0xde, 0xae, 0x54, 0x99])
 
-    expect(() => fromBytes(buf, { decompress: identityDecompress })).toThrow(
-      /unknown format byte/i,
-    )
+    expect(() => fromBytes(buf, { decompress: identityDecompress })).toThrow(/unknown format byte/i)
   })
 
   it('partial signature (3 bytes) is treated as legacy raw bytes', async () => {

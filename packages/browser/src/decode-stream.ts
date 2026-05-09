@@ -9,14 +9,12 @@
 //   5. Read TokenPack header from first pixel rows (compact or full)
 //   6. Codec decode (linear = identity; StreamingCodec = decodeChunk per row)
 //   7. Pipe data bytes through outer `DecompressionStream('deflate'|'br')`
-//   8. Concat output chunks → return as `DecodeResult`
+//   8. Concat output chunks → return final bytes
 //
 // Decompression overlaps with download — first decoded byte can land before
 // the last network byte arrives, which is the entire point of `stream-*`
 // scenarios. Non-streamable PNG inputs (e.g. `max-png3` with one big IDAT
 // block) also work, just with more decode work bunched at the tail.
-
-import 'tokenpack/algorithms/register-all'
 
 import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import type { AbstractCodec, StreamCodecState } from 'tokenpack/codecs/types'
@@ -299,7 +297,10 @@ async function decodeStreamPng(
         bpp = ch.channels
         compressionLevel = ch.flags & 0b10 ? 2 : 0
         dataLength = ch.dataLength
-        activeCodec = algorithmCatalog.getById(ch.algoId).codec
+        // Instantiate just the bound Codec class — building a full Algorithm
+        // would also construct Surface, Compressor, Drawer, Fec which the
+        // streaming decode never touches.
+        activeCodec = new (algorithmCatalog.getById(ch.algoId).Codec as new () => AbstractCodec)()
         await finishHeader(compactBytes)
       } else if (pixelBuf.byteLength >= fullBytes) {
         let h
@@ -317,7 +318,7 @@ async function decodeStreamPng(
         bpp = h.channels
         compressionLevel = h.compressionLevel
         dataLength = h.fileLength
-        activeCodec = algorithmCatalog.getById(h.algorithmId).codec
+        activeCodec = new (algorithmCatalog.getById(h.algorithmId).Codec as new () => AbstractCodec)()
         await finishHeader(fullBytes)
       }
 

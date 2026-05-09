@@ -142,25 +142,19 @@ stream.on('data', chunk => /* … */ undefined)
 | `decodeStream` | Node Duplex streaming decoder (PNG-only) |
 | Pack types | `Pack`, `FilePack`, `DirPack`, `DiffPack`, `DiffEntry`, `DiffOpKind`, `PackEntryInfo` |
 | Codecs / surfaces / compressors | `ZstdpixCodec`, `PngSurface`, `WebpSurface`, `AvifSurface`, `BrotliCompressor`, `DeflateCompressor` |
-| Legacy fs helpers | `encodeToBuffer`, `decodeFromBuffer`, `packDirs`, `packBuffers`, `unpackBuffers` |
-| Diff helpers (heatmap) | `diffText`, `diffTokens`, `FileDiff` |
+| Diff helpers (heatmap) | `diff(a, b).text() / .token(out)` |
 
 ### Encode options
 
 ```ts
 interface EncodeNodeOptions {
-  algo?: string                     // codec name; default 'linear'
-  out?: string                      // write to a path; otherwise temp file → buffer
-  format?: 'png' | 'webp' | 'avif'  // surface
-  compress?: boolean                // shorthand for compressionMode='brotli-11'
-  compressionMode?: string          // 'none' | 'deflate-1/6/9' | 'brotli-4/6/11'
-  channels?: 1 | 2 | 3 | 4          // bytes per pixel
-  cellSize?: number                 // 1 = dense, 5+ = dot mode
-  fecMode?: 'none' | 'rs-5' | 'rs-15' | 'rs-25'
+  algo?: string                     // catalog algorithm name; default 'linear'
+  out?: string                      // also write to disk
+  algoOptions?: {                   // nested per-component overrides
+    compressor?: { level?: number }
+    surface?: { channels?: 1 | 2 | 3 | 4 }
+  }
   key?: string                      // AES-256-GCM passphrase
-  streaming?: boolean               // emit small IDAT chunks for streaming PNG decode
-  style?: { gradient?: unknown; background?: unknown; opacity: number }
-  width?: number                    // pixel grid width
 
   // Pack-format only (when input is PackBuilder):
   compressor?: string               // per-file compressor; default 'brotli-11'

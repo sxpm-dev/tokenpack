@@ -32,15 +32,6 @@ export function gfDiv(a: number, b: number): number {
   return EXP[(LOG[a] + 255 - LOG[b]) % 255]
 }
 
-export function gfPow(x: number, power: number): number {
-  if (x === 0) return 0
-  let p = (LOG[x] * power) % 255
-
-  if (p < 0) p += 255
-
-  return EXP[p]
-}
-
 export function gfInverse(x: number): number {
   return EXP[255 - LOG[x]]
 }
@@ -66,14 +57,6 @@ export function gfPolyMul(p: Uint8Array, q: Uint8Array): Uint8Array {
   return r
 }
 
-export function gfPolyScale(p: Uint8Array, x: number): Uint8Array {
-  const r = new Uint8Array(p.length)
-
-  for (let i = 0; i < p.length; i++) r[i] = gfMul(p[i], x)
-
-  return r
-}
-
 export function gfPolyEval(p: Uint8Array, x: number): number {
   let y = p[0]
 
@@ -84,4 +67,4 @@ export function gfPolyEval(p: Uint8Array, x: number): number {
   return y
 }
 
-export { EXP as GF_EXP, LOG as GF_LOG }
+export { EXP as GF_EXP }

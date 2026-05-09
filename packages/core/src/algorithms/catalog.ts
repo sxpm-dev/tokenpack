@@ -1,69 +1,80 @@
-import type { AbstractCodec } from '../codecs/types'
-import { Algorithm } from './algorithm'
-import type { AbstractAlgorithm, AlgorithmCatalogEntry } from './types'
+// Algorithm catalog — stores algorithm Ctors keyed by id and name.
+//
+// Consumers `getById(id)` / `getByName(name)` to retrieve a Ctor, then
+// `new Ctor(opts)` to construct an instance. The catalog itself never
+// instantiates algorithms.
+
+import { isCompactToken, readCompactHeader, readHeader } from '../header'
+import { surfaceRegistry } from '../surfaces/registry'
+
+import type { AbstractAlgorithm, AlgorithmCtor } from './types'
 
 export class AlgorithmCatalog {
-  private readonly byName = new Map<string, AbstractAlgorithm>()
-  private readonly byId = new Map<number, AbstractAlgorithm>()
+  private readonly byName = new Map<string, AlgorithmCtor>()
+  private readonly byId = new Map<number, AlgorithmCtor>()
 
-  register(algorithm: AbstractAlgorithm): void {
-    // Idempotent: a duplicate registration with the same name is silently
-    // ignored. Webpack chunk splitting (Next.js, Remix, etc.) commonly
-    // evaluates a side-effecting register module multiple times — each server
-    // chunk loads its own copy of `CODECS` and calls `registerCodecs(...)`
-    // again. Throwing here would surface as `unhandledRejection: Algorithm
-    // "linear" is already registered` at request time, even though the catalog
-    // already has the right entries. The append-only invariant is still
-    // upheld at the data level: subsequent registrations with the same name
-    // can't override the first one. If you genuinely need to swap an
-    // algorithm, call `clear()` first.
-    if (this.byName.has(algorithm.name)) return
-    this.byName.set(algorithm.name, algorithm)
-    if (!this.byId.has(algorithm.id)) this.byId.set(algorithm.id, algorithm)
+  /** Register an algorithm Ctor. Idempotent on duplicate name. */
+  register<T extends AbstractAlgorithm>(Ctor: AlgorithmCtor<T>): void {
+    if (this.byName.has(Ctor.name)) return
+    this.byName.set(Ctor.name, Ctor as AlgorithmCtor)
+    if (!this.byId.has(Ctor.id)) this.byId.set(Ctor.id, Ctor as AlgorithmCtor)
   }
 
-  registerCodec(codec: AbstractCodec): AbstractAlgorithm {
-    const algorithm = new Algorithm({ codec })
+  getByName(name: string): AlgorithmCtor {
+    const Ctor = this.byName.get(name)
 
-    this.register(algorithm)
+    if (!Ctor) throw new Error(`Unknown algorithm: "${name}"`)
 
-    return algorithm
+    return Ctor
   }
 
-  registerCodecs(codecs: readonly AbstractCodec[]): void {
-    for (const codec of codecs) this.registerCodec(codec)
+  getById(id: number): AlgorithmCtor {
+    const Ctor = this.byId.get(id)
+
+    if (!Ctor) throw new Error(`Unknown algorithm id: ${id}`)
+
+    return Ctor
   }
 
-  getByName(name: string): AbstractAlgorithm {
-    const algorithm = this.byName.get(name)
-
-    if (!algorithm) throw new Error(`Unknown algorithm: "${name}"`)
-
-    return algorithm
-  }
-
-  getById(id: number): AbstractAlgorithm {
-    const algorithm = this.byId.get(id)
-
-    if (!algorithm) throw new Error(`Unknown algorithm id: ${id}`)
-
-    return algorithm
-  }
-
-  getCodecByName(name: string): AbstractCodec {
-    return this.getByName(name).codec
-  }
-
-  getCodecById(id: number): AbstractCodec {
-    return this.getById(id).codec
-  }
-
-  list(): AbstractAlgorithm[] {
+  list(): AlgorithmCtor[] {
     return [...this.byName.values()]
   }
 
-  listEntries(): AlgorithmCatalogEntry[] {
-    return this.list().map(algorithm => algorithm.toCatalogEntry())
+  /**
+   * Resolve which algorithm should handle a given artifact buffer.
+   * Strategy:
+   *   1. Per-algorithm canHandle (cheap byte-level sniff for plugins).
+   *   2. Surface-decode pixels and read pixel header for codec id.
+   *   3. Throw.
+   */
+  async detectFromBuffer(buffer: Buffer, ext?: string): Promise<AlgorithmCtor> {
+    for (const Ctor of this.byName.values()) {
+      try {
+        // Construct a probe instance to call canHandle (instance method).
+        const probe = new Ctor()
+
+        if (probe.canHandle(buffer, ext)) return Ctor
+      } catch {
+        // ignore — keep iterating
+      }
+    }
+
+    if (buffer && buffer.length > 8) {
+      try {
+        const surface = surfaceRegistry.byExtension(ext ?? '.png')
+        const image = await surface.readBuffer(buffer)
+        const id = isCompactToken(image.pixels)
+          ? readCompactHeader(image.pixels).algoId
+          : readHeader(image.pixels).algorithmId
+        const Ctor = this.byId.get(id)
+
+        if (Ctor) return Ctor
+      } catch {
+        // not a decodable image — fall through to throw
+      }
+    }
+
+    throw new Error('no algorithm matched the provided artifact buffer')
   }
 
   clear(): void {

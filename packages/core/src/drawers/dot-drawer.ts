@@ -1,3 +1,4 @@
+import { enumOption, type OptionsSchema } from '../components/options'
 import { decodeEcByte, encodeEcByte, HEADER_PIXELS, readHeader, writeHeader } from '../header'
 import { fromFileChannels, toFileChannels } from '../surfaces/channels'
 import { dotLayout, readDots, renderDots } from '../surfaces/dot-render'
@@ -25,17 +26,15 @@ function fileChannelsForBpp(bpp: number): 3 | 4 {
   return bpp === 4 ? 4 : 3
 }
 
-function dirCode(direction: string | undefined): number {
-  if (direction === 'horizontal') return 1
-  if (direction === 'vertical') return 2
-  if (direction === 'diagonal') return 3
-
-  return 0
-}
-
 export class DotDrawer extends AbstractDrawer {
+  static override readonly optionsSchema: OptionsSchema = {
+    cellSize: enumOption([3, 5, 7, 9], 5, { label: 'Dot size (pixels per cell)' }),
+  }
+
   readonly id = 'dot'
   readonly label = 'Dot'
+  override readonly description =
+    'Sparse cells of configurable size — visually distinct, larger token, decode-after-download.'
   readonly outputKind = 'raster-pixels' as const
   readonly capabilities = DOT_CAPABILITIES
 
@@ -47,37 +46,24 @@ export class DotDrawer extends AbstractDrawer {
     const layout = dotLayout(HEADER_PIXELS + dataPixelCount, cellSize)
     const { imageWidth, imageHeight, gridWidth, gridHeight } = layout
 
-    const hasGradient = !!ctx.style?.gradient
-    const blendAmount = hasGradient ? Math.round((1 - (ctx.style?.opacity ?? 1.0)) * 255) : 0
-
     const headerData: HeaderData = {
       version: 1,
-      algorithmId: ctx.codec.id,
+      algorithmId: ctx.algorithmId,
       fileLength: input.length,
       width: imageWidth,
       height: imageHeight,
-      styleFlags: hasGradient ? 0b01 : 0,
       ecLevel: encodeEcByte(ctx.encrypted, ctx.fecLevel),
-      codecMeta: new Uint8Array(16),
-      gradientFrom: ctx.style?.gradient?.from ?? [0, 0, 0],
-      gradientTo: ctx.style?.gradient?.to ?? [0, 0, 0],
-      gradientDirection: dirCode(ctx.style?.gradient?.direction),
-      backgroundOpacity: blendAmount,
-      backgroundColor: ctx.style?.background ?? [0, 0, 0],
       compressionLevel: ctx.compressionLevel,
       uncompressedLength: ctx.uncompressedLength,
       cellSize,
       dataPixelCount,
-      chunkIndex: 0,
-      chunkTotal: 1,
-      streamId: 0,
       channels: ctx.bpp,
       preFecLength: ctx.preFecLength,
     }
 
     const dataRaw = ctx.codec.encode(input, dataPixelCount, gridWidth, gridHeight, ctx.bpp)
     const dataExpanded = toFileChannels(dataRaw, dataPixelCount, ctx.bpp, fc)
-    const pixels = renderDots(dataExpanded, dataPixelCount, cellSize, layout, headerData, fc)
+    const pixels = renderDots(dataExpanded, dataPixelCount, cellSize, layout, fc)
 
     writeHeader(pixels, headerData)
     const chunk: DrawnChunk = { pixels, width: imageWidth, height: imageHeight, fileChannels: fc }
@@ -101,9 +87,6 @@ export class DotDrawer extends AbstractDrawer {
       compressionLevel: header.compressionLevel,
       encrypted: ec.encrypted,
       uncompressedLength: header.uncompressedLength,
-      chunkIndex: header.chunkIndex,
-      chunkTotal: header.chunkTotal,
-      streamId: header.streamId,
       fecLevel: ec.fecLevel,
       preFecLength: header.preFecLength,
     }

@@ -1,0 +1,9 @@
+{
+  "name": "react",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./jsx-runtime": "./jsx-runtime.js"
+  }
+}

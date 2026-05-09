@@ -1,8 +1,5 @@
-// CART archive — re-exports the buffer-pure primitives plus fs-using wrappers.
-//
-// Buffer-pure surface (browser-safe) lives in `./archive-buffers.ts`. This file
-// adds Node-only directory-walk + file-output helpers. Phase 2 relocates these
-// to `@tokenpack/node`; for now the subpath `tokenpack/archive` keeps both.
+// CART archive — re-exports the buffer-pure primitives plus fs-using `packDirs`.
+// Buffer-pure surface (browser-safe) lives in `./archive-buffers.ts`.
 
 import fs from 'fs'
 import path from 'path'
@@ -55,27 +52,4 @@ export function packDirs(dirPaths: string[], extraIgnore: string[] = [], root?: 
   }
 
   return Buffer.from(packBuffers(entries))
-}
-
-export function packDir(dirPath: string, extraIgnore: string[] = []): Buffer {
-  return packDirs([dirPath], extraIgnore)
-}
-
-export function unpackDir(data: Buffer | Uint8Array, outDir: string): string[] {
-  const entries = unpackBuffers(data)
-  const written: string[] = []
-  const resolvedOut = path.resolve(outDir)
-
-  for (const { path: filePath, bytes } of entries) {
-    const fullPath = path.resolve(outDir, filePath)
-
-    if (!fullPath.startsWith(resolvedOut)) {
-      throw new Error(`Unsafe path in archive: ${filePath}`)
-    }
-    fs.mkdirSync(path.dirname(fullPath), { recursive: true })
-    fs.writeFileSync(fullPath, bytes)
-    written.push(filePath)
-  }
-
-  return written
 }

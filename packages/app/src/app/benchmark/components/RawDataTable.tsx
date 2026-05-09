@@ -1,6 +1,7 @@
 import { Table } from '@heroui/react'
+import { useMemo } from 'react'
 
-import { COLORS, SCENARIOS, SOURCE_LABELS } from '../constants'
+import { buildScenarioConfig, SOURCE_LABELS } from '../constants'
 import type { BenchRow } from '../types'
 import { fmtBytes, fmtMs } from '../utils'
 
@@ -11,6 +12,10 @@ interface RawDataTableProps {
 }
 
 export function RawDataTable({ data, condition, source }: RawDataTableProps) {
+  const { scenarios: SCENARIOS, colors: COLORS } = useMemo(
+    () => buildScenarioConfig(data.map(d => d.scenario)),
+    [data],
+  )
   const rawData = data
     .filter(r => r.condition === condition && (source === 'avg' || r.source === source))
     .sort(
