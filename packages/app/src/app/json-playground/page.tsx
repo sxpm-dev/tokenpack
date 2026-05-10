@@ -108,8 +108,15 @@ export default function JsonPlaygroundPage() {
     () => manifest?.records.find(record => record.id === recordId) ?? null,
     [manifest, recordId],
   )
+  const recordOptions = useMemo(() => curatedRecordOptions(manifest), [manifest])
 
   const initialRows = useMemo(() => buildRows(), [])
+  const displayRows = rows.length > 0 ? rows : initialRows
+  const doneRows = displayRows.filter(row => row.state === 'done')
+  const bestRow = doneRows.reduce<BenchRow | null>(
+    (best, row) => (!best || (row.totalMs ?? Infinity) < (best.totalMs ?? Infinity) ? row : best),
+    null,
+  )
 
   async function handleRun() {
     if (!manifest || !selectedRecord) return
@@ -154,8 +161,6 @@ export default function JsonPlaygroundPage() {
     }
   }
 
-  const displayRows = rows.length > 0 ? rows : initialRows
-
   return (
     <main className="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-5">
       <div>
@@ -169,16 +174,27 @@ export default function JsonPlaygroundPage() {
       <Surface className="space-y-4 rounded-2xl p-4">
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <label className="flex items-center gap-2">
-            <span className="text-white/50">Record:</span>
+            <span className="text-white/50">Dataset:</span>
+            <select
+              disabled
+              className="rounded border border-white/10 bg-white/5 px-2 py-1 text-xs"
+              value="client-spec-map"
+            >
+              <option value="client-spec-map">client-spec-map.json</option>
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <span className="text-white/50">Target:</span>
             <select
               className="max-w-md rounded border border-white/10 bg-white/5 px-2 py-1 text-xs"
               disabled={running || !manifest}
               value={recordId}
               onChange={event => setRecordId(event.target.value)}
             >
-              {(manifest?.records ?? []).map(record => (
+              {recordOptions.map(record => (
                 <option key={record.id} value={record.id}>
-                  {record.kind} · {record.label} · {formatBytes(record.byteLength)}
+                  {targetLabel(record)}
                 </option>
               ))}
             </select>
@@ -263,51 +279,155 @@ export default function JsonPlaygroundPage() {
         {topError && <div className="text-[11px] text-red-300">{topError}</div>}
       </Surface>
 
+      {doneRows.length > 0 && <JsonSummary best={bestRow} rows={doneRows} />}
+
       <Surface className="overflow-hidden rounded-2xl">
-        <div className="grid grid-cols-[minmax(260px,1.8fr)_minmax(130px,0.8fr)_repeat(7,minmax(92px,0.65fr))] gap-0 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-[10px] uppercase tracking-[0.18em] text-white/35">
+        <div className="grid grid-cols-[minmax(280px,1.8fr)_minmax(130px,0.8fr)_repeat(8,minmax(88px,0.65fr))] gap-0 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-[10px] uppercase tracking-[0.18em] text-white/35">
           <div>Scenario</div>
           <div>Group</div>
           <div>TTFB</div>
           <div>Transfer</div>
-          <div>Parse</div>
+          <div>Parse / scan</div>
           <div>Total</div>
+          <div>vs Best</div>
           <div>Wire</div>
-          <div>Emit</div>
+          <div>Output</div>
           <div>Verify</div>
         </div>
         <div className="divide-y divide-white/10">
-          {displayRows.map(row => (
-            <div
-              key={row.id}
-              className="grid grid-cols-[minmax(260px,1.8fr)_minmax(130px,0.8fr)_repeat(7,minmax(92px,0.65fr))] gap-0 px-4 py-3 text-xs"
-            >
-              <div className="flex items-center gap-2 font-medium">
-                <BracketsCurlyIcon className="text-green-500" size={14} />
-                <span>{row.label}</span>
+          {displayRows.map((row, index) => {
+            const previous = index > 0 ? displayRows[index - 1] : null
+            const showSection = !previous || previous.group !== row.group
+
+            return (
+              <div key={row.id}>
+                {showSection && (
+                  <div className="border-b border-white/10 px-4 pb-1 pt-4 text-[10px] uppercase tracking-[0.18em] text-white/30">
+                    {groupLabel(row.group)}
+                  </div>
+                )}
+                <div className="grid grid-cols-[minmax(280px,1.8fr)_minmax(130px,0.8fr)_repeat(8,minmax(88px,0.65fr))] gap-0 px-4 py-3 text-xs">
+                  <div className="flex items-center gap-2 font-medium">
+                    <BracketsCurlyIcon className="text-green-500" size={14} />
+                    <span>{row.label}</span>
+                    {bestRow?.id === row.id && (
+                      <span className="rounded bg-green-500/15 px-1 py-0.5 text-[9px] uppercase tracking-widest text-green-300">
+                        best
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-white/45">{groupLabel(row.group)}</div>
+                  {row.state === 'errored' ? (
+                    <div className="col-span-8 text-red-300">{row.error}</div>
+                  ) : row.state === 'running' ? (
+                    <div className="col-span-8 text-white/45">running</div>
+                  ) : row.state === 'pending' ? (
+                    <div className="col-span-8 text-white/25">queued</div>
+                  ) : (
+                    <>
+                      <Cell>{formatMs(row.ttfbMs)}</Cell>
+                      <Cell>{formatMs(row.transferMs)}</Cell>
+                      <Cell>{formatMs(row.decodeMs)}</Cell>
+                      <Cell strong>{formatMs(row.totalMs)}</Cell>
+                      <Cell>
+                        <VsBest best={bestRow} row={row} />
+                      </Cell>
+                      <Cell>{formatBytes(row.wireBytes)}</Cell>
+                      <Cell>{row.emitted ?? '—'}</Cell>
+                      <Cell>{row.verify ?? '—'}</Cell>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="text-white/45">{row.group}</div>
-              {row.state === 'errored' ? (
-                <div className="col-span-7 text-red-300">{row.error}</div>
-              ) : row.state === 'running' ? (
-                <div className="col-span-7 text-white/45">running</div>
-              ) : row.state === 'pending' ? (
-                <div className="col-span-7 text-white/25">queued</div>
-              ) : (
-                <>
-                  <Cell>{formatMs(row.ttfbMs)}</Cell>
-                  <Cell>{formatMs(row.transferMs)}</Cell>
-                  <Cell>{formatMs(row.decodeMs)}</Cell>
-                  <Cell strong>{formatMs(row.totalMs)}</Cell>
-                  <Cell>{formatBytes(row.wireBytes)}</Cell>
-                  <Cell>{row.emitted ?? '—'}</Cell>
-                  <Cell>{row.verify ?? '—'}</Cell>
-                </>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       </Surface>
+
+      <JsonLegend />
     </main>
+  )
+}
+
+function JsonSummary({ rows, best }: { rows: BenchRow[]; best: BenchRow | null }) {
+  const full = bestOfGroup(rows, 'full json')
+  const stream = bestOfGroup(rows, 'stream')
+  const exact = bestOfGroup(rows, 'exact api')
+  const range = bestOfGroup(rows, 'pixel range')
+
+  return (
+    <div className="grid gap-3 md:grid-cols-4">
+      <JsonCard label="Winner" row={best} tone="green" />
+      <JsonCard label="Best full JSON" row={full} />
+      <JsonCard compareTo={full} label="Best server API" row={exact} />
+      <JsonCard compareTo={full} label="Best pixel range" row={range} />
+      <JsonCard compareTo={full} label="Best NDJSON stream" row={stream} />
+    </div>
+  )
+}
+
+function JsonCard({
+  label,
+  row,
+  compareTo,
+  tone = 'neutral',
+}: {
+  label: string
+  row: BenchRow | null
+  compareTo?: BenchRow | null
+  tone?: 'neutral' | 'green'
+}) {
+  const ratio = row && compareTo ? compareMs(compareTo.totalMs, row.totalMs) : null
+
+  return (
+    <Surface className="rounded-2xl p-3">
+      <div className="text-[9px] uppercase tracking-widest text-white/30">{label}</div>
+      {row ? (
+        <>
+          <div
+            className={`mt-2 text-sm font-semibold ${tone === 'green' ? 'text-green-300' : 'text-white/85'}`}
+          >
+            {row.label}
+          </div>
+          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-white/45">
+            <span className="text-white/75">{formatMs(row.totalMs)}</span>
+            <span>{formatBytes(row.wireBytes)}</span>
+            {ratio && (
+              <span className={ratio.faster ? 'text-green-300' : 'text-red-300'}>{ratio.text}</span>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="mt-2 text-sm text-white/30">not run</div>
+      )}
+    </Surface>
+  )
+}
+
+function JsonLegend() {
+  return (
+    <Surface className="space-y-3 rounded-2xl p-4">
+      <div className="text-[10px] uppercase tracking-widest text-white/30">Scenario guide</div>
+      <div className="grid gap-3 text-[11px] leading-4 text-white/45 md:grid-cols-2">
+        <p>
+          <span className="text-white/65">Full JSON</span> fetches the whole JSON source, decodes
+          text, parses JSON, then checks the selected target.
+        </p>
+        <p>
+          <span className="text-white/65">NDJSON stream</span> scans records until the selected
+          target is found. Wire currently shows response size, not necessarily consumed bytes after
+          early cancel.
+        </p>
+        <p>
+          <span className="text-white/65">Server API</span> is the server-side competitor: return
+          root keys or one selected record without client-side full JSON parsing.
+        </p>
+        <p>
+          <span className="text-white/65">Pixel range</span> reads the semantic pack manifest and
+          fetches only the selected record region from the pack.
+        </p>
+      </div>
+    </Surface>
   )
 }
 
@@ -328,19 +448,95 @@ function buildRows(): BenchRow[] {
   const rows: BenchRow[] = []
 
   for (const encoding of JSON_ENCODINGS) {
-    rows.push(pendingRow(`json-parse-${encoding}`, `full JSON parse · ${encoding}`, 'full json'))
+    rows.push(pendingRow(`json-parse-${encoding}`, `full JSON · ${encoding}`, 'full json'))
   }
   for (const encoding of JSON_ENCODINGS) {
-    rows.push(pendingRow(`ndjson-find-${encoding}`, `NDJSON stream find · ${encoding}`, 'stream'))
+    rows.push(pendingRow(`ndjson-find-${encoding}`, `NDJSON find target · ${encoding}`, 'stream'))
   }
 
-  rows.push(pendingRow('keys-api', 'root keys API', 'exact api'))
-  rows.push(pendingRow('item-api', 'record API', 'exact api'))
-  rows.push(pendingRow('range-manifest-keys', 'range manifest root keys', 'pixel range'))
-  rows.push(pendingRow('range-item-fetch', 'range fetch selected record', 'pixel range'))
-  rows.push(pendingRow('range-item-stream', 'range stream selected record', 'pixel range'))
+  rows.push(pendingRow('keys-api', 'Server API · list root keys', 'exact api'))
+  rows.push(pendingRow('item-api', 'Server API · fetch selected record', 'exact api'))
+  rows.push(
+    pendingRow('range-manifest-keys', 'Pixel range · list root keys from manifest', 'pixel range'),
+  )
+  rows.push(
+    pendingRow('range-item-fetch', 'Pixel range · fetch selected record bytes', 'pixel range'),
+  )
+  rows.push(
+    pendingRow('range-item-stream', 'Pixel range · stream selected record bytes', 'pixel range'),
+  )
 
   return rows
+}
+
+function curatedRecordOptions(manifest: Manifest | null): JsonRecordSummary[] {
+  if (!manifest) return []
+
+  const byId = new Map<string, JsonRecordSummary>()
+  const add = (record: JsonRecordSummary | null | undefined) => {
+    if (record) byId.set(record.id, record)
+  }
+
+  add(manifest.records.find(record => record.id === manifest.suggestedRecordId))
+  manifest.records
+    .filter(record => record.kind === 'collection')
+    .slice(0, 4)
+    .forEach(add)
+  ;[...manifest.records]
+    .filter(record => record.kind === 'component')
+    .sort((a, b) => b.byteLength - a.byteLength)
+    .slice(0, 6)
+    .forEach(add)
+
+  return [...byId.values()].slice(0, 10)
+}
+
+function targetLabel(record: JsonRecordSummary): string {
+  const parent = record.parentKey ? `${record.parentKey} / ` : ''
+
+  return `${record.kind} · ${parent}${record.label} · ${formatBytes(record.byteLength)}`
+}
+
+function bestOfGroup(rows: BenchRow[], group: string): BenchRow | null {
+  return rows
+    .filter(row => row.group === group)
+    .reduce<BenchRow | null>(
+      (best, row) => (!best || (row.totalMs ?? Infinity) < (best.totalMs ?? Infinity) ? row : best),
+      null,
+    )
+}
+
+function groupLabel(group: string): string {
+  switch (group) {
+    case 'full json':
+      return 'Full JSON fetch + parse'
+    case 'stream':
+      return 'NDJSON stream scan'
+    case 'exact api':
+      return 'Server exact endpoint'
+    case 'pixel range':
+      return 'Pixel-range semantic pack'
+    default:
+      return group
+  }
+}
+
+function VsBest({ row, best }: { row: BenchRow; best: BenchRow | null }) {
+  if (!best || row.id === best.id) return <span className="text-white/25">—</span>
+  const ratio = compareMs(best.totalMs, row.totalMs)
+
+  return <span className={ratio.faster ? 'text-green-300' : 'text-red-300'}>{ratio.text}</span>
+}
+
+function compareMs(
+  baseMs: number | undefined,
+  valueMs: number | undefined,
+): { text: string; faster: boolean } {
+  if (!baseMs || !valueMs) return { text: '—', faster: false }
+
+  if (valueMs <= baseMs) return { text: `${(baseMs / valueMs).toFixed(1)}x faster`, faster: true }
+
+  return { text: `${(valueMs / baseMs).toFixed(1)}x slower`, faster: false }
 }
 
 function pendingRow(id: string, label: string, group: string): BenchRow {
@@ -441,7 +637,7 @@ async function runKeysApi(id: string, manifest: Manifest, throttle: Throttle): P
   return {
     id,
     group: 'exact api',
-    label: 'root keys API',
+    label: 'Server API · list root keys',
     state: 'done',
     decodeMs: decodeEnd - transferEnd,
     emitted: keys.length,
@@ -470,7 +666,7 @@ async function runItemApi(
   return {
     id,
     group: 'exact api',
-    label: 'record API',
+    label: 'Server API · fetch selected record',
     state: 'done',
     decodeMs: decodeEnd - transferEnd,
     emitted: 1,
@@ -496,7 +692,7 @@ async function runRangeManifestKeys(
   return {
     id,
     group: 'pixel range',
-    label: 'range manifest root keys',
+    label: 'Pixel range · list root keys from manifest',
     state: 'done',
     decodeMs: 0,
     emitted: rootKeys.length,
@@ -525,7 +721,7 @@ async function runRangeItemFetch(
   return {
     id,
     group: 'pixel range',
-    label: 'range fetch selected record',
+    label: 'Pixel range · fetch selected record bytes',
     state: 'done',
     decodeMs: decodeEnd - transferEnd,
     emitted: 1,
@@ -555,7 +751,7 @@ async function runRangeItemStream(
   return {
     id,
     group: 'pixel range',
-    label: 'range stream selected record',
+    label: 'Pixel range · stream selected record bytes',
     state: 'done',
     decodeMs: decodeEnd - transferEnd,
     emitted: 1,

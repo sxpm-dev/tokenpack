@@ -29,6 +29,8 @@ interface RunOnceResult {
   verifyBytes: number
 }
 
+const RANGE_MANIFEST_PREFETCH_BYTES = 16 * 1024
+
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(bytes < 100 * 1024 ? 1 : 0)}KB`
@@ -225,7 +227,7 @@ async function runRangeChanged(
     throttle,
   )
   const fetchStart = performance.now()
-  const remote = await fetchPackManifest(url)
+  const remote = await fetchPackManifest(url, RANGE_MANIFEST_PREFETCH_BYTES)
   const firstByte = performance.now()
   const changedPaths = item.changedPaths
   let decoded: Array<{ path: string; bytes: Uint8Array }>

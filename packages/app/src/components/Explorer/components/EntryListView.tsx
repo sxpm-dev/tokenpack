@@ -95,11 +95,12 @@ export function EntryListView({ pack, selectedPath, onSelect }: EntryListViewPro
   )
 }
 
-function diffChipColor(op: 'add' | 'modify' | 'delete' | 'rename') {
+function diffChipColor(op: 'add' | 'modify' | 'patch' | 'delete' | 'rename') {
   switch (op) {
     case 'add':
       return 'success' as const
     case 'modify':
+    case 'patch':
       return 'warning' as const
     case 'delete':
       return 'danger' as const

@@ -43,6 +43,30 @@ describe('node.diff', () => {
     expect(diffPack.entries).toHaveLength(0)
   })
 
+  it('uses a patch op for a localized binary edit and applies it correctly', async () => {
+    const base = deterministicBytes(8192)
+    const next = new Uint8Array(base)
+
+    next.set(new TextEncoder().encode('zxc'), 4096)
+
+    const tokenA = await encode(new PackBuilder().withFile('a.txt', base))
+    const tokenB = await encode(new PackBuilder().withFile('a.txt', next))
+    const diffPack = await diff(tokenA, tokenB)
+
+    expect(diffPack.isDiff()).toBe(true)
+    if (!diffPack.isDiff()) throw new Error('expected DiffPack')
+    expect(diffPack.entries).toContainEqual(
+      expect.objectContaining({ op: 'patch', path: 'a.txt', size: next.length }),
+    )
+
+    const basePack = await decode(tokenA)
+
+    if (!basePack.isPack()) throw new Error('expected DirPack')
+    const reconstructed = await diffPack.apply(basePack)
+
+    expect(Buffer.from(await reconstructed.extract('a.txt'))).toEqual(Buffer.from(next))
+  })
+
   it('cross-algo diff throws same-algo error', async () => {
     const builder = new PackBuilder().withFile('a.txt', 'one')
     const linearToken = await encode(builder, { algo: 'linear' })
@@ -51,3 +75,17 @@ describe('node.diff', () => {
     await expect(diff(linearToken, linearNoneToken)).rejects.toThrow(/same-algo only/)
   })
 })
+
+function deterministicBytes(size: number): Uint8Array {
+  const out = new Uint8Array(size)
+  let state = 0x12345678
+
+  for (let i = 0; i < out.length; i += 1) {
+    state ^= state << 13
+    state ^= state >>> 17
+    state ^= state << 5
+    out[i] = state & 0xff
+  }
+
+  return out
+}

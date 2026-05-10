@@ -84,7 +84,7 @@ export function fromBytes(bytes: Uint8Array, opts: FromBytesOptions): Pack {
     const entries = decoded.manifest.ops.map(o => ({
       path: o.path,
       op: o.op,
-      size: o.originalSize,
+      size: o.op === 'patch' ? o.targetSize : o.originalSize,
       fromPath: o.fromPath,
     }))
 

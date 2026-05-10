@@ -34,7 +34,7 @@ export interface DirPack extends PackBase {
   diffTo(other: DirPack): Promise<unknown>
 }
 
-export type DiffOpKind = 'add' | 'modify' | 'delete' | 'rename'
+export type DiffOpKind = 'add' | 'modify' | 'patch' | 'delete' | 'rename'
 
 export interface DiffEntry {
   path: string

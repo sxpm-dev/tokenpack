@@ -99,6 +99,28 @@ describe('diff: encode/decode + apply', () => {
     expect(map.has('b.js')).toBe(false)
   })
 
+  it('stores a compact patch for a localized file edit', async () => {
+    const prev: PackEntry[] = [{ path: 'a.txt', bytes: enc.encode('asdasd') }]
+    const next: PackEntry[] = [{ path: 'a.txt', bytes: enc.encode('asdzxc') }]
+    const diffBytes = await encodeDiff(prev, next, identity)
+    const decoded = decodeDiff(diffBytes)
+    const op = decoded.manifest.ops[0]
+
+    expect(op).toMatchObject({
+      op: 'patch',
+      path: 'a.txt',
+      patchStart: 3,
+      deleteSize: 3,
+      originalSize: 3,
+      targetSize: 6,
+    })
+    expect(new TextDecoder().decode(decoded.extractRegion('a.txt'))).toBe('zxc')
+
+    const reconstructed = await applyDiff(prev, diffBytes, identityDecompress)
+
+    expect(new TextDecoder().decode(reconstructed[0].bytes)).toBe('asdzxc')
+  })
+
   it('applies a rename op without re-shipping content', async () => {
     const prev: PackEntry[] = [{ path: 'old.js', bytes: enc.encode('same content') }]
     const next: PackEntry[] = [{ path: 'new.js', bytes: enc.encode('same content') }]

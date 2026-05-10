@@ -26,7 +26,7 @@ interface Loaded {
   imageURL: string | null
   downloadURL: string | null
   downloadName: string
-  op: 'add' | 'modify' | 'delete' | 'rename'
+  op: 'add' | 'modify' | 'patch' | 'delete' | 'rename'
   fromPath?: string
 }
 
@@ -179,13 +179,18 @@ export function DiffFilePreview({ basePack, diffPack, appliedPack, path }: DiffF
 }
 
 async function extractDiffEntry(
-  entry: { op: 'add' | 'modify' | 'delete' | 'rename'; path: string; fromPath?: string },
+  entry: {
+    op: 'add' | 'modify' | 'patch' | 'delete' | 'rename'
+    path: string
+    fromPath?: string
+  },
   basePack: DirPack,
   appliedPack: DirPack,
 ): Promise<Uint8Array | null> {
   switch (entry.op) {
     case 'add':
     case 'modify':
+    case 'patch':
       return await appliedPack.extract(entry.path)
     case 'delete':
       return await basePack.extract(entry.path)
@@ -198,11 +203,12 @@ function leafName(path: string): string {
   return path.split('/').filter(Boolean).pop() || path || 'file'
 }
 
-function opChipColor(op: 'add' | 'modify' | 'delete' | 'rename') {
+function opChipColor(op: 'add' | 'modify' | 'patch' | 'delete' | 'rename') {
   switch (op) {
     case 'add':
       return 'success' as const
     case 'modify':
+    case 'patch':
       return 'warning' as const
     case 'delete':
       return 'danger' as const

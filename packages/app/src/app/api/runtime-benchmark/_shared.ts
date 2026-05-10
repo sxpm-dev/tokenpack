@@ -110,6 +110,7 @@ export function listRuntimeScriptCases(manifest: RuntimeFixtureManifest) {
 export function listRuntimeRangePackCases(manifest: RuntimeFixtureManifest) {
   const out: Array<{
     id: string
+    tab: 'content' | 'script'
     source: string
     sourceKind: 'json' | 'text'
     chunkCount: number
@@ -118,10 +119,11 @@ export function listRuntimeRangePackCases(manifest: RuntimeFixtureManifest) {
   }> = []
 
   for (const fixture of manifest.fixtures) {
-    if (fixture.kind !== 'range-pack' || fixture.tab !== 'content') continue
+    if (fixture.kind !== 'range-pack') continue
 
     out.push({
       id: runtimeStrategyId(fixture.source, fixture.chunkCount),
+      tab: fixture.tab,
       source: fixture.source,
       sourceKind: fixture.sourceKind,
       chunkCount: fixture.chunkCount,
@@ -218,6 +220,7 @@ export function findRuntimeFixture(
 export function findRuntimeRangePackFixture(
   manifest: RuntimeFixtureManifest,
   source: string,
+  tab: 'content' | 'script' = 'content',
 ): RuntimeFixtureEntry | null {
   const parsed = parseRuntimeStrategyId(source)
 
@@ -227,7 +230,7 @@ export function findRuntimeRangePackFixture(
     manifest.fixtures.find(
       fixture =>
         fixture.kind === 'range-pack' &&
-        fixture.tab === 'content' &&
+        fixture.tab === tab &&
         fixture.source === parsed.source &&
         fixture.chunkCount === parsed.chunkCount,
     ) ?? null

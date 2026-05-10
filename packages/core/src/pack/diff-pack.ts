@@ -1,5 +1,5 @@
-// DiffPack — a token carrying file-level diff ops + per-region compressed
-// bytes for add/modify ops. `apply(prev)` produces a new in-memory DirPack.
+// DiffPack — a token carrying diff ops + per-region compressed bytes for
+// add/modify/patch ops. `apply(prev)` produces a new in-memory DirPack.
 
 import { applyDiff } from '../pack-format/apply-diff'
 import type { DecompressFn } from '../pack-format/decompress'

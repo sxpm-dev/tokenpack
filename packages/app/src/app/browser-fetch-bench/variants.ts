@@ -176,7 +176,7 @@ export const TEXT_VARIANTS: Variant[] = [
     label: 'pixel-range-none range fetch all',
     isToken: true,
     loadMode: 'range-pack-fetch',
-    url: ({ source }) => `/api/runtime-benchmark/range-pack?source=${source}`,
+    url: ({ source }) => `/api/runtime-benchmark/range-pack?tab=content&source=${source}`,
     compat: 'full',
     compatNote:
       'Partial remote pack access: pixel-range-none outer container, deflate per-file regions. Fetch manifest once, then fetch all file regions with HTTP Range.',
@@ -188,7 +188,7 @@ export const TEXT_VARIANTS: Variant[] = [
     isToken: true,
     isStreamable: true,
     loadMode: 'range-pack-stream',
-    url: ({ source }) => `/api/runtime-benchmark/range-pack?source=${source}`,
+    url: ({ source }) => `/api/runtime-benchmark/range-pack?tab=content&source=${source}`,
     compat: 'full',
     compatNote:
       'Partial remote pack access: pixel-range-none outer container, deflate per-file regions. Fetch manifest once, then stream all file regions with HTTP Range.',
@@ -216,5 +216,28 @@ export const SCRIPT_VARIANTS: Variant[] = [
     compat: SCRIPT_TAG_COMPAT[e].compat,
     compatNote: SCRIPT_TAG_COMPAT[e].note,
   })),
+  {
+    group: 'script',
+    id: 'pixel-range-range-fetch-all',
+    label: 'pixel-range-none range fetch all',
+    isToken: true,
+    loadMode: 'range-pack-fetch',
+    url: ({ source }) => `/api/runtime-benchmark/range-pack?tab=script&source=${source}`,
+    compat: 'full',
+    compatNote:
+      'Partial remote pack access for generated scripts: pixel-range-none outer container, deflate per-file regions. Fetch manifest once, then fetch all script regions with HTTP Range.',
+  },
+  {
+    group: 'script',
+    id: 'pixel-range-range-stream-all',
+    label: 'pixel-range-none range stream all',
+    isToken: true,
+    isStreamable: true,
+    loadMode: 'range-pack-stream',
+    url: ({ source }) => `/api/runtime-benchmark/range-pack?tab=script&source=${source}`,
+    compat: 'full',
+    compatNote:
+      'Partial remote pack access for generated scripts: pixel-range-none outer container, deflate per-file regions. Fetch manifest once, then stream all script regions with HTTP Range.',
+  },
   ...buildTokenVariants('script', /* sourceful */ true),
 ]

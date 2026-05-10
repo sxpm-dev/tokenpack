@@ -1,8 +1,8 @@
 'use client'
 
 import { Button, Surface } from '@heroui/react'
-import { BroomIcon, DownloadSimpleIcon, FloppyDiskIcon, PlayIcon } from '@phosphor-icons/react'
-import { useEffect, useMemo, useState } from 'react'
+import { BroomIcon, DownloadSimpleIcon, PlayIcon } from '@phosphor-icons/react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 
 import { formatBytes, formatMs, prepareBase, runVariant } from './runner'
 import type { ApplyDiffCase, ApplyDiffManifest, RowResult, Throttle, Variant } from './types'
@@ -22,14 +22,6 @@ type Status =
 
 type StatusMap = Map<string, Status>
 
-interface Baseline {
-  createdAt: string
-  caseId: string
-  throttle: string
-  iterations: number
-  rows: RowResult[]
-}
-
 export default function ApplyDiffBenchPage() {
   const [manifest, setManifest] = useState<ApplyDiffManifest | null>(null)
   const [caseId, setCaseId] = useState('')
@@ -39,8 +31,6 @@ export default function ApplyDiffBenchPage() {
   const [progress, setProgress] = useState('')
   const [statuses, setStatuses] = useState<StatusMap>(new Map())
   const [topError, setTopError] = useState<string | null>(null)
-  const [baseline, setBaseline] = useState<Baseline | null>(null)
-  const [baselineMessage, setBaselineMessage] = useState('')
 
   useEffect(() => {
     fetch('/api/apply-diff-benchmark/manifest', { cache: 'no-store' })
@@ -52,46 +42,11 @@ export default function ApplyDiffBenchPage() {
       .catch(e => setTopError(String(e)))
   }, [])
 
-  useEffect(() => {
-    if (!caseId) return
-    const controller = new AbortController()
-    const params = new URLSearchParams({
-      case: caseId,
-      iterations: String(iterations),
-      throttle,
-    })
-
-    fetch(`/api/apply-diff-benchmark/baseline?${params}`, {
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-      .then(r => {
-        if (!r.ok) throw new Error(`baseline fetch failed: ${r.status}`)
-
-        return r.json() as Promise<Baseline | null>
-      })
-      .then(setBaseline)
-      .catch(e => {
-        if (e instanceof DOMException && e.name === 'AbortError') return
-        setTopError(String(e))
-      })
-
-    return () => controller.abort()
-  }, [caseId, iterations, throttle])
-
   const activeCase = useMemo(
     () => manifest?.cases.find(item => item.id === caseId) ?? manifest?.cases[0] ?? null,
     [manifest, caseId],
   )
   const variants = useMemo(() => (activeCase ? buildVariants(activeCase) : []), [activeCase])
-  const currentBaseline = useMemo(() => {
-    if (!baseline) return null
-    if (baseline.caseId !== caseId) return null
-    if (baseline.throttle !== throttle) return null
-    if (baseline.iterations !== iterations) return null
-
-    return baseline
-  }, [baseline, caseId, iterations, throttle])
   const doneRows = useMemo(
     () =>
       variants
@@ -105,9 +60,9 @@ export default function ApplyDiffBenchPage() {
     if (!activeCase) return
     setRunning(true)
     setTopError(null)
-    setBaselineMessage('')
     setProgress('Preparing cached v1.0.0 base packs…')
     setStatuses(new Map(variants.map(variant => [variant.id, { state: 'pending' } as Status])))
+    await waitForPaint()
 
     const baseCache = {
       packByToken: new Map(),
@@ -130,7 +85,14 @@ export default function ApplyDiffBenchPage() {
         ),
       )
 
-      for (const tokenId of tokenIds) {
+      for (let index = 0; index < tokenIds.length; index += 1) {
+        const tokenId = tokenIds[index]
+
+        setProgress(
+          `Preparing cached v1.0.0 base pack [${index + 1}/${tokenIds.length}] ${tokenId}`,
+        )
+        await waitForPaint()
+
         try {
           const prepared = await prepareBase(activeCase, tokenId, throttle)
 
@@ -146,6 +108,8 @@ export default function ApplyDiffBenchPage() {
 
         setProgress(`[${index + 1}/${variants.length}] ${variant.label}`)
         setStatuses(prev => new Map(prev).set(variant.id, { state: 'running' }))
+        await waitForPaint()
+
         const baseError = variant.token?.id ? baseErrors.get(variant.token.id) : null
 
         if (
@@ -198,36 +162,6 @@ export default function ApplyDiffBenchPage() {
       window.setTimeout(() => setProgress(''), 2000)
     } catch (e: unknown) {
       setTopError(`clear caches failed: ${e instanceof Error ? e.message : e}`)
-    }
-  }
-
-  async function handleSaveBaseline() {
-    if (!activeCase || doneRows.length === 0) return
-    setTopError(null)
-    setBaselineMessage('')
-
-    try {
-      const response = await fetch('/api/apply-diff-benchmark/baseline', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          caseId: activeCase.id,
-          throttle,
-          iterations,
-          rows: doneRows,
-        }),
-      })
-
-      if (!response.ok) throw new Error(`save baseline failed: ${response.status}`)
-      const saved = (await response.json()) as Baseline
-
-      setBaseline(saved)
-      setBaselineMessage(
-        `Baseline saved · ${doneRows.length} rows · ${iterations} iterations · ${throttle}`,
-      )
-      window.setTimeout(() => setBaselineMessage(''), 3000)
-    } catch (e: unknown) {
-      setTopError(e instanceof Error ? e.message : String(e))
     }
   }
 
@@ -295,10 +229,7 @@ export default function ApplyDiffBenchPage() {
               className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs"
               disabled={running}
               value={activeCase?.id ?? ''}
-              onChange={e => {
-                setBaselineMessage('')
-                setCaseId(e.target.value)
-              }}
+              onChange={e => setCaseId(e.target.value)}
             >
               {manifest.cases.map(item => (
                 <option key={item.id} value={item.id}>
@@ -318,10 +249,7 @@ export default function ApplyDiffBenchPage() {
               min={1}
               type="number"
               value={iterations}
-              onChange={e => {
-                setBaselineMessage('')
-                setIterations(Math.max(1, Math.min(20, Number(e.target.value))))
-              }}
+              onChange={e => setIterations(Math.max(1, Math.min(20, Number(e.target.value))))}
             />
           </label>
 
@@ -331,10 +259,7 @@ export default function ApplyDiffBenchPage() {
               className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs"
               disabled={running}
               value={throttle}
-              onChange={e => {
-                setBaselineMessage('')
-                setThrottle(e.target.value as Throttle)
-              }}
+              onChange={e => setThrottle(e.target.value as Throttle)}
             >
               {THROTTLES.map(option => (
                 <option key={option.id} value={option.id}>
@@ -356,11 +281,6 @@ export default function ApplyDiffBenchPage() {
               <DownloadSimpleIcon className="mr-1.5" size={12} /> Export CSV
             </Button>
           )}
-          {doneRows.length > 0 && !running && (
-            <Button size="sm" variant="ghost" onPress={handleSaveBaseline}>
-              <FloppyDiskIcon className="mr-1.5" size={12} /> Save as baseline
-            </Button>
-          )}
         </div>
 
         {activeCase && (
@@ -375,19 +295,11 @@ export default function ApplyDiffBenchPage() {
           </div>
         )}
 
-        {currentBaseline && (
-          <div className="text-[11px] text-white/35">
-            Baseline: {currentBaseline.rows.length} rows · {currentBaseline.iterations} iterations ·{' '}
-            {currentBaseline.throttle} · {new Date(currentBaseline.createdAt).toLocaleString()}
-          </div>
-        )}
-        {baselineMessage && <div className="text-[11px] text-green-300/80">{baselineMessage}</div>}
         {progress && <div className="text-[11px] text-white/35">{progress}</div>}
         {topError && <div className="text-[11px] text-red-300">{topError}</div>}
       </Surface>
 
       <ResultsTable
-        baseline={currentBaseline}
         expectedHash={activeCase?.nextTreeSha256 ?? null}
         statuses={statuses}
         variants={variants}
@@ -456,18 +368,18 @@ function buildVariants(item: ApplyDiffCase): Variant[] {
 function ResultsTable({
   variants,
   statuses,
-  baseline,
   expectedHash,
 }: {
   variants: Variant[]
   statuses: StatusMap
-  baseline: Baseline | null
   expectedHash: string | null
 }) {
-  const baselineRows = useMemo(
-    () => new Map((baseline?.rows ?? []).map(row => [row.id, row])),
-    [baseline],
-  )
+  const doneRows = variants
+    .map(variant => statuses.get(variant.id))
+    .filter((status): status is { state: 'done'; row: RowResult } => status?.state === 'done')
+    .map(status => status.row)
+  const bestOverall = bestRow(doneRows)
+  const bestBySection = bestRowIdsBySection(doneRows)
 
   return (
     <Surface className="rounded-2xl p-3">
@@ -485,19 +397,37 @@ function ResultsTable({
               <th className="px-3 py-3 text-right">P95</th>
               <th className="px-3 py-3 text-right">Wire</th>
               <th className="px-3 py-3">Verify</th>
-              <th className="px-3 py-3 text-right">vs baseline</th>
+              <th className="px-3 py-3 text-right">vs best</th>
             </tr>
           </thead>
           <tbody>
-            {variants.map(variant => (
-              <ResultRow
-                key={variant.id}
-                baseline={baselineRows.get(variant.id) ?? null}
-                expectedHash={expectedHash}
-                status={statuses.get(variant.id) ?? { state: 'pending' }}
-                variant={variant}
-              />
-            ))}
+            {variants.map((variant, index) => {
+              const section = sectionLabel(variant.kind)
+              const previousSection = index > 0 ? sectionLabel(variants[index - 1].kind) : null
+
+              return (
+                <Fragment key={variant.id}>
+                  {section !== previousSection && (
+                    <tr key={`${section}-section`} className="border-b border-white/5">
+                      <td
+                        className="px-3 pb-1 pt-4 text-[10px] uppercase tracking-widest text-white/30"
+                        colSpan={11}
+                      >
+                        {section}
+                      </td>
+                    </tr>
+                  )}
+                  <ResultRow
+                    bestOverall={bestOverall}
+                    bestOverallId={bestOverall?.id ?? null}
+                    bestSectionIds={bestBySection}
+                    expectedHash={expectedHash}
+                    status={statuses.get(variant.id) ?? { state: 'pending' }}
+                    variant={variant}
+                  />
+                </Fragment>
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -508,18 +438,28 @@ function ResultsTable({
 function ResultRow({
   variant,
   status,
-  baseline,
+  bestOverall,
+  bestOverallId,
+  bestSectionIds,
   expectedHash,
 }: {
   variant: Variant
   status: Status
-  baseline: RowResult | null
+  bestOverall: RowResult | null
+  bestOverallId: string | null
+  bestSectionIds: Set<string>
   expectedHash: string | null
 }) {
+  const isBest = status.state === 'done' && status.row.id === bestOverallId
+  const isSectionBest = status.state === 'done' && bestSectionIds.has(status.row.id)
+  const streamingClass = isStreamVariant(variant)
+    ? 'border-l-2 border-purple-500/40 bg-purple-500/[0.025]'
+    : ''
+
   if (status.state === 'pending' || status.state === 'running') {
     return (
-      <tr className="border-b border-white/8 text-white/35">
-        <td className="px-3 py-3 text-white/70">{variant.label}</td>
+      <tr className={`border-b border-white/8 text-white/35 ${streamingClass}`}>
+        <VariantCell isBest={false} isSectionBest={false} status="idle" variant={variant} />
         <td className="px-3 py-3">{kindLabel(variant.kind)}</td>
         <td className="px-3 py-3" colSpan={9}>
           {status.state === 'running' ? 'running…' : 'queued'}
@@ -530,8 +470,8 @@ function ResultRow({
 
   if (status.state === 'errored') {
     return (
-      <tr className="border-b border-red-400/10 bg-red-500/5 text-red-300">
-        <td className="px-3 py-3">{variant.label}</td>
+      <tr className={`border-b border-red-400/10 bg-red-500/5 text-red-300 ${streamingClass}`}>
+        <VariantCell isBest={false} isSectionBest={false} status="error" variant={variant} />
         <td className="px-3 py-3">{kindLabel(variant.kind)}</td>
         <td className="px-3 py-3" colSpan={9}>
           {status.error}
@@ -545,14 +485,18 @@ function ResultRow({
   const ok = !expectedShort || row.kind === 'native-full' || row.verifyHash === expectedShort
 
   return (
-    <tr className="border-b border-white/8 text-white/70">
-      <td className="px-3 py-3 font-medium text-white/85">{variant.label}</td>
+    <tr className={`border-b border-white/8 text-white/70 ${streamingClass}`}>
+      <VariantCell isBest={isBest} isSectionBest={isSectionBest} status="done" variant={variant} />
       <td className="px-3 py-3 text-white/45">{kindLabel(row.kind)}</td>
       <td className="px-3 py-3 text-right">{formatMs(row.median.ttfbMs)}</td>
       <td className="px-3 py-3 text-right">{formatMs(row.median.transferMs)}</td>
       <td className="px-3 py-3 text-right">{formatMs(row.median.decodeMs)}</td>
       <td className="px-3 py-3 text-right">{formatMs(row.median.applyMs)}</td>
-      <td className="px-3 py-3 text-right font-semibold text-white">
+      <td
+        className={`px-3 py-3 text-right font-semibold ${
+          isBest || isSectionBest ? 'text-green-300' : 'text-white'
+        }`}
+      >
         {formatMs(row.median.totalMs)}
       </td>
       <td className="px-3 py-3 text-right text-white/45">{formatMs(row.p95.totalMs)}</td>
@@ -560,9 +504,89 @@ function ResultRow({
       <td className={ok ? 'px-3 py-3 text-green-300/80' : 'px-3 py-3 text-red-300'}>
         {row.verifyHash ?? '—'} · {formatBytes(row.verifyBytes)}
       </td>
-      <td className="px-3 py-3 text-right">{baseline ? delta(row, baseline) : '—'}</td>
+      <td className="px-3 py-3 text-right">
+        <BestCompareCell best={bestOverall} row={row} />
+      </td>
     </tr>
   )
+}
+
+function VariantCell({
+  variant,
+  isBest,
+  isSectionBest,
+  status,
+}: {
+  variant: Variant
+  isBest: boolean
+  isSectionBest: boolean
+  status: 'idle' | 'done' | 'error'
+}) {
+  const isToken = Boolean(variant.token)
+  const isStream = isStreamVariant(variant)
+  const labelClass =
+    status === 'error'
+      ? 'text-red-300/85'
+      : isBest || isSectionBest
+        ? 'text-green-400 font-medium'
+        : 'text-white/85'
+
+  return (
+    <td className="px-3 py-3 font-medium">
+      <span className={labelClass}>
+        <span className="font-mono">{variant.label}</span>
+        {isToken && <TableBadge tone="blue">TK</TableBadge>}
+        {isStream && <TableBadge tone="purple">STREAM</TableBadge>}
+        {(isBest || isSectionBest) && <TableBadge tone="green">BEST</TableBadge>}
+      </span>
+    </td>
+  )
+}
+
+function TableBadge({ children, tone }: { children: string; tone: 'blue' | 'green' | 'purple' }) {
+  const toneClass = {
+    blue: 'bg-blue-500/15 text-blue-300',
+    green: 'bg-green-500/15 text-green-300',
+    purple: 'bg-purple-500/15 text-purple-300',
+  }[tone]
+
+  return (
+    <span
+      className={`ml-1.5 rounded px-1 py-0.5 text-[9px] uppercase tracking-widest ${toneClass}`}
+    >
+      {children}
+    </span>
+  )
+}
+
+function BestCompareCell({ row, best }: { row: RowResult; best: RowResult | null }) {
+  if (!best) return <span className="text-white/25">—</span>
+
+  const base = best.median.totalMs
+  const value = row.median.totalMs
+
+  if (!Number.isFinite(base) || !Number.isFinite(value) || base <= 0 || value <= 0) {
+    return <span className="text-white/25">—</span>
+  }
+
+  const ratio = value / base
+  const isBest = row.id === best.id
+
+  return <span className={isBest ? 'text-green-300' : 'text-red-300'}>{ratio.toFixed(1)}x</span>
+}
+
+function sectionLabel(kind: Variant['kind']): string {
+  switch (kind) {
+    case 'native-full':
+      return 'full http'
+    case 'token-full':
+      return 'full token'
+    case 'diff-apply':
+      return 'diff token'
+    case 'range-changed-fetch':
+    case 'range-changed-stream':
+      return 'pixel-range changed file ranges'
+  }
 }
 
 function kindLabel(kind: Variant['kind']): string {
@@ -580,14 +604,42 @@ function kindLabel(kind: Variant['kind']): string {
   }
 }
 
-function delta(row: RowResult, baseline: RowResult): string {
-  const value = row.median.totalMs
-  const base = baseline.median.totalMs
+function isStreamVariant(variant: Variant): boolean {
+  return Boolean(variant.token?.streamable) || variant.kind === 'range-changed-stream'
+}
 
-  if (!Number.isFinite(value) || !Number.isFinite(base) || base <= 0) return '—'
+function bestRow(rows: RowResult[]): RowResult | null {
+  return rows.reduce<RowResult | null>(
+    (best, row) => (!best || row.median.totalMs < best.median.totalMs ? row : best),
+    null,
+  )
+}
 
-  const diff = value - base
-  const pct = (diff / base) * 100
+function bestRowIdsBySection(rows: RowResult[]): Set<string> {
+  const bySection = new Map<string, RowResult[]>()
 
-  return `${diff >= 0 ? '+' : ''}${pct.toFixed(1)}%`
+  for (const row of rows) {
+    const section = sectionLabel(row.kind)
+    const items = bySection.get(section)
+
+    if (items) {
+      items.push(row)
+    } else {
+      bySection.set(section, [row])
+    }
+  }
+
+  return new Set(
+    Array.from(bySection.values())
+      .map(items => bestRow(items)?.id)
+      .filter((id): id is string => Boolean(id)),
+  )
+}
+
+function waitForPaint(): Promise<void> {
+  if (typeof requestAnimationFrame === 'undefined') {
+    return Promise.resolve()
+  }
+
+  return new Promise(resolve => requestAnimationFrame(() => resolve()))
 }

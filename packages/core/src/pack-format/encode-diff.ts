@@ -1,6 +1,6 @@
-// Compute file-level diff ops between two pack contents and serialize to a
-// diff-format byte stream. Per-file compression is reused from `encode-pack`'s
-// CompressFn so the same env-injected compressor handles both formats.
+// Compute diff ops between two pack contents and serialize to a diff-format
+// byte stream. Per-region compression is reused from `encode-pack`'s CompressFn
+// so the same env-injected compressor handles both formats.
 
 import type { PackEntry } from '../archive-buffers'
 import type { CompressFn } from './encode-pack'
@@ -18,6 +18,13 @@ export interface DiffOpSummary {
   op: DiffOp
   path: string
   fromPath?: string
+}
+
+interface BytePatch {
+  start: number
+  deleteSize: number
+  insert: Uint8Array
+  targetSize: number
 }
 
 // FNV-1a 32-bit — same hashing style as `dense-drawer.ts` in core.
@@ -90,7 +97,7 @@ export async function encodeDiff(
   const manifestEntries: DiffManifestEntry[] = []
 
   for (const op of ops) {
-    if (op.op === 'add' || op.op === 'modify') {
+    if (op.op === 'add') {
       const file = nextByPath.get(op.path)
 
       if (!file) throw new Error(`encodeDiff: missing next entry for op path: ${op.path}`)
@@ -107,6 +114,46 @@ export async function encodeDiff(
       })
       regionBytes.push(c.bytes)
       runningOffset += c.bytes.length
+    } else if (op.op === 'modify') {
+      const file = nextByPath.get(op.path)
+      const prevFile = prev.find(e => e.path === op.path)
+
+      if (!file) throw new Error(`encodeDiff: missing next entry for op path: ${op.path}`)
+      if (!prevFile) throw new Error(`encodeDiff: missing previous entry for op path: ${op.path}`)
+
+      const full = await compress(file.bytes)
+      const patch = computeBytePatch(prevFile.bytes, file.bytes)
+      const compressedPatch = await compress(patch.insert)
+      const usePatch = compressedPatch.bytes.length < full.bytes.length
+
+      if (usePatch) {
+        manifestEntries.push({
+          op: 'patch',
+          path: op.path,
+          compressor: compressedPatch.compressor,
+          level: compressedPatch.level,
+          compressedSize: compressedPatch.bytes.length,
+          originalSize: compressedPatch.originalSize,
+          offset: runningOffset,
+          patchStart: patch.start,
+          deleteSize: patch.deleteSize,
+          targetSize: patch.targetSize,
+        })
+        regionBytes.push(compressedPatch.bytes)
+        runningOffset += compressedPatch.bytes.length
+      } else {
+        manifestEntries.push({
+          op: op.op,
+          path: op.path,
+          compressor: full.compressor,
+          level: full.level,
+          compressedSize: full.bytes.length,
+          originalSize: full.originalSize,
+          offset: runningOffset,
+        })
+        regionBytes.push(full.bytes)
+        runningOffset += full.bytes.length
+      }
     } else if (op.op === 'rename') {
       manifestEntries.push({ op: 'rename', path: op.path, fromPath: op.fromPath })
     } else {
@@ -132,4 +179,29 @@ export async function encodeDiff(
   }
 
   return out
+}
+
+function computeBytePatch(prev: Uint8Array, next: Uint8Array): BytePatch {
+  const min = Math.min(prev.length, next.length)
+  let prefix = 0
+
+  while (prefix < min && prev[prefix] === next[prefix]) prefix += 1
+
+  let suffix = 0
+  while (
+    suffix < min - prefix &&
+    prev[prev.length - 1 - suffix] === next[next.length - 1 - suffix]
+  ) {
+    suffix += 1
+  }
+
+  const nextEnd = next.length - suffix
+  const prevEnd = prev.length - suffix
+
+  return {
+    start: prefix,
+    deleteSize: prevEnd - prefix,
+    insert: next.subarray(prefix, nextEnd),
+    targetSize: next.length,
+  }
 }

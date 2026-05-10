@@ -16,9 +16,10 @@ export const revalidate = 0
 
 function defaultSource(
   manifest: NonNullable<ReturnType<typeof readRuntimeManifest>>,
+  tab: 'content' | 'script',
 ): string | null {
   const first = manifest.fixtures.find(
-    fixture => fixture.kind === 'range-pack' && fixture.tab === 'content',
+    fixture => fixture.kind === 'range-pack' && fixture.tab === tab,
   )
 
   return first ? `${first.source}__chunks-${first.chunkCount}` : null
@@ -34,14 +35,15 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const source = param(req, 'source') ?? defaultSource(manifest)
+  const tab = param(req, 'tab') === 'script' ? 'script' : 'content'
+  const source = param(req, 'source') ?? defaultSource(manifest, tab)
   const condition = networkConditionFor(param(req, 'throttle'))
 
   if (!source) {
     return NextResponse.json({ error: 'runtime manifest has no range-pack cases' }, { status: 404 })
   }
 
-  const fixture = findRuntimeRangePackFixture(manifest, source)
+  const fixture = findRuntimeRangePackFixture(manifest, source, tab)
 
   if (!fixture) {
     return NextResponse.json(

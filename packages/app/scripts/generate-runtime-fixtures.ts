@@ -68,7 +68,7 @@ interface TokenFixture {
 
 interface RangePackFixture {
   kind: 'range-pack'
-  tab: 'content'
+  tab: 'content' | 'script'
   source: string
   sourceKind: BenchSourceKind
   chunkCount: number
@@ -419,38 +419,41 @@ async function main() {
       manifest.expectations.script.push(scriptExpectation(source, chunkCount))
 
       if (!args.nativeOnly) {
-        const { token, reused } = await encodeRuntimeRangePack(
-          contentChunks,
-          source.id,
-          chunkCount,
-          implementationMtime,
-        )
-        const file = `content/${source.id}/chunks-${chunkCount}/range-pack/pixel-range-none.png`
-        const written = writeFixture(file, token)
+        for (const tab of ['content', 'script'] as const) {
+          const chunks = tab === 'content' ? contentChunks : scriptChunks
+          const { token, reused } = await encodeRuntimeRangePack(
+            chunks,
+            source.id,
+            chunkCount,
+            implementationMtime,
+          )
+          const file = `${tab}/${source.id}/chunks-${chunkCount}/range-pack/pixel-range-none.png`
+          const written = writeFixture(file, token)
 
-        if (reused) rangePackCacheHits++
-        else rangePackEncoded++
-        if (written.reused) fixtureReused++
-        else fixtureWritten++
-        manifest.fixtures.push({
-          kind: 'range-pack',
-          tab: 'content',
-          source: source.id,
-          sourceKind: source.kind,
-          chunkCount,
-          algo: 'pixel-range-none',
-          compressor: 'none',
-          regionCompressor: 'deflate-9',
-          file,
-          bytes: written.bytes,
-          originalBytes: contentChunks.reduce((sum, chunk) => sum + chunk.byteLength, 0),
-          sha256: written.sha256,
-          files: contentChunks.map((chunk, chunkIndex) => ({
-            path: `chunk-${padChunk(chunkIndex)}.bin`,
-            originalBytes: chunk.byteLength,
-            sha256: sha256(chunk),
-          })),
-        })
+          if (reused) rangePackCacheHits++
+          else rangePackEncoded++
+          if (written.reused) fixtureReused++
+          else fixtureWritten++
+          manifest.fixtures.push({
+            kind: 'range-pack',
+            tab,
+            source: source.id,
+            sourceKind: source.kind,
+            chunkCount,
+            algo: 'pixel-range-none',
+            compressor: 'none',
+            regionCompressor: 'deflate-9',
+            file,
+            bytes: written.bytes,
+            originalBytes: chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0),
+            sha256: written.sha256,
+            files: chunks.map((chunk, chunkIndex) => ({
+              path: `chunk-${padChunk(chunkIndex)}.bin`,
+              originalBytes: chunk.byteLength,
+              sha256: sha256(chunk),
+            })),
+          })
+        }
       }
 
       for (const tab of ['content', 'script'] as const) {

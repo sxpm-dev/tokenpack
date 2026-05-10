@@ -197,17 +197,6 @@ function makeRelease(
   const remainder = totalBytes - baseSize * FILE_COUNT
   const entries: ReleaseEntry[] = []
 
-  for (let index = 0; index < FILE_COUNT; index += 1) {
-    const entryPath = `chunks/chunk-${pad(index)}.js`
-    const targetBytes = baseSize + (index < remainder ? 1 : 0)
-    const entryVersion = changedPaths.has(entryPath) ? version : '1.0.0'
-
-    entries.push({
-      path: entryPath,
-      bytes: makeSizedJs(entryPath, targetBytes, entryVersion, sizeKB),
-    })
-  }
-
   entries.push({
     path: 'manifest.json',
     bytes: Buffer.from(
@@ -221,6 +210,17 @@ function makeRelease(
       'utf-8',
     ),
   })
+
+  for (let index = 0; index < FILE_COUNT; index += 1) {
+    const entryPath = `chunks/chunk-${pad(index)}.js`
+    const targetBytes = baseSize + (index < remainder ? 1 : 0)
+    const entryVersion = changedPaths.has(entryPath) ? version : '1.0.0'
+
+    entries.push({
+      path: entryPath,
+      bytes: makeSizedJs(entryPath, targetBytes, entryVersion, sizeKB),
+    })
+  }
 
   return entries
 }

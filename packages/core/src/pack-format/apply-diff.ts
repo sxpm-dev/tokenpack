@@ -43,7 +43,9 @@ export function decodeDiff(bytes: Uint8Array): DecodedDiff {
     regionsStart,
     bytes,
     extractRegion(path) {
-      const op = manifest.ops.find(o => o.path === path && (o.op === 'add' || o.op === 'modify'))
+      const op = manifest.ops.find(
+        o => o.path === path && (o.op === 'add' || o.op === 'modify' || o.op === 'patch'),
+      )
 
       if (!op || op.offset === undefined || op.compressedSize === undefined) {
         throw new Error(`decodeDiff: no add/modify region for path: ${path}`)
@@ -77,6 +79,17 @@ export async function applyDiff(
       if (!bytes) throw new Error(`applyDiff: rename source missing: ${op.fromPath}`)
       map.delete(op.fromPath!)
       map.set(op.path, bytes)
+    } else if (op.op === 'patch') {
+      const base = map.get(op.path)
+
+      if (!base) throw new Error(`applyDiff: patch base missing: ${op.path}`)
+      const region = decoded.extractRegion(op.path)
+      const insert = await decompress(region, op.compressor!, {
+        level: op.level!,
+        uncompressedLength: op.originalSize!,
+      })
+
+      map.set(op.path, applyBytePatch(base, op.patchStart!, op.deleteSize!, insert, op.targetSize!))
     } else {
       // add | modify
       const region = decoded.extractRegion(op.path)
@@ -90,4 +103,28 @@ export async function applyDiff(
   }
 
   return Array.from(map, ([path, bytes]) => ({ path, bytes }))
+}
+
+function applyBytePatch(
+  base: Uint8Array,
+  start: number,
+  deleteSize: number,
+  insert: Uint8Array,
+  targetSize: number,
+): Uint8Array {
+  if (start < 0 || deleteSize < 0 || start + deleteSize > base.length) {
+    throw new Error('applyDiff: invalid patch bounds')
+  }
+
+  const out = new Uint8Array(base.length - deleteSize + insert.length)
+
+  out.set(base.subarray(0, start), 0)
+  out.set(insert, start)
+  out.set(base.subarray(start + deleteSize), start + insert.length)
+
+  if (out.length !== targetSize) {
+    throw new Error(`applyDiff: patch produced ${out.length} bytes, expected ${targetSize}`)
+  }
+
+  return out
 }

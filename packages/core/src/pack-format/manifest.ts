@@ -24,17 +24,22 @@ export interface PackManifest {
   files: PackManifestFile[]
 }
 
-export type DiffOp = 'add' | 'modify' | 'delete' | 'rename'
+export type DiffOp = 'add' | 'modify' | 'patch' | 'delete' | 'rename'
 
 export interface DiffManifestEntry {
   op: DiffOp
   path: string
-  /** present for add | modify */
+  /** present for add | modify | patch */
   compressor?: string
   level?: number
   compressedSize?: number
+  /** For add/modify this is the full file size; for patch this is inserted byte count. */
   originalSize?: number
   offset?: number
+  /** present for patch */
+  patchStart?: number
+  deleteSize?: number
+  targetSize?: number
   /** present for rename */
   fromPath?: string
 }

@@ -48,6 +48,7 @@ interface RuntimeCase {
 
 interface RuntimeRangePackCase {
   id: string
+  tab?: 'content' | 'script'
   source: string
   chunkCount: number
   rawBytes: number
@@ -155,9 +156,12 @@ export default function RuntimeBenchmarkPage() {
     return () => controller.abort()
   }, [activeTab, iterations, source, throttle])
 
-  const textVariants = useMemo(() => filterGeneratedVariants(TEXT_VARIANTS, manifest), [manifest])
+  const textVariants = useMemo(
+    () => filterGeneratedVariants(TEXT_VARIANTS, manifest, 'content'),
+    [manifest],
+  )
   const scriptVariants = useMemo(
-    () => filterGeneratedVariants(SCRIPT_VARIANTS, manifest),
+    () => filterGeneratedVariants(SCRIPT_VARIANTS, manifest, 'script'),
     [manifest],
   )
   const currentBaseline = useMemo(() => {
@@ -502,11 +506,15 @@ export default function RuntimeBenchmarkPage() {
   )
 }
 
-function filterGeneratedVariants(variants: Variant[], manifest: Manifest | null): Variant[] {
+function filterGeneratedVariants(
+  variants: Variant[],
+  manifest: Manifest | null,
+  tab: 'content' | 'script',
+): Variant[] {
   if (!manifest) return variants.filter(v => !v.isToken)
 
   const availableTokenIds = new Set(manifest.scenarios.filter(s => s.available).map(s => s.id))
-  const hasRangePackCases = manifest.rangePackCases.length > 0
+  const hasRangePackCases = manifest.rangePackCases.some(rangePack => rangePack.tab === tab)
 
   return variants.filter(v => {
     if (v.loadMode === 'range-pack-fetch' || v.loadMode === 'range-pack-stream') {
@@ -567,6 +575,17 @@ function RuntimeLegend({ withExecute }: { withExecute: boolean }) {
           <span className="text-white/60">Stream token variants</span>: <code>fetch()</code> start →
           streaming decoder drain. Network and JS decode overlap, so Transfer is the pipeline
           window, not a separately additive network-only phase.
+          {withExecute && (
+            <>
+              <br />
+              <span className="text-white/60">
+                Native <code>&lt;script&gt;</code> rows
+              </span>
+              : script tag append → browser load event. Browser fetch, content decoding,
+              parse/compile, and execution are inside this native lifecycle, so use Total as the
+              fair number.
+            </>
+          )}
         </Def>
 
         <Def term="Decode">
@@ -589,6 +608,10 @@ function RuntimeLegend({ withExecute }: { withExecute: boolean }) {
             </span>
             : shown as <code>—</code> because browser script loading fetches, decompresses, and
             executes before the load event; that whole native path is included in Total.
+            <br />
+            <span className="text-white/60">Token script rows</span>: fetch and decode the token,
+            create a Blob URL, insert it as a real <code>&lt;script&gt;</code>, then wait for the
+            same benchmark callback as native script rows.
           </Def>
         )}
 
@@ -605,14 +628,17 @@ function RuntimeLegend({ withExecute }: { withExecute: boolean }) {
 
         <Def term="Wire">
           Bytes pulled from the network — the on-the-wire (post-encoding, post-image-container)
-          size.
+          size. Native <code>&lt;script&gt;</code> rows rely on browser ResourceTiming; if the
+          browser does not expose encoded size the table shows <code>—</code>. Pixel-range rows show
+          compressed range payload accounting, not decoded source size.
         </Def>
 
         <Def term="Verify">
           SHA-256 short hash of the decoded payload. The first variant to complete sets the
           canonical (dashed-circle icon); every subsequent variant is compared (check =&nbsp;match,
           warning =&nbsp;mismatch — that&apos;s a real decoder bug worth investigating). Computed
-          AFTER all timing samples, never enters any reported metric.
+          AFTER all timing samples, never enters any reported metric. Native script-tag rows verify
+          by callback/expected payload length rather than decoded-byte hash.
         </Def>
       </dl>
     </Surface>
@@ -931,13 +957,25 @@ function ResultRow({
         {formatMs(r.p95.totalMs)}
       </td>
       <td className="py-1.5 px-2 text-right tabular-nums text-white/55">
-        {formatBytes(r.median.wireBytes)}
+        <WireCell row={r} variant={variant} />
       </td>
       <td className="py-1.5 px-2">
-        <VerifyCell canonical={canonical} row={r} />
+        <VerifyCell canonical={canonical} row={r} variant={variant} />
       </td>
     </tr>
   )
+}
+
+function WireCell({ row, variant }: { row: AggregatedRow; variant: Variant }) {
+  if (variant.loadMode === 'script-tag' && row.median.wireBytes === 0) {
+    return (
+      <span title="Browser ResourceTiming did not expose encodedBodySize for this script tag load.">
+        —
+      </span>
+    )
+  }
+
+  return <span>{formatBytes(row.median.wireBytes)}</span>
 }
 
 function BaselineDeltaCell({
@@ -968,13 +1006,27 @@ function BaselineDeltaCell({
 function VerifyCell({
   row,
   canonical,
+  variant,
 }: {
   row: AggregatedRow
   canonical: AggregatedRow['fingerprint']
+  variant: Variant
 }) {
   const fp = row.fingerprint
 
   if (!fp) {
+    if (variant.loadMode === 'script-tag') {
+      return (
+        <span
+          className="inline-flex items-center gap-1 text-green-300/75 text-[10px]"
+          title="The generated script called the benchmark callback with the expected chunk count and payload length."
+        >
+          <CheckCircleIcon size={12} weight="fill" />
+          callback ok
+        </span>
+      )
+    }
+
     return <span className="text-white/30 text-[10px]">—</span>
   }
 

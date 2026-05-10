@@ -94,7 +94,7 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
       ...(options.throttle !== 'local' ? { throttle: options.throttle } : {}),
     })
 
-    return runRangePackOnce(variant, url, fetchStart, options.sourceKind)
+    return runRangePackOnce(variant, url, fetchStart, options)
   }
 
   if (variant.loadMode === 'script-tag') {
@@ -113,7 +113,9 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
   let executeMs: number | null = null
 
   if (options.withExecute) {
-    const scriptTiming = executeScriptChunks(options.source, chunkBytes, variant.id)
+    const scriptTiming = variant.isToken
+      ? await executeScriptChunksViaTags(options.source, chunkBytes, variant.id)
+      : executeScriptChunks(options.source, chunkBytes, variant.id)
 
     decodeMs += scriptTiming.textDecodeMs
     executeMs = scriptTiming.executeMs
@@ -147,7 +149,7 @@ async function runRangePackOnce(
   variant: Variant,
   url: string,
   fetchStart: number,
-  sourceKind: 'json' | 'text',
+  options: RunOptions,
 ): Promise<RunOnceResult> {
   const absoluteUrl = new URL(url, window.location.href).href
   const remote = await fetchPackManifest(absoluteUrl)
@@ -155,20 +157,32 @@ async function runRangePackOnce(
   const manifestReady = performance.now()
   let bytesReady: Uint8Array
   let decodeMs: number
+  let executeMs: number | null = null
+  let contentReadyEnd: number
 
   if (variant.loadMode === 'range-pack-stream') {
     const streamFiles = await fetchPackFilesStream(remote, paths)
     const decoded = await Promise.all(streamFiles.map(file => readStream(file.stream)))
-    const contentDecodeStart = performance.now()
-
-    materializeSourceContent(decoded, sourceKind, variant.id)
+    const streamEnd = performance.now()
 
     bytesReady = concatBytes(decoded)
-    // DecompressionStream overlaps with the range response body. There is no
-    // separate post-transfer decode phase to isolate without double-reading
-    // the stream, so keep the decode column at zero like browser-native HTTP
-    // content-encoding and let total/transfer carry the end-to-end timing.
-    decodeMs = performance.now() - contentDecodeStart
+    if (options.withExecute) {
+      const scriptTiming = await executeScriptChunksViaTags(options.source, decoded, variant.id)
+
+      decodeMs = scriptTiming.textDecodeMs
+      executeMs = scriptTiming.executeMs
+      contentReadyEnd = streamEnd
+    } else {
+      const contentDecodeStart = performance.now()
+
+      materializeSourceContent(decoded, options.sourceKind, variant.id)
+
+      // DecompressionStream overlaps with the range response body. There is no
+      // separate post-transfer decode phase to isolate without double-reading
+      // the stream, so only content materialization is reported separately.
+      decodeMs = performance.now() - contentDecodeStart
+      contentReadyEnd = performance.now()
+    }
   } else {
     const compressedFiles = await fetchPackFilesCompressed(remote, paths)
     const transferEnd = performance.now()
@@ -181,12 +195,23 @@ async function runRangePackOnce(
       ),
     )
     const decodeEnd = performance.now()
-    const contentDecodeStart = performance.now()
-
-    materializeSourceContent(decoded, sourceKind, variant.id)
 
     bytesReady = concatBytes(decoded)
-    decodeMs = decodeEnd - transferEnd + (performance.now() - contentDecodeStart)
+    decodeMs = decodeEnd - transferEnd
+    if (options.withExecute) {
+      const scriptTiming = await executeScriptChunksViaTags(options.source, decoded, variant.id)
+
+      decodeMs += scriptTiming.textDecodeMs
+      executeMs = scriptTiming.executeMs
+      contentReadyEnd = decodeEnd
+    } else {
+      const contentDecodeStart = performance.now()
+
+      materializeSourceContent(decoded, options.sourceKind, variant.id)
+
+      decodeMs += performance.now() - contentDecodeStart
+      contentReadyEnd = performance.now()
+    }
   }
 
   const totalEnd = performance.now()
@@ -196,15 +221,16 @@ async function runRangePackOnce(
       .map(timing => timing.responseStart)
       .filter(start => start > 0)
       .sort((a, b) => a - b)[0] ?? manifestReady
-  const wireBytes =
-    wireBytesFromTimings(timings) ?? estimatePackRangeWireBytes(remote, paths, { maxGapBytes: 0 })
+  const estimatedWireBytes = estimatePackRangeWireBytes(remote, paths, { maxGapBytes: 0 })
+  const timingWireBytes = wireBytesFromTimings(timings)
+  const wireBytes = Math.max(timingWireBytes ?? 0, estimatedWireBytes)
 
   return {
     sample: {
       ttfbMs: firstByte - fetchStart,
-      transferMs: totalEnd - fetchStart,
+      transferMs: contentReadyEnd - fetchStart,
       decodeMs,
-      executeMs: null,
+      executeMs,
       totalMs: totalEnd - fetchStart,
       wireBytes,
     },
@@ -445,6 +471,41 @@ function executeScriptChunks(
   verifyScriptResults(caseId, variantId, chunks.length, results)
 
   return { textDecodeMs, executeMs }
+}
+
+async function executeScriptChunksViaTags(
+  caseId: string,
+  chunks: readonly Uint8Array[],
+  variantId: string,
+): Promise<{ textDecodeMs: number; executeMs: number }> {
+  const results: ScriptChunkResult[] = []
+  const urls: string[] = []
+  const host = globalThis as typeof globalThis & {
+    __benchmarkResult?: Record<string, (result: ScriptChunkResult) => void>
+  }
+
+  host.__benchmarkResult ??= {}
+  host.__benchmarkResult[caseId] = result => {
+    results[result.chunkIndex] = result
+  }
+
+  const executeStart = performance.now()
+
+  try {
+    for (const chunk of chunks) {
+      const blobBytes = new Uint8Array(chunk.byteLength)
+
+      blobBytes.set(chunk)
+      urls.push(URL.createObjectURL(new Blob([blobBytes], { type: 'text/javascript' })))
+    }
+    await Promise.all(urls.map(url => loadScriptTag(url, variantId)))
+    verifyScriptResults(caseId, variantId, chunks.length, results)
+
+    return { textDecodeMs: 0, executeMs: performance.now() - executeStart }
+  } finally {
+    delete host.__benchmarkResult[caseId]
+    for (const url of urls) URL.revokeObjectURL(url)
+  }
 }
 
 function materializeSourceContent(
