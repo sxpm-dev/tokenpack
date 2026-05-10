@@ -1,8 +1,8 @@
 import '@tokenpack/node'
 
 import { PackBuilder } from '@tokenpack/node'
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 import { NextRequest, NextResponse } from 'next/server'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { compressRaw } from 'tokenpack/compressors'
 import { encodePack } from 'tokenpack/pack-format/encode-pack'
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib'
@@ -34,12 +34,32 @@ function nestAlgoOptions(flat: Record<string, unknown>): Record<string, unknown>
 }
 
 function resolveOptions(form: FormData): ResolvedOptions {
-  const algo = (form.get('algo') as string | null) ?? 'linear'
+  const algo = (form.get('algo') as string | null) ?? defaultAlgoName()
   const key = (form.get('key') as string | null) ?? undefined
   const algoOptionsRaw = form.get('algoOptions') as string | null
   const flat: Record<string, unknown> = algoOptionsRaw ? JSON.parse(algoOptionsRaw) : {}
 
   return { algo, algoOptions: nestAlgoOptions(flat), key }
+}
+
+function defaultAlgoName(): string {
+  const [Ctor] = algorithmCatalog.list()
+
+  if (!Ctor) throw new Error('no algorithms registered in node catalog')
+
+  return Ctor.name
+}
+
+function surfaceMeta(Ctor: ReturnType<typeof algorithmCatalog.getByName>): {
+  extension: string
+  mime: string
+} {
+  const surface = new (Ctor.Surface as unknown as new () => {
+    extension: string
+    mimeType: string
+  })()
+
+  return { extension: surface.extension, mime: surface.mimeType }
 }
 
 async function readEntries(
@@ -98,6 +118,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Run through the algorithm — pure dispatch + delegate.
     const Ctor = algorithmCatalog.getByName(opts.algo)
+    const surface = surfaceMeta(Ctor)
     const algoInit = { ...opts.algoOptions, key: opts.key }
     const algorithm = new Ctor(algoInit)
     const tokenBuf = Buffer.from(await algorithm.encode(packBytes, algoInit))
@@ -112,6 +133,10 @@ export async function POST(req: NextRequest) {
       gzipSize,
       brotliSize,
       inputBytes,
+      algo: Ctor.name,
+      mime: surface.mime,
+      extension: surface.extension,
+      fileName: `pack${surface.extension}`,
     })
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)

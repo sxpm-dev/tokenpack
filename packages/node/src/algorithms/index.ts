@@ -16,12 +16,12 @@ import {
   RleCodec,
   XorCodec,
 } from 'tokenpack/codecs'
+import { NoneCompressor } from 'tokenpack/compressors'
 import { DenseDrawer } from 'tokenpack/drawers'
 
 import { ZstdpixCodec } from '../codecs/zstdpix'
 import { BrotliCompressor } from '../compressors/brotli-compressor'
 import { DeflateCompressor } from '../compressors/deflate-compressor'
-import { NoneCompressor } from 'tokenpack/compressors'
 import { AvifSurface } from '../surfaces/avif'
 import { PngSurface } from '../surfaces/png'
 import { PngUpngSurface } from '../surfaces/png-upng'
@@ -38,61 +38,109 @@ export { PixelRangePngNone } from './pixel-range-none'
 import { PixelRangePngNone } from './pixel-range-none'
 
 export { PixelRangeStreamPngBrotli } from './pixel-range-stream'
-import { PixelRangeStreamPngBrotli } from './pixel-range-stream'
-
 export { PixelRangeStreamPngDeflate } from './pixel-range-stream-deflate'
 import { PixelRangeStreamPngDeflate } from './pixel-range-stream-deflate'
 
 // ── Default-binding (PNG + Brotli + Dense) for each pixel-data codec ────────
 
 export const LinearPngBrotli = definePixelAlgorithm({
-  id: 0, name: 'linear', title: 'Linear · PNG · Brotli',
-  Codec: LinearCodec, Surface: PngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 0,
+  name: 'linear',
+  title: 'Linear · PNG · Brotli',
+  Codec: LinearCodec,
+  Surface: PngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const InterleavedPngBrotli = definePixelAlgorithm({
-  id: 1, name: 'interleaved', title: 'Interleaved · PNG · Brotli',
-  Codec: InterleavedCodec, Surface: PngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 1,
+  name: 'interleaved',
+  title: 'Interleaved · PNG · Brotli',
+  Codec: InterleavedCodec,
+  Surface: PngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const BitplanePngBrotli = definePixelAlgorithm({
-  id: 2, name: 'bitplane', title: 'Bitplane · PNG · Brotli',
-  Codec: BitplaneCodec, Surface: PngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 2,
+  name: 'bitplane',
+  title: 'Bitplane · PNG · Brotli',
+  Codec: BitplaneCodec,
+  Surface: PngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const DeltaPngBrotli = definePixelAlgorithm({
-  id: 3, name: 'delta', title: 'Delta · PNG · Brotli',
-  Codec: DeltaCodec, Surface: PngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 3,
+  name: 'delta',
+  title: 'Delta · PNG · Brotli',
+  Codec: DeltaCodec,
+  Surface: PngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const XorPngBrotli = definePixelAlgorithm({
-  id: 4, name: 'xor', title: 'XOR · PNG · Brotli',
-  Codec: XorCodec, Surface: PngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 4,
+  name: 'xor',
+  title: 'XOR · PNG · Brotli',
+  Codec: XorCodec,
+  Surface: PngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const DeltaChainPngBrotli = definePixelAlgorithm({
-  id: 5, name: 'delta-chain', title: 'Delta-Chain · PNG · Brotli',
-  Codec: DeltaChainCodec, Surface: PngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 5,
+  name: 'delta-chain',
+  title: 'Delta-Chain · PNG · Brotli',
+  Codec: DeltaChainCodec,
+  Surface: PngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const RlePngBrotli = definePixelAlgorithm({
-  id: 6, name: 'rle', title: 'RLE · PNG · Brotli',
-  Codec: RleCodec, Surface: PngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 6,
+  name: 'rle',
+  title: 'RLE · PNG · Brotli',
+  Codec: RleCodec,
+  Surface: PngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const PredictPngBrotli = definePixelAlgorithm({
-  id: 7, name: 'predict', title: 'Predict · PNG · Brotli',
-  Codec: PredictCodec, Surface: PngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 7,
+  name: 'predict',
+  title: 'Predict · PNG · Brotli',
+  Codec: PredictCodec,
+  Surface: PngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const BitshufflePngBrotli = definePixelAlgorithm({
-  id: 8, name: 'bitshuffle', title: 'Bitshuffle · PNG · Brotli',
-  Codec: BitshuffleCodec, Surface: PngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 8,
+  name: 'bitshuffle',
+  title: 'Bitshuffle · PNG · Brotli',
+  Codec: BitshuffleCodec,
+  Surface: PngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const ZstdpixPngStream = definePixelAlgorithm({
-  id: 9, name: 'zstdpix', title: 'Zstdpix · PNG · Stream',
-  Codec: ZstdpixCodec, Surface: StreamingPngSurface, Compressor: NoneCompressor, Drawer: DenseDrawer,
+  id: 9,
+  name: 'zstdpix',
+  title: 'Zstdpix · PNG · Stream',
+  Codec: ZstdpixCodec,
+  Surface: StreamingPngSurface,
+  Compressor: NoneCompressor,
+  Drawer: DenseDrawer,
 })
 
 // Deflate-compressor variants. Required for any consumer that decodes packs
@@ -102,76 +150,102 @@ export const ZstdpixPngStream = definePixelAlgorithm({
 // Unsupported compression format: 'br'`. Streaming PNG variant pairs with
 // the streaming-bundle hypothesis (decode pipelined with download).
 export const LinearPngDeflate = definePixelAlgorithm({
-  id: 11, name: 'linear-deflate', title: 'Linear · PNG · Deflate',
-  Codec: LinearCodec, Surface: PngSurface, Compressor: DeflateCompressor, Drawer: DenseDrawer,
+  id: 11,
+  name: 'linear-deflate',
+  title: 'Linear · PNG · Deflate',
+  Codec: LinearCodec,
+  Surface: PngSurface,
+  Compressor: DeflateCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const LinearStreamingPngDeflate = definePixelAlgorithm({
-  id: 12, name: 'linear-stream-deflate', title: 'Linear · Streaming PNG · Deflate',
-  Codec: LinearCodec, Surface: StreamingPngSurface, Compressor: DeflateCompressor, Drawer: DenseDrawer,
+  id: 12,
+  name: 'linear-stream-deflate',
+  title: 'Linear · Streaming PNG · Deflate',
+  Codec: LinearCodec,
+  Surface: StreamingPngSurface,
+  Compressor: DeflateCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const LinearStreamingPngBrotli = definePixelAlgorithm({
-  id: 15, name: 'linear-stream', title: 'Linear · Streaming PNG · Brotli',
-  Codec: LinearCodec, Surface: StreamingPngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 15,
+  name: 'linear-stream',
+  title: 'Linear · Streaming PNG · Brotli',
+  Codec: LinearCodec,
+  Surface: StreamingPngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 // No-compression variant — useful for wrapping pre-compressed payloads
 // (PackBuilder regions, diff bytes) so the pixel layer doesn't re-compress.
 export const LinearPngNone = definePixelAlgorithm({
-  id: 16, name: 'linear-none', title: 'Linear · PNG · None',
-  Codec: LinearCodec, Surface: PngSurface, Compressor: NoneCompressor, Drawer: DenseDrawer,
+  id: 16,
+  name: 'linear-none',
+  title: 'Linear · PNG · None',
+  Codec: LinearCodec,
+  Surface: PngSurface,
+  Compressor: NoneCompressor,
+  Drawer: DenseDrawer,
 })
 
 // WebP / AVIF variants — different surfaces, same codec/compressor/drawer.
 export const LinearWebpBrotli = definePixelAlgorithm({
-  id: 13, name: 'linear-webp', title: 'Linear · WebP · Brotli',
-  Codec: LinearCodec, Surface: WebpSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 13,
+  name: 'linear-webp',
+  title: 'Linear · WebP · Brotli',
+  Codec: LinearCodec,
+  Surface: WebpSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const LinearAvifBrotli = definePixelAlgorithm({
-  id: 14, name: 'linear-avif', title: 'Linear · AVIF · Brotli',
-  Codec: LinearCodec, Surface: AvifSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 14,
+  name: 'linear-avif',
+  title: 'Linear · AVIF · Brotli',
+  Codec: LinearCodec,
+  Surface: AvifSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
-// upng-js variants — pure-JS PNG codec. Identical wire format to the
-// pngjs-backed `linear-deflate` recipe (both produce colorType=6 deflate
-// PNGs); the difference is the codec library used to encode/decode the
-// pixels. Useful for: byte-exact 4-channel decode in the browser (canvas
-// premultiplies alpha; upng-js doesn't), and as a perf comparison vs
-// pngjs/sharp on the node side.
+// upng-js variants — pure-JS PNG codec. Identical RGB wire format to the
+// pngjs-backed `linear-deflate` recipe; the difference is the codec library
+// used to encode/decode the pixels. RGB-only for now because upng-js RGBA
+// output has produced truncated PNGs for larger benchmark payloads.
 export const LinearPngUpngBrotli = definePixelAlgorithm({
-  id: 17, name: 'linear-upng', title: 'Linear · PNG (upng) · Brotli',
-  Codec: LinearCodec, Surface: PngUpngSurface, Compressor: BrotliCompressor, Drawer: DenseDrawer,
+  id: 17,
+  name: 'linear-upng',
+  title: 'Linear · PNG (upng) · Brotli',
+  Codec: LinearCodec,
+  Surface: PngUpngSurface,
+  Compressor: BrotliCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const LinearPngUpngDeflate = definePixelAlgorithm({
-  id: 18, name: 'linear-upng-deflate', title: 'Linear · PNG (upng) · Deflate',
-  Codec: LinearCodec, Surface: PngUpngSurface, Compressor: DeflateCompressor, Drawer: DenseDrawer,
+  id: 18,
+  name: 'linear-upng-deflate',
+  title: 'Linear · PNG (upng) · Deflate',
+  Codec: LinearCodec,
+  Surface: PngUpngSurface,
+  Compressor: DeflateCompressor,
+  Drawer: DenseDrawer,
 })
 
 export const ALL_NODE_ALGORITHMS = [
   LinearPngBrotli,
-  InterleavedPngBrotli,
-  BitplanePngBrotli,
-  DeltaPngBrotli,
-  XorPngBrotli,
-  DeltaChainPngBrotli,
-  RlePngBrotli,
-  PredictPngBrotli,
-  BitshufflePngBrotli,
-  ZstdpixPngStream,
   PixelRangePngBrotli,
   PixelRangePngDeflate,
   PixelRangePngNone,
-  PixelRangeStreamPngBrotli,
   PixelRangeStreamPngDeflate,
   LinearPngDeflate,
   LinearStreamingPngDeflate,
   LinearStreamingPngBrotli,
-  LinearPngNone,
   LinearWebpBrotli,
-  LinearAvifBrotli,
   LinearPngUpngBrotli,
   LinearPngUpngDeflate,
 ] as const

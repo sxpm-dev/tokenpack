@@ -1,5 +1,5 @@
 import { Chip } from '@heroui/react'
-import type { InspectInfo } from '@tokenpack/browser'
+import type { InspectInfo } from '@tokenpack/browser/inspect'
 
 interface EncodingInfoProps {
   info: InspectInfo

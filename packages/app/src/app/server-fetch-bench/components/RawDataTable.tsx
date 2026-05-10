@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 
 import { buildScenarioConfig, SOURCE_LABELS } from '../constants'
 import type { BenchRow } from '../types'
-import { fmtBytes, fmtMs } from '../utils'
+import { fmtBytes, fmtMs, rowSourceId } from '../utils'
 
 interface RawDataTableProps {
   data: BenchRow[]
@@ -17,10 +17,10 @@ export function RawDataTable({ data, condition, source }: RawDataTableProps) {
     [data],
   )
   const rawData = data
-    .filter(r => r.condition === condition && (source === 'avg' || r.source === source))
+    .filter(r => r.condition === condition && (source === 'avg' || rowSourceId(r) === source))
     .sort(
       (a, b) =>
-        a.source.localeCompare(b.source) ||
+        rowSourceId(a).localeCompare(rowSourceId(b)) ||
         SCENARIOS.indexOf(a.scenario) - SCENARIOS.indexOf(b.scenario),
     )
 
@@ -64,7 +64,7 @@ export function RawDataTable({ data, condition, source }: RawDataTableProps) {
               style={{ color: COLORS[r.scenario] ?? 'rgba(255,255,255,0.4)' }}
             >
               <Table.Cell className="text-white/35">
-                {SOURCE_LABELS[r.source] ?? r.source}
+                {SOURCE_LABELS[rowSourceId(r)] ?? rowSourceId(r)}
               </Table.Cell>
               <Table.Cell>{r.scenario}</Table.Cell>
               <Table.Cell>{fmtMs(r.ttfb)}</Table.Cell>

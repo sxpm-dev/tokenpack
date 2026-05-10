@@ -2,7 +2,9 @@
 
 import { CheckIcon } from '@phosphor-icons/react'
 
-import { DEFAULT_PRESETS, type DefaultPresetDef } from '../default-presets'
+import { usePlaygroundAlgorithms } from '@/lib/use-playground-algorithms'
+
+import { type DefaultPresetDef, listDefaultPresets } from '../default-presets'
 import type { DefaultPresetName } from '../types'
 import { Section } from './Section'
 
@@ -12,6 +14,9 @@ interface DefaultPresetsProps {
 }
 
 export function DefaultPresets({ value, onChange }: DefaultPresetsProps) {
+  const catalog = usePlaygroundAlgorithms()
+  const presets = listDefaultPresets(catalog)
+
   return (
     <Section
       className="lg:col-span-2"
@@ -19,7 +24,7 @@ export function DefaultPresets({ value, onChange }: DefaultPresetsProps) {
       title="Algorithm"
     >
       <div className="grid gap-2 sm:grid-cols-2">
-        {DEFAULT_PRESETS.map(preset => (
+        {presets.map(preset => (
           <PresetCard
             key={preset.name}
             isActive={value === preset.name}

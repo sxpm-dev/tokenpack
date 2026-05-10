@@ -4,6 +4,9 @@ import { join } from 'path'
 
 export interface ArchiveTimeEntry {
   source: string
+  sourceId?: string
+  chunkCount?: number
+  chunkIndex?: number
   format: string
   encodeMs: number
   decodeMs: number

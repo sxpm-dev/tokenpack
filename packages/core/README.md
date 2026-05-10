@@ -82,8 +82,7 @@ stack, that streaming-overlap is the win TokenPack actually delivers.
 
 Run the benchmark yourself:
 ```bash
-yarn workspace tokenpack-benchmark exec tsx generate.ts   # build fixtures
-yarn workspace tokenpack-benchmark exec tsx run.ts        # run + emit results.json
+yarn benchmark
 ```
 
 Results live in `packages/app/benchmark-results/`.

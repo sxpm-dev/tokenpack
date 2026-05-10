@@ -3,7 +3,8 @@
 import { Button, Surface } from '@heroui/react'
 import { decode } from '@tokenpack/browser'
 import { useCallback, useMemo, useState } from 'react'
-import { applyDiff, type PackEntry, unpackBuffers } from 'tokenpack'
+import { unpackBuffers, type PackEntry } from 'tokenpack/archive'
+import { applyDiff } from 'tokenpack/diff-pack'
 
 import { ScenarioExplanation } from '@/components/ScenarioExplanation'
 import { NETWORK_CONDITIONS, type ThrottleName } from '@/lib/throttle'

@@ -2,7 +2,6 @@ import type { OptionsSchema } from '../components/options'
 
 // `Transform` from Node's `stream` module — typed lazily so the browser
 // build (which doesn't have @types/node) doesn't choke on this import.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type NodeTransform = any
 
 export type CompressionMode =
@@ -58,7 +57,10 @@ export abstract class AbstractCompressor {
    * decoder. The Algorithm.decodeStream orchestrator pipes
    * codec-data-bytes through this; full streaming requires an override.
    */
-  decompressWebStream(input: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  decompressWebStream(
+    input: ReadableStream<Uint8Array>,
+    meta?: CompressionMeta,
+  ): ReadableStream<Uint8Array> {
     const decompress = this.decompress.bind(this)
 
     return new ReadableStream<Uint8Array>({
@@ -83,6 +85,7 @@ export abstract class AbstractCompressor {
         }
         const decompressed = await decompress(
           Buffer.from(merged.buffer, merged.byteOffset, merged.byteLength),
+          meta,
         )
 
         controller.enqueue(

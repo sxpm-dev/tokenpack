@@ -1,6 +1,9 @@
 export interface BenchRow {
   scenario: string
   source: string
+  sourceId?: string
+  chunkCount?: number
+  chunkIndex?: number
   condition: string
   ttfb: number
   fetchMs: number
@@ -33,6 +36,7 @@ export interface SummaryRow {
   firstByte: number
   decode: number
   transfer: number
+  decoded: number
   throughput: number
   pathTaken?: 'stream' | 'batch'
   totalMsStddev?: number

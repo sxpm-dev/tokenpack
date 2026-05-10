@@ -1,7 +1,7 @@
 // Browser encode — thin proxy: normalize input → look up algorithm → delegate.
 
 import { PackBuilder } from 'tokenpack'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { browserAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
 import type { AlgorithmOptions } from 'tokenpack/algorithms/types'
 import { compressRaw } from 'tokenpack/compressors'
 import { wrapFileWithName } from 'tokenpack/pack-format/encode-file'
@@ -53,9 +53,9 @@ export async function encode(
         originalSize: r.originalSize,
       }
     })
-    // The pack regions are already compressed — pick a none-compressor algorithm
-    // for the outer pixel pipeline so we don't re-compress.
-    runtimeOptions = { ...options, algo: options.algo ?? 'linear-none' }
+    // Keep the outer pixel recipe browser-decodable. Pack regions are already
+    // compressed, but `linear-none` is no longer part of the curated catalog.
+    runtimeOptions = { ...options, algo: options.algo ?? 'linear-deflate' }
   } else {
     const raw = await coerceToBytes(content)
 
@@ -69,9 +69,10 @@ export async function encode(
   if (runtimeOptions.key) algoOpts.key = runtimeOptions.key
   const algorithm = new Ctor(algoOpts)
   const pngBytes = await algorithm.encode(bytes, algoOpts)
+  const surface = new (Ctor.Surface as unknown as new () => { mimeType: string })()
 
   // Build conveniences: Blob, objectURL, dataURL, <img>.
-  const blob = new Blob([pngBytes as unknown as BlobPart], { type: 'image/png' })
+  const blob = new Blob([pngBytes as unknown as BlobPart], { type: surface.mimeType })
   const objectURL = URL.createObjectURL(blob)
   const dataURL = await blobToDataURL(blob)
   const image = new Image()

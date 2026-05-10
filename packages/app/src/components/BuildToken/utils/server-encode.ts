@@ -1,5 +1,5 @@
 import type { EncodeConfig } from '@/components/EncodeForm'
-import { findDefaultPreset } from '@/components/EncodeForm'
+import { findDefaultPreset } from '@/components/EncodeForm/default-presets'
 
 import type { BuilderEntry } from '../types'
 
@@ -7,6 +7,10 @@ export interface ServerEncodeResponse {
   token: string
   gzipSize: number
   brotliSize: number
+  algo: string
+  mime: string
+  extension: string
+  fileName: string
 }
 
 /** Builds the FormData payload for /api/pack's entries mode. */

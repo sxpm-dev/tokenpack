@@ -6,10 +6,9 @@
 // algorithms don't carry a pixel header, so only the algorithm binding is
 // returned for those.
 
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { browserAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
 import type { AlgorithmCtor } from 'tokenpack/algorithms/types'
 import { decodeEcByte, isCompactToken, readCompactHeader, readHeader } from 'tokenpack/header'
-import { surfaceRegistry } from 'tokenpack/surfaces/registry'
 
 import type { DecodeSource } from './decode'
 
@@ -69,7 +68,7 @@ export async function inspect(source: DecodeSource): Promise<InspectInfo> {
   const buffer = await sourceToBytes(source)
   const Ctor = await algorithmCatalog.detectFromBuffer(buffer, '.png')
   const algorithm = describeBinding(Ctor)
-  const header = await tryReadHeader(buffer)
+  const header = await tryReadHeader(buffer, Ctor)
 
   return header ? { algorithm, header } : { algorithm }
 }
@@ -121,9 +120,9 @@ function describeBinding(Ctor: AlgorithmCtor): InspectAlgorithm {
   }
 }
 
-async function tryReadHeader(buffer: Buffer): Promise<InspectHeader | undefined> {
+async function tryReadHeader(buffer: Buffer, Ctor: AlgorithmCtor): Promise<InspectHeader | undefined> {
   try {
-    const surface = surfaceRegistry.byExtension('.png')
+    const surface = new Ctor().surface
     const image = await surface.readBuffer(buffer)
 
     if (isCompactToken(image.pixels)) {

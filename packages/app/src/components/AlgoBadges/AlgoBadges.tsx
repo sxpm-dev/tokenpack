@@ -1,6 +1,7 @@
 'use client'
 
-import { classify } from '@/lib/algo-catalog'
+import { classifyMeta } from '@/lib/algo-catalog'
+import { usePlaygroundAlgorithms } from '@/lib/use-playground-algorithms'
 
 interface AlgoBadgesProps {
   algoName: string
@@ -11,7 +12,8 @@ interface AlgoBadgesProps {
 }
 
 export function AlgoBadges({ algoName, hideBatch, hideEnv }: AlgoBadgesProps) {
-  const c = classify(algoName)
+  const catalog = usePlaygroundAlgorithms()
+  const c = classifyMeta(catalog.find(algo => algo.name === algoName))
   const showBatch = !hideBatch
   const showStreamOrBatch = c.stream || showBatch
 

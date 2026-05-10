@@ -2,7 +2,7 @@ import type { CodecMetadata, Friendliness } from '../codecs/types'
 import { compressorRegistry } from '../compressors/registry'
 import { IMAGE_FORMATS, SURFACE_INFOS } from '../surfaces/info'
 
-import { algorithmCatalog } from './catalog'
+import type { AlgorithmCatalog } from './catalog'
 import type { AlgorithmCtor } from './types'
 
 export type AlgorithmEnvironment = 'node' | 'browser'
@@ -64,8 +64,8 @@ export function buildAlgorithmInfoFromCtor(Ctor: AlgorithmCtor): AlgorithmInfo {
 }
 
 /** Live view of all registered algorithms. Reads catalog at access time. */
-export function listAlgorithmInfos(): AlgorithmInfo[] {
-  return algorithmCatalog.list().map(buildAlgorithmInfoFromCtor)
+export function listAlgorithmInfos(catalog: AlgorithmCatalog): AlgorithmInfo[] {
+  return catalog.list().map(buildAlgorithmInfoFromCtor)
 }
 
 export { IMAGE_FORMATS, SURFACE_INFOS }

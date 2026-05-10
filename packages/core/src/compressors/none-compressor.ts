@@ -1,7 +1,8 @@
 import { AbstractCompressor, type CompressionMode, type CompressionResult } from './types'
 
 export class NoneCompressor extends AbstractCompressor {
-  static override readonly description = 'No outer compression — input bytes go directly into pixels.'
+  static override readonly description =
+    'No outer compression — input bytes go directly into pixels.'
 
   readonly id: CompressionMode = 'none'
   readonly label = 'None'
@@ -14,6 +15,10 @@ export class NoneCompressor extends AbstractCompressor {
   }
 
   async decompress(input: Buffer): Promise<Buffer> {
+    return input
+  }
+
+  override decompressWebStream(input: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
     return input
   }
 }

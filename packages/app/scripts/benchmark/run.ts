@@ -1,32 +1,32 @@
+/* eslint-disable no-console */
 /**
  * Tokenpack benchmark
- * Run: yarn tsx benchmark/run.ts
+ * Run: yarn workspace tokenpack-app benchmark:run
  *
- * Tests: token (per algorithm × channels) vs zip vs tar.gz vs raw brotli.
+ * Tests: token (per algorithm × channels) vs zip vs tar.gz vs deflate vs raw brotli.
  * Metrics: TTFB, fetch time, decode time, total, throughput.
  * Network: throttled local HTTP server simulating 4 conditions.
  *
  * Data-driven: reads `packages/app/benchmark-results/encode-times.json` (and
  * archive-times.json) to discover available token/archive fixtures. The
- * generator (benchmark/generate.ts) populates that JSON.
+ * generator (scripts/benchmark/generate.ts) populates that JSON.
  */
 
 import '@tokenpack/node'
 
-import { decodeStream as createTokenDecodeStream } from '@tokenpack/node'
+import { decode, decodeStream, type Pack } from '@tokenpack/node'
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 import AdmZip from 'adm-zip'
 import fs from 'fs'
 import http from 'http'
 import path from 'path'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
-import { fileURLToPath } from 'url'
+import { Bench } from 'tinybench'
 import zlib from 'zlib'
 
 import { assertAllReferencedAlgosExist } from './bench-algos'
+import { APP_BENCHMARK_RESULTS_DIR, NODE_BENCH_FIXTURE_DIR } from './fixture-corpus'
 
-const HERE = path.dirname(fileURLToPath(import.meta.url))
-const REPO_ROOT = path.join(HERE, '..')
-const RESULTS_DIR = path.join(REPO_ROOT, 'packages', 'app', 'benchmark-results')
+const RESULTS_DIR = APP_BENCHMARK_RESULTS_DIR
 
 fs.mkdirSync(RESULTS_DIR, { recursive: true })
 
@@ -36,6 +36,24 @@ fs.mkdirSync(RESULTS_DIR, { recursive: true })
 const RUNS = 10
 const WARMUP_RUNS = 2
 const COL = 14
+
+interface Args {
+  algos?: Set<string>
+}
+
+function parseArgs(argv: string[]): Args {
+  let algos: Set<string> | undefined
+
+  for (const arg of argv) {
+    if (arg.startsWith('--algos=')) {
+      algos = new Set(arg.slice('--algos='.length).split(',').filter(Boolean))
+    } else {
+      throw new Error(`unknown arg: ${arg}`)
+    }
+  }
+
+  return { algos }
+}
 
 // ── Network conditions ────────────────────────────────────────────────────
 
@@ -50,6 +68,9 @@ const CONDITIONS = [
 
 interface EncodeTimeEntry {
   source: string
+  sourceId?: string
+  chunkCount?: number
+  chunkIndex?: number
   algorithm: string
   surface: string
   compressor: string
@@ -62,6 +83,9 @@ interface EncodeTimeEntry {
 
 interface ArchiveTimeEntry {
   source: string
+  sourceId?: string
+  chunkCount?: number
+  chunkIndex?: number
   format: string
   encodeMs: number
   decodeMs: number
@@ -73,7 +97,7 @@ function loadEncodeTimes(): EncodeTimeEntry[] {
   const p = path.join(RESULTS_DIR, 'encode-times.json')
 
   if (!fs.existsSync(p)) {
-    throw new Error(`missing ${p} — run \`yarn benchmark:generate\` first`)
+    throw new Error(`missing ${p} — run \`yarn benchmark\` first`)
   }
 
   return JSON.parse(fs.readFileSync(p, 'utf8')) as EncodeTimeEntry[]
@@ -91,7 +115,7 @@ function loadArchiveTimes(): ArchiveTimeEntry[] {
 
 function startServer(condition: (typeof CONDITIONS)[0]): Promise<http.Server> {
   const { latencyMs, bandwidthBps } = condition
-  const CHUNK = 8 * 1024
+  const CHUNK = 256 * 1024
 
   return new Promise(resolve => {
     const server = http.createServer(async (req, res) => {
@@ -162,11 +186,11 @@ interface RunResult {
 
 async function runBatchDecode(
   url: string,
-  decode: (buf: Buffer) => number | Promise<number>,
+  decodeBytes: (buf: Buffer) => number | Promise<number>,
 ): Promise<RunResult> {
   const { buffer, ttfb, fetchMs } = await fetchBuffer(url)
   const t = now()
-  const decodedBytes = await decode(buffer)
+  const decodedBytes = await decodeBytes(buffer)
   const decodeMs = now() - t
   const totalMs = fetchMs + decodeMs
 
@@ -181,15 +205,12 @@ async function runBatchDecode(
   }
 }
 
-async function decodeRaw(buf: Buffer, ext: string): Promise<Buffer> {
-  const Ctor = await algorithmCatalog.detectFromBuffer(buf, ext)
-  const algo = new Ctor({})
+function runTokenBatch(url: string): Promise<RunResult> {
+  return runBatchDecode(url, async buf => {
+    const pack = await decode(buf)
 
-  return algo.decode(buf, { ext })
-}
-
-function runTokenBatch(url: string, ext: string): Promise<RunResult> {
-  return runBatchDecode(url, buf => decodeRaw(buf, ext).then(d => d.length))
+    return decodedPackBytes(pack)
+  })
 }
 
 async function runTokenStream(url: string): Promise<RunResult> {
@@ -198,37 +219,39 @@ async function runTokenStream(url: string): Promise<RunResult> {
   let fetchMs = 0
   let firstByteMs = 0
   let transferBytes = 0
-  const chunks: Buffer[] = []
 
-  await new Promise<void>((resolve, reject) => {
-    const decoder = createTokenDecodeStream()
-
-    decoder.once('data', (c: Buffer) => {
-      firstByteMs = now() - t0
-      chunks.push(c)
-    })
-    decoder.on('data', (c: Buffer) => chunks.push(c))
-    decoder.on('end', resolve)
-    decoder.on('error', reject)
-
+  const pack = await new Promise<Awaited<ReturnType<typeof decodeStream>>>((resolve, reject) => {
     http
       .get(url, res => {
-        res.on('data', (c: Buffer) => {
-          if (!ttfb) ttfb = now() - t0
-          transferBytes += c.length
-          decoder.write(c)
-        })
-        res.on('end', () => {
+        async function* chunks() {
+          for await (const c of res) {
+            const chunk = c as Buffer
+
+            if (!ttfb) ttfb = now() - t0
+            transferBytes += chunk.length
+            yield chunk
+          }
           fetchMs = now() - t0
-          decoder.end()
-        })
-        res.on('error', reject)
+        }
+
+        decodeStream(chunks(), {
+          onFirstDecodedChunk() {
+            if (!firstByteMs) firstByteMs = now() - t0
+          },
+        }).then(resolve, reject)
       })
       .on('error', reject)
   })
 
   const totalMs = now() - t0
-  const decodedBytes = chunks.reduce((sum, c) => sum + c.length, 0)
+
+  // Pixel-data streams report the first decoded payload chunk through the hook above.
+  // Pixel-range stream variants can expose their payload as soon as the early tpAK
+  // chunk is read, but the public Pack API currently returns only after decode()
+  // resolves. Use TTFB instead of total so the column remains "earliest useful
+  // byte reached the decoder", not "whole stream finished".
+  if (!firstByteMs) firstByteMs = ttfb || totalMs
+  const decodedBytes = await decodedPackBytes(pack)
 
   return {
     ttfb,
@@ -239,6 +262,17 @@ async function runTokenStream(url: string): Promise<RunResult> {
     transferBytes,
     decodedBytes,
   }
+}
+
+async function decodedPackBytes(pack: Pack): Promise<number> {
+  if (pack.isPack()) {
+    const entries = await pack.extractAll()
+
+    return entries.reduce((sum, e) => sum + e.bytes.byteLength, 0)
+  }
+  if (pack.isDiff()) return 0
+
+  return (await pack.content()).byteLength
 }
 
 function runZip(url: string): Promise<RunResult> {
@@ -256,6 +290,10 @@ function runTarGz(url: string): Promise<RunResult> {
   return runBatchDecode(url, buf => zlib.gunzipSync(buf).length)
 }
 
+function runDeflate(url: string): Promise<RunResult> {
+  return runBatchDecode(url, buf => zlib.inflateSync(buf).length)
+}
+
 function runBrotli(url: string): Promise<RunResult> {
   return runBatchDecode(url, buf => zlib.brotliDecompressSync(buf).length)
 }
@@ -266,44 +304,63 @@ interface Scenario {
   name: string
   file: string
   run: (url: string) => Promise<RunResult>
-  /** Set for token scenarios — undefined for archive baselines (zip/tar.gz/brotli). */
+  /** Set for token scenarios — undefined for archive baselines. */
   pathTaken?: 'stream' | 'batch'
 }
 
-function isStreamSurface(surfaceId: string): boolean {
-  return surfaceId === 'png-stream'
+function isStreamableAlgorithm(name: string): boolean {
+  try {
+    return algorithmCatalog.getByName(name).capabilities.streamable
+  } catch {
+    return false
+  }
 }
 
 function fmtScenarioName(e: EncodeTimeEntry): string {
   return `${e.algorithm}-c${e.channels}`
 }
 
+function supportsEntryChannel(e: EncodeTimeEntry): boolean {
+  try {
+    return algorithmCatalog
+      .getByName(e.algorithm)
+      .capabilities.channels.includes(e.channels as 1 | 2 | 3 | 4)
+  } catch {
+    return false
+  }
+}
+
 function getScenarios(source: string, encodeTimes: EncodeTimeEntry[]): Scenario[] {
-  const TOKENS_DIR = path.join(HERE, 'tokens')
+  const TOKENS_DIR = NODE_BENCH_FIXTURE_DIR
   const scenarios: Scenario[] = []
 
   for (const e of encodeTimes) {
     if (e.source !== source) continue
     if (!e.tokenFile) continue
-    const fileAbs = path.join(REPO_ROOT, 'benchmark', e.tokenFile)
-    const ext = path.extname(fileAbs) || '.png'
+    if (!supportsEntryChannel(e)) continue
+    const fileAbs = path.join(TOKENS_DIR, e.tokenFile)
 
     if (!fs.existsSync(fileAbs)) continue
-    const stream = isStreamSurface(e.surface)
+    const stream = isStreamableAlgorithm(e.algorithm)
 
     scenarios.push({
       name: fmtScenarioName(e),
       file: fileAbs,
-      run: stream ? runTokenStream : (u => runTokenBatch(u, ext)),
+      run: stream ? runTokenStream : runTokenBatch,
       pathTaken: stream ? 'stream' : 'batch',
     })
   }
 
-  // Archive baselines (zip/tar.gz/brotli) — match by source name.
+  // Archive baselines (zip/tar.gz/deflate/brotli) — match by source name.
   const brExt = source.startsWith('fs-') ? '.tar.br' : '.br'
   const archiveCandidates: { name: string; file: string; run: Scenario['run'] }[] = [
     { name: 'zip', file: path.join(TOKENS_DIR, `zip__${source}.zip`), run: runZip },
     { name: 'tar.gz', file: path.join(TOKENS_DIR, `targz__${source}.tar.gz`), run: runTarGz },
+    {
+      name: 'deflate',
+      file: path.join(TOKENS_DIR, `deflate__${source}.deflate`),
+      run: runDeflate,
+    },
     { name: 'brotli-11', file: path.join(TOKENS_DIR, `br11__${source}${brExt}`), run: runBrotli },
     { name: 'brotli-6', file: path.join(TOKENS_DIR, `br6__${source}${brExt}`), run: runBrotli },
   ]
@@ -331,6 +388,7 @@ const stddev = (arr: number[]) => {
 
   return Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / arr.length)
 }
+const settle = () => new Promise<void>(resolve => setImmediate(resolve))
 const fmtMs = (ms: number) => (ms < 1000 ? `${ms.toFixed(1)}ms` : `${(ms / 1000).toFixed(2)}s`)
 const fmtBytes = (b: number) =>
   b < 1024
@@ -342,6 +400,9 @@ const fmtBytes = (b: number) =>
 interface ResultRow extends RunResult {
   scenario: string
   source: string
+  sourceId?: string
+  chunkCount?: number
+  chunkIndex?: number
   condition: string
   throughputMBps: number
   /** Whether the runner used the streaming decode path. Lets the dashboard
@@ -352,15 +413,17 @@ interface ResultRow extends RunResult {
 }
 
 async function main() {
+  const args = parseArgs(process.argv.slice(2))
+
   console.log('Tokenpack Benchmark')
   console.log('===================')
 
   assertAllReferencedAlgosExist()
-  const encodeTimes = loadEncodeTimes()
+  const encodeTimes = loadEncodeTimes().filter(e => !args.algos || args.algos.has(e.algorithm))
   const sources = [...new Set(encodeTimes.map(e => e.source))]
 
   if (sources.length === 0) {
-    console.log('No encode-times entries; run `yarn benchmark:generate` first.')
+    console.log('No encode-times entries; run `yarn benchmark` first.')
 
     return
   }
@@ -392,35 +455,60 @@ async function main() {
     for (const source of sources) {
       console.log(`\n  [${source}]`)
       const scenarios = getScenarios(source, encodeTimes)
+      const sourceMeta = encodeTimes.find(e => e.source === source)
 
       for (const scenario of scenarios) {
         const runs: RunResult[] = []
+        const url = `${base}/${encodeURIComponent(scenario.file)}`
+        let collecting = false
+        const bench = new Bench({
+          iterations: RUNS,
+          time: 0,
+          warmupIterations: WARMUP_RUNS,
+          warmupTime: 0,
+          throws: true,
+          setup: async (_task, mode) => {
+            if (mode !== 'run') return
+            ;(globalThis as { gc?: () => void }).gc?.()
+            await settle()
+          },
+        })
 
         process.stdout.write(`    ${scenario.name.padEnd(COL)} `)
-        // Warmup runs first — JIT, DNS, TCP slow-start. Discarded.
-        for (let r = 0; r < WARMUP_RUNS; r++) {
-          try {
-            await scenario.run(`${base}/${encodeURIComponent(scenario.file)}`)
-            process.stdout.write('w')
-          } catch {
-            process.stdout.write('x')
-          }
-        }
-        // Optional GC between warmup and timed samples — `--expose-gc` only.
-        ;(globalThis as { gc?: () => void }).gc?.()
-        for (let r = 0; r < RUNS; r++) {
-          try {
-            runs.push(await scenario.run(`${base}/${encodeURIComponent(scenario.file)}`))
+
+        bench.add('server-fetch', async () => {
+          const result = await scenario.run(url)
+
+          if (collecting) {
+            runs.push(result)
             process.stdout.write('.')
-          } catch {
-            process.stdout.write('x')
+          } else {
+            process.stdout.write('w')
           }
+        })
+        let failure: unknown
+
+        try {
+          await bench.warmup()
+          collecting = true
+          await bench.run()
+        } catch (e) {
+          failure = e
+          process.stdout.write('x')
         }
+
         if (!runs.length) {
-          console.log(' FAILED')
+          const msg = failure instanceof Error ? failure.message : String(failure ?? 'no samples')
+
+          console.log(` FAILED — ${msg}`)
           continue
         }
 
+        const totalSamples = bench.tasks[0]?.result?.samples ?? []
+
+        totalSamples.forEach((totalMs, index) => {
+          if (runs[index]) runs[index] = { ...runs[index], totalMs }
+        })
         // Median is more representative than mean when network jitter spikes.
         const totals = runs.map(r => r.totalMs)
         const decodes = runs.map(r => r.decodeMs)
@@ -430,6 +518,9 @@ async function main() {
         const row: ResultRow = {
           scenario: scenario.name,
           source,
+          sourceId: sourceMeta?.sourceId,
+          chunkCount: sourceMeta?.chunkCount,
+          chunkIndex: sourceMeta?.chunkIndex,
           condition: cond.name,
           ttfb: median(runs.map(r => r.ttfb)),
           fetchMs: median(runs.map(r => r.fetchMs)),
@@ -438,7 +529,8 @@ async function main() {
           firstByteMs: median(runs.map(r => r.firstByteMs)),
           transferBytes: median(transfers),
           decodedBytes: median(decoded),
-          throughputMBps: medianTotal > 0 ? median(decoded) / 1024 / 1024 / (medianTotal / 1000) : 0,
+          throughputMBps:
+            medianTotal > 0 ? median(decoded) / 1024 / 1024 / (medianTotal / 1000) : 0,
           pathTaken: scenario.pathTaken,
           totalMsStddev: stddev(totals),
         }
@@ -494,9 +586,27 @@ async function main() {
   }
 
   const outPath = path.join(RESULTS_DIR, 'results.json')
+  const previousResults = fs.existsSync(outPath)
+    ? (JSON.parse(fs.readFileSync(outPath, 'utf-8')) as ResultRow[])
+    : []
+  const mergedResults = mergeRows(previousResults, allResults, args.algos)
 
-  fs.writeFileSync(outPath, JSON.stringify(allResults, null, 2))
-  console.log(`Results saved → ${outPath}`)
+  fs.writeFileSync(outPath, JSON.stringify(mergedResults, null, 2))
+  console.log(
+    `Results saved → ${outPath}  (${mergedResults.length} rows${args.algos ? `, ${allResults.length} refreshed` : ''})`,
+  )
+}
+
+function mergeRows(previous: ResultRow[], next: ResultRow[], algos?: Set<string>): ResultRow[] {
+  if (!algos) return next
+
+  return [...previous.filter(row => !scenarioMatchesAlgos(row.scenario, algos)), ...next]
+}
+
+function scenarioMatchesAlgos(scenario: string, algos: Set<string>): boolean {
+  const match = /^(.*)-c[1-4]$/.exec(scenario)
+
+  return !!match && algos.has(match[1])
 }
 
 main().catch(console.error)

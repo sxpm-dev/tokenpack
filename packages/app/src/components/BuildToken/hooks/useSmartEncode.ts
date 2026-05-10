@@ -1,13 +1,13 @@
 'use client'
 
 import { encode } from '@tokenpack/browser'
+import { browserAlgorithmCatalog } from '@tokenpack/browser/algorithms/catalog'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { EncodeConfig } from '@/components/EncodeForm'
-import { mimeForFormat } from '@/components/EncodeForm'
 
 import type { BuilderEntry, BuildResult } from '../types'
-import { buildEncodeOptions } from '../utils/encode-options'
+import { buildEncodeOptions, resolveAlgoName } from '../utils/encode-options'
 import { entriesToBuilder } from '../utils/entries-to-builder'
 import { checkFEEligibility } from '../utils/fe-eligibility'
 import { base64ToBytes, serverEncodePack } from '../utils/server-encode'
@@ -44,12 +44,11 @@ export function useSmartEncode(): UseSmartEncodeApi {
       try {
         const eligibility = checkFEEligibility(config)
         const inputBytes = await sumInputBytes(entries)
-        // Surface is bound at the algorithm level; today every browser-encodable
-        // and server-default algorithm emits PNG bytes.
-        const fileName = 'pack.png'
+        const surface = surfaceMeta(resolveAlgoName(config))
+        const fileName = `pack${surface.extension}`
         const next = eligibility.ok
-          ? await runFE(entries, config, fileName, inputBytes)
-          : await runBE(entries, config, fileName, inputBytes)
+          ? await runFE(entries, config, fileName, surface.mime, inputBytes)
+          : await runBE(entries, config, inputBytes)
 
         if (previousURL.current) URL.revokeObjectURL(previousURL.current)
         previousURL.current = next.objectURL
@@ -83,15 +82,18 @@ async function runFE(
   entries: ReadonlyArray<BuilderEntry>,
   config: EncodeConfig,
   fileName: string,
+  mime: string,
   inputBytes: number,
 ): Promise<BuildResult> {
   const builder = await entriesToBuilder(entries)
   const options = buildEncodeOptions(config)
   const encoded = await encode(builder, options)
+  const objectURL =
+    encoded.objectURL ?? URL.createObjectURL(new Blob([encoded.bytes as BlobPart], { type: mime }))
 
   return {
     bytes: encoded.bytes,
-    objectURL: encoded.objectURL,
+    objectURL,
     fileName,
     fromServer: false,
     inputBytes,
@@ -103,18 +105,17 @@ async function runFE(
 async function runBE(
   entries: ReadonlyArray<BuilderEntry>,
   config: EncodeConfig,
-  fileName: string,
   inputBytes: number,
 ): Promise<BuildResult> {
   const data = await serverEncodePack(entries, config)
   const bytes = base64ToBytes(data.token)
-  const blob = new Blob([bytes as BlobPart], { type: mimeForFormat('png') })
+  const blob = new Blob([bytes as BlobPart], { type: data.mime })
   const objectURL = URL.createObjectURL(blob)
 
   return {
     bytes,
     objectURL,
-    fileName,
+    fileName: data.fileName,
     fromServer: true,
     inputBytes,
     gzipBytes: data.gzipSize,
@@ -131,4 +132,18 @@ async function sumInputBytes(entries: ReadonlyArray<BuilderEntry>): Promise<numb
   }
 
   return total
+}
+
+function surfaceMeta(algoName: string): { extension: string; mime: string } {
+  try {
+    const Ctor = browserAlgorithmCatalog.getByName(algoName)
+    const surface = new (Ctor.Surface as unknown as new () => {
+      extension: string
+      mimeType: string
+    })()
+
+    return { extension: surface.extension, mime: surface.mimeType }
+  } catch {
+    return { extension: '.png', mime: 'image/png' }
+  }
 }

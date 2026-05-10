@@ -1,16 +1,11 @@
-// Browser-side registrations: adds CompressionStream/DecompressionStream
-// compressors and metadata-only PNG surfaces to core's append-only registries.
+// Browser-side runtime setup: adds CompressionStream/DecompressionStream
+// compressors and metadata-only PNG surfaces for legacy pack helpers.
 //
-// Browser does NOT register AVIF/WebP surfaces — encode happens via canvas.toBlob
-// directly in `encode.ts`, so there's no need for a registry entry. Decode of
-// AVIF/WebP tokens works through `createImageBitmap` which doesn't consult the
-// registry either.
+// The concrete algorithm catalog is env-owned in `./algorithms/catalog`.
 
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { compressorRegistry } from 'tokenpack/compressors/registry'
 import { surfaceRegistry } from 'tokenpack/surfaces/registry'
 
-import { ALL_BROWSER_ALGORITHMS } from './algorithms'
 import { BrowserBrotliCompressor } from './compressors/brotli-compressor'
 import { BrowserDeflateCompressor } from './compressors/deflate-compressor'
 import { BrowserPngSurface, BrowserStreamingPngSurface } from './surfaces/png'
@@ -34,8 +29,6 @@ function registerBrowserDefaults(): void {
   if (!surfaceRegistry.has('png-upng')) {
     surfaceRegistry.register('png-upng', () => new BrowserPngUpngSurface())
   }
-
-  for (const Ctor of ALL_BROWSER_ALGORITHMS) algorithmCatalog.register(Ctor as never)
 }
 
 registerBrowserDefaults()

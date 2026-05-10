@@ -1,7 +1,7 @@
 import '@tokenpack/node'
 
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 import { NextRequest, NextResponse } from 'next/server'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 
 export async function POST(req: NextRequest) {
   const form = await req.formData()

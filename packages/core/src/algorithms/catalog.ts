@@ -3,9 +3,12 @@
 // Consumers `getById(id)` / `getByName(name)` to retrieve a Ctor, then
 // `new Ctor(opts)` to construct an instance. The catalog itself never
 // instantiates algorithms.
+//
+// Core exports the catalog class only. Environment packages own concrete
+// catalog instances because only they know which algorithms/surfaces are
+// available in that runtime.
 
 import { isCompactToken, readCompactHeader, readHeader } from '../header'
-import { surfaceRegistry } from '../surfaces/registry'
 
 import type { AbstractAlgorithm, AlgorithmCtor } from './types'
 
@@ -44,7 +47,8 @@ export class AlgorithmCatalog {
    * Resolve which algorithm should handle a given artifact buffer.
    * Strategy:
    *   1. Per-algorithm canHandle (cheap byte-level sniff for plugins).
-   *   2. Surface-decode pixels and read pixel header for codec id.
+   *   2. Ask each registered algorithm's own surface to decode pixels, then
+   *      read the pixel header for the algorithm id.
    *   3. Throw.
    */
   async detectFromBuffer(buffer: Buffer, ext?: string): Promise<AlgorithmCtor> {
@@ -60,23 +64,22 @@ export class AlgorithmCatalog {
     }
 
     if (buffer && buffer.length > 8) {
-      // Try every non-streaming surface that matches the extension. PNG has
-      // multiple readers registered (pngjs/sharp + upng-js); a 4-channel
-      // upng-encoded buffer can produce mangled pixels through pngjs (alpha
-      // premultiplication) but read byte-exact through upng-js. We accept the
-      // first reader whose pixel header maps to a known algo id.
-      const candidates = surfaceRegistry.listForExtension(ext ?? '.png')
-      const surfaces = candidates.length > 0 ? candidates : [surfaceRegistry.byExtension(ext ?? '.png')]
+      const normalizedExt = ext?.toLowerCase()
 
-      for (const surface of surfaces) {
+      for (const Ctor of this.byName.values()) {
         try {
-          const image = await surface.readBuffer(buffer)
+          const probe = new Ctor()
+
+          if (normalizedExt && probe.surface.extension !== normalizedExt) continue
+          if (probe.surface.streamable) continue
+
+          const image = await probe.surface.readBuffer(buffer)
           const id = isCompactToken(image.pixels)
             ? readCompactHeader(image.pixels).algoId
             : readHeader(image.pixels).algorithmId
-          const Ctor = this.byId.get(id)
+          const DetectedCtor = this.byId.get(id)
 
-          if (Ctor) return Ctor
+          if (DetectedCtor) return DetectedCtor
         } catch {
           // surface couldn't decode or header was garbage — try the next one
         }
@@ -91,5 +94,3 @@ export class AlgorithmCatalog {
     this.byId.clear()
   }
 }
-
-export const algorithmCatalog = new AlgorithmCatalog()

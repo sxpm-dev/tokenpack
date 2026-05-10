@@ -7,8 +7,7 @@ describe('node.diff', () => {
     const tokenB = await encode(
       new PackBuilder().withFile('a.txt', 'second').withFile('b.txt', 'added'),
     )
-    const tokenBytes = await diff(tokenA, tokenB).token()
-    const diffPack = await decode(tokenBytes)
+    const diffPack = await diff(tokenA, tokenB)
 
     expect(diffPack.isDiff()).toBe(true)
     if (!diffPack.isDiff()) throw new Error('expected DiffPack')
@@ -37,18 +36,18 @@ describe('node.diff', () => {
     const builder = new PackBuilder().withFile('a.txt', 'same')
     const tokenA = await encode(builder)
     const tokenB = await encode(new PackBuilder().withFile('a.txt', 'same'))
-    const fileDiffs = await diff(tokenA, tokenB).text()
+    const diffPack = await diff(tokenA, tokenB)
 
-    expect(fileDiffs).toHaveLength(0)
+    expect(diffPack.isDiff()).toBe(true)
+    if (!diffPack.isDiff()) throw new Error('expected DiffPack')
+    expect(diffPack.entries).toHaveLength(0)
   })
 
   it('cross-algo diff throws same-algo error', async () => {
     const builder = new PackBuilder().withFile('a.txt', 'one')
     const linearToken = await encode(builder, { algo: 'linear' })
-    const linearNoneToken = await encode(builder, { algo: 'linear-none' })
+    const linearNoneToken = await encode(builder, { algo: 'linear-deflate' })
 
-    await expect(diff(linearToken, linearNoneToken).token()).rejects.toThrow(
-      /same-algo only/,
-    )
+    await expect(diff(linearToken, linearNoneToken)).rejects.toThrow(/same-algo only/)
   })
 })

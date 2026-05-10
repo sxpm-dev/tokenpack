@@ -17,5 +17,11 @@ export function avg(rows: BenchRow[], key: keyof BenchRow): number {
 }
 
 export function getRows(data: BenchRow[], condition: string, source: string): BenchRow[] {
-  return data.filter(r => r.condition === condition && (source === 'avg' || r.source === source))
+  return data.filter(
+    r => r.condition === condition && (source === 'avg' || rowSourceId(r) === source),
+  )
+}
+
+export function rowSourceId(row: Pick<BenchRow, 'source' | 'sourceId'>): string {
+  return row.sourceId ?? row.source.replace(/__chunks-\d+__chunk-\d+$/, '')
 }

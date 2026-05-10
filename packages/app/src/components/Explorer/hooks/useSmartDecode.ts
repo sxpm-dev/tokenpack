@@ -1,6 +1,7 @@
 'use client'
 
-import { type DecodeSource, inspect, type InspectInfo, type Pack } from '@tokenpack/browser'
+import { type DecodeSource, type Pack } from '@tokenpack/browser'
+import { inspect, type InspectInfo } from '@tokenpack/browser/inspect'
 import { useEffect, useState } from 'react'
 
 import {

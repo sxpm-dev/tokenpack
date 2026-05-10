@@ -14,12 +14,24 @@ export interface BenchStats {
 
 export interface ExtBenchRow {
   codecId: number
+  /** Row family: TokenPack artifact or traditional archive baseline. */
+  kind?: 'token' | 'archive'
   /** Algorithm name as registered in the catalog (e.g. `pixel-range`). */
   codecName: string
   outerCompression: string
-  channels: number
+  channels?: number
   source: string
+  sourceId?: string
+  chunkCount?: number
+  chunkIndex?: number
+  condition?: string
   encodeMs: number
+  /** Fetch/stream + decode wall time until decoded payload is ready. */
+  speedMs?: number
+  /** Network/body transfer time from the throttled fetch harness. */
+  fetchMs?: number
+  /** Decode tail: batch CPU decode after fetch, or stream drain after transfer. */
+  decodeTailMs?: number
   decodeMs: number
   roundTripMs: number
   tokenBytes: number

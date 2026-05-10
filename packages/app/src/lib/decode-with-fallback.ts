@@ -15,7 +15,7 @@ import {
   type EncodeResult,
   type Pack,
 } from '@tokenpack/browser'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { browserAlgorithmCatalog as algorithmCatalog } from '@tokenpack/browser/algorithms/catalog'
 import { fromBytes } from 'tokenpack/pack/from-bytes'
 
 import { smartDecompress } from '@/components/Explorer/utils/smart-decompress'
@@ -99,9 +99,8 @@ async function serverDecode(source: DecodeSource, key: string): Promise<Pack> {
 
 async function feFriendlyDiffTo(a: DirPack, b: DirPack): Promise<EncodeResult> {
   // Server-decode fallback path — we don't know the source algorithm here, so
-  // wrap the diff token with `linear-none` (FE-friendly, no extra compression
-  // since the diff regions are already deflate-compressed inside).
-  const algo = new (algorithmCatalog.getByName('linear-none'))()
+  // wrap the diff token with the browser-safe default recipe.
+  const algo = new (defaultDiffAlgorithm())()
   const tokenBytes = await algo.diff(a, b).token()
   const blob = new Blob([tokenBytes as unknown as BlobPart], { type: 'image/png' })
   const objectURL = URL.createObjectURL(blob)
@@ -111,6 +110,19 @@ async function feFriendlyDiffTo(a: DirPack, b: DirPack): Promise<EncodeResult> {
   image.src = objectURL
 
   return { blobs: [blob], bytes: tokenBytes, objectURL, dataURL, image }
+}
+
+function defaultDiffAlgorithm(): ReturnType<typeof algorithmCatalog.getByName> {
+  const Ctor =
+    algorithmCatalog.list().find(Algo => {
+      const compressor = Algo.Compressor as unknown as { familyId?: string }
+
+      return compressor.familyId === 'deflate' && !Algo.capabilities.streamable
+    }) ?? algorithmCatalog.list()[0]
+
+  if (!Ctor) throw new Error('no algorithms registered in browser catalog')
+
+  return Ctor
 }
 
 async function blobToDataURL(blob: Blob): Promise<string> {

@@ -9,8 +9,9 @@
 import { ColorArea, ColorField, ColorPicker, ColorSlider, ColorSwatch, Slider } from '@heroui/react'
 import type { Color } from 'react-aria-components'
 import { parseColor } from 'react-aria-components'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import type { OptionDef, OptionsSchema } from 'tokenpack/components/options'
+
+import { usePlaygroundAlgorithms } from '@/lib/use-playground-algorithms'
 
 import { Section } from './Section'
 import { SelectField } from './SelectField'
@@ -22,13 +23,8 @@ interface OptionsRendererProps {
 }
 
 export function OptionsRenderer({ algo, options, onChange }: OptionsRendererProps) {
-  let schema: OptionsSchema = {}
-
-  try {
-    schema = algorithmCatalog.getByName(algo).optionsSchema
-  } catch {
-    // Algorithm not registered yet (e.g. catalog not populated at first render).
-  }
+  const catalog = usePlaygroundAlgorithms()
+  const schema: OptionsSchema = catalog.find(entry => entry.name === algo)?.optionsSchema ?? {}
 
   const visibleKeys = Object.keys(schema).filter(key => isVisible(schema[key], schema, options))
 

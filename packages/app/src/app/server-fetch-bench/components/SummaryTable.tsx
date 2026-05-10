@@ -6,7 +6,8 @@ import { useMemo, useState } from 'react'
 import type { SortDescriptor } from 'react-aria-components'
 
 import { AlgoBadges } from '@/components/AlgoBadges'
-import { classify } from '@/lib/algo-catalog'
+import { classifyMeta } from '@/lib/algo-catalog'
+import { usePlaygroundAlgorithms } from '@/lib/use-playground-algorithms'
 
 import { buildScenarioConfig } from '../constants'
 import type { BenchRow, SummaryRow, SummarySortKey } from '../types'
@@ -19,7 +20,7 @@ interface SummaryTableProps {
   source: string
 }
 
-const ARCHIVE_NAMES = new Set(['zip', 'tar.gz', 'brotli-11', 'brotli-6'])
+const ARCHIVE_NAMES = new Set(['zip', 'tar.gz', 'deflate', 'brotli-11', 'brotli-6'])
 
 /** Strip the `-c<n>` suffix to recover the algo name registered in the
  *  catalog. Used to look up classification for badge rendering. */
@@ -29,6 +30,7 @@ function algoNameFromScenario(scenario: string): string {
 
 export function SummaryTable({ data, condition, source }: SummaryTableProps) {
   const [sort, setSort] = useState<SortDescriptor>({ column: 'total', direction: 'ascending' })
+  const catalog = usePlaygroundAlgorithms()
 
   const { scenarios: SCENARIOS, colors: COLORS } = useMemo(
     () => buildScenarioConfig(data.map(d => d.scenario)),
@@ -51,6 +53,7 @@ export function SummaryTable({ data, condition, source }: SummaryTableProps) {
             firstByte: avg(r, 'firstByteMs'),
             decode: avg(r, 'decodeMs'),
             transfer: avg(r, 'transferBytes'),
+            decoded: avg(r, 'decodedBytes'),
             throughput: avg(r, 'throughputMBps'),
             pathTaken: first.pathTaken,
             totalMsStddev: first.totalMsStddev,
@@ -118,7 +121,8 @@ export function SummaryTable({ data, condition, source }: SummaryTableProps) {
             const isArchive = ARCHIVE_NAMES.has(r.scenario)
             const isToken = !isArchive
             const algoName = isToken ? algoNameFromScenario(r.scenario) : ''
-            const isStreaming = isToken && (r.pathTaken === 'stream' || classify(algoName).stream)
+            const classification = classifyMeta(catalog.find(algo => algo.name === algoName))
+            const isStreaming = isToken && (r.pathTaken === 'stream' || classification.stream)
             const stddevText =
               r.totalMsStddev !== undefined && r.totalMsStddev > 0
                 ? `±${r.totalMsStddev.toFixed(0)}ms`
@@ -157,7 +161,12 @@ export function SummaryTable({ data, condition, source }: SummaryTableProps) {
                   )}
                 </Table.Cell>
                 <Table.Cell>{fmtMs(r.decode)}</Table.Cell>
-                <Table.Cell>{fmtBytes(r.transfer)}</Table.Cell>
+                <Table.Cell>
+                  <div className="flex flex-col leading-tight">
+                    <span>{fmtBytes(r.transfer)}</span>
+                    <span className="text-[10px] text-white/30">{formatTransferRatio(r)}</span>
+                  </div>
+                </Table.Cell>
                 <Table.Cell>{r.throughput.toFixed(1)}</Table.Cell>
               </Table.Row>
             )
@@ -166,4 +175,12 @@ export function SummaryTable({ data, condition, source }: SummaryTableProps) {
       </Table.Content>
     </Table>
   )
+}
+
+function formatTransferRatio(row: SummaryRow): string {
+  if (row.decoded <= 0 || row.transfer <= 0) return '—'
+
+  const pct = Math.round((row.transfer / row.decoded) * 100)
+
+  return `${pct}% of source`
 }

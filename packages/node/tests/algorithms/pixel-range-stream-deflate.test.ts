@@ -1,11 +1,14 @@
+import '../../src/register'
+
 import { describe, expect, it } from 'vitest'
 
-import '../../src/register'
+import { extractTpakChunk } from '../../src/algorithms/pixel-range-png-base'
 import { PixelRangeStreamPngDeflate } from '../../src/algorithms/pixel-range-stream-deflate'
 
 describe('PixelRangeStreamPngDeflate', () => {
   it('exposes computed capabilities — streamable surface', () => {
     const caps = PixelRangeStreamPngDeflate.capabilities
+
     expect(caps.streamable).toBe(true)
   })
 
@@ -18,17 +21,29 @@ describe('PixelRangeStreamPngDeflate', () => {
     expect(encoded.length).toBeGreaterThan(0)
 
     const decoded = await algo.decode(encoded)
+
     expect(new TextDecoder().decode(decoded)).toBe('streaming pixel-range deflate')
   })
 
   it('round-trips a larger payload', async () => {
     const algo = new PixelRangeStreamPngDeflate()
     const input = new Uint8Array(4096)
+
     for (let i = 0; i < input.length; i++) input[i] = (i * 31) & 0xff
     const encoded = await algo.encode(input)
     const decoded = await algo.decode(encoded)
 
     expect(decoded.length).toBe(input.length)
     expect(Array.from(decoded.subarray(0, 16))).toEqual(Array.from(input.subarray(0, 16)))
+  })
+
+  it('stores compressed bytes in the tpAK chunk', async () => {
+    const algo = new PixelRangeStreamPngDeflate()
+    const input = Buffer.from('stream benchmark payload '.repeat(8192))
+    const encoded = await algo.encode(input)
+    const tpak = extractTpakChunk(encoded)
+
+    expect(tpak.length).toBeLessThan(input.length)
+    await expect(algo.decode(encoded)).resolves.toEqual(input)
   })
 })

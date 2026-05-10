@@ -9,7 +9,7 @@
 
 import fs from 'fs'
 import { PackBuilder } from 'tokenpack'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { nodeAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
 import type { AlgorithmOptions } from 'tokenpack/algorithms/types'
 import { packDirs } from 'tokenpack/archive'
 import { compressRaw } from 'tokenpack/compressors'

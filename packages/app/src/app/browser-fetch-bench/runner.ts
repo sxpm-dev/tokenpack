@@ -2,14 +2,21 @@
 // per-iteration Sample[].
 
 import { decode, decodeStream } from '@tokenpack/browser'
+import {
+  estimatePackRangeWireBytes,
+  fetchPackFilesCompressed,
+  fetchPackFilesStream,
+  fetchPackManifest,
+} from '@tokenpack/browser/fetch-pack'
+import { Bench } from 'tinybench'
+import { decompressRaw } from 'tokenpack/compressors'
 
 import type { AggregatedRow, DecodeFingerprint, Sample, Throttle, Variant } from './types'
 
 interface RunOptions {
   source: string
+  sourceKind: 'json' | 'text'
   withExecute: boolean
-  /** When true, append `&live=1` so the server encodes per request instead of streaming a pre-generated fixture. */
-  live: boolean
   /** Network throttle level. `local` = no throttle. */
   throttle: Throttle
 }
@@ -26,15 +33,34 @@ export async function runVariant(
 ): Promise<AggregatedRow> {
   const samples: Sample[] = []
   let firstBytes: Uint8Array | null = null
+  let collecting = false
+  const bench = new Bench({
+    iterations,
+    time: 0,
+    warmupIterations: 2,
+    warmupTime: 0,
+    throws: true,
+  })
 
-  for (let i = 0; i < iterations; i++) {
-    const result = await runOnce(variant, options)
+  bench.add('runtime-variant', async () => {
+    cleanupRuntimeState(options.source)
+    try {
+      const result = await runOnce(variant, options)
 
-    samples.push(result.sample)
-    // Retain only iter0 bytes for fingerprinting; later iters' bytes are
-    // free to be GC'd so 5MB payloads don't pile up.
-    if (i === 0) firstBytes = result.bytesReady
-  }
+      if (collecting) {
+        samples.push(result.sample)
+        // Retain only iter0 bytes for fingerprinting; later iters' bytes are
+        // free to be GC'd so 5MB payloads don't pile up.
+        if (!firstBytes && result.bytesReady.byteLength > 0) firstBytes = result.bytesReady
+      }
+    } finally {
+      cleanupRuntimeState(options.source)
+    }
+  })
+
+  await bench.warmup()
+  collecting = true
+  await bench.run()
 
   // Fingerprint computation runs AFTER every sample is recorded, so its
   // CPU/await time cannot enter any reported metric (decodeMs, totalMs, p95).
@@ -51,13 +77,246 @@ interface RunOnceResult {
 
 async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceResult> {
   const baseUrl = variant.url({ source: options.source })
-  const sep = baseUrl.includes('?') ? '&' : '?'
-  const liveParam = options.live ? '&live=1' : ''
-  const throttleParam = options.throttle !== 'local' ? `&throttle=${options.throttle}` : ''
-  const url = baseUrl + sep + `nonce=${crypto.randomUUID()}` + liveParam + throttleParam
+  const chunkCount = chunkCountFromSource(options.source)
+  const urls = Array.from({ length: chunkCount }, (_, chunkIndex) =>
+    withQuery(baseUrl, {
+      chunk: String(chunkIndex),
+      nonce: crypto.randomUUID(),
+      ...(options.throttle !== 'local' ? { throttle: options.throttle } : {}),
+    }),
+  )
 
   const fetchStart = performance.now()
 
+  if (variant.loadMode === 'range-pack-fetch' || variant.loadMode === 'range-pack-stream') {
+    const url = withQuery(baseUrl, {
+      nonce: crypto.randomUUID(),
+      ...(options.throttle !== 'local' ? { throttle: options.throttle } : {}),
+    })
+
+    return runRangePackOnce(variant, url, fetchStart, options.sourceKind)
+  }
+
+  if (variant.loadMode === 'script-tag') {
+    return runScriptTagOnce(variant, urls, fetchStart, options.source, chunkCount)
+  }
+
+  const chunks = await Promise.all(urls.map(url => fetchChunk(variant, url)))
+
+  const firstByte = Math.min(...chunks.map(chunk => chunk.firstByte))
+  const transferEnd = Math.max(...chunks.map(chunk => chunk.transferEnd))
+  const chunkBytes = chunks.map(chunk => chunk.bytesReady)
+  const bytesReady = concatBytes(chunkBytes)
+  const wireBytes = chunks.reduce((sum, chunk) => sum + chunk.wireBytes, 0)
+  let decodeMs = chunks.reduce((sum, chunk) => sum + chunk.decodeMs, 0)
+
+  let executeMs: number | null = null
+
+  if (options.withExecute) {
+    const scriptTiming = executeScriptChunks(options.source, chunkBytes, variant.id)
+
+    decodeMs += scriptTiming.textDecodeMs
+    executeMs = scriptTiming.executeMs
+  } else {
+    const contentDecodeStart = performance.now()
+
+    materializeSourceContent(
+      chunks.map(chunk => chunk.bytesReady),
+      options.sourceKind,
+      variant.id,
+    )
+    decodeMs += performance.now() - contentDecodeStart
+  }
+
+  const totalEnd = performance.now()
+
+  return {
+    sample: {
+      ttfbMs: firstByte - fetchStart,
+      transferMs: transferEnd - fetchStart,
+      decodeMs,
+      executeMs,
+      totalMs: totalEnd - fetchStart,
+      wireBytes,
+    },
+    bytesReady,
+  }
+}
+
+async function runRangePackOnce(
+  variant: Variant,
+  url: string,
+  fetchStart: number,
+  sourceKind: 'json' | 'text',
+): Promise<RunOnceResult> {
+  const absoluteUrl = new URL(url, window.location.href).href
+  const remote = await fetchPackManifest(absoluteUrl)
+  const paths = remote.manifest.files.map(file => file.path).sort()
+  const manifestReady = performance.now()
+  let bytesReady: Uint8Array
+  let decodeMs: number
+
+  if (variant.loadMode === 'range-pack-stream') {
+    const streamFiles = await fetchPackFilesStream(remote, paths)
+    const decoded = await Promise.all(streamFiles.map(file => readStream(file.stream)))
+    const contentDecodeStart = performance.now()
+
+    materializeSourceContent(decoded, sourceKind, variant.id)
+
+    bytesReady = concatBytes(decoded)
+    // DecompressionStream overlaps with the range response body. There is no
+    // separate post-transfer decode phase to isolate without double-reading
+    // the stream, so keep the decode column at zero like browser-native HTTP
+    // content-encoding and let total/transfer carry the end-to-end timing.
+    decodeMs = performance.now() - contentDecodeStart
+  } else {
+    const compressedFiles = await fetchPackFilesCompressed(remote, paths)
+    const transferEnd = performance.now()
+    const decoded = await Promise.all(
+      compressedFiles.map(file =>
+        decompressRaw(file.bytes, file.entry.compressor, {
+          level: file.entry.level,
+          uncompressedLength: file.entry.originalSize,
+        }),
+      ),
+    )
+    const decodeEnd = performance.now()
+    const contentDecodeStart = performance.now()
+
+    materializeSourceContent(decoded, sourceKind, variant.id)
+
+    bytesReady = concatBytes(decoded)
+    decodeMs = decodeEnd - transferEnd + (performance.now() - contentDecodeStart)
+  }
+
+  const totalEnd = performance.now()
+  const timings = resourceTimingsFor(absoluteUrl, fetchStart)
+  const firstByte =
+    timings
+      .map(timing => timing.responseStart)
+      .filter(start => start > 0)
+      .sort((a, b) => a - b)[0] ?? manifestReady
+  const wireBytes =
+    wireBytesFromTimings(timings) ?? estimatePackRangeWireBytes(remote, paths, { maxGapBytes: 0 })
+
+  return {
+    sample: {
+      ttfbMs: firstByte - fetchStart,
+      transferMs: totalEnd - fetchStart,
+      decodeMs,
+      executeMs: null,
+      totalMs: totalEnd - fetchStart,
+      wireBytes,
+    },
+    bytesReady,
+  }
+}
+
+async function runScriptTagOnce(
+  variant: Variant,
+  urls: string[],
+  fetchStart: number,
+  caseId: string,
+  chunkCount: number,
+): Promise<RunOnceResult> {
+  const results: ScriptChunkResult[] = []
+  const host = globalThis as typeof globalThis & {
+    __benchmarkResult?: Record<string, (result: ScriptChunkResult) => void>
+  }
+
+  host.__benchmarkResult ??= {}
+  host.__benchmarkResult[caseId] = result => {
+    results[result.chunkIndex] = result
+  }
+
+  try {
+    const loads = await Promise.all(urls.map(url => loadScriptTag(url, variant.id)))
+    const totalEnd = performance.now()
+    const firstByte = firstResourceResponseStart(
+      loads.map(load => load.url),
+      fetchStart,
+    )
+    const wireBytes = loads.reduce((sum, load) => sum + load.wireBytes, 0)
+
+    verifyScriptResults(caseId, variant.id, chunkCount, results)
+
+    return {
+      sample: {
+        ttfbMs: firstByte - fetchStart,
+        transferMs: totalEnd - fetchStart,
+        decodeMs: 0,
+        executeMs: null,
+        totalMs: totalEnd - fetchStart,
+        wireBytes,
+      },
+      bytesReady: new Uint8Array(),
+    }
+  } finally {
+    delete host.__benchmarkResult[caseId]
+  }
+}
+
+interface ScriptLoadResult {
+  url: string
+  wireBytes: number
+}
+
+function loadScriptTag(url: string, variantId: string): Promise<ScriptLoadResult> {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    const absoluteUrl = new URL(url, window.location.href).href
+
+    script.async = true
+    script.src = absoluteUrl
+    script.onload = () => {
+      const timing = resourceTimingFor(absoluteUrl)
+
+      script.remove()
+      resolve({ url: absoluteUrl, wireBytes: timing?.encodedBodySize ?? 0 })
+    }
+    script.onerror = () => {
+      script.remove()
+      reject(new Error(`script load failed for ${variantId}: ${url}`))
+    }
+    document.head.appendChild(script)
+  })
+}
+
+function firstResourceResponseStart(urls: string[], fallbackStart: number): number {
+  const starts = urls
+    .map(url => resourceTimingFor(url)?.responseStart)
+    .filter((value): value is number => typeof value === 'number' && value > 0)
+
+  return starts.length ? Math.min(...starts) : fallbackStart
+}
+
+function resourceTimingFor(url: string): PerformanceResourceTiming | null {
+  const entries = resourceTimingsFor(url)
+
+  return entries[entries.length - 1] ?? null
+}
+
+function resourceTimingsFor(url: string, since = -Infinity): PerformanceResourceTiming[] {
+  return (performance.getEntriesByName(url, 'resource') as PerformanceResourceTiming[]).filter(
+    entry => entry.startTime >= since - 1,
+  )
+}
+
+function wireBytesFromTimings(timings: PerformanceResourceTiming[]): number | null {
+  const values = timings.map(timing => timing.encodedBodySize).filter(value => value > 0)
+
+  return values.length ? values.reduce((sum, value) => sum + value, 0) : null
+}
+
+interface DecodedChunk {
+  firstByte: number
+  transferEnd: number
+  bytesReady: Uint8Array
+  wireBytes: number
+  decodeMs: number
+}
+
+async function fetchChunk(variant: Variant, url: string): Promise<DecodedChunk> {
   const response = await fetch(url, {
     cache: 'no-store',
     mode: 'cors',
@@ -75,6 +334,7 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
   let wireBytes = 0
   let decodeStart = 0
   let decodeEnd = 0
+  let transferEnd = firstByte
 
   if (variant.isToken) {
     if (variant.isStreamable && response.body) {
@@ -92,17 +352,22 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
       }
       bytesReady = await result.content()
       decodeEnd = performance.now()
+      // Streaming decode consumes the response body and decode pipeline
+      // together, so the observable transfer boundary is the same drain point.
+      transferEnd = decodeEnd
       // Wire bytes for streaming aren't known up-front (no Blob to size); fall
       // back to the Content-Length header. Server always sets it.
       const lenHeader = response.headers.get('content-length')
 
       wireBytes = lenHeader ? Number(lenHeader) : bytesReady.byteLength
     } else {
-      const blob = await response.blob()
+      const buffer = await response.arrayBuffer()
+      const lenHeader = response.headers.get('content-length')
 
-      wireBytes = blob.size
+      transferEnd = performance.now()
+      wireBytes = lenHeader ? Number(lenHeader) : buffer.byteLength
       decodeStart = performance.now()
-      const result = await decode(blob)
+      const result = await decode(buffer)
 
       if (result.isPack() || result.isDiff()) {
         throw new Error('runtime-benchmark expected file token, got pack/diff')
@@ -111,46 +376,189 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
       decodeEnd = performance.now()
     }
   } else {
-    // HTTP variant — Content-Encoding decompression happens transparently in the network stack.
-    const text = await response.text()
+    // HTTP variant — Content-Encoding decompression happens transparently in
+    // the browser network stack. Materialize bytes, not text, so HTTP and
+    // TokenPack rows stop at the same "final content bytes are ready" point.
+    const buffer = await response.arrayBuffer()
 
-    bytesReady = new TextEncoder().encode(text)
+    transferEnd = performance.now()
+    bytesReady = new Uint8Array(buffer)
     decodeStart = performance.now()
     decodeEnd = decodeStart
     const lenHeader = response.headers.get('content-length')
 
-    wireBytes = lenHeader ? Number(lenHeader) : text.length
+    wireBytes = lenHeader ? Number(lenHeader) : bytesReady.byteLength
   }
-
-  const transferEnd = decodeStart
-
-  let executeMs: number | null = null
-
-  if (options.withExecute) {
-    const scriptText = new TextDecoder().decode(bytesReady)
-    const execStart = performance.now()
-
-    try {
-      ScriptExec(scriptText)()
-    } catch (e: unknown) {
-      throw new Error(`exec failed for ${variant.id}: ${e instanceof Error ? e.message : e}`)
-    }
-    executeMs = performance.now() - execStart
-  }
-
-  const totalEnd = performance.now()
 
   return {
-    sample: {
-      ttfbMs: firstByte - fetchStart,
-      transferMs: transferEnd - fetchStart,
-      decodeMs: decodeEnd - decodeStart,
-      executeMs,
-      totalMs: totalEnd - fetchStart,
-      wireBytes,
-    },
+    firstByte,
+    transferEnd,
     bytesReady,
+    wireBytes,
+    decodeMs: decodeEnd - decodeStart,
   }
+}
+
+interface ScriptChunkResult {
+  caseId: string
+  chunkCount: number
+  chunkIndex: number
+  payloadLength: number
+  loadedCount: number
+  totalPayloadLength: number
+  expectedPayloadLength: number
+  expectedPayloadSha256: string
+}
+
+function executeScriptChunks(
+  caseId: string,
+  chunks: readonly Uint8Array[],
+  variantId: string,
+): { textDecodeMs: number; executeMs: number } {
+  const textDecodeStart = performance.now()
+  const decoder = new TextDecoder()
+  const scripts = chunks.map(chunk => decoder.decode(chunk))
+  const textDecodeMs = performance.now() - textDecodeStart
+  const results: ScriptChunkResult[] = []
+  const host = globalThis as typeof globalThis & {
+    __benchmarkResult?: Record<string, (result: ScriptChunkResult) => void>
+    __tokenpackRuntimeBench?: { scriptChunks?: Record<string, unknown> }
+  }
+
+  host.__benchmarkResult ??= {}
+  host.__benchmarkResult[caseId] = result => {
+    results[result.chunkIndex] = result
+  }
+
+  const execStart = performance.now()
+
+  try {
+    for (const script of scripts) ScriptExec(script)()
+  } catch (e: unknown) {
+    throw new Error(`exec failed for ${variantId}: ${e instanceof Error ? e.message : e}`)
+  } finally {
+    delete host.__benchmarkResult[caseId]
+  }
+
+  const executeMs = performance.now() - execStart
+
+  verifyScriptResults(caseId, variantId, chunks.length, results)
+
+  return { textDecodeMs, executeMs }
+}
+
+function materializeSourceContent(
+  chunks: readonly Uint8Array[],
+  sourceKind: 'json' | 'text',
+  variantId: string,
+): void {
+  const decoder = new TextDecoder()
+
+  if (sourceKind === 'json') {
+    let totalKeys = 0
+
+    for (const chunk of chunks) {
+      const parsed = JSON.parse(decoder.decode(chunk)) as Record<string, unknown>
+
+      totalKeys += Object.keys(parsed).length
+    }
+    if (totalKeys <= 0) {
+      throw new Error(`content verification failed for ${variantId}: JSON object has no keys`)
+    }
+
+    return
+  }
+
+  const textLength = chunks.reduce((sum, chunk) => sum + decoder.decode(chunk).length, 0)
+
+  if (textLength === 0) {
+    throw new Error(`content verification failed for ${variantId}: empty text`)
+  }
+}
+
+function verifyScriptResults(
+  caseId: string,
+  variantId: string,
+  chunkCount: number,
+  results: ScriptChunkResult[],
+): void {
+  const loaded = results.filter(Boolean)
+
+  if (loaded.length !== chunkCount) {
+    throw new Error(`script verification failed for ${variantId}: ${loaded.length}/${chunkCount}`)
+  }
+  const final = loaded.find(result => result.loadedCount === chunkCount)
+
+  if (
+    !final ||
+    final.loadedCount !== chunkCount ||
+    final.totalPayloadLength !== final.expectedPayloadLength
+  ) {
+    throw new Error(`script payload verification failed for ${variantId}`)
+  }
+}
+
+function cleanupRuntimeState(caseId: string): void {
+  const host = globalThis as typeof globalThis & {
+    __benchmarkResult?: Record<string, unknown>
+    __tokenpackRuntimeBench?: { scriptChunks?: Record<string, unknown> }
+  }
+
+  if (host.__benchmarkResult) delete host.__benchmarkResult[caseId]
+  if (host.__tokenpackRuntimeBench?.scriptChunks) {
+    delete host.__tokenpackRuntimeBench.scriptChunks[caseId]
+  }
+  const stage = document.getElementById('runtime-bench-stage')
+
+  if (stage) {
+    Array.from(stage.attributes)
+      .filter(attr => attr.name.startsWith('data-runtime-bench-'))
+      .forEach(attr => stage.removeAttribute(attr.name))
+  }
+}
+
+function chunkCountFromSource(source: string): number {
+  const match = /__chunks-(\d+)(?:__chunk-\d+)?$/.exec(source)
+
+  return match ? Number(match[1]) : 1
+}
+
+function withQuery(url: string, query: Record<string, string>): string {
+  const sep = url.includes('?') ? '&' : '?'
+  const params = new URLSearchParams(query)
+
+  return url + sep + params.toString()
+}
+
+function concatBytes(chunks: Uint8Array[]): Uint8Array {
+  const total = chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0)
+  const out = new Uint8Array(total)
+  let offset = 0
+
+  for (const chunk of chunks) {
+    out.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+
+  return out
+}
+
+async function readStream(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
+  const reader = stream.getReader()
+  const chunks: Uint8Array[] = []
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+
+      if (done) break
+      if (value) chunks.push(value)
+    }
+  } finally {
+    reader.releaseLock()
+  }
+
+  return concatBytes(chunks)
 }
 
 // ── Fingerprint helpers ──────────────────────────────────────────────────────

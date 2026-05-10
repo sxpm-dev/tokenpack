@@ -38,10 +38,10 @@ export function Legend() {
         </Def>
 
         <Def term="Decode">
-          <span className="text-white/60">Batch</span> (<span className="font-mono">max-*</span>,{' '}
+          <span className="text-white/60">Batch</span> (<span className="font-mono">max-*</span>,
           <span className="font-mono">zip</span>, <span className="font-mono">tar.gz</span>,{' '}
-          <span className="font-mono">brotli-*</span>): pure CPU decode time, measured{' '}
-          <em>after</em> the entire response is downloaded.
+          <span className="font-mono">deflate</span>, <span className="font-mono">brotli-*</span>):
+          pure CPU decode time, measured <em>after</em> the entire response is downloaded.
           <br />
           <span className="text-white/60">Stream</span> (<span className="font-mono">stream-*</span>
           ): residual decode tail <em>after</em> the last network byte arrives. Approaches 0 when

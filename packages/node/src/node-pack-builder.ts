@@ -7,8 +7,8 @@
 import { readdir, readFile, stat } from 'node:fs/promises'
 import { basename, join, relative, sep } from 'node:path'
 
-import type { PackEntry } from 'tokenpack'
 import { type BuilderIntent, PackBuilder } from 'tokenpack'
+import type { PackEntry } from 'tokenpack/archive'
 
 export interface FsOptions {
   cwd?: string

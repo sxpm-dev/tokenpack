@@ -4,7 +4,7 @@ import type { ExtBenchRow } from '@/lib/bench-types'
 
 export type SortKey = keyof ExtBenchRow | 'roundTrip'
 
-export const fmtMs = (ms: number): string => `${ms.toFixed(1)}`
+export const fmtMs = (ms: number): string => `${ms.toFixed(1)}ms`
 
 export const fmtBytes = (b: number): string =>
   b < 1024
@@ -22,6 +22,8 @@ export const fmtArchiveBytes = (b: number): string =>
 function getSortValue(row: ExtBenchRow, key: SortKey): number | string {
   if (key === 'roundTrip') return row.roundTripMs
   const v = row[key as keyof ExtBenchRow]
+
+  if (v === undefined || v === null) return ''
 
   return typeof v === 'number' ? v : String(v)
 }

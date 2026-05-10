@@ -1,7 +1,7 @@
 import type { EncodeBrowserOptions } from '@tokenpack/browser'
 
 import type { EncodeConfig } from '@/components/EncodeForm'
-import { findDefaultPreset } from '@/components/EncodeForm'
+import { findDefaultPreset } from '@/components/EncodeForm/default-presets'
 
 /** Resolves the algo name actually used (taking the default preset into account). */
 export function resolveAlgoName(config: EncodeConfig): string {

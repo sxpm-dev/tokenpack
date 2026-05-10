@@ -7,14 +7,14 @@
  *   - a mutable EXCLUDE array — edit to skip a specific algo without code changes
  *
  * Imported by:
- *   - benchmark/generate.ts          → encodeDecodeBenchAlgos()
- *   - benchmark/run-extended.ts      → encodeDecodeBenchAlgos()
- *   - benchmark/generate-runtime.ts  → browserFetchBenchAlgos()
- *   - benchmark/run.ts               → serverFetchBenchAlgos()
+ *   - packages/app/scripts/benchmark/generate.ts          → encodeDecodeBenchAlgos()
+ *   - packages/app/scripts/benchmark/run-extended.ts      → encodeDecodeBenchAlgos()
+ *   - packages/app/scripts/generate-runtime-fixtures.ts → browser runtime fixtures
+ *   - packages/app/scripts/benchmark/run.ts               → serverFetchBenchAlgos()
  *   - packages/app/src/app/browser-fetch-bench/* → browserFetchBenchAlgos()
  */
 
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 import { type AlgorithmInfo, listAlgorithmInfos } from 'tokenpack/algorithms/catalog-info'
 
 // ── Classification predicates ──────────────────────────────────────────────
@@ -38,7 +38,7 @@ export const usesBrotli = (a: AlgorithmInfo): boolean =>
 export const ENCODE_DECODE_EXCLUDE: readonly string[] = []
 
 export function encodeDecodeBenchAlgos(): AlgorithmInfo[] {
-  return listAlgorithmInfos().filter(a => !ENCODE_DECODE_EXCLUDE.includes(a.name))
+  return listAlgorithmInfos(algorithmCatalog).filter(a => !ENCODE_DECODE_EXCLUDE.includes(a.name))
 }
 
 // ── Browser fetch bench (live in-browser fetch+decode) ──────────────────────
@@ -48,7 +48,7 @@ export function encodeDecodeBenchAlgos(): AlgorithmInfo[] {
 export const BROWSER_FETCH_EXCLUDE: readonly string[] = []
 
 export function browserFetchBenchAlgos(): AlgorithmInfo[] {
-  return listAlgorithmInfos()
+  return listAlgorithmInfos(algorithmCatalog)
     .filter(isBrowser)
     .filter(a => !usesBrotli(a))
     .filter(a => !BROWSER_FETCH_EXCLUDE.includes(a.name))
@@ -61,7 +61,7 @@ export function browserFetchBenchAlgos(): AlgorithmInfo[] {
 export const SERVER_FETCH_EXCLUDE: readonly string[] = []
 
 export function serverFetchBenchAlgos(): AlgorithmInfo[] {
-  return listAlgorithmInfos()
+  return listAlgorithmInfos(algorithmCatalog)
     .filter(isNode)
     .filter(a => !SERVER_FETCH_EXCLUDE.includes(a.name))
 }
@@ -73,12 +73,8 @@ export function serverFetchBenchAlgos(): AlgorithmInfo[] {
  * every benchmark script's `main()` so failures are loud and immediate.
  */
 export function assertAllReferencedAlgosExist(): void {
-  const known = new Set(listAlgorithmInfos().map(a => a.name))
-  const all = [
-    ...ENCODE_DECODE_EXCLUDE,
-    ...BROWSER_FETCH_EXCLUDE,
-    ...SERVER_FETCH_EXCLUDE,
-  ]
+  const known = new Set(listAlgorithmInfos(algorithmCatalog).map(a => a.name))
+  const all = [...ENCODE_DECODE_EXCLUDE, ...BROWSER_FETCH_EXCLUDE, ...SERVER_FETCH_EXCLUDE]
   const missing = all.filter(name => !known.has(name))
 
   if (missing.length > 0) {

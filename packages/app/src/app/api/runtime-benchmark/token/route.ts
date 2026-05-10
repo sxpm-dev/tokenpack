@@ -1,115 +1,98 @@
-// Returns a TokenPack-encoded source as PNG.
-//
-//   GET /api/runtime-benchmark/token?source=react-dom-dev&algo=linear-stream-deflate&ch=3
-//   GET /api/runtime-benchmark/token?...&live=1   → encode on-the-fly
-//
-// Static reads from packages/app/runtime-fixtures/<source>.<algo>-c<ch>.png
-// (produced by `yarn benchmark:generate:runtime`). Live re-encodes per request
-// via @tokenpack/node.
-
 import '@tokenpack/node'
 
-import { encode as tokenpackEncode } from '@tokenpack/node'
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 import fs from 'fs'
 import { type NextRequest, NextResponse } from 'next/server'
-import path from 'path'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 
 import {
+  findRuntimeFixture,
   networkConditionFor,
   NO_CACHE_HEADERS,
   param,
-  sourcePathFor,
+  readRuntimeManifest,
+  runtimeCaseId,
+  runtimeFixturePath,
   throttledBody,
 } from '../_shared'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-const RUNTIME_FIXTURES = path.join(process.cwd(), 'runtime-fixtures')
+function defaultCaseId(
+  manifest: NonNullable<ReturnType<typeof readRuntimeManifest>>,
+): string | null {
+  const first = manifest.fixtures.find(
+    fixture => fixture.tab === 'content' && fixture.kind === 'native' && fixture.encoding === 'raw',
+  )
 
-interface ResolvedAlgo {
-  Ctor: ReturnType<typeof algorithmCatalog.getByName>
-  ext: string
-  mime: string
+  return first ? runtimeCaseId(first.source, first.chunkCount, first.chunkIndex ?? 0) : null
 }
 
-function resolveAlgo(algoName: string): ResolvedAlgo | { error: string } {
+function defaultRuntimeAlgo(manifest: NonNullable<ReturnType<typeof readRuntimeManifest>>) {
+  const algo = manifest.algorithms[0]
+  const channels = algo?.channels[0]
+
+  return algo && channels ? { name: algo.name, channels } : null
+}
+
+export async function GET(req: NextRequest) {
+  const manifest = readRuntimeManifest()
+
+  if (!manifest) {
+    return NextResponse.json(
+      { error: 'runtime fixtures not found. Run `yarn benchmark`.' },
+      { status: 404 },
+    )
+  }
+
+  const fallbackAlgo = defaultRuntimeAlgo(manifest)
+  const source = param(req, 'source') ?? defaultCaseId(manifest)
+  const chunkIndex = Number(param(req, 'chunk') ?? 0)
+  const algoName = param(req, 'algo') ?? fallbackAlgo?.name
+  const channels = Number(param(req, 'ch') ?? fallbackAlgo?.channels)
+  const condition = networkConditionFor(param(req, 'throttle'))
+
+  if (!source)
+    return NextResponse.json({ error: 'runtime manifest has no content cases' }, { status: 404 })
+  if (!algoName || !channels) {
+    return NextResponse.json({ error: 'runtime manifest has no token algorithms' }, { status: 404 })
+  }
+
   let Ctor
 
   try {
     Ctor = algorithmCatalog.getByName(algoName)
   } catch {
-    return { error: `unknown algorithm: ${algoName}` }
+    return NextResponse.json({ error: `unknown algorithm: ${algoName}` }, { status: 400 })
   }
-  // Read the bound surface to get extension + mime — every algorithm carries
-  // a Surface class whose instance exposes these.
-  const surface = new (Ctor.Surface as unknown as new () => {
-    extension: string
-    mimeType: string
-  })()
-
-  return { Ctor, ext: surface.extension, mime: surface.mimeType }
-}
-
-export async function GET(req: NextRequest) {
-  const source = param(req, 'source') ?? 'react-dom-dev'
-  const algoName = param(req, 'algo') ?? 'linear-stream-deflate'
-  const channels = (Number(param(req, 'ch') ?? '3') as 1 | 2 | 3 | 4) || 3
-  const live = param(req, 'live') === '1'
-  const condition = networkConditionFor(param(req, 'throttle'))
-
-  const resolved = resolveAlgo(algoName)
-
-  if ('error' in resolved) {
-    return NextResponse.json({ error: resolved.error }, { status: 400 })
-  }
-  const { mime, ext } = resolved
-
-  if (!live) {
-    const fixturePath = path.join(RUNTIME_FIXTURES, `${source}.${algoName}-c${channels}${ext}`)
-
-    if (!fs.existsSync(fixturePath)) {
-      return NextResponse.json(
-        {
-          error: `pre-generated fixture not found: ${fixturePath}. Run \`yarn benchmark:generate:runtime\` or use \`?live=1\`.`,
-        },
-        { status: 404 },
-      )
-    }
-
-    const body = fs.readFileSync(fixturePath)
-
-    return new NextResponse(throttledBody(body, condition), {
-      headers: {
-        ...NO_CACHE_HEADERS,
-        'content-type': mime,
-        'content-length': String(body.length),
-        'x-runtime-bench-mode': 'static',
-        'x-runtime-bench-throttle': condition.name,
-      },
-    })
-  }
-
-  const sourceInfo = sourcePathFor(source)
-
-  if (!sourceInfo) {
-    return NextResponse.json({ error: `unknown source: ${source}` }, { status: 404 })
-  }
-
-  const raw = fs.readFileSync(sourceInfo.path)
-  const body = await tokenpackEncode(raw, {
+  const surface = new (Ctor.Surface as unknown as new () => { mimeType: string })()
+  const fixture = findRuntimeFixture(manifest, {
+    tab: 'content',
+    caseId: source,
+    chunkIndex,
+    kind: 'token',
     algo: algoName,
-    algoOptions: { surface: { channels } },
+    channels,
   })
+
+  if (!fixture) {
+    return NextResponse.json(
+      { error: `pre-generated token fixture not found: ${source} ${algoName}-c${channels}` },
+      { status: 404 },
+    )
+  }
+
+  const body = fs.readFileSync(runtimeFixturePath(fixture))
 
   return new NextResponse(throttledBody(body, condition), {
     headers: {
       ...NO_CACHE_HEADERS,
-      'content-type': mime,
+      'content-type': surface.mimeType,
       'content-length': String(body.length),
-      'x-runtime-bench-mode': 'live',
+      'x-runtime-bench-mode': 'static',
       'x-runtime-bench-throttle': condition.name,
+      'x-runtime-bench-source': source,
+      'x-runtime-bench-token-group': fixture.group ?? 'fetch',
     },
   })
 }

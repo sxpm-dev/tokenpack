@@ -26,11 +26,13 @@ archived-codecs/
 TODO.md
 IDEAS.md
 
-# Benchmark generated tokens (large)
-benchmark/tokens/
+# Benchmark fixtures (re-generatable via `yarn benchmark`)
+packages/app/benchmark-fixtures/
 
-# Runtime-benchmark fixtures (re-generatable via `yarn benchmark:generate:runtime`)
+# Legacy generated fixture locations
+benchmark/tokens/
 packages/app/runtime-fixtures/
+packages/app/runtime-bench-fixtures/
 
 # encode-times.json is an intermediate (consumed only by run-extended.ts, not the dashboard)
 packages/app/benchmark-results/encode-times.json

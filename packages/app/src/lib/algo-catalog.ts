@@ -4,12 +4,41 @@
 
 import '@tokenpack/browser'
 
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
-import { type AlgorithmInfo, buildAlgorithmInfoFromCtor } from 'tokenpack/algorithms/catalog-info'
+import { browserAlgorithmCatalog as algorithmCatalog } from '@tokenpack/browser/algorithms/catalog'
 
-export type AlgoMeta = AlgorithmInfo
+import { type AlgoMeta, buildAlgoMeta, type CatalogPackage } from './algo-meta'
 
-export const ALGO_CATALOG: AlgoMeta[] = algorithmCatalog.list().map(buildAlgorithmInfoFromCtor)
+export type { AlgoMeta, CatalogPackage } from './algo-meta'
+
+export const ALGO_CATALOG: AlgoMeta[] = algorithmCatalog
+  .list()
+  .map(Ctor => buildAlgoMeta(Ctor, ['browser']))
+
+export function mergeNodeCatalog(browserCatalog: AlgoMeta[], nodeCatalog: AlgoMeta[]): AlgoMeta[] {
+  const byName = new Map(browserCatalog.map(algo => [algo.name, { ...algo }]))
+
+  for (const nodeAlgo of nodeCatalog) {
+    const existing = byName.get(nodeAlgo.name)
+
+    if (existing) {
+      existing.implementedIn = packageUnion(existing.implementedIn, 'node')
+      existing.mirrored = existing.implementedIn.includes('browser')
+      continue
+    }
+
+    byName.set(nodeAlgo.name, {
+      ...nodeAlgo,
+      implementedIn: ['node'],
+      mirrored: false,
+    })
+  }
+
+  return [...byName.values()].sort((a, b) => a.id - b.id)
+}
+
+function packageUnion(current: CatalogPackage[], next: CatalogPackage): CatalogPackage[] {
+  return current.includes(next) ? current : [...current, next]
+}
 
 /** Two-axis classification used by every bench page (badges, row highlights,
  *  variant filtering). Computed once at module load from the catalog. */
@@ -17,6 +46,16 @@ export interface AlgoClassification {
   envs: ReadonlyArray<'node' | 'browser'>
   stream: boolean
   compressorFamily: string
+}
+
+export function classifyMeta(algo: AlgoMeta | undefined): AlgoClassification {
+  return algo
+    ? {
+        envs: algo.environments,
+        stream: algo.binding.streamable,
+        compressorFamily: algo.binding.compressor,
+      }
+    : { envs: [], stream: false, compressorFamily: 'unknown' }
 }
 
 export const CLASSIFICATION: Record<string, AlgoClassification> = (() => {

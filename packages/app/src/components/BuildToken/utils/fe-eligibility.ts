@@ -1,4 +1,4 @@
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { browserAlgorithmCatalog as algorithmCatalog } from '@tokenpack/browser/algorithms/catalog'
 
 import type { EncodeConfig } from '@/components/EncodeForm'
 

@@ -1,13 +1,10 @@
-// Node-side registrations. Order is load-bearing:
-//   1. Register compressors + surfaces (algorithm classes need their static
-//      capabilities/options getters to read from these at registration time).
-//   2. Register concrete algorithm Ctors (one per codec/recipe).
+// Node-side runtime setup. The algorithm catalog is env-owned in
+// `./algorithms/catalog`; this file only keeps legacy compressor/surface
+// helpers registered while pack-region compression still uses them.
 
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 import { compressorRegistry } from 'tokenpack/compressors/registry'
 import { surfaceRegistry } from 'tokenpack/surfaces/registry'
 
-import { ALL_NODE_ALGORITHMS } from './algorithms'
 import { BrotliCompressor } from './compressors/brotli-compressor'
 import { DeflateCompressor } from './compressors/deflate-compressor'
 import { AvifSurface } from './surfaces/avif'
@@ -25,13 +22,7 @@ if (!surfaceRegistry.has('png')) {
   surfaceRegistry.register('avif', () => new AvifSurface())
   surfaceRegistry.register('webp', () => new WebpSurface())
 }
-if (!surfaceRegistry.has('png-upng')) {
-  surfaceRegistry.register('png-upng', () => new PngUpngSurface())
-}
-
-for (const Ctor of ALL_NODE_ALGORITHMS) {
-  algorithmCatalog.register(Ctor as never)
-}
+if (!surfaceRegistry.has('png-upng')) surfaceRegistry.register('png-upng', () => new PngUpngSurface())
 
 export function registerNodeDefaults(): void {
   // No-op — registrations happen at module-load time. Kept for callers that

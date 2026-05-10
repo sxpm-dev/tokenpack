@@ -6,6 +6,14 @@
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start --port 3001",
+    "benchmark": "yarn benchmark:generate && yarn benchmark:run && yarn benchmark:run:extended && yarn benchmark:runtime && yarn benchmark:apply-diff && yarn benchmark:json-playground",
+    "benchmark:generate": "../../node_modules/.bin/tsx scripts/benchmark/generate.ts",
+    "benchmark:run": "../../node_modules/.bin/tsx scripts/benchmark/run.ts",
+    "benchmark:run:extended": "../../node_modules/.bin/tsx scripts/benchmark/run-extended.ts",
+    "benchmark:runtime": "../../node_modules/.bin/tsx scripts/generate-runtime-fixtures.ts",
+    "benchmark:apply-diff": "../../node_modules/.bin/tsx scripts/generate-apply-diff-fixtures.ts",
+    "benchmark:json-playground": "../../node_modules/.bin/tsx scripts/generate-json-playground-fixtures.ts",
+    "runtime:fixtures": "yarn benchmark:runtime",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write src"
@@ -27,6 +35,7 @@
     "sharp": "^0.34.5",
     "tailwind-variants": "^0.3.0",
     "tailwindcss": "^4.1.5",
+    "tinybench": "^2.9.0",
     "tokenpack": "workspace:*"
   },
   "devDependencies": {

@@ -18,13 +18,25 @@
 // `BrowserStreamingPngSurface.decodeStream`; the orchestration in
 // `PixelAlgorithm.decodeStream` (core).
 
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { decodeSurfaceStream, PixelAlgorithm } from 'tokenpack/algorithms/pixel-algorithm'
+import { PixelRangeAlgorithm } from 'tokenpack/algorithms/pixel-range-algorithm'
 import { decompressRaw } from 'tokenpack/compressors'
+import {
+  COMPACT_HEADER_PIXELS,
+  HEADER_PIXELS,
+  isCompactToken,
+  readCompactHeader,
+  readHeader,
+} from 'tokenpack/header'
 import { fromBytes } from 'tokenpack/pack/from-bytes'
 import type { Pack } from 'tokenpack/pack/types'
+import type { SurfaceStreamHandle } from 'tokenpack/surfaces/types'
 
+import { BrowserStreamingPngSurface } from './algorithms'
+import { browserAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
 import { buildDiffToFn } from './build-diff-to'
-import { decode, type DecodeOptions } from './decode'
+import type { DecodeOptions } from './decode'
+import { decodeSourceToPack, payloadToPack } from './decode-core'
 
 export type DecodeStreamSource = ReadableStream<Uint8Array> | Blob | string
 
@@ -49,26 +61,42 @@ export async function decodeStream(
   // filename here. For now we support PNG-magic detection as the dominant
   // case; non-PNG inputs collect to a Blob and use the buffered decode().
   if (!isPng(peek)) {
-    return decode(await streamToBlob(stream), options)
+    return decodeSourceToPack(await streamToBlob(stream), options)
   }
 
-  // Find the algorithm. We need pixel data to read the codec id, so give
-  // up here and route through the buffered detect path. Once the catalog
-  // grows a "detect from streaming source" helper this becomes one call.
-  const blob = await streamToBlob(stream)
-  const buffer = Buffer.from(await blob.arrayBuffer())
-  const Ctor = await algorithmCatalog.detectFromBuffer(buffer, '.png')
+  const pixelRangeAlgorithmId = detectPixelRangeAlgorithmIdFromPngPrefix(peek)
+
+  if (pixelRangeAlgorithmId !== null) {
+    const Ctor = algorithmCatalog.getById(pixelRangeAlgorithmId)
+    const algorithm = new Ctor({ key: options.key })
+
+    if (algorithm instanceof PixelRangeAlgorithm) {
+      const decoded = await streamToBytes(algorithm.decodeStream(stream, options))
+
+      return payloadToPack(decoded, algorithm, options.decompress)
+    }
+  }
+
+  const [detectStream, fallbackStream] = stream.tee()
+  const surface = new BrowserStreamingPngSurface()
+  const handle = await surface.decodeStream(detectStream)
+  let detected: Awaited<ReturnType<typeof detectAlgorithmFromRows>>
+
+  try {
+    detected = await detectAlgorithmFromRows(handle)
+  } catch {
+    return decodeSourceToPack(await streamToBlob(fallbackStream), options)
+  }
+
+  const Ctor = algorithmCatalog.getById(detected.algorithmId)
   const algorithm = new Ctor({ key: options.key })
 
-  // Delegate the streaming decode to the algorithm — surface owns the PNG
-  // parser, compressor owns the inflate, codec owns per-row decode.
-  // We need to re-create a stream from the buffered bytes here because
-  // detection consumed the original. For a true zero-buffer streaming
-  // path the catalog needs a stream-aware detection API.
-  const decodedStream = algorithm.decodeStream(blobToStream(blob), {
-    key: options.key,
-  })
-  const decoded = await readAll(decodedStream)
+  if (!(algorithm instanceof PixelAlgorithm) || !Ctor.capabilities.streamable) {
+    return decodeSourceToPack(await streamToBlob(fallbackStream), options)
+  }
+
+  fallbackStream.cancel().catch(() => undefined)
+  const decoded = await decodeSurfaceStream(algorithm, detected.handle, options)
 
   return fromBytes(decoded, {
     decompress: options.decompress ?? decompressRaw,
@@ -76,6 +104,113 @@ export async function decodeStream(
     // produces a diff token packaged with the same algorithm as the inputs.
     diffTo: buildDiffToFn(algorithm),
   })
+}
+
+function detectPixelRangeAlgorithmIdFromPngPrefix(peek: Uint8Array): number | null {
+  if (peek.byteLength < 52 || !isPng(peek)) return null
+
+  const ihdrPos = 8
+  const ihdrLen = readU32be(peek, ihdrPos)
+  const ihdrType = ascii4(peek, ihdrPos + 4)
+
+  if (ihdrType !== 'IHDR') return null
+  const nextPos = ihdrPos + 8 + ihdrLen + 4
+
+  if (nextPos + 19 > peek.byteLength) return null
+  const chunkType = ascii4(peek, nextPos + 4)
+
+  if (chunkType !== 'tpAK') return null
+  const dataPos = nextPos + 8
+
+  if (ascii4(peek, dataPos) !== 'TPK1') return null
+
+  return (peek[dataPos + 4] << 8) | peek[dataPos + 5]
+}
+
+function readU32be(bytes: Uint8Array, offset: number): number {
+  return (
+    bytes[offset] * 0x1000000 +
+    (bytes[offset + 1] << 16) +
+    (bytes[offset + 2] << 8) +
+    bytes[offset + 3]
+  )
+}
+
+function ascii4(bytes: Uint8Array, offset: number): string {
+  return String.fromCharCode(bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3])
+}
+
+async function detectAlgorithmFromRows(handle: SurfaceStreamHandle): Promise<{
+  algorithmId: number
+  handle: SurfaceStreamHandle
+}> {
+  const iterator = handle.rows[Symbol.asyncIterator]()
+  const queued: Uint8Array[] = []
+  let pixelBuf: Uint8Array<ArrayBufferLike> = new Uint8Array(0)
+
+  while (true) {
+    const { done, value } = await iterator.next()
+
+    if (done) break
+    queued.push(value)
+    pixelBuf = appendBytes(pixelBuf, value)
+
+    const compactBytes = COMPACT_HEADER_PIXELS * handle.fileChannels
+
+    if (pixelBuf.byteLength >= compactBytes && isCompactToken(pixelBuf)) {
+      return {
+        algorithmId: readCompactHeader(pixelBuf).algoId,
+        handle: replayHandle(handle, queued, iterator),
+      }
+    }
+
+    const fullBytes = HEADER_PIXELS * handle.fileChannels
+
+    if (pixelBuf.byteLength >= fullBytes) {
+      try {
+        return {
+          algorithmId: readHeader(pixelBuf).algorithmId,
+          handle: replayHandle(handle, queued, iterator),
+        }
+      } catch {
+        // Keep accumulating until enough rows are available for a valid header.
+      }
+    }
+  }
+
+  throw new Error('decodeStream(): input ended before TokenPack header')
+}
+
+function replayHandle(
+  handle: SurfaceStreamHandle,
+  queued: Uint8Array[],
+  iterator: AsyncIterator<Uint8Array>,
+): SurfaceStreamHandle {
+  const rows = (async function* () {
+    for (const row of queued) yield row
+    while (true) {
+      const { done, value } = await iterator.next()
+
+      if (done) return
+      yield value
+    }
+  })()
+
+  return { ...handle, rows }
+}
+
+function appendBytes(
+  a: Uint8Array<ArrayBufferLike>,
+  b: Uint8Array<ArrayBufferLike>,
+): Uint8Array<ArrayBufferLike> {
+  if (a.byteLength === 0) return b
+  if (b.byteLength === 0) return a
+  const out = new Uint8Array(a.byteLength + b.byteLength)
+
+  out.set(a, 0)
+  out.set(b, a.byteLength)
+
+  return out
 }
 
 function isPng(peek: Uint8Array): boolean {
@@ -142,7 +277,6 @@ async function sourceToReadable(source: DecodeStreamSource): Promise<ReadableStr
 }
 
 async function streamToBlob(stream: ReadableStream<Uint8Array>): Promise<Blob> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chunks: any[] = []
   const reader = stream.getReader()
 
@@ -156,19 +290,16 @@ async function streamToBlob(stream: ReadableStream<Uint8Array>): Promise<Blob> {
   return new Blob(chunks)
 }
 
-function blobToStream(blob: Blob): ReadableStream<Uint8Array> {
-  return blob.stream()
-}
-
-async function readAll(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
-  const reader = stream.getReader()
+async function streamToBytes(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
   const chunks: Uint8Array[] = []
+  const reader = stream.getReader()
   let total = 0
 
   while (true) {
     const { done, value } = await reader.read()
 
     if (done) break
+    if (!value) continue
     chunks.push(value)
     total += value.byteLength
   }

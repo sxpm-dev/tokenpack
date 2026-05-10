@@ -11,6 +11,9 @@
   ],
   "exports": {
     ".": "./src/index.ts",
+    "./algorithms/catalog": "./src/algorithms/catalog.ts",
+    "./fetch-pack": "./src/fetch-pack.ts",
+    "./inspect": "./src/inspect.ts",
     "./components": "./src/components/index.ts",
     "./hooks": "./src/hooks/index.ts"
   },

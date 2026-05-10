@@ -1,16 +1,17 @@
+/* eslint-disable no-console */
 /**
  * Extended benchmark — decode each pre-generated token, measure timing.
- * Run: yarn tsx benchmark/run-extended.ts
+ * Run: yarn workspace tokenpack-app benchmark:run:extended
  *
- * Requires: yarn tsx benchmark/generate.ts  (generates token files + encode-times.json)
+ * Requires: yarn workspace tokenpack-app benchmark:generate
  *
  * Outputs:
  *   packages/app/benchmark-results/results-extended.json  — per-algorithm rows
  *
- * The network simulation lives in `benchmark/run.ts`; this script focuses on
+ * The network simulation lives in `scripts/benchmark/run.ts`; this script focuses on
  * pure encode/decode timing per registered algorithm.
  *
- * Variance reduction (see `benchmark/measure.ts`):
+ * Variance reduction (see `scripts/benchmark/measure.ts`):
  *   - 2 warmup runs per scenario, 10 timed samples
  *   - median + p95 + stddev reported on each row (not just mean)
  *   - opt-in GC between samples via NODE_OPTIONS=--expose-gc
@@ -18,22 +19,38 @@
 
 import '@tokenpack/node'
 
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 import fs from 'fs'
 import path from 'path'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
-import { fileURLToPath } from 'url'
 
 import { assertAllReferencedAlgosExist } from './bench-algos'
-import { type Stats, formatStats, measure } from './measure'
+import { APP_BENCHMARK_RESULTS_DIR, NODE_BENCH_FIXTURE_DIR } from './fixture-corpus'
+import { formatStats, measure, type Stats } from './measure'
 
-const HERE = path.dirname(fileURLToPath(import.meta.url))
-const REPO_ROOT = path.join(HERE, '..')
-const RESULTS_DIR = path.join(REPO_ROOT, 'packages', 'app', 'benchmark-results')
+const RESULTS_DIR = APP_BENCHMARK_RESULTS_DIR
 const ENCODE_TIMES = path.join(RESULTS_DIR, 'encode-times.json')
 
 fs.mkdirSync(RESULTS_DIR, { recursive: true })
 
 const BENCH_TIMEOUT_MS = 60_000
+
+interface Args {
+  algos?: Set<string>
+}
+
+function parseArgs(argv: string[]): Args {
+  let algos: Set<string> | undefined
+
+  for (const arg of argv) {
+    if (arg.startsWith('--algos=')) {
+      algos = new Set(arg.slice('--algos='.length).split(',').filter(Boolean))
+    } else {
+      throw new Error(`unknown arg: ${arg}`)
+    }
+  }
+
+  return { algos }
+}
 
 const fmtBytes = (b: number) =>
   b < 1024
@@ -52,12 +69,17 @@ function withTimeout<T>(ms: number, p: Promise<T>): Promise<T> {
 }
 
 const SOURCE_LABELS: Record<string, string> = {
+  'client-spec-map': 'client-spec-map',
   'react-dom-client.development': 'react-dom-dev',
+  'react-dom-client-development': 'react-dom-dev',
   'chunk-5mb': 'chunk-5mb',
 }
 
 interface EncodeTimeEntry {
   source: string
+  sourceId?: string
+  chunkCount?: number
+  chunkIndex?: number
   algorithm: string
   surface: string
   compressor: string
@@ -74,6 +96,9 @@ export interface ExtBenchRow {
   outerCompression: string
   channels: number
   source: string
+  sourceId?: string
+  chunkCount?: number
+  chunkIndex?: number
   encodeMs: number
   decodeMs: number
   roundTripMs: number
@@ -135,6 +160,9 @@ function buildBaseRow(entry: EncodeTimeEntry, error?: string): ExtBenchRow {
     outerCompression: entry.compressor,
     channels: entry.channels,
     source: SOURCE_LABELS[entry.source] ?? entry.source,
+    sourceId: entry.sourceId,
+    chunkCount: entry.chunkCount,
+    chunkIndex: entry.chunkIndex,
     encodeMs: Math.round(entry.encodeMs * 10) / 10,
     decodeMs: 0,
     roundTripMs: Math.round(entry.encodeMs * 10) / 10,
@@ -173,19 +201,39 @@ function formatOptions(defaults?: Record<string, unknown>): string {
   return parts.length === 0 ? '—' : parts.join(', ')
 }
 
+function mergeRows(
+  previous: ExtBenchRow[],
+  next: ExtBenchRow[],
+  algos?: Set<string>,
+): ExtBenchRow[] {
+  if (!algos) return next
+
+  return [...previous.filter(row => !algos.has(row.codecName)), ...next]
+}
+
 async function main() {
+  const args = parseArgs(process.argv.slice(2))
+
   assertAllReferencedAlgosExist()
 
   if (!fs.existsSync(ENCODE_TIMES)) {
     console.error(`\nERROR: ${ENCODE_TIMES} not found.`)
-    console.error('Run `yarn tsx benchmark/generate.ts` first.\n')
+    console.error('Run `yarn benchmark` first.\n')
     process.exit(1)
   }
 
-  const entries: EncodeTimeEntry[] = JSON.parse(fs.readFileSync(ENCODE_TIMES, 'utf-8'))
+  const entries = (JSON.parse(fs.readFileSync(ENCODE_TIMES, 'utf-8')) as EncodeTimeEntry[])
+    .filter(entry => !args.algos || args.algos.has(entry.algorithm))
+    .filter(entry =>
+      algorithmCatalog
+        .getByName(entry.algorithm)
+        .capabilities.channels.includes(entry.channels as 1 | 2 | 3 | 4),
+    )
   const total = entries.length
 
-  console.log(`\n═══ Codec perf: decoding ${total} pre-generated tokens (warmup×2 + 10 samples) ═══\n`)
+  console.log(
+    `\n═══ Codec perf: decoding ${total} pre-generated tokens (warmup×2 + 10 samples) ═══\n`,
+  )
 
   let done = 0
   const rows: ExtBenchRow[] = []
@@ -207,7 +255,7 @@ async function main() {
 
       process.stdout.write(`  ${label.padEnd(46)}`)
 
-      const tokenPath = entry.tokenFile ? path.join(HERE, entry.tokenFile) : ''
+      const tokenPath = entry.tokenFile ? path.join(NODE_BENCH_FIXTURE_DIR, entry.tokenFile) : ''
 
       if (!entry.tokenFile || !fs.existsSync(tokenPath)) {
         rows.push(buildBaseRow(entry, 'token file not found (encode failed during generate)'))
@@ -258,9 +306,15 @@ async function main() {
   }
 
   const outPath = path.join(RESULTS_DIR, 'results-extended.json')
+  const previousRows = fs.existsSync(outPath)
+    ? (JSON.parse(fs.readFileSync(outPath, 'utf-8')) as ExtBenchRow[])
+    : []
+  const mergedRows = mergeRows(previousRows, rows, args.algos)
 
-  fs.writeFileSync(outPath, JSON.stringify(rows, null, 2))
-  console.log(`Codec perf saved → ${outPath}  (${rows.length} rows)`)
+  fs.writeFileSync(outPath, JSON.stringify(mergedRows, null, 2))
+  console.log(
+    `Codec perf saved → ${outPath}  (${mergedRows.length} rows${args.algos ? `, ${rows.length} refreshed` : ''})`,
+  )
 }
 
 main().catch(e => {

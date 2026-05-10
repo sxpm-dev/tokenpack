@@ -1,6 +1,6 @@
 'use client'
 
-import { diff, type DiffPack, type DirPack, encode } from '@tokenpack/browser'
+import { type DiffPack, type DirPack, encode } from '@tokenpack/browser'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { BuilderEntry } from '@/components/BuildToken'
@@ -86,10 +86,10 @@ export function useGenerateDiff(): UseGenerateDiffApi {
           throw new Error('encoded result was not a DirPack — unexpected')
         }
 
-        // Unified diff path: `diff(a, b).token()` produces a real diff token
-        // packaged with the source algorithm, then we decode it back to a
-        // DiffPack for in-app rendering. No server hop needed.
-        const diffTokenBytes = await diff(baseEncoded.bytes, nextEncoded.bytes).token()
+        // Unified diff path: `basePack.diffTo(nextPack)` produces a real diff token
+        // packaged with the source algorithm.
+        const diffResult = (await basePack.diffTo(nextPack)) as { bytes: Uint8Array }
+        const diffTokenBytes = diffResult.bytes
         const { pack: diffPackUnknown } = await decodeBytesWithFallback(diffTokenBytes)
 
         if (!diffPackUnknown.isDiff()) {

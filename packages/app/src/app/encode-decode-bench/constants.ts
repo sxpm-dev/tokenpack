@@ -1,11 +1,17 @@
-/** Trimmed corpus matching benchmark/generate.ts:FILE_SOURCES. To investigate
- *  a focused case, add the source back to both lists at once. */
+/** Source picker order mirrors scripts/benchmark/fixture-corpus.ts. */
 export const SOURCES = [
-  { id: 'react-dom-dev', label: 'react-dom dev' },
+  { id: 'client-spec-map', label: 'client spec map' },
+  { id: 'react-dom-client-development', label: 'react-dom dev' },
   { id: 'chunk-5mb', label: 'chunk 5MB JS' },
 ] as const
 
-export const SOURCE_TO_ARCHIVE_NAME: Record<string, string> = {
-  'react-dom-dev': 'react-dom-client.development',
-  'chunk-5mb': 'chunk-5mb',
-}
+export const CONDITIONS = [
+  { id: 'local', label: 'Local', detail: '0ms · no throttle' },
+  { id: 'fast-cdn', label: 'Fast CDN', detail: '10ms · 100 MB/s' },
+  { id: 'average', label: 'Average', detail: '50ms · 10 MB/s' },
+  { id: 'slow', label: 'Slow', detail: '100ms · 2 MB/s' },
+] as const
+
+export const CONDITION_LABELS: Record<string, string> = Object.fromEntries(
+  CONDITIONS.map(c => [c.id, `${c.label} · ${c.detail}`]),
+)

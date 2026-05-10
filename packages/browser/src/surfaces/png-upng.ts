@@ -2,10 +2,9 @@
 //
 // Why not the canvas-based BrowserPngSurface? Canvas premultiplies alpha
 // during the toBlob/getImageData round-trip; for any pixel with α < 255 the
-// RGB bytes lose precision. 4-channel TokenPack tokens use the alpha byte
-// as **codec data**, so the canvas pipeline silently corrupts them. upng-js
-// reads/writes raw RGBA bytes via deflate IDAT directly, so 4-channel tokens
-// survive byte-exact through encode/decode.
+// RGB bytes lose precision. upng-js bypasses canvas entirely, but its RGBA
+// output has produced truncated PNGs for medium/large payloads. We therefore
+// expose this surface as RGB-only.
 //
 // Identical encode/decode logic to `@tokenpack/node`'s PngUpngSurface — only
 // the `write`/`readFile` overrides differ (browser throws; node uses fs).
@@ -15,6 +14,7 @@
 // app-package level via `packages/app/src/types/upng-js.d.ts` for Next's
 // isolated typecheck pipeline.
 
+import { Buffer } from 'buffer'
 import { ImageSurface } from 'tokenpack/surfaces'
 import type { SurfacePixels } from 'tokenpack/surfaces/types'
 import UPNG from 'upng-js'
@@ -63,17 +63,19 @@ function detectFileChannels(rgbaData: Uint8Array, colorType: number): 3 | 4 {
 }
 
 export class BrowserPngUpngSurface extends ImageSurface {
+  override readonly supportedChannels = new Set<3 | 4>([3])
+
   constructor() {
     super({
       id: 'png-upng',
       label: 'PNG (upng-js, browser)',
       description:
-        'Lossless 8-bit/channel PNG via upng-js — pure JS, no canvas, byte-exact 4-channel encode/decode.',
+        'Lossless 8-bit/channel PNG via upng-js — pure JS, no canvas, byte-exact RGB encode/decode.',
       format: 'png',
       extension: '.png',
       mimeType: 'image/png',
       preservesAlpha: true,
-      maxBpp: 4,
+      maxBpp: 3,
     })
   }
 

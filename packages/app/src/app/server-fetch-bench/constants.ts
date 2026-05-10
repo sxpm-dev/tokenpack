@@ -1,19 +1,27 @@
 export const CONDITIONS: readonly string[] = ['local', 'fast-cdn', 'average', 'slow']
 
-/** Bench-matrix sources. Trimmed to the two cases that drive the algorithm
- *  decision: a real-world medium JS bundle (react-dom dev) and a very-large
- *  bundle / cache-stress case (chunk-5mb). Re-add other sources here only
- *  alongside a corresponding entry in benchmark/generate.ts. */
-export const SOURCES: readonly string[] = ['react-dom-client.development', 'chunk-5mb']
+/** Bench-matrix sources. Keep in sync with scripts/benchmark/fixture-corpus.ts. */
+export const SOURCES: readonly string[] = [
+  'client-spec-map',
+  'react-dom-client-development',
+  'chunk-5mb',
+]
 
 /** Archive baselines have fixed identities and colors. Token-pack scenarios
  *  are catalog-driven (`<algo>-c<ch>`), so the dashboard derives them from
  *  the data via `buildScenarioConfig(...)`. */
-export const ARCHIVE_SCENARIOS: readonly string[] = ['zip', 'tar.gz', 'brotli-11', 'brotli-6']
+export const ARCHIVE_SCENARIOS: readonly string[] = [
+  'zip',
+  'tar.gz',
+  'deflate',
+  'brotli-11',
+  'brotli-6',
+]
 
 const ARCHIVE_COLORS: Record<string, string> = {
   zip: '#f59e0b',
   'tar.gz': '#f97316',
+  deflate: '#fbbf24',
   'brotli-11': '#10b981',
   'brotli-6': '#34d399',
 }
@@ -67,7 +75,8 @@ export function buildScenarioConfig(scenarioIds: ReadonlyArray<string>): {
 }
 
 export const SOURCE_LABELS: Record<string, string> = {
-  'react-dom-client.development': 'react-dom dev',
+  'client-spec-map': 'client spec map',
+  'react-dom-client-development': 'react-dom dev',
   'chunk-5mb': 'chunk 5MB JS',
 }
 

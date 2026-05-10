@@ -11,16 +11,11 @@ import type { AbstractCodec } from '../codecs/types'
 import { composeEnvironments, composeOptions } from '../components/compose'
 import type { OptionsSchema } from '../components/options'
 import type { AbstractCompressor } from '../compressors/types'
-import {
-  computeTextDiff,
-  defaultDiffCompress,
-  type FileDiff,
-  packToEntries,
-} from '../diff'
+import { computeTextDiff, defaultDiffCompress, type FileDiff, packToEntries } from '../diff'
 import type { AbstractDrawer } from '../drawers/types'
 import type { AbstractFec } from '../fec/types'
-import { encodeDiff } from '../pack-format/encode-diff'
 import type { Pack } from '../pack/types'
+import { encodeDiff } from '../pack-format/encode-diff'
 import type { AbstractSurface } from '../surfaces/types'
 import type { ImageFormat } from '../types'
 
@@ -54,8 +49,9 @@ export interface AlgorithmStaticBindings {
 }
 
 /** Algorithm Ctor — what the catalog stores. Use `new Ctor(opts)` to instantiate. */
-export interface AlgorithmCtor<T extends AbstractAlgorithm = AbstractAlgorithm>
-  extends AlgorithmStaticBindings {
+export interface AlgorithmCtor<
+  T extends AbstractAlgorithm = AbstractAlgorithm,
+> extends AlgorithmStaticBindings {
   new (opts?: AlgorithmOptions): T
   readonly optionsSchema: OptionsSchema
   readonly capabilities: AlgorithmCapabilities
@@ -77,6 +73,8 @@ export interface DecodeOptions {
   key?: string
   /** File extension used to pick the surface decoder. Defaults to '.png'. */
   ext?: string
+  /** Called when a streaming decoder emits its first decoded payload chunk. */
+  onFirstDecodedChunk?: (chunk: Uint8Array) => void
 }
 
 /**

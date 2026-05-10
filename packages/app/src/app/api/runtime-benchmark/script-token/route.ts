@@ -1,29 +1,62 @@
-// Returns a TokenPack-encoded benchmark script.
-//
-//   GET /api/runtime-benchmark/script-token?algo=linear-stream-deflate&ch=3
-//   GET /api/runtime-benchmark/script-token?...&live=1 → encode on-the-fly
-
 import '@tokenpack/node'
 
-import { encode as tokenpackEncode } from '@tokenpack/node'
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 import fs from 'fs'
 import { type NextRequest, NextResponse } from 'next/server'
-import path from 'path'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
 
-import { buildScript } from '../_script-builder'
-import { networkConditionFor, NO_CACHE_HEADERS, param, throttledBody } from '../_shared'
+import {
+  findRuntimeFixture,
+  networkConditionFor,
+  NO_CACHE_HEADERS,
+  param,
+  readRuntimeManifest,
+  runtimeCaseId,
+  runtimeFixturePath,
+  throttledBody,
+} from '../_shared'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-const RUNTIME_FIXTURES = path.join(process.cwd(), 'runtime-fixtures')
+function defaultCaseId(
+  manifest: NonNullable<ReturnType<typeof readRuntimeManifest>>,
+): string | null {
+  const first = manifest.fixtures.find(
+    fixture => fixture.tab === 'script' && fixture.kind === 'native' && fixture.encoding === 'raw',
+  )
+
+  return first ? runtimeCaseId(first.source, first.chunkCount, first.chunkIndex ?? 0) : null
+}
+
+function defaultRuntimeAlgo(manifest: NonNullable<ReturnType<typeof readRuntimeManifest>>) {
+  const algo = manifest.algorithms[0]
+  const channels = algo?.channels[0]
+
+  return algo && channels ? { name: algo.name, channels } : null
+}
 
 export async function GET(req: NextRequest) {
-  const algoName = param(req, 'algo') ?? 'linear-stream-deflate'
-  const channels = (Number(param(req, 'ch') ?? '3') as 1 | 2 | 3 | 4) || 3
-  const live = param(req, 'live') === '1'
+  const manifest = readRuntimeManifest()
+
+  if (!manifest) {
+    return NextResponse.json(
+      { error: 'runtime fixtures not found. Run `yarn benchmark`.' },
+      { status: 404 },
+    )
+  }
+
+  const fallbackAlgo = defaultRuntimeAlgo(manifest)
+  const source = param(req, 'source') ?? defaultCaseId(manifest)
+  const chunkIndex = Number(param(req, 'chunk') ?? 0)
+  const algoName = param(req, 'algo') ?? fallbackAlgo?.name
+  const channels = Number(param(req, 'ch') ?? fallbackAlgo?.channels)
   const condition = networkConditionFor(param(req, 'throttle'))
+
+  if (!source)
+    return NextResponse.json({ error: 'runtime manifest has no script cases' }, { status: 404 })
+  if (!algoName || !channels) {
+    return NextResponse.json({ error: 'runtime manifest has no token algorithms' }, { status: 404 })
+  }
 
   let Ctor
 
@@ -32,48 +65,34 @@ export async function GET(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: `unknown algorithm: ${algoName}` }, { status: 400 })
   }
-  const surface = new (Ctor.Surface as unknown as new () => {
-    extension: string
-    mimeType: string
-  })()
-  const headers: Record<string, string> = {
-    ...NO_CACHE_HEADERS,
-    'content-type': surface.mimeType,
-  }
-
-  if (!live) {
-    const fixturePath = path.join(
-      RUNTIME_FIXTURES,
-      `script.${algoName}-c${channels}${surface.extension}`,
-    )
-
-    if (!fs.existsSync(fixturePath)) {
-      return NextResponse.json(
-        {
-          error: `pre-generated fixture not found: ${fixturePath}. Run \`yarn benchmark:generate:runtime\` or use \`?live=1\`.`,
-        },
-        { status: 404 },
-      )
-    }
-
-    const body = fs.readFileSync(fixturePath)
-
-    headers['content-length'] = String(body.length)
-    headers['x-runtime-bench-mode'] = 'static'
-    headers['x-runtime-bench-throttle'] = condition.name
-
-    return new NextResponse(throttledBody(body, condition), { headers })
-  }
-
-  const script = buildScript(performance.now())
-  const body = await tokenpackEncode(Buffer.from(script, 'utf-8'), {
+  const surface = new (Ctor.Surface as unknown as new () => { mimeType: string })()
+  const fixture = findRuntimeFixture(manifest, {
+    tab: 'script',
+    caseId: source,
+    chunkIndex,
+    kind: 'token',
     algo: algoName,
-    algoOptions: { surface: { channels } },
+    channels,
   })
 
-  headers['content-length'] = String(body.length)
-  headers['x-runtime-bench-mode'] = 'live'
-  headers['x-runtime-bench-throttle'] = condition.name
+  if (!fixture) {
+    return NextResponse.json(
+      { error: `pre-generated script token fixture not found: ${source} ${algoName}-c${channels}` },
+      { status: 404 },
+    )
+  }
 
-  return new NextResponse(throttledBody(body, condition), { headers })
+  const body = fs.readFileSync(runtimeFixturePath(fixture))
+
+  return new NextResponse(throttledBody(body, condition), {
+    headers: {
+      ...NO_CACHE_HEADERS,
+      'content-type': surface.mimeType,
+      'content-length': String(body.length),
+      'x-runtime-bench-mode': 'static',
+      'x-runtime-bench-throttle': condition.name,
+      'x-runtime-bench-source': source,
+      'x-runtime-bench-token-group': fixture.group ?? 'fetch',
+    },
+  })
 }

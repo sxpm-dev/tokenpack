@@ -1,4 +1,3 @@
-export { DEFAULT_PRESETS, type DefaultPresetDef, findDefaultPreset } from './default-presets'
 export { EncodeForm } from './EncodeForm'
 export {
   type ConfigMode,

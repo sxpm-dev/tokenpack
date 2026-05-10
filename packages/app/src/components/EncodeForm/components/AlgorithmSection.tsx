@@ -1,8 +1,9 @@
 'use client'
 
 import { Chip, ListBox, Select } from '@heroui/react'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
-import type { AlgorithmCtor } from 'tokenpack/algorithms/types'
+
+import type { AlgoMeta } from '@/lib/algo-meta'
+import { usePlaygroundAlgorithms } from '@/lib/use-playground-algorithms'
 
 import { Section } from './Section'
 
@@ -11,68 +12,8 @@ interface AlgorithmSectionProps {
   onAlgoChange: (algo: string) => void
 }
 
-interface Binding {
-  name: string
-  title: string
-  codec: string
-  codecDescription: string
-  surface: string
-  surfaceDescription: string
-  compressor: string
-  compressorDescription: string
-  drawer: string
-  drawerDescription: string
-  environments: ('node' | 'browser')[]
-  streamable: boolean
-}
-
-interface CodecLike {
-  name: string
-  metadata?: { description?: string }
-}
-
-interface SurfaceLike {
-  id: string
-  description?: string
-}
-
-interface DrawerLike {
-  id: string
-  description?: string
-}
-
-function describe(Ctor: AlgorithmCtor): Binding {
-  const codec = new (Ctor.Codec as unknown as new () => CodecLike)()
-  const surface = new (Ctor.Surface as unknown as new () => SurfaceLike)()
-  const drawer = new (Ctor.Drawer as unknown as new () => DrawerLike)()
-  const ctorMeta = Ctor as unknown as { title?: string; name: string }
-  const compressorCtor = Ctor.Compressor as unknown as {
-    familyId: string
-    description?: string
-  }
-
-  return {
-    name: ctorMeta.name,
-    title: ctorMeta.title ?? ctorMeta.name,
-    codec: codec.name,
-    codecDescription: codec.metadata?.description ?? '',
-    surface: surface.id,
-    surfaceDescription: surface.description ?? '',
-    compressor: compressorCtor.familyId,
-    compressorDescription: compressorCtor.description ?? '',
-    drawer: drawer.id,
-    drawerDescription: drawer.description ?? '',
-    environments: [...Ctor.capabilities.environments],
-    streamable: Ctor.capabilities.streamable,
-  }
-}
-
-function listBindings(): Binding[] {
-  return algorithmCatalog.list().map(describe)
-}
-
 export function AlgorithmSection({ algo, onAlgoChange }: AlgorithmSectionProps) {
-  const bindings = listBindings()
+  const bindings = usePlaygroundAlgorithms()
   const selected = bindings.find(b => b.name === algo)
 
   return (
@@ -91,7 +32,7 @@ export function AlgorithmSection({ algo, onAlgoChange }: AlgorithmSectionProps) 
         <Select.Trigger>
           <Select.Value>
             {selected ? (
-              <span className="flex items-center gap-2 w-full">
+              <span className="flex w-full items-center gap-2">
                 <span className="font-mono text-[12px]">{selected.name}</span>
                 <span className="text-[10px] text-white/40">{describeBinding(selected)}</span>
               </span>
@@ -105,10 +46,32 @@ export function AlgorithmSection({ algo, onAlgoChange }: AlgorithmSectionProps) 
           <ListBox aria-label="Algorithm">
             {bindings.map(b => (
               <ListBox.Item key={b.name} id={b.name} textValue={b.name}>
-                <span className="flex flex-col items-start gap-0.5 leading-tight w-full">
+                <span className="flex w-full flex-col items-start gap-0.5 leading-tight">
                   <span className="text-[12px] font-mono">{b.name}</span>
                   <span className="text-[10px] text-white/45 font-mono tabular-nums">
                     {describeBinding(b)}
+                  </span>
+                  <span className="flex gap-1 pt-1">
+                    {b.implementedIn.map(pkg => (
+                      <Chip
+                        key={pkg}
+                        className="h-4 px-1 text-[9px] uppercase"
+                        size="sm"
+                        variant="tertiary"
+                      >
+                        {pkg}
+                      </Chip>
+                    ))}
+                    {b.mirrored && (
+                      <Chip className="h-4 px-1 text-[9px] uppercase" size="sm" variant="tertiary">
+                        mirrored
+                      </Chip>
+                    )}
+                    {b.binding.streamable && (
+                      <Chip className="h-4 px-1 text-[9px]" size="sm" variant="tertiary">
+                        stream
+                      </Chip>
+                    )}
                   </span>
                 </span>
                 <ListBox.ItemIndicator />
@@ -121,75 +84,61 @@ export function AlgorithmSection({ algo, onAlgoChange }: AlgorithmSectionProps) 
       {selected && (
         <div className="flex flex-wrap gap-1.5">
           <Chip
-            color={selected.streamable ? 'success' : 'default'}
+            color={selected.binding.streamable ? 'success' : 'default'}
             size="sm"
             title={
-              selected.streamable
+              selected.binding.streamable
                 ? 'Decode can pipeline with download (overlapped network + decode).'
                 : 'Decoder waits for the full token before producing output.'
             }
             variant="soft"
           >
-            {selected.streamable ? 'streamable' : 'not streamable'}
+            {selected.binding.streamable ? 'streamable' : 'not streamable'}
           </Chip>
-          <Chip
-            color={selected.environments.includes('browser') ? 'success' : 'warning'}
-            size="sm"
-            title={
-              selected.environments.includes('browser')
-                ? 'Encode runs entirely in-browser via CompressionStream + canvas.'
-                : "Encode requires the server (CompressionStream('br') is not implemented in browsers)."
-            }
-            variant="soft"
-          >
-            {selected.environments.includes('browser') ? 'browser friendly' : 'node only'}
-          </Chip>
-          <Chip
-            size="sm"
-            title={
-              selected.codecDescription ||
-              'Pixel layout: how bytes are mapped onto pixel positions.'
-            }
-            variant="tertiary"
-          >
-            codec: {selected.codec}
-          </Chip>
-          <Chip
-            size="sm"
-            title={
-              selected.surfaceDescription ||
-              'Image container that wraps the encoded pixels (or hosts the data side-channel for PixelRange).'
-            }
-            variant="tertiary"
-          >
-            surface: {selected.surface}
-          </Chip>
-          <Chip
-            size="sm"
-            title={
-              selected.compressorDescription ||
-              'Outer compression family applied before bytes are written into pixels.'
-            }
-            variant="tertiary"
-          >
-            compressor: {selected.compressor}
-          </Chip>
-          <Chip
-            size="sm"
-            title={
-              selected.drawerDescription ||
-              'Pixel-render style. `dense` packs bytes into adjacent pixels; `dot` lays them as sparse cells.'
-            }
-            variant="tertiary"
-          >
-            drawer: {selected.drawer}
-          </Chip>
+          {selected.implementedIn.map(pkg => (
+            <Chip key={pkg} size="sm" variant="soft">
+              {pkg}
+            </Chip>
+          ))}
+          {selected.mirrored && (
+            <Chip color="success" size="sm" variant="soft">
+              mirrored
+            </Chip>
+          )}
+          <BindingChip
+            label="codec"
+            title={selected.binding.codecDescription}
+            value={selected.binding.codec}
+          />
+          <BindingChip
+            label="surface"
+            title={selected.binding.surfaceDescription}
+            value={selected.binding.surface}
+          />
+          <BindingChip
+            label="compressor"
+            title={selected.binding.compressorDescription}
+            value={selected.binding.compressor}
+          />
+          <BindingChip
+            label="drawer"
+            title={selected.binding.drawerDescription}
+            value={selected.binding.drawer}
+          />
         </div>
       )}
     </Section>
   )
 }
 
-function describeBinding(b: Binding): string {
-  return `${b.codec} · ${b.surface} · ${b.compressor} · ${b.drawer}`
+function BindingChip({ label, title, value }: { label: string; title: string; value: string }) {
+  return (
+    <Chip size="sm" title={title} variant="tertiary">
+      {label}: {value}
+    </Chip>
+  )
+}
+
+function describeBinding(b: AlgoMeta): string {
+  return `${b.binding.codec} · ${b.binding.surface} · ${b.binding.compressor} · ${b.binding.drawer}`
 }

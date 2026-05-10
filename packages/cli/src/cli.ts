@@ -4,10 +4,12 @@
 // Skill-specific subcommands (open / ls / read / search / close / packs /
 // apply-diff / diff-pack) live in `tokenpack-claude-skill`'s own binary.
 
-import { decode, diff, encode as nodeEncode, extract, PackBuilder } from '@tokenpack/node'
+import { decode, encode as nodeEncode, PackBuilder } from '@tokenpack/node'
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
+import { extract } from '@tokenpack/node/extract'
 import { Command } from 'commander'
 import fs from 'fs'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+import { computeTextDiff } from 'tokenpack/diff'
 
 const program = new Command()
 
@@ -94,23 +96,21 @@ program
   .option('--bpp <n>', 'channels per pixel: 1, 2, 3, or 4 (default 3)', v => parseInt(v, 10))
   .option('--key <password>', 'encrypt token with AES-256-GCM (optional)')
   .option('--ignore <names>', 'comma-separated extra names to ignore', v => v.split(','))
-  .action(
-    async (
-      dirs: string[],
-      opts: CommonEncodeOpts & { ignore?: string[] },
-    ) => {
-      const builder = new PackBuilder()
-      const { packDirs } = await import('tokenpack/archive')
-      const archive = packDirs(dirs, opts.ignore)
+  .action(async (dirs: string[], opts: CommonEncodeOpts & { ignore?: string[] }) => {
+    const builder = new PackBuilder()
+    const { packDirs } = await import('tokenpack/archive')
+    const archive = packDirs(dirs, opts.ignore)
 
-      builder.withFile('archive.cart', new Uint8Array(archive.buffer, archive.byteOffset, archive.byteLength))
+    builder.withFile(
+      'archive.cart',
+      new Uint8Array(archive.buffer, archive.byteOffset, archive.byteLength),
+    )
 
-      // Bypass the multi-file builder for single-archive case: just encode the
-      // CART buffer directly. Keeps the resulting token a plain FilePack.
-      await nodeEncode(archive, buildEncodeOpts(opts))
-      console.log(`Packed [${dirs.join(', ')}] → ${opts.out}`)
-    },
-  )
+    // Bypass the multi-file builder for single-archive case: just encode the
+    // CART buffer directly. Keeps the resulting token a plain FilePack.
+    await nodeEncode(archive, buildEncodeOpts(opts))
+    console.log(`Packed [${dirs.join(', ')}] → ${opts.out}`)
+  })
 
 program
   .command('expand <image>')
@@ -158,7 +158,8 @@ program
   .option('--text', 'print line-level diff as text instead of writing a token')
   .action(async (tokenA: string, tokenB: string, opts: { out?: string; text?: boolean }) => {
     if (opts.text) {
-      const fileDiffs = await diff(tokenA, tokenB).text()
+      const [packA, packB] = await Promise.all([decode(tokenA), decode(tokenB)])
+      const fileDiffs = await computeTextDiff(packA, packB)
 
       if (!fileDiffs.length) {
         console.log('No differences found.')
@@ -189,7 +190,15 @@ program
       console.error('error: -o / --out <path> required (or pass --text for text output)')
       process.exit(1)
     }
-    const tokenBytes = await diff(tokenA, tokenB).token()
+    const [packA, packB] = await Promise.all([decode(tokenA), decode(tokenB)])
+
+    if (!packA.isPack() || !packB.isPack()) {
+      console.error('error: diff token output requires two packed directory tokens')
+      process.exit(1)
+
+      return
+    }
+    const tokenBytes = ((await packA.diffTo(packB)) as { bytes: Uint8Array }).bytes
 
     fs.writeFileSync(opts.out, tokenBytes)
     const diffPack = await decode(tokenBytes)

@@ -7,10 +7,19 @@ export interface SourceOption {
   label: string
 }
 
+export interface ConditionOption {
+  id: string
+  label: string
+  detail: string
+}
+
 interface SourceFilterProps {
   source: string
   onSourceChange: (source: string) => void
   sources: readonly SourceOption[]
+  condition: string
+  onConditionChange: (condition: string) => void
+  conditions: readonly ConditionOption[]
   totalRows: number
   errorRows: number
 }
@@ -19,6 +28,9 @@ export function SourceFilter({
   source,
   onSourceChange,
   sources,
+  condition,
+  onConditionChange,
+  conditions,
   totalRows,
   errorRows,
 }: SourceFilterProps) {
@@ -41,6 +53,27 @@ export function SourceFilter({
           {sources.map(s => (
             <ToggleButton key={s.id} id={s.id}>
               {s.label}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </div>
+      <div className="space-y-2">
+        <div className="text-[10px] text-white/30 uppercase tracking-widest">Throttle</div>
+        <ToggleButtonGroup
+          disallowEmptySelection
+          className="flex-wrap"
+          selectedKeys={new Set([condition])}
+          selectionMode="single"
+          size="sm"
+          onSelectionChange={keys => {
+            const [k] = [...(keys as Set<string>)]
+
+            if (k) onConditionChange(k)
+          }}
+        >
+          {conditions.map(c => (
+            <ToggleButton key={c.id} id={c.id}>
+              {c.label}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>

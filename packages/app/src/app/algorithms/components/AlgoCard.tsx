@@ -46,6 +46,20 @@ export function AlgoCard({ algo }: AlgoCardProps) {
       </div>
 
       <div className="flex flex-wrap gap-1 pt-1.5">
+        <span className="text-[10px] uppercase tracking-wide text-white/30 mr-1">Package</span>
+        {algo.implementedIn.map(pkg => (
+          <Chip key={pkg} className="font-mono text-[10px] uppercase" size="sm" variant="tertiary">
+            {pkg}
+          </Chip>
+        ))}
+        {algo.mirrored && (
+          <Chip className="font-mono text-[10px] uppercase" size="sm" variant="tertiary">
+            mirrored
+          </Chip>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-1 pt-1.5">
         <span className="text-[10px] uppercase tracking-wide text-white/30 mr-1">Runs in</span>
         {algo.environments.map(env => (
           <Chip key={env} className="font-mono text-[10px] uppercase" size="sm" variant="tertiary">

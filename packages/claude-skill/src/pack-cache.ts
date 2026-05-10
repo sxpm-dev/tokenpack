@@ -12,7 +12,8 @@ import os from 'os'
 import path from 'path'
 
 import { decode, encode } from '@tokenpack/node'
-import { applyDiff, packBuffers, readDiffMeta } from 'tokenpack'
+import { packBuffers } from 'tokenpack/archive'
+import { applyDiff, readDiffMeta } from 'tokenpack/diff-pack'
 
 const CACHE_ROOT = path.join(os.homedir(), '.tokenpack', 'cache')
 
@@ -306,7 +307,7 @@ export async function produceDiffToken(
   const nextEntries = await Promise.all(
     next.entries.map(async info => ({ path: info.path, bytes: await next.extract(info.path) })),
   )
-  const { diffPack } = await import('tokenpack')
+  const { diffPack } = await import('tokenpack/diff-pack')
   const result = diffPack(prevEntries, nextEntries)
 
   // Encode the diff archive as a token PNG. Default to linear-deflate at level 6

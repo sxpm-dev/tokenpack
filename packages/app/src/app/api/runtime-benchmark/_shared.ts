@@ -4,39 +4,245 @@ import fs from 'fs'
 import { type NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 
-const REPO_ROOT = path.join(process.cwd(), '..', '..')
+export const RUNTIME_FIXTURES = path.join(process.cwd(), 'benchmark-fixtures', 'runtime')
 
-export const BENCH_SOURCES = path.join(REPO_ROOT, 'benchmark', 'sources')
-export const BENCH_TOKENS = path.join(REPO_ROOT, 'benchmark', 'tokens')
-
-export const SOURCE_FILES: Record<string, string> = {
-  'react-dom-dev': 'react-dom-client.development.js',
-  'react-dom-prod': 'react-dom-client.production.js',
-  'chunk-5mb': 'chunk-5mb.js',
-  screenshot: 'screenshot.jpg',
-  'client-spec': 'client-spec-map.json',
-  'client-spec-min': 'client-spec-map.min.json',
+export interface RuntimeFixtureEntry {
+  kind: 'native' | 'token' | 'range-pack'
+  tab: 'content' | 'script'
+  source: string
+  sourceKind: 'json' | 'text'
+  chunkCount: number
+  chunkIndex?: number
+  encoding?: 'raw' | 'deflate' | 'brotli'
+  group?: 'fetch' | 'stream'
+  algo?: string
+  channels?: number
+  surface?: string
+  compressor?: string
+  regionCompressor?: string
+  streamable?: boolean
+  file: string
+  bytes: number
+  originalBytes: number
+  sha256: string
+  files?: Array<{
+    path: string
+    originalBytes: number
+    sha256: string
+  }>
 }
 
-export const SOURCE_MIMES: Record<string, string> = {
-  'react-dom-dev': 'application/javascript; charset=utf-8',
-  'react-dom-prod': 'application/javascript; charset=utf-8',
-  'chunk-5mb': 'application/javascript; charset=utf-8',
-  screenshot: 'image/jpeg',
-  'client-spec': 'application/json; charset=utf-8',
-  'client-spec-min': 'application/json; charset=utf-8',
+export interface RuntimeFixtureManifest {
+  generatedAt: string
+  sources: Array<{
+    id: string
+    file: string
+    kind: 'json' | 'text'
+    bytes: number
+    sha256: string
+  }>
+  chunkCounts: number[]
+  encodings: Array<'raw' | 'deflate' | 'brotli'>
+  algorithms: Array<{
+    name: string
+    group: 'fetch' | 'stream'
+    channels: ReadonlyArray<1 | 2 | 3 | 4>
+    surface: string
+    extension: string
+    compressor: string
+    streamable: boolean
+  }>
+  fixtures: RuntimeFixtureEntry[]
 }
 
-export function sourcePathFor(source: string): { path: string; size: number } | null {
-  const file = SOURCE_FILES[source]
+export function runtimeCaseId(source: string, chunkCount: number, chunkIndex: number): string {
+  return `${source}__chunks-${chunkCount}__chunk-${String(chunkIndex).padStart(2, '0')}`
+}
 
-  if (!file) return null
-  const filePath = path.join(BENCH_SOURCES, file)
+export function runtimeStrategyId(source: string, chunkCount: number): string {
+  return `${source}__chunks-${chunkCount}`
+}
 
-  if (!fs.existsSync(filePath)) return null
-  const size = fs.statSync(filePath).size
+export function readRuntimeManifest(): RuntimeFixtureManifest | null {
+  const manifestPath = path.join(RUNTIME_FIXTURES, 'manifest.json')
 
-  return { path: filePath, size }
+  if (!fs.existsSync(manifestPath)) return null
+  try {
+    return JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as RuntimeFixtureManifest
+  } catch {
+    return null
+  }
+}
+
+export function parseRuntimeCaseId(
+  id: string,
+): { source: string; chunkCount: number; chunkIndex: number } | null {
+  const match = /^(.*)__chunks-(\d+)__chunk-(\d+)$/.exec(id)
+
+  if (!match) return null
+
+  return {
+    source: match[1],
+    chunkCount: Number(match[2]),
+    chunkIndex: Number(match[3]),
+  }
+}
+
+export function parseRuntimeStrategyId(id: string): { source: string; chunkCount: number } | null {
+  const match = /^(.*)__chunks-(\d+)$/.exec(id)
+
+  if (!match) return null
+
+  return {
+    source: match[1],
+    chunkCount: Number(match[2]),
+  }
+}
+
+export function listRuntimeContentCases(manifest: RuntimeFixtureManifest) {
+  return listRuntimeCases(manifest, 'content')
+}
+
+export function listRuntimeScriptCases(manifest: RuntimeFixtureManifest) {
+  return listRuntimeCases(manifest, 'script')
+}
+
+export function listRuntimeRangePackCases(manifest: RuntimeFixtureManifest) {
+  const out: Array<{
+    id: string
+    source: string
+    sourceKind: 'json' | 'text'
+    chunkCount: number
+    rawBytes: number
+    fileCount: number
+  }> = []
+
+  for (const fixture of manifest.fixtures) {
+    if (fixture.kind !== 'range-pack' || fixture.tab !== 'content') continue
+
+    out.push({
+      id: runtimeStrategyId(fixture.source, fixture.chunkCount),
+      source: fixture.source,
+      sourceKind: fixture.sourceKind,
+      chunkCount: fixture.chunkCount,
+      rawBytes: fixture.originalBytes,
+      fileCount: fixture.files?.length ?? fixture.chunkCount,
+    })
+  }
+
+  return out
+}
+
+function listRuntimeCases(manifest: RuntimeFixtureManifest, tab: 'content' | 'script') {
+  const seen = new Map<
+    string,
+    {
+      id: string
+      source: string
+      sourceKind: 'json' | 'text'
+      chunkCount: number
+      rawBytes: number
+      chunkIndexes: number[]
+    }
+  >()
+  const out: Array<{
+    id: string
+    source: string
+    sourceKind: 'json' | 'text'
+    chunkCount: number
+    rawBytes: number
+    chunkIndexes: number[]
+  }> = []
+
+  for (const fixture of manifest.fixtures) {
+    if (fixture.tab !== tab || fixture.kind !== 'native' || fixture.encoding !== 'raw') {
+      continue
+    }
+    const chunkIndex = fixture.chunkIndex ?? 0
+    const id = runtimeStrategyId(fixture.source, fixture.chunkCount)
+    const existing = seen.get(id)
+
+    if (existing) {
+      existing.rawBytes += fixture.originalBytes
+      existing.chunkIndexes.push(chunkIndex)
+      continue
+    }
+    const aggregate = {
+      id,
+      source: fixture.source,
+      sourceKind: fixture.sourceKind,
+      chunkCount: fixture.chunkCount,
+      rawBytes: fixture.originalBytes,
+      chunkIndexes: [chunkIndex],
+    }
+
+    seen.set(id, aggregate)
+    out.push(aggregate)
+  }
+
+  return out
+}
+
+export function findRuntimeFixture(
+  manifest: RuntimeFixtureManifest,
+  input: {
+    tab: 'content' | 'script'
+    caseId: string
+    chunkIndex?: number
+    kind: 'native' | 'token'
+    encoding?: 'raw' | 'deflate' | 'brotli'
+    algo?: string
+    channels?: number
+  },
+): RuntimeFixtureEntry | null {
+  const parsedCase = parseRuntimeCaseId(input.caseId)
+  const parsedStrategy = parsedCase ?? parseRuntimeStrategyId(input.caseId)
+
+  if (!parsedStrategy) return null
+  const chunkIndex = input.chunkIndex ?? parsedCase?.chunkIndex ?? 0
+
+  return (
+    manifest.fixtures.find(fixture => {
+      if (fixture.tab !== input.tab) return false
+      if (fixture.kind !== input.kind) return false
+      if (fixture.source !== parsedStrategy.source) return false
+      if (fixture.chunkCount !== parsedStrategy.chunkCount) return false
+      if ((fixture.chunkIndex ?? 0) !== chunkIndex) return false
+      if (input.kind === 'native') return fixture.encoding === input.encoding
+
+      return fixture.algo === input.algo && fixture.channels === input.channels
+    }) ?? null
+  )
+}
+
+export function findRuntimeRangePackFixture(
+  manifest: RuntimeFixtureManifest,
+  source: string,
+): RuntimeFixtureEntry | null {
+  const parsed = parseRuntimeStrategyId(source)
+
+  if (!parsed) return null
+
+  return (
+    manifest.fixtures.find(
+      fixture =>
+        fixture.kind === 'range-pack' &&
+        fixture.tab === 'content' &&
+        fixture.source === parsed.source &&
+        fixture.chunkCount === parsed.chunkCount,
+    ) ?? null
+  )
+}
+
+export function runtimeFixturePath(fixture: RuntimeFixtureEntry): string {
+  return path.join(RUNTIME_FIXTURES, fixture.file)
+}
+
+export function contentEncodingHeader(encoding: 'raw' | 'deflate' | 'brotli'): string | null {
+  if (encoding === 'raw') return null
+  if (encoding === 'brotli') return 'br'
+
+  return 'deflate'
 }
 
 /**
@@ -69,7 +275,7 @@ export function param(req: NextRequest, name: string): string | null {
 }
 
 // ── Network throttling ────────────────────────────────────────────────────
-// Matches the conditions used by `benchmark/run.ts` so numbers are comparable
+// Matches the conditions used by `scripts/benchmark/run.ts` so numbers are comparable
 // across the offline benchmark + the in-app runtime benchmark.
 
 export interface NetworkCondition {
@@ -100,9 +306,40 @@ export function networkConditionFor(name: string | null): NetworkCondition {
   return NETWORK_CONDITIONS.find(c => c.name === name) ?? NETWORK_CONDITIONS[0]
 }
 
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = (ms: number): Promise<void> =>
+  ms > 0 ? new Promise(resolve => setTimeout(resolve, ms)) : Promise.resolve()
 
-const THROTTLE_CHUNK = 8 * 1024
+const FIRST_THROTTLE_CHUNK = 16 * 1024
+const THROTTLE_CHUNK = 256 * 1024
+
+class SharedBandwidthLimiter {
+  private nextAvailableAt = 0
+
+  async waitFor(bytes: number, bandwidthBps: number): Promise<void> {
+    if (!isFinite(bandwidthBps) || bytes <= 0) return
+
+    const now = Date.now()
+    const durationMs = (bytes / bandwidthBps) * 1000
+    const startAt = Math.max(now, this.nextAvailableAt)
+    const endAt = startAt + durationMs
+
+    this.nextAvailableAt = endAt
+    await sleep(endAt - now)
+  }
+}
+
+const bandwidthLimiters = new Map<NetworkCondition['name'], SharedBandwidthLimiter>()
+
+function bandwidthLimiterFor(condition: NetworkCondition): SharedBandwidthLimiter {
+  let limiter = bandwidthLimiters.get(condition.name)
+
+  if (!limiter) {
+    limiter = new SharedBandwidthLimiter()
+    bandwidthLimiters.set(condition.name, limiter)
+  }
+
+  return limiter
+}
 
 /**
  * Wrap a fully-buffered body for response streaming, optionally pacing it to
@@ -113,11 +350,13 @@ const THROTTLE_CHUNK = 8 * 1024
  * chunking, microtask-queue churn, or per-chunk `enqueue` overhead — the
  * timings match the pre-throttle implementation byte-for-byte.
  *
- * For throttled conditions we return a `ReadableStream` that applies the
- * leading-latency sleep, then emits 8KB chunks paced to the target bandwidth.
- * Note that JS `setTimeout` minimums (~1ms in browsers, ~4ms with nested
- * timers) cap the achievable upper bandwidth — this matches the offline
- * benchmark in `benchmark/run.ts`.
+ * For throttled conditions we return a `ReadableStream` that applies per-request
+ * latency, then emits chunks paced by a shared bandwidth limiter. The shared
+ * limiter is important for runtime chunk strategies: 20 parallel requests should
+ * share one simulated 100MB/s pipe instead of each receiving 100MB/s.
+ *
+ * The first chunk is intentionally small so TTFB is close to the latency value;
+ * later chunks are larger to avoid timer overhead dominating fast-cdn cases.
  */
 
 export function throttledBody(body: Buffer, condition: NetworkCondition): any {
@@ -132,6 +371,7 @@ export function throttledBody(body: Buffer, condition: NetworkCondition): any {
   }
 
   const view = new Uint8Array(body.buffer, body.byteOffset, body.byteLength)
+  const limiter = bandwidthLimiterFor(condition)
 
   return new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -140,14 +380,13 @@ export function throttledBody(body: Buffer, condition: NetworkCondition): any {
       let offset = 0
 
       while (offset < view.byteLength) {
-        const end = Math.min(offset + THROTTLE_CHUNK, view.byteLength)
+        const size = offset === 0 ? FIRST_THROTTLE_CHUNK : THROTTLE_CHUNK
+        const end = Math.min(offset + size, view.byteLength)
         const chunk = view.subarray(offset, end)
 
+        await limiter.waitFor(chunk.byteLength, bandwidthBps)
         controller.enqueue(chunk)
         offset = end
-        if (isFinite(bandwidthBps) && offset < view.byteLength) {
-          await sleep((chunk.byteLength / bandwidthBps) * 1000)
-        }
       }
       controller.close()
     },

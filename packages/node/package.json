@@ -11,6 +11,9 @@
   ],
   "exports": {
     ".": "./src/index.ts",
+    "./algorithms/catalog": "./src/algorithms/catalog.ts",
+    "./extract": "./src/extract.ts",
+    "./node-pack-builder": "./src/node-pack-builder.ts",
     "./surfaces/png": "./src/surfaces/png.ts",
     "./codecs/zstdpix": "./src/codecs/zstdpix.ts"
   },

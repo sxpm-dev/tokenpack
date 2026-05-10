@@ -21,7 +21,8 @@
 // code and game gzip/brotli numbers — both real-JS and generated JSON have
 // realistic byte-level entropy, which keeps the encoding comparison honest.
 
-import { encode, NodePackBuilder } from '@tokenpack/node'
+import { encode } from '@tokenpack/node'
+import { NodePackBuilder } from '@tokenpack/node/node-pack-builder'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'

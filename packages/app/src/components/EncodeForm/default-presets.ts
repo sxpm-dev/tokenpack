@@ -1,8 +1,4 @@
-// Hand-picked default presets for the dashboard.
-//
-// Each preset is a concrete algorithm name + an optional level. The algorithm
-// already encodes codec/surface/compressor binding in its identity; the level
-// tunes the bound compressor.
+import { ALGO_CATALOG, type AlgoMeta } from '@/lib/algo-catalog'
 
 export type DefaultPresetName =
   | 'best-compression'
@@ -14,49 +10,84 @@ export interface DefaultPresetDef {
   name: DefaultPresetName
   label: string
   hint: string
-  /** Concrete algorithm name (registered in algorithmCatalog). */
   algo: string
-  /** Compressor level to apply via algoOptions['compressor.level']. */
   level: number
-  /** Surface channels (3 or 4). */
   channels: 1 | 2 | 3 | 4
 }
 
-export const DEFAULT_PRESETS: ReadonlyArray<DefaultPresetDef> = [
+interface PresetRule {
+  name: DefaultPresetName
+  label: string
+  hint: string
+  level: number
+  match: (algo: AlgoMeta) => boolean
+}
+
+const RULES: PresetRule[] = [
   {
     name: 'best-compression',
     label: 'Best compression',
     hint: 'overall',
-    algo: 'linear', // LinearPngBrotli — server-encoded
     level: 11,
-    channels: 3,
+    match: algo => algo.binding.compressor === 'brotli' && !algo.binding.streamable,
   },
   {
     name: 'best-stream',
     label: 'Best stream',
     hint: 'overall',
-    algo: 'linear-stream-deflate', // streaming PNG with deflate
     level: 6,
-    channels: 3,
+    match: algo => algo.binding.streamable,
   },
   {
     name: 'best-compression-browser',
     label: 'Best compression',
     hint: 'browser',
-    algo: 'linear-deflate', // LinearPngDeflate — browser-encodable
     level: 9,
-    channels: 3,
+    match: algo =>
+      algo.implementedIn.includes('browser') &&
+      algo.binding.compressor === 'deflate' &&
+      !algo.binding.streamable,
   },
   {
     name: 'best-stream-browser',
     label: 'Best stream',
     hint: 'browser',
-    algo: 'linear-stream-deflate',
     level: 1,
-    channels: 3,
+    match: algo =>
+      algo.implementedIn.includes('browser') &&
+      algo.binding.compressor === 'deflate' &&
+      algo.binding.streamable,
   },
 ]
 
-export function findDefaultPreset(name: DefaultPresetName): DefaultPresetDef {
-  return DEFAULT_PRESETS.find(p => p.name === name) ?? DEFAULT_PRESETS[0]
+export function listDefaultPresets(catalog: AlgoMeta[] = ALGO_CATALOG): DefaultPresetDef[] {
+  const fallback = catalog[0]
+
+  return RULES.map(rule => {
+    const algo = catalog.find(rule.match) ?? fallback
+
+    return {
+      name: rule.name,
+      label: rule.label,
+      hint: rule.hint,
+      algo: algo?.name ?? '',
+      level: rule.level,
+      channels: firstChannel(algo),
+    }
+  }).filter(preset => preset.algo)
+}
+
+export const DEFAULT_PRESETS: ReadonlyArray<DefaultPresetDef> = listDefaultPresets()
+
+export function findDefaultPreset(
+  name: DefaultPresetName,
+  catalog: AlgoMeta[] = ALGO_CATALOG,
+): DefaultPresetDef {
+  const presets = listDefaultPresets(catalog)
+
+  return presets.find(p => p.name === name) ?? presets[0]
+}
+
+function firstChannel(algo: AlgoMeta | undefined): 1 | 2 | 3 | 4 {
+  return algo?.requiredChannels ?? 3
 }

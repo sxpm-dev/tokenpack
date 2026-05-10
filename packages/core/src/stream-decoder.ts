@@ -21,7 +21,7 @@
 
 import { Duplex, Readable } from 'stream'
 
-import { algorithmCatalog } from './algorithms/catalog'
+import type { AlgorithmCatalog } from './algorithms/catalog'
 
 const PEEK_BYTES = 64
 
@@ -30,7 +30,7 @@ const PEEK_BYTES = 64
  * Compatible with the previous inlined-pipeline shape; see file header for
  * the architectural change.
  */
-export function createTokenDecodeStream(_key?: string): Duplex {
+export function createTokenDecodeStream(algorithmCatalog: AlgorithmCatalog, _key?: string): Duplex {
   // Buffered Duplex implementation. We collect the full input on the
   // writable side, run through `algorithm.decodeStream` (which IS streaming
   // internally — surface yields pixel rows progressively), and emit the

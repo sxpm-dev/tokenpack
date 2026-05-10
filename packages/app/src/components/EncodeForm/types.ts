@@ -26,7 +26,7 @@ export interface EncodeConfig {
 export const DEFAULT_ENCODE_CONFIG: EncodeConfig = {
   configMode: 'default',
   defaultPreset: 'best-compression',
-  algo: 'linear',
+  algo: '',
   algoOptions: {},
   key: '',
 }

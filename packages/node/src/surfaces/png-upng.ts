@@ -1,11 +1,11 @@
 // Node PNG surface backed by upng-js (pure JS, no sharp/pngjs).
 //
 // Why a second PNG surface? Browser-side, the canvas/toBlob round-trip
-// premultiplies alpha and corrupts 4-channel tokens (anywhere α < 255 the
-// RGB bytes get mangled). upng-js bypasses canvas entirely and writes/reads
-// raw RGBA bytes via deflate IDAT directly, so 4-channel tokens survive
-// byte-exact through encode/decode in both runtimes. On node it also gives
-// us a perf benchmark vs the existing pngjs-backed PngSurface.
+// premultiplies alpha and can corrupt 4-channel tokens (anywhere α < 255 the
+// RGB bytes get mangled). upng-js bypasses canvas entirely, but its RGBA output
+// has produced truncated PNGs for medium/large payloads. We therefore expose
+// this surface as RGB-only while keeping it as a perf benchmark vs the existing
+// pngjs-backed PngSurface.
 //
 // upng-js always emits colorType=6 (RGBA) PNGs; even a 3-channel codec's
 // data goes through expanded to RGBA-with-α=255-padding. Inflated wire size
@@ -18,9 +18,9 @@
 // `upng-js` ships no types — see sibling `upng-js.d.ts` shim.
 
 import fs from 'fs'
-import UPNG from 'upng-js'
 import { ImageSurface } from 'tokenpack/surfaces'
 import type { SurfacePixels } from 'tokenpack/surfaces/types'
+import UPNG from 'upng-js'
 
 function expandRgbToRgba(rgb: Uint8Array, n: number): Uint8Array {
   const out = new Uint8Array(n * 4)
@@ -67,6 +67,8 @@ function detectFileChannels(rgbaData: Uint8Array, colorType: number): 3 | 4 {
 }
 
 export class PngUpngSurface extends ImageSurface {
+  override readonly supportedChannels = new Set<3 | 4>([3])
+
   constructor() {
     super({
       id: 'png-upng',
@@ -77,7 +79,7 @@ export class PngUpngSurface extends ImageSurface {
       extension: '.png',
       mimeType: 'image/png',
       preservesAlpha: true,
-      maxBpp: 4,
+      maxBpp: 3,
     })
   }
 
@@ -101,7 +103,10 @@ export class PngUpngSurface extends ImageSurface {
   }
 
   async readBuffer(buffer: Buffer): Promise<SurfacePixels> {
-    const ab = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
+    const ab = buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength,
+    ) as ArrayBuffer
     const img = UPNG.decode(ab)
     const rgbaFrames = UPNG.toRGBA8(img)
     const rgba = new Uint8Array(rgbaFrames[0])

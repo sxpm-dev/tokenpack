@@ -1,11 +1,11 @@
 'use client'
 
-import '@tokenpack/browser'
-
 import { Surface, Table } from '@heroui/react'
 import { CheckCircleIcon, WarningCircleIcon, XCircleIcon } from '@phosphor-icons/react'
 import { useMemo } from 'react'
-import { algorithmCatalog } from 'tokenpack/algorithms/catalog'
+
+import type { AlgoMeta } from '@/lib/algo-catalog'
+import { usePlaygroundAlgorithms } from '@/lib/use-playground-algorithms'
 
 import { ARCHIVE_SCENARIOS, buildScenarioConfig } from '../constants'
 
@@ -26,32 +26,25 @@ interface ScenarioConfigTableProps {
   scenarioIds: ReadonlyArray<string>
 }
 
-interface CodecLike {
-  name: string
-}
-
-interface SurfaceLike {
-  id: string
-}
-
-function buildConfigs(scenarioIds: ReadonlyArray<string>): ScenarioConfig[] {
+function buildConfigs(
+  scenarioIds: ReadonlyArray<string>,
+  catalog: ReadonlyArray<AlgoMeta>,
+): ScenarioConfig[] {
   const out: ScenarioConfig[] = []
-  const ctorByName = new Map(algorithmCatalog.list().map(C => [C.name, C]))
+  const algoByName = new Map(catalog.map(algo => [algo.name, algo]))
 
   for (const id of scenarioIds) {
     if (ARCHIVE_SCENARIOS.includes(id)) continue
-    // scenario id format: `<algoName>-c<channels>` (see benchmark/run.ts).
+    // scenario id format: `<algoName>-c<channels>` (see scripts/benchmark/run.ts).
     const m = id.match(/^(.+)-c(\d+)$/)
 
     if (!m) continue
     const [, algoName, chStr] = m
-    const Ctor = ctorByName.get(algoName)
+    const algo = algoByName.get(algoName)
 
-    if (!Ctor) continue
-    const codec = new (Ctor.Codec as unknown as new () => CodecLike)()
-    const surface = new (Ctor.Surface as unknown as new () => SurfaceLike)()
-    const compressorFamily = (Ctor.Compressor as unknown as { familyId: string }).familyId
-    const streamable = Ctor.capabilities.streamable
+    if (!algo) continue
+    const compressorFamily = algo.binding.compressor
+    const streamable = algo.binding.streamable
 
     const compat: Compat = compressorFamily === 'brotli' ? 'partial' : 'full'
     const compatNote =
@@ -61,9 +54,9 @@ function buildConfigs(scenarioIds: ReadonlyArray<string>): ScenarioConfig[] {
 
     out.push({
       scenario: id,
-      codec: codec.name,
+      codec: algo.binding.codec,
       compression: compressorFamily,
-      surface: surface.id,
+      surface: algo.binding.surface,
       bpp: chStr,
       streaming: streamable,
       compat,
@@ -110,8 +103,9 @@ function CompatBadge({ compat, note }: { compat: Compat; note: string }) {
 }
 
 export function ScenarioConfigTable({ scenarioIds }: ScenarioConfigTableProps) {
+  const catalog = usePlaygroundAlgorithms()
   const { colors } = useMemo(() => buildScenarioConfig(scenarioIds), [scenarioIds])
-  const configs = useMemo(() => buildConfigs(scenarioIds), [scenarioIds])
+  const configs = useMemo(() => buildConfigs(scenarioIds, catalog), [scenarioIds, catalog])
 
   if (configs.length === 0) {
     return (

@@ -23,7 +23,6 @@ import { BrowserBrotliCompressor } from '../compressors/brotli-compressor'
 import { BrowserDeflateCompressor } from '../compressors/deflate-compressor'
 import { BrowserPngSurface, BrowserStreamingPngSurface } from '../surfaces/png'
 import { BrowserPngUpngSurface } from '../surfaces/png-upng'
-
 import { extractTpakChunk, insertTpakChunk } from './pixel-range-png-base'
 
 export const LinearPngBrotli = definePixelAlgorithm({
@@ -160,10 +159,10 @@ export const LinearPngNone = definePixelAlgorithm({
   Drawer: DenseDrawer,
 })
 
-// upng-js variants — pure-JS PNG codec, bypasses canvas. Byte-exact 4-channel
-// encode/decode in browser (canvas premultiplies alpha; upng-js doesn't). The
-// brotli variant matches `linear` (decode-only — browser can't encode brotli);
-// the deflate variant is round-trip-capable end-to-end in browser.
+// upng-js variants — pure-JS PNG codec, bypasses canvas. RGB-only for now
+// because upng-js RGBA output has produced truncated PNGs for larger benchmark
+// payloads. The brotli variant matches `linear` (decode-only — browser can't
+// encode brotli); the deflate variant is round-trip-capable end-to-end in browser.
 export const LinearPngUpngBrotli = definePixelAlgorithm({
   id: 17,
   name: 'linear-upng',
@@ -292,27 +291,13 @@ class PixelRangeStreamPngDeflate extends PixelRangeAlgorithm {
   }
 }
 
-export {
-  PixelRangePngBrotli,
-  PixelRangePngDeflate,
-  PixelRangePngNone,
-  PixelRangeStreamPngDeflate,
-}
+export { PixelRangePngBrotli, PixelRangePngDeflate, PixelRangePngNone, PixelRangeStreamPngDeflate }
 
 export const ALL_BROWSER_ALGORITHMS = [
   LinearPngBrotli,
-  InterleavedPngBrotli,
-  BitplanePngBrotli,
-  DeltaPngBrotli,
-  XorPngBrotli,
-  DeltaChainPngBrotli,
-  RlePngBrotli,
-  PredictPngBrotli,
-  BitshufflePngBrotli,
   LinearPngDeflate,
   LinearStreamingPngDeflate,
   LinearStreamingPngBrotli,
-  LinearPngNone,
   LinearPngUpngBrotli,
   LinearPngUpngDeflate,
   PixelRangePngBrotli,

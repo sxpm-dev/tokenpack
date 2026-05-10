@@ -162,9 +162,15 @@ export abstract class PixelAlgorithm extends AbstractAlgorithm {
     return new ReadableStream<Uint8Array>({
       async start(controller) {
         try {
-          const result = await runDecodeStream(algorithm, source, opts)
+          const decoded = await runDecodeStream(algorithm, source, opts)
+          const reader = decoded.getReader()
 
-          controller.enqueue(new Uint8Array(result.buffer, result.byteOffset, result.byteLength))
+          while (true) {
+            const { done, value } = await reader.read()
+
+            if (done) break
+            controller.enqueue(value)
+          }
           controller.close()
         } catch (e) {
           controller.error(e)
@@ -188,6 +194,14 @@ export abstract class PixelAlgorithm extends AbstractAlgorithm {
   }
 }
 
+export async function decodeSurfaceStream(
+  algorithm: PixelAlgorithm,
+  handle: SurfaceStreamHandle,
+  opts: DecodeOptions = {},
+): Promise<Buffer> {
+  return collectDecodedStream(runDecodeSurfaceStream(algorithm, handle, opts), opts)
+}
+
 /**
  * Implementation of `PixelAlgorithm.decodeStream`. Lifted out of the class so
  * the inner closure functions don't capture `this` — the algorithm is passed
@@ -202,9 +216,18 @@ export abstract class PixelAlgorithm extends AbstractAlgorithm {
 async function runDecodeStream(
   algorithm: PixelAlgorithm,
   source: ReadableStream<Uint8Array>,
-  _opts: DecodeOptions,
-): Promise<Buffer> {
+  opts: DecodeOptions,
+): Promise<ReadableStream<Uint8Array>> {
   const handle: SurfaceStreamHandle = await algorithm.surface.decodeStream(source)
+
+  return runDecodeSurfaceStream(algorithm, handle, opts)
+}
+
+function runDecodeSurfaceStream(
+  algorithm: PixelAlgorithm,
+  handle: SurfaceStreamHandle,
+  _opts: DecodeOptions,
+): ReadableStream<Uint8Array> {
   const { fileChannels, rows } = handle
 
   // Internal stream of codec-data bytes. The pump (loop below) writes to it
@@ -231,37 +254,6 @@ async function runDecodeStream(
   const headerReady = new Promise<void>(resolve => {
     resolveHeader = resolve
   })
-
-  // Output collector: pipe dataStream → compressor → concat. Starts as soon
-  // as the header is parsed (we need compressionLevel to pick the
-  // compressor). Runs concurrently with the row pump below.
-  const outputPromise = (async (): Promise<Buffer> => {
-    await headerReady
-    const outBytes =
-      compressionLevel === 0
-        ? dataStream
-        : compressorRegistry.byHeaderLevel(compressionLevel).decompressWebStream(dataStream)
-    const reader = outBytes.getReader()
-    const collected: Uint8Array[] = []
-    let total = 0
-
-    while (true) {
-      const { done, value } = await reader.read()
-
-      if (done) break
-      collected.push(value)
-      total += value.byteLength
-    }
-    const out = new Uint8Array(total)
-    let offset = 0
-
-    for (const c of collected) {
-      out.set(c, offset)
-      offset += c.byteLength
-    }
-
-    return Buffer.from(out.buffer, out.byteOffset, out.byteLength)
-  })()
 
   function appendBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
     if (a.byteLength === 0) return b
@@ -323,51 +315,113 @@ async function runDecodeStream(
     dataController.enqueue(new Uint8Array(toFeed))
   }
 
-  // Row pump: each yielded row is `width * fileChannels` pixel bytes (no
-  // PNG filter byte — surface unfiltered them already).
-  try {
-    for await (const row of rows) {
-      if (!headerParsed) {
-        pixelBuf = appendBytes(pixelBuf, row)
-        const compactBytes = COMPACT_HEADER_PIXELS * fileChannels
-        const fullBytes = HEADER_PIXELS * fileChannels
+  // Output stream: pipe dataStream → compressor. Starts as soon
+  // as the header is parsed (we need compressionLevel to pick the
+  // compressor). Runs concurrently with the row pump below.
+  const outputStreamPromise = (async (): Promise<ReadableStream<Uint8Array>> => {
+    await headerReady
 
-        if (pixelBuf.byteLength >= compactBytes && isCompactToken(pixelBuf)) {
-          const ch = readCompactHeader(pixelBuf)
+    return compressionLevel === 0
+      ? dataStream
+      : compressorRegistry.byHeaderLevel(compressionLevel).decompressWebStream(dataStream)
+  })()
 
-          bpp = ch.channels
-          compressionLevel = ch.flags & 0b10 ? 2 : 0
-          dataLength = ch.dataLength
-          activeCodec = algorithm.codec
-          await finishHeader(compactBytes)
-        } else if (pixelBuf.byteLength >= fullBytes) {
-          try {
-            const h = readHeader(pixelBuf)
-            const fecLevel = (h.ecLevel >> 1) & 0b111
+  const pumpPromise = (async () => {
+    // Row pump: each yielded row is `width * fileChannels` pixel bytes (no
+    // PNG filter byte — surface unfiltered them already).
+    try {
+      for await (const row of rows) {
+        if (!headerParsed) {
+          pixelBuf = appendBytes(pixelBuf, row)
+          const compactBytes = COMPACT_HEADER_PIXELS * fileChannels
+          const fullBytes = HEADER_PIXELS * fileChannels
 
-            if (fecLevel > 0) {
-              throw new Error('FEC tokens cannot be streamed; use decode() with the full blob')
-            }
-            bpp = h.channels
-            compressionLevel = h.compressionLevel
-            dataLength = h.fileLength
+          if (pixelBuf.byteLength >= compactBytes && isCompactToken(pixelBuf)) {
+            const ch = readCompactHeader(pixelBuf)
+
+            bpp = ch.channels
+            compressionLevel = ch.flags & 0b10 ? 2 : 0
+            dataLength = ch.dataLength
             activeCodec = algorithm.codec
-            await finishHeader(fullBytes)
-          } catch {
-            // Not enough bytes yet — keep accumulating.
+            await finishHeader(compactBytes)
+          } else if (pixelBuf.byteLength >= fullBytes) {
+            try {
+              const h = readHeader(pixelBuf)
+              const fecLevel = (h.ecLevel >> 1) & 0b111
+
+              if (fecLevel > 0) {
+                throw new Error('FEC tokens cannot be streamed; use decode() with the full blob')
+              }
+              bpp = h.channels
+              compressionLevel = h.compressionLevel
+              dataLength = h.fileLength
+              activeCodec = algorithm.codec
+              await finishHeader(fullBytes)
+            } catch {
+              // Not enough bytes yet — keep accumulating.
+            }
           }
+          continue
         }
-        continue
+        feedDataPixels(row)
       }
-      feedDataPixels(row)
+      dataController.close()
+    } catch (e) {
+      dataController.error(e)
+      throw e
     }
-    dataController.close()
-  } catch (e) {
-    dataController.error(e)
-    throw e
+  })()
+
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        const outBytes = await outputStreamPromise
+        const reader = outBytes.getReader()
+
+        while (true) {
+          const { done, value } = await reader.read()
+
+          if (done) break
+          controller.enqueue(value)
+        }
+        await pumpPromise
+        controller.close()
+      } catch (e) {
+        controller.error(e)
+      }
+    },
+  })
+}
+
+async function collectDecodedStream(
+  stream: ReadableStream<Uint8Array>,
+  opts: DecodeOptions,
+): Promise<Buffer> {
+  const reader = stream.getReader()
+  const collected: Uint8Array[] = []
+  let total = 0
+  let sawFirstChunk = false
+
+  while (true) {
+    const { done, value } = await reader.read()
+
+    if (done) break
+    if (!sawFirstChunk) {
+      sawFirstChunk = true
+      opts.onFirstDecodedChunk?.(value)
+    }
+    collected.push(value)
+    total += value.byteLength
+  }
+  const out = new Uint8Array(total)
+  let offset = 0
+
+  for (const c of collected) {
+    out.set(c, offset)
+    offset += c.byteLength
   }
 
-  return outputPromise
+  return Buffer.from(out.buffer, out.byteOffset, out.byteLength)
 }
 
 /**

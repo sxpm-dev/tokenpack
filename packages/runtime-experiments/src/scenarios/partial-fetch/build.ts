@@ -10,7 +10,8 @@
 // against the pixel-range pack to pull a single file's compressed bytes
 // without decoding any pixels — `fetchPackFile()` from `@tokenpack/browser`.
 
-import { encode, NodePackBuilder } from '@tokenpack/node'
+import { encode } from '@tokenpack/node'
+import { NodePackBuilder } from '@tokenpack/node/node-pack-builder'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'

@@ -4,7 +4,8 @@
 // file and reports per-strategy timing, wire-bytes, and a per-mode result
 // (text content or imported module sentinel).
 
-import { decode, fetchPackFile, fetchPackManifest } from '@tokenpack/browser'
+import { decode } from '@tokenpack/browser'
+import { fetchPackFile, fetchPackManifest } from '@tokenpack/browser/fetch-pack'
 import { useCallback, useEffect, useState } from 'react'
 import { decompressRaw } from 'tokenpack/compressors'
 

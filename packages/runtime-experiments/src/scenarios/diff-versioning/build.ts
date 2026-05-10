@@ -20,7 +20,8 @@
 import { encode } from '@tokenpack/node'
 import fs from 'fs'
 import path from 'path'
-import { diffPack, packBuffers, type PackEntry } from 'tokenpack'
+import { packBuffers, type PackEntry } from 'tokenpack/archive'
+import { diffPack } from 'tokenpack/diff-pack'
 import { fileURLToPath } from 'url'
 import zlib from 'zlib'
 

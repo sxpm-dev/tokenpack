@@ -6,15 +6,16 @@ import {
   CheckCircleIcon,
   CircleDashedIcon,
   DownloadSimpleIcon,
+  FloppyDiskIcon,
   MinusCircleIcon,
   PlayIcon,
   WarningCircleIcon,
   WarningOctagonIcon,
 } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 
 import { formatBytes, formatMs, runVariant } from './runner'
-import type { AggregatedRow, Mode, Throttle, Variant } from './types'
+import type { AggregatedRow, Throttle, Variant } from './types'
 import { SCRIPT_VARIANTS, TEXT_VARIANTS } from './variants'
 
 interface ThrottleOption {
@@ -30,8 +31,27 @@ const THROTTLE_OPTIONS: readonly ThrottleOption[] = [
 ] as const
 
 interface Manifest {
-  sources: { id: string; file: string; rawBytes: number }[]
+  sources: RuntimeCase[]
+  rangePackCases: RuntimeRangePackCase[]
+  scriptCases: RuntimeCase[]
   scenarios: { id: string; available: boolean; mime: string | null }[]
+}
+
+interface RuntimeCase {
+  id: string
+  source: string
+  sourceKind: 'json' | 'text'
+  chunkCount: number
+  rawBytes: number
+  chunkIndexes: number[]
+}
+
+interface RuntimeRangePackCase {
+  id: string
+  source: string
+  chunkCount: number
+  rawBytes: number
+  fileCount: number
 }
 
 type Tab = 'source' | 'script'
@@ -46,6 +66,15 @@ type VariantStatus =
   | { state: 'skipped'; reason: string }
 
 type StatusMap = Map<string, VariantStatus>
+
+interface RuntimeBaseline {
+  createdAt: string
+  tab: Tab
+  source: string
+  throttle: Throttle
+  iterations: number
+  rows: AggregatedRow[]
+}
 
 function emptyMap(): StatusMap {
   return new Map()
@@ -71,10 +100,9 @@ function initialStatuses(variants: Variant[], runSkipped: boolean): StatusMap {
 
 export default function RuntimeBenchmarkPage() {
   const [manifest, setManifest] = useState<Manifest | null>(null)
-  const [source, setSource] = useState('react-dom-dev')
+  const [source, setSource] = useState('')
   const [iterations, setIterations] = useState(5)
   const [activeTab, setActiveTab] = useState<Tab>('source')
-  const [mode, setMode] = useState<Mode>('static')
   const [throttle, setThrottle] = useState<Throttle>('local')
   // Partial-compat token variants (the brotli-decode ones) fail on Chromium <
   // 124 / Firefox < 126 / Safari < 18. Default-skipped so first-time runs are
@@ -85,13 +113,62 @@ export default function RuntimeBenchmarkPage() {
   const [textStatuses, setTextStatuses] = useState<StatusMap>(emptyMap)
   const [scriptStatuses, setScriptStatuses] = useState<StatusMap>(emptyMap)
   const [topError, setTopError] = useState<string | null>(null)
+  const [baseline, setBaseline] = useState<RuntimeBaseline | null>(null)
+  const [baselineMessage, setBaselineMessage] = useState('')
 
   useEffect(() => {
     fetch('/api/runtime-benchmark/manifest', { cache: 'no-store' })
       .then(r => r.json())
-      .then((m: Manifest) => setManifest(m))
+      .then((m: Manifest) => {
+        setManifest(m)
+        if (m.sources[0]) setSource(m.sources[0].id)
+      })
       .catch(e => setTopError(String(e)))
   }, [])
+
+  useEffect(() => {
+    if (!source) return
+
+    const controller = new AbortController()
+    const params = new URLSearchParams({
+      iterations: String(iterations),
+      source,
+      tab: activeTab,
+      throttle,
+    })
+
+    fetch(`/api/runtime-benchmark/baseline?${params}`, {
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(`baseline fetch failed: ${r.status}`)
+
+        return r.json() as Promise<RuntimeBaseline | null>
+      })
+      .then(setBaseline)
+      .catch(e => {
+        if (e instanceof DOMException && e.name === 'AbortError') return
+        setTopError(String(e))
+      })
+
+    return () => controller.abort()
+  }, [activeTab, iterations, source, throttle])
+
+  const textVariants = useMemo(() => filterGeneratedVariants(TEXT_VARIANTS, manifest), [manifest])
+  const scriptVariants = useMemo(
+    () => filterGeneratedVariants(SCRIPT_VARIANTS, manifest),
+    [manifest],
+  )
+  const currentBaseline = useMemo(() => {
+    if (!baseline) return null
+    if (baseline.tab !== activeTab) return null
+    if (baseline.source !== source) return null
+    if (baseline.throttle !== throttle) return null
+    if (baseline.iterations !== iterations) return null
+
+    return baseline
+  }, [activeTab, baseline, iterations, source, throttle])
 
   async function handleRun() {
     if (!manifest) return
@@ -99,7 +176,7 @@ export default function RuntimeBenchmarkPage() {
     setTopError(null)
 
     const isSourceTab = activeTab === 'source'
-    const allVariants = isSourceTab ? TEXT_VARIANTS : SCRIPT_VARIANTS
+    const allVariants = isSourceTab ? textVariants : scriptVariants
     // Variants we'll actually iterate. Skipped variants get a 'skipped' status
     // up front so the table renders them with a clear marker — they aren't
     // hidden, just not run.
@@ -117,8 +194,8 @@ export default function RuntimeBenchmarkPage() {
         try {
           const row = await runVariant(variant, iterations, {
             source,
+            sourceKind: activeCase?.sourceKind ?? 'text',
             withExecute: !isSourceTab,
-            live: mode === 'live',
             throttle,
           })
 
@@ -177,6 +254,50 @@ export default function RuntimeBenchmarkPage() {
     URL.revokeObjectURL(url)
   }
 
+  async function handleSaveBaseline() {
+    const rows = doneRowsFromStatuses(activeStatuses)
+
+    if (!rows.length) return
+    setTopError(null)
+    setBaselineMessage('')
+
+    try {
+      const res = await fetch('/api/runtime-benchmark/baseline', {
+        body: JSON.stringify({
+          tab: activeTab,
+          source,
+          throttle,
+          iterations,
+          rows,
+        }),
+        headers: { 'content-type': 'application/json' },
+        method: 'POST',
+      })
+
+      if (!res.ok) throw new Error(`save baseline failed: ${res.status}`)
+      const saved = (await res.json()) as RuntimeBaseline
+
+      setBaseline(saved)
+      setBaselineMessage(
+        `Baseline saved · ${rows.length} rows · ${iterations} iterations · ${throttle}`,
+      )
+      window.setTimeout(() => setBaselineMessage(''), 3000)
+    } catch (e: unknown) {
+      setTopError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  function handleTabChange(nextTab: Tab) {
+    setActiveTab(nextTab)
+    setBaselineMessage('')
+
+    const nextCases = nextTab === 'source' ? manifest?.sources : manifest?.scriptCases
+
+    if (nextCases?.[0] && !nextCases.some(item => item.id === source)) {
+      setSource(nextCases[0].id)
+    }
+  }
+
   if (!manifest) {
     return (
       <div className="flex items-center justify-center py-32">
@@ -187,6 +308,10 @@ export default function RuntimeBenchmarkPage() {
 
   const isSourceTab = activeTab === 'source'
   const activeStatuses = isSourceTab ? textStatuses : scriptStatuses
+  const activeVariants = isSourceTab ? textVariants : scriptVariants
+  const activeCases = isSourceTab ? manifest.sources : manifest.scriptCases
+  const activeCaseIndex = activeCases.findIndex(item => item.id === source)
+  const activeCase = activeCaseIndex >= 0 ? activeCases[activeCaseIndex] : null
   const hasAnyDone = [...activeStatuses.values()].some(s => s.state === 'done')
 
   return (
@@ -198,14 +323,14 @@ export default function RuntimeBenchmarkPage() {
         </p>
       </div>
 
-      {/* Tab selector — Source content vs Generated script. The Source dropdown
-          is meaningful only for the Source tab; the script body is the same
-          regardless of which source is selected, so its tab hides the picker. */}
+      {/* Tab selector — Source content vs Generated script. Both use the same
+          strategy id shape, but the script tab displays synthetic script sizes
+          instead of source-file names. */}
       <div className="flex border-b border-white/10">
         <TabButton
           active={activeTab === 'source'}
           disabled={running}
-          onClick={() => setActiveTab('source')}
+          onClick={() => handleTabChange('source')}
         >
           Source content
           <span className="ml-2 text-[10px] text-white/35 font-normal normal-case tracking-normal">
@@ -215,7 +340,7 @@ export default function RuntimeBenchmarkPage() {
         <TabButton
           active={activeTab === 'script'}
           disabled={running}
-          onClick={() => setActiveTab('script')}
+          onClick={() => handleTabChange('script')}
         >
           Generated script
           <span className="ml-2 text-[10px] text-white/35 font-normal normal-case tracking-normal">
@@ -226,23 +351,24 @@ export default function RuntimeBenchmarkPage() {
 
       <Surface className="rounded-2xl p-4 space-y-3">
         <div className="flex flex-wrap items-center gap-3 text-xs">
-          {isSourceTab && (
-            <label className="flex items-center gap-2">
-              <span className="text-white/50">Source:</span>
-              <select
-                className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs"
-                disabled={running}
-                value={source}
-                onChange={e => setSource(e.target.value)}
-              >
-                {manifest.sources.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.id} ({(s.rawBytes / 1024).toFixed(0)}KB)
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+          <label className="flex items-center gap-2">
+            <span className="text-white/50">{isSourceTab ? 'Case:' : 'Script:'}</span>
+            <select
+              className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs"
+              disabled={running}
+              value={source}
+              onChange={e => {
+                setBaselineMessage('')
+                setSource(e.target.value)
+              }}
+            >
+              {activeCases.map((s, index) => (
+                <option key={s.id} value={s.id}>
+                  {caseLabel(s, isSourceTab ? 'source' : 'script', index)}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label className="flex items-center gap-2">
             <span className="text-white/50">Iterations:</span>
@@ -253,30 +379,12 @@ export default function RuntimeBenchmarkPage() {
               min={1}
               type="number"
               value={iterations}
-              onChange={e => setIterations(Math.max(1, Math.min(20, Number(e.target.value))))}
+              onChange={e => {
+                setBaselineMessage('')
+                setIterations(Math.max(1, Math.min(20, Number(e.target.value))))
+              }}
             />
           </label>
-
-          <div className="flex items-center gap-1 rounded border border-white/10 p-0.5">
-            <button
-              className={`px-2 py-0.5 text-[11px] rounded ${mode === 'static' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}
-              disabled={running}
-              title="Pre-generated fixtures streamed from disk (CDN-realistic)"
-              type="button"
-              onClick={() => setMode('static')}
-            >
-              Static
-            </button>
-            <button
-              className={`px-2 py-0.5 text-[11px] rounded ${mode === 'live' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70'}`}
-              disabled={running}
-              title="Server encodes per request (includes encode CPU in TTFB)"
-              type="button"
-              onClick={() => setMode('live')}
-            >
-              Live
-            </button>
-          </div>
 
           <label
             className="flex items-center gap-2"
@@ -287,7 +395,10 @@ export default function RuntimeBenchmarkPage() {
               className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs"
               disabled={running}
               value={throttle}
-              onChange={e => setThrottle(e.target.value as Throttle)}
+              onChange={e => {
+                setBaselineMessage('')
+                setThrottle(e.target.value as Throttle)
+              }}
             >
               {THROTTLE_OPTIONS.map(t => (
                 <option key={t.id} value={t.id}>
@@ -322,7 +433,21 @@ export default function RuntimeBenchmarkPage() {
               <DownloadSimpleIcon className="mr-1.5" size={12} /> Export CSV
             </Button>
           )}
+          {hasAnyDone && !running && (
+            <Button size="sm" variant="ghost" onPress={handleSaveBaseline}>
+              <FloppyDiskIcon className="mr-1.5" size={12} /> Save as baseline
+            </Button>
+          )}
         </div>
+
+        {currentBaseline && (
+          <div className="text-[11px] text-white/35">
+            Baseline: {currentBaseline.rows.length} rows · {currentBaseline.iterations} iterations ·{' '}
+            {currentBaseline.throttle} · {new Date(currentBaseline.createdAt).toLocaleString()}
+          </div>
+        )}
+
+        {baselineMessage && <div className="text-[11px] text-green-300/80">{baselineMessage}</div>}
 
         <div className="rounded border border-yellow-500/20 bg-yellow-500/5 px-3 py-2 text-[11px] leading-4 text-yellow-200">
           <strong>Real-network mode.</strong> Disable Service Workers, close other tabs, and avoid
@@ -348,22 +473,57 @@ export default function RuntimeBenchmarkPage() {
       {isSourceTab ? (
         <>
           <SectionTitle>
-            Source content · {mode} · {throttle} · source = <code>{source}</code>
+            Source content · {throttle} · <code>{source}</code>
           </SectionTitle>
-          <ResultsTable statuses={textStatuses} variants={TEXT_VARIANTS} withExecute={false} />
+          <ResultsTable
+            baseline={currentBaseline}
+            statuses={textStatuses}
+            variants={activeVariants}
+            withExecute={false}
+          />
           <RuntimeLegend withExecute={false} />
         </>
       ) : (
         <>
           <SectionTitle>
-            Generated script · {mode} · {throttle}
+            Generated script · {throttle} ·{' '}
+            <code>{activeCase ? caseLabel(activeCase, 'script', activeCaseIndex) : source}</code>
           </SectionTitle>
-          <ResultsTable withExecute statuses={scriptStatuses} variants={SCRIPT_VARIANTS} />
+          <ResultsTable
+            withExecute
+            baseline={currentBaseline}
+            statuses={scriptStatuses}
+            variants={activeVariants}
+          />
           <RuntimeLegend withExecute />
         </>
       )}
     </div>
   )
+}
+
+function filterGeneratedVariants(variants: Variant[], manifest: Manifest | null): Variant[] {
+  if (!manifest) return variants.filter(v => !v.isToken)
+
+  const availableTokenIds = new Set(manifest.scenarios.filter(s => s.available).map(s => s.id))
+  const hasRangePackCases = manifest.rangePackCases.length > 0
+
+  return variants.filter(v => {
+    if (v.loadMode === 'range-pack-fetch' || v.loadMode === 'range-pack-stream') {
+      return hasRangePackCases
+    }
+
+    return !v.isToken || availableTokenIds.has(v.id)
+  })
+}
+
+function caseLabel(item: RuntimeCase, kind: 'source' | 'script', index = 0): string {
+  const requestCount = `${item.chunkCount} request${item.chunkCount === 1 ? '' : 's'}`
+  const size = formatBytes(item.rawBytes)
+
+  if (kind === 'script') return `script profile ${index + 1} · ${requestCount} · ${size}`
+
+  return `${item.source} · ${requestCount} · ${size}`
 }
 
 function RuntimeLegend({ withExecute }: { withExecute: boolean }) {
@@ -389,38 +549,46 @@ function RuntimeLegend({ withExecute }: { withExecute: boolean }) {
         </Def>
 
         <Def term="TTFB">
-          Time-to-first-byte: <code>fetch()</code> start → first network byte arrives. In{' '}
-          <span className="text-white/60">Static</span> mode the server just streams a pre-generated
-          fixture (~ms). In <span className="text-white/60">Live</span> mode the server runs the
-          encode per request — TTFB picks up the encode CPU cost (e.g. brotli-11 on 5MB ≈ 100ms).
+          Time-to-first-byte: <code>fetch()</code> start → first network byte arrives. The server
+          streams pre-generated fixtures from the unified benchmark manifest, so encode CPU is
+          measured by the generator, not mixed into runtime fetch timings.
         </Def>
 
         <Def term="Transfer">
           <span className="text-white/60">HTTP variants</span>: <code>fetch()</code> start →{' '}
-          <code>response.text()</code> resolves. Includes the browser&apos;s native{' '}
-          <code>Content-Encoding</code> decompression AND UTF-8 text decode of the full payload —
-          all inside this window.
+          <code>response.arrayBuffer()</code> resolves. Includes payload transfer and the
+          browser&apos;s native <code>Content-Encoding</code> decompression, stopping when decoded
+          response bytes are materialized.
           <br />
-          <span className="text-white/60">Token variants</span>: <code>fetch()</code> start →{' '}
-          <code>response.blob()</code> resolves. Just network time + collecting bytes into a Blob;
-          no decompression yet.
+          <span className="text-white/60">Non-stream token variants</span>: <code>fetch()</code>{' '}
+          start → <code>response.arrayBuffer()</code> resolves. This is token wire transfer only; JS
+          decode is reported separately.
+          <br />
+          <span className="text-white/60">Stream token variants</span>: <code>fetch()</code> start →
+          streaming decoder drain. Network and JS decode overlap, so Transfer is the pipeline
+          window, not a separately additive network-only phase.
         </Def>
 
         <Def term="Decode">
-          <span className="text-white/60">HTTP variants</span>: 0µs — the browser already
-          decompressed inside Transfer.
+          <span className="text-white/60">HTTP variants</span>: source content materialization after
+          bytes arrive: UTF-8 text decode for text/script cases, or JSON parse plus{' '}
+          <code>Object.keys</code> verification for JSON cases. Browser-native{' '}
+          <code>Content-Encoding</code> decode remains inside Transfer.
           <br />
-          <span className="text-white/60">Token variants</span>: time in the JS-side pipeline —
-          <code>createImageBitmap</code> → canvas <code>getImageData</code> → codec decode → inner{' '}
-          <code>DecompressionStream(&apos;deflate&apos;|&apos;br&apos;)</code>.
+          <span className="text-white/60">Token variants</span>: TokenPack JS decode plus the same
+          text/JSON materialization used for HTTP rows.
         </Def>
 
         {withExecute && (
           <Def term="Execute">
-            Time spent inside the script body invocation (Function-constructor call → run). The body
-            is identical across all variants (only transport differs). Values under ~100µs sit
-            at/below the browser timer precision and round to 0 — pad the body if you need a
-            measurable comparison.
+            <span className="text-white/60">fetch-based rows</span>: time spent inside the script
+            body invocation after script text is decoded. The body is identical across all variants.
+            <br />
+            <span className="text-white/60">
+              <code>&lt;script&gt;</code> rows
+            </span>
+            : shown as <code>—</code> because browser script loading fetches, decompresses, and
+            executes before the load event; that whole native path is included in Total.
           </Def>
         )}
 
@@ -507,6 +675,10 @@ function csvRow(group: 'text' | 'script', r: AggregatedRow): string {
 // Re-export for the page-export helper.
 void csvRow
 
+function doneRowsFromStatuses(statuses: StatusMap): AggregatedRow[] {
+  return [...statuses.values()].flatMap(s => (s.state === 'done' ? [s.row] : []))
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="text-xs font-semibold text-white/35 uppercase tracking-widest mb-1 mt-3">
@@ -519,10 +691,12 @@ function ResultsTable({
   variants,
   statuses,
   withExecute,
+  baseline,
 }: {
   variants: Variant[]
   statuses: StatusMap
   withExecute: boolean
+  baseline: RuntimeBaseline | null
 }) {
   // Best total + canonical hash are computed only from completed runs.
   const doneRows: AggregatedRow[] = []
@@ -532,8 +706,12 @@ function ResultsTable({
   }
   const bestTotal = doneRows.length ? Math.min(...doneRows.map(r => r.median.totalMs)) : Infinity
   const canonical = doneRows.find(r => r.fingerprint != null)?.fingerprint ?? null
+  const baselineRows = useMemo(
+    () => new Map((baseline?.rows ?? []).map(row => [row.variantId, row])),
+    [baseline],
+  )
 
-  const colCount = withExecute ? 10 : 9
+  const colCount = withExecute ? 11 : 10
 
   return (
     <Surface className="rounded-2xl p-3.5 overflow-x-auto">
@@ -547,31 +725,57 @@ function ResultsTable({
             <th className="text-right py-2 px-2 font-normal">Decode</th>
             {withExecute && <th className="text-right py-2 px-2 font-normal">Execute</th>}
             <th className="text-right py-2 px-2 font-normal">Total</th>
+            <th className="text-right py-2 px-2 font-normal">vs Base</th>
             <th className="text-right py-2 px-2 font-normal">p95</th>
             <th className="text-right py-2 px-2 font-normal">Wire</th>
             <th className="text-left py-2 px-2 font-normal">Verify</th>
           </tr>
         </thead>
         <tbody>
-          {variants.map(v => {
+          {variants.map((v, index) => {
             const status = statuses.get(v.id) ?? { state: 'pending' as const }
+            const section = variantSectionTitle(v)
+            const prevSection = index > 0 ? variantSectionTitle(variants[index - 1]) : null
+            const showSection = section !== prevSection
 
             return (
-              <ResultRow
-                key={v.id}
-                bestTotal={bestTotal}
-                canonical={canonical}
-                colCount={colCount}
-                status={status}
-                variant={v}
-                withExecute={withExecute}
-              />
+              <Fragment key={v.id}>
+                {showSection && (
+                  <tr key={`${section}-section`} className="border-b border-white/5">
+                    <td
+                      className="pt-4 pb-1 px-2 text-[10px] uppercase tracking-widest text-white/30"
+                      colSpan={colCount}
+                    >
+                      {section}
+                    </td>
+                  </tr>
+                )}
+                <ResultRow
+                  baselineRow={baselineRows.get(v.id) ?? null}
+                  bestTotal={bestTotal}
+                  canonical={canonical}
+                  colCount={colCount}
+                  status={status}
+                  variant={v}
+                  withExecute={withExecute}
+                />
+              </Fragment>
             )
           })}
         </tbody>
       </table>
     </Surface>
   )
+}
+
+function variantSectionTitle(variant: Variant): string {
+  if (variant.loadMode === 'range-pack-fetch' || variant.loadMode === 'range-pack-stream') {
+    return 'Pixel-range partial file ranges'
+  }
+  if (variant.loadMode === 'script-tag') return 'Native script tag'
+  if (variant.isToken) return 'Whole-token fetch + decode'
+
+  return 'Native HTTP'
 }
 
 function ResultRow({
@@ -581,6 +785,7 @@ function ResultRow({
   canonical,
   withExecute,
   colCount,
+  baselineRow,
 }: {
   variant: Variant
   status: VariantStatus
@@ -588,6 +793,7 @@ function ResultRow({
   canonical: AggregatedRow['fingerprint']
   withExecute: boolean
   colCount: number
+  baselineRow: AggregatedRow | null
 }) {
   const variantCell = (
     <td className="py-1.5 px-2">
@@ -718,6 +924,9 @@ function ResultRow({
       >
         {formatMs(r.median.totalMs)}
       </td>
+      <td className="py-1.5 px-2 text-right tabular-nums">
+        <BaselineDeltaCell baseline={baselineRow} row={r} />
+      </td>
       <td className="py-1.5 px-2 text-right tabular-nums text-white/45">
         {formatMs(r.p95.totalMs)}
       </td>
@@ -728,6 +937,31 @@ function ResultRow({
         <VerifyCell canonical={canonical} row={r} />
       </td>
     </tr>
+  )
+}
+
+function BaselineDeltaCell({
+  row,
+  baseline,
+}: {
+  row: AggregatedRow
+  baseline: AggregatedRow | null
+}) {
+  if (!baseline) return <span className="text-white/25">—</span>
+
+  const delta = row.median.totalMs - baseline.median.totalMs
+  const pct = baseline.median.totalMs > 0 ? (delta / baseline.median.totalMs) * 100 : 0
+  const improved = delta < 0
+  const neutral = Math.abs(delta) < 0.1
+  const cls = neutral ? 'text-white/40' : improved ? 'text-green-400' : 'text-red-300'
+  const sign = delta > 0 ? '+' : ''
+
+  return (
+    <span className={cls} title={`baseline: ${formatMs(baseline.median.totalMs)}`}>
+      {sign}
+      {formatMs(Math.abs(delta))} · {sign}
+      {pct.toFixed(1)}%
+    </span>
   )
 }
 

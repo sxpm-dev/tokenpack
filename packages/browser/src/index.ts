@@ -1,9 +1,4 @@
 // @tokenpack/browser — public API.
-//
-// Top-level functions + types only. React components and hooks are accessible
-// via `@tokenpack/browser/components` and `@tokenpack/browser/hooks`.
-// Surface/compressor/algorithm classes are internal — import from
-// `tokenpack/<subpath>` if you need them.
 
 import './buffer-polyfill'
 import './register'
@@ -11,15 +6,9 @@ import './register'
 // ── Public functions ──────────────────────────────────────────────────────
 export { decode, type DecodeOptions, type DecodeSource } from './decode'
 export { decodeStream, type DecodeStreamSource } from './decode-stream'
-export { diff, type DiffResult, type FileDiff, type Hunk } from './diff'
+export { diff, type FileDiff, type Hunk } from './diff'
 export { encode, type EncodeBrowserOptions, type EncodeResult } from './encode'
-export { fetchPackFile, fetchPackManifest, type RemotePackHandle } from './fetch-pack'
-export {
-  inspect,
-  type InspectAlgorithm,
-  type InspectHeader,
-  type InspectInfo,
-} from './inspect'
+export { applyDiff, Token, TokenStream } from './token'
 
 // ── Builder ───────────────────────────────────────────────────────────────
 export { PackBuilder } from 'tokenpack'
