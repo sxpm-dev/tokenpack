@@ -1,6 +1,6 @@
 'use client'
 
-import { Surface, ToggleButton, ToggleButtonGroup } from '@heroui/react'
+import { Surface } from '@heroui/react'
 
 export interface SourceOption {
   id: string
@@ -35,51 +35,41 @@ export function SourceFilter({
   errorRows,
 }: SourceFilterProps) {
   return (
-    <Surface className="rounded-2xl flex flex-row flex-wrap items-center justify-start gap-x-6 gap-y-3 p-3">
-      <div className="space-y-2">
-        <div className="text-[10px] text-white/30 uppercase tracking-widest">Source</div>
-        <ToggleButtonGroup
-          disallowEmptySelection
-          className="flex-wrap"
-          selectedKeys={new Set([source])}
-          selectionMode="single"
-          size="sm"
-          onSelectionChange={keys => {
-            const [k] = [...(keys as Set<string>)]
+    <Surface className="rounded-2xl p-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 text-xs">
+        <label className="flex min-w-0 items-center gap-2">
+          <span className="text-white/45">Source:</span>
+          <select
+            className="min-w-[16rem] rounded border border-white/15 bg-white/7 px-3 py-2 text-xs text-white outline-none transition focus:border-blue-300/70"
+            value={source}
+            onChange={event => onSourceChange(event.target.value)}
+          >
+            {sources.map(s => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-            if (k) onSourceChange(k)
-          }}
-        >
-          {sources.map(s => (
-            <ToggleButton key={s.id} id={s.id}>
-              {s.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-      </div>
-      <div className="space-y-2">
-        <div className="text-[10px] text-white/30 uppercase tracking-widest">Throttle</div>
-        <ToggleButtonGroup
-          disallowEmptySelection
-          className="flex-wrap"
-          selectedKeys={new Set([condition])}
-          selectionMode="single"
-          size="sm"
-          onSelectionChange={keys => {
-            const [k] = [...(keys as Set<string>)]
+        <label className="flex items-center gap-2">
+          <span className="text-white/45">Network:</span>
+          <select
+            className="rounded border border-white/15 bg-white/7 px-3 py-2 text-xs text-white outline-none transition focus:border-blue-300/70"
+            value={condition}
+            onChange={event => onConditionChange(event.target.value)}
+          >
+            {conditions.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-            if (k) onConditionChange(k)
-          }}
-        >
-          {conditions.map(c => (
-            <ToggleButton key={c.id} id={c.id}>
-              {c.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-      </div>
-      <div className="ml-auto text-[11px] text-white/25 font-mono">
-        {totalRows} rows · {errorRows} errors
+        <div className="ml-auto text-[11px] text-white/30">
+          {totalRows} rows · {errorRows} errors
+        </div>
       </div>
     </Surface>
   )

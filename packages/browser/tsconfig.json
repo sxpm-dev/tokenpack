@@ -8,9 +8,11 @@
     "outDir": "dist",
     "rootDir": ".",
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
     "noEmit": true,
     "resolveJsonModule": true,
     "jsx": "react-jsx",
+    "types": ["node"],
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"]
   },
   "include": ["src/**/*"],

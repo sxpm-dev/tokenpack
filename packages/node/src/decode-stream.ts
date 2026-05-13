@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer'
 import { decodeSurfaceStream, PixelAlgorithm } from 'tokenpack/algorithms/pixel-algorithm'
-import { decompressRaw } from 'tokenpack/compressors'
+import { PixelRangeAlgorithm } from 'tokenpack/algorithms/pixel-range-algorithm'
+import type { AbstractAlgorithm } from 'tokenpack/algorithms/types'
 import {
   COMPACT_HEADER_PIXELS,
   HEADER_PIXELS,
@@ -8,14 +9,14 @@ import {
   readCompactHeader,
   readHeader,
 } from 'tokenpack/header'
-import { fromBytes } from 'tokenpack/pack/from-bytes'
 import type { Pack } from 'tokenpack/pack/types'
 import type { SurfaceStreamHandle } from 'tokenpack/surfaces/types'
 
 import { nodeAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
-import { buildDiffToFn } from './build-diff-to'
 import type { DecodeOptions } from './decode'
-import { decodeSourceToPack } from './decode-core'
+import { decodeSourceToPayload, payloadToPack } from './decode-core'
+import { maybeRouterToken } from './router-token'
+import { loadSource } from './source-loader'
 import { StreamingPngSurface } from './surfaces/streaming-png'
 
 export type DecodeStreamSource =
@@ -23,15 +24,48 @@ export type DecodeStreamSource =
   | AsyncIterable<Uint8Array | Buffer>
   | Buffer
   | Uint8Array
+  | string
+  | URL
 
 export async function decodeStream(
   source: DecodeStreamSource,
   options: DecodeOptions = {},
 ): Promise<Pack> {
+  const originalSource = source
+  const { bytes, algorithm } = await decodeStreamPayload(source, options)
+  const pack = payloadToPack(bytes, algorithm)
+
+  if (typeof originalSource === 'string' || originalSource instanceof URL) {
+    return maybeRouterToken(pack, originalSource, options)
+  }
+
+  return pack
+}
+
+export async function decodeStreamPayload(
+  source: DecodeStreamSource,
+  options: DecodeOptions = {},
+): Promise<{ bytes: Uint8Array; algorithm: AbstractAlgorithm }> {
   const { stream, peek } = await peekAndRebuild(source)
 
   if (!isPng(peek)) {
-    return decodeSourceToPack(await streamToBuffer(stream), options)
+    return decodeSourceToPayload(await streamToBuffer(stream), options)
+  }
+
+  const pixelRangeAlgorithmId = detectPixelRangeAlgorithmIdFromPngPrefix(peek)
+
+  if (pixelRangeAlgorithmId !== null) {
+    const Ctor = algorithmCatalog.getById(pixelRangeAlgorithmId)
+    const algorithm = new Ctor({ key: options.key })
+
+    if (algorithm instanceof PixelRangeAlgorithm) {
+      const decoded = await streamToBuffer(algorithm.decodeStream(stream, options))
+
+      return {
+        bytes: new Uint8Array(decoded.buffer, decoded.byteOffset, decoded.byteLength),
+        algorithm,
+      }
+    }
   }
 
   const [detectStream, fallbackStream] = stream.tee()
@@ -42,23 +76,20 @@ export async function decodeStream(
   try {
     detected = await detectAlgorithmFromRows(handle)
   } catch {
-    return decodeSourceToPack(await streamToBuffer(fallbackStream), options)
+    return decodeSourceToPayload(await streamToBuffer(fallbackStream), options)
   }
 
   const Ctor = algorithmCatalog.getById(detected.algorithmId)
   const algorithm = new Ctor({ key: options.key })
 
   if (!(algorithm instanceof PixelAlgorithm) || !Ctor.capabilities.streamable) {
-    return decodeSourceToPack(await streamToBuffer(fallbackStream), options)
+    return decodeSourceToPayload(await streamToBuffer(fallbackStream), options)
   }
 
   fallbackStream.cancel().catch(() => undefined)
   const decoded = await decodeSurfaceStream(algorithm, detected.handle, options)
 
-  return fromBytes(decoded, {
-    decompress: decompressRaw,
-    diffTo: buildDiffToFn(algorithm),
-  })
+  return { bytes: decoded, algorithm }
 }
 
 async function detectAlgorithmFromRows(handle: SurfaceStreamHandle): Promise<{
@@ -74,9 +105,14 @@ async function detectAlgorithmFromRows(handle: SurfaceStreamHandle): Promise<{
 
     if (done) break
     queued.push(value)
-    pixelBuf = appendBytes(pixelBuf, value)
 
     const compactBytes = COMPACT_HEADER_PIXELS * handle.fileChannels
+    const fullBytes = HEADER_PIXELS * handle.fileChannels
+    const needHeaderBytes = Math.max(0, fullBytes - pixelBuf.byteLength)
+
+    if (needHeaderBytes > 0) {
+      pixelBuf = appendBytes(pixelBuf, value.subarray(0, needHeaderBytes))
+    }
 
     if (pixelBuf.byteLength >= compactBytes && isCompactToken(pixelBuf)) {
       return {
@@ -84,8 +120,6 @@ async function detectAlgorithmFromRows(handle: SurfaceStreamHandle): Promise<{
         handle: replayHandle(handle, queued, iterator),
       }
     }
-
-    const fullBytes = HEADER_PIXELS * handle.fileChannels
 
     if (pixelBuf.byteLength >= fullBytes) {
       try {
@@ -132,6 +166,40 @@ function appendBytes(
   out.set(b, a.byteLength)
 
   return out
+}
+
+function detectPixelRangeAlgorithmIdFromPngPrefix(peek: Uint8Array): number | null {
+  if (peek.byteLength < 52 || !isPng(peek)) return null
+
+  const ihdrPos = 8
+  const ihdrLen = readU32be(peek, ihdrPos)
+  const ihdrType = ascii4(peek, ihdrPos + 4)
+
+  if (ihdrType !== 'IHDR') return null
+  const nextPos = ihdrPos + 8 + ihdrLen + 4
+
+  if (nextPos + 19 > peek.byteLength) return null
+  const chunkType = ascii4(peek, nextPos + 4)
+
+  if (chunkType !== 'tpAK') return null
+  const dataPos = nextPos + 8
+
+  if (ascii4(peek, dataPos) !== 'TPK1') return null
+
+  return (peek[dataPos + 4] << 8) | peek[dataPos + 5]
+}
+
+function readU32be(bytes: Uint8Array, offset: number): number {
+  return (
+    bytes[offset] * 0x1000000 +
+    (bytes[offset + 1] << 16) +
+    (bytes[offset + 2] << 8) +
+    bytes[offset + 3]
+  )
+}
+
+function ascii4(bytes: Uint8Array, offset: number): string {
+  return String.fromCharCode(bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3])
 }
 
 function isPng(peek: Uint8Array): boolean {
@@ -185,6 +253,7 @@ async function peekAndRebuild(
 
 function sourceToReadable(source: DecodeStreamSource): ReadableStream<Uint8Array> {
   if (source instanceof ReadableStream) return source
+  if (typeof source === 'string' || source instanceof URL) return sourceToWebStream(source)
   if (source instanceof Uint8Array) {
     return new ReadableStream<Uint8Array>({
       start(controller) {
@@ -209,6 +278,21 @@ function sourceToReadable(source: DecodeStreamSource): ReadableStream<Uint8Array
     },
     async cancel() {
       if (iterator.return) await iterator.return()
+    },
+  })
+}
+
+function sourceToWebStream(source: string | URL): ReadableStream<Uint8Array> {
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        const { bytes } = await loadSource(source)
+
+        controller.enqueue(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength))
+        controller.close()
+      } catch (error) {
+        controller.error(error)
+      }
     },
   })
 }

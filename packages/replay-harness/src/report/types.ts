@@ -21,13 +21,23 @@ export interface AssetMarker {
   /** When the request was first observed (page-relative ms). */
   observedMs: number
   /**
-   * Pack-fetch cost charged to this specific request.
-   *   - tokenpack first hit on packId: cost of fetch+stream-decode (full pack)
-   *   - tokenpack subsequent hits to same pack: 0 (DirPack already cached)
+   * Pack/file fetch cost charged to this specific request.
+   *   - tokenpack full/stream: time this request waited for pack fetch+decode
+   *   - tokenpack range-stream: metadata wait + this file's range fetch
    *   - baseline: time spent fetching this asset's bytes from origin
    *   - fall-through: undefined
    */
   fetchMs?: number
+  /**
+   * Time this request waited for pack-level initialization.
+   *   - full/stream: whole token fetch + decode, or wait for an in-flight init
+   *   - range-stream: metadata/manifest range read, or wait for an in-flight init
+   */
+  packInitMs?: number
+  /** Time spent fetching this file's own range. Range-stream tokenpack only. */
+  fileFetchMs?: number
+  /** Pack cache state at request start. Helps separate first init from concurrent waiters. */
+  cacheState?: 'miss' | 'pending' | 'hit'
   /**
    * Time to extract this asset's bytes from the decoded pack. tokenpack only.
    */
@@ -41,10 +51,28 @@ export interface AssetMarker {
 export interface PhaseRecord {
   durationMs: number
   loadEventMs: number | null
+  timedOut?: boolean
+  error?: string
+  sanity?: PhaseSanity
   served?: number
   fellThrough?: number
   totalBytes?: number
   assetMarkers?: AssetMarker[]
+}
+
+export interface PhaseSanity {
+  finalUrl?: string
+  title?: string
+  bodyTextSample?: string
+  screenshotPath?: string
+  consoleMessages?: BrowserConsoleMessage[]
+  consoleErrors?: string[]
+  pageErrors?: string[]
+}
+
+export interface BrowserConsoleMessage {
+  type: string
+  text: string
 }
 
 export type RunMode = 'baseline' | 'baseline-cdp' | 'tokenpack'
@@ -52,6 +80,7 @@ export type RunMode = 'baseline' | 'baseline-cdp' | 'tokenpack'
 export interface RunRecord {
   iter: number
   mode: RunMode
+  tokenVariantId?: string
   targetId: string
   /** Cold load — first goto in a fresh browser context. */
   cold: PhaseRecord
@@ -68,10 +97,24 @@ export interface RunSummaryStats {
 
 export interface RunReport {
   target: { id: string; url: string }
+  fixture?: {
+    id: string
+    shape: 'service-groups' | 'bundle-single' | 'bundle-chunks'
+    chunks?: number
+  }
   throttle: string
   samples: number
-  mode: 'local' | 'cdn'
+  mode: 'local' | 'cdn' | 'isolate'
+  deliveryMode?: 'cdp' | 'sw'
   strategy: string
+  tokenpackVariants?: Array<{
+    id: string
+    algo: string
+    channels: 3 | 4
+    loadMode: string
+    packCompressor: string
+    strategy: string
+  }>
   tokenDebug: boolean
   capturedAt: string
   iterations: RunRecord[]
@@ -79,11 +122,20 @@ export interface RunReport {
     cold: PhaseSummary
     reload: PhaseSummary
   }
+  variantSummaries?: Record<
+    string,
+    {
+      cold: PhaseSummary
+      reload: PhaseSummary
+    }
+  >
 }
 
 export interface ModeStats {
   duration: RunSummaryStats
   loadEvent: RunSummaryStats
+  timeouts?: number
+  errors?: number
   avgServed?: number
   avgFellThrough?: number
 }
@@ -93,7 +145,17 @@ export interface PhaseSummary {
   baselineCdp: ModeStats
   tokenpack: ModeStats
   /** TokenPack vs baseline (production fairness check). */
-  deltaTpVsBl: { durationMs: number; durationPct: number; loadEventMs: number; loadEventPct: number }
+  deltaTpVsBl: {
+    durationMs: number
+    durationPct: number
+    loadEventMs: number
+    loadEventPct: number
+  }
   /** TokenPack vs baseline-cdp (technology fairness check; harness tax canceled). */
-  deltaTpVsBlCdp: { durationMs: number; durationPct: number; loadEventMs: number; loadEventPct: number }
+  deltaTpVsBlCdp: {
+    durationMs: number
+    durationPct: number
+    loadEventMs: number
+    loadEventPct: number
+  }
 }

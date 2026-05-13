@@ -14,6 +14,7 @@ export async function safeSend(
     await (client.send as (m: string, p: object) => Promise<unknown>)(method, params)
   } catch (err) {
     const m = err instanceof Error ? err.message : String(err)
+
     if (
       !m.includes('Invalid InterceptionId') &&
       !m.includes('Target page, context or browser has been closed')

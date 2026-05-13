@@ -32,6 +32,9 @@
 // we find it. That way any extra ancillary chunks inserted by a pipeline
 // (color profile, time, etc.) don't break detection.
 
+import './buffer-polyfill'
+import './register'
+
 import type { DecompressFn } from 'tokenpack/pack-format/decompress'
 import type { PackManifest, PackManifestFile } from 'tokenpack/pack-format/manifest'
 
@@ -53,6 +56,16 @@ export interface RemotePackHandle {
   regionsAbsOffset: number
 }
 
+export interface PixelRangePayloadHandle {
+  url: string
+  /** Bytes already fetched from the start of the remote PNG while reading the tpAK header. */
+  prefetchedBytes: Uint8Array
+  /** Absolute byte offset (within the PNG file) of the range-addressable payload bytes. */
+  payloadAbsOffset: number
+  /** Payload bytes available for range access, excluding the TPK1 wrapper header. */
+  payloadByteLength: number
+}
+
 export interface RemotePackFileRange {
   path: string
   entry: PackManifestFile
@@ -68,6 +81,11 @@ export interface RemotePackCompressedFile {
 export interface RemotePackFileStream {
   entry: PackManifestFile
   stream: ReadableStream<Uint8Array>
+}
+
+export interface RemoteRangePackEntry {
+  path: string
+  size: number
 }
 
 export interface FetchPackFilesCompressedOptions {
@@ -93,41 +111,93 @@ export async function fetchPackManifest(
   return parsePackManifestFromHead(url, head, initialBytes)
 }
 
+export async function fetchPixelRangePayloadHandle(
+  url: string,
+  initialBytes: number = HEAD_FETCH_DEFAULT_BYTES,
+): Promise<PixelRangePayloadHandle> {
+  const head = await fetchRange(url, 0, initialBytes - 1)
+
+  return parsePixelRangePayloadHandleFromHead(url, head, initialBytes)
+}
+
+export async function fetchPixelRangePayloadBytes(
+  handle: PixelRangePayloadHandle,
+  offset: number,
+  length: number,
+): Promise<Uint8Array> {
+  const start = handle.payloadAbsOffset + offset
+  const end = start + length - 1
+
+  return fetchRangeWithPrefetch(handle, start, end)
+}
+
+export async function fetchPixelRangePayloadStream(
+  handle: PixelRangePayloadHandle,
+  offset: number,
+  length: number,
+): Promise<ReadableStream<Uint8Array>> {
+  const start = handle.payloadAbsOffset + offset
+  const end = start + length - 1
+
+  if (end < handle.prefetchedBytes.byteLength) {
+    return streamFromBytes(handle.prefetchedBytes.subarray(start, end + 1))
+  }
+
+  if (start < handle.prefetchedBytes.byteLength) {
+    const response = await fetchRangeResponse(handle.url, handle.prefetchedBytes.byteLength, end)
+
+    if (!response.body) {
+      throw new Error(
+        `range fetch ${handle.prefetchedBytes.byteLength}-${end}: response has no body`,
+      )
+    }
+    if (response.status === 200) {
+      const full = new Uint8Array(await response.arrayBuffer())
+
+      return streamFromBytes(full.subarray(start, end + 1))
+    }
+
+    return concatStreams(
+      streamFromBytes(handle.prefetchedBytes.subarray(start)),
+      response.body as ReadableStream<Uint8Array>,
+    )
+  }
+
+  const response = await fetchRangeResponse(handle.url, start, end)
+
+  if (!response.body) throw new Error(`range fetch ${start}-${end}: response has no body`)
+  if (response.status === 200) {
+    const full = new Uint8Array(await response.arrayBuffer())
+
+    return streamFromBytes(full.subarray(start, end + 1))
+  }
+
+  return response.body as ReadableStream<Uint8Array>
+}
+
+async function parsePixelRangePayloadHandleFromHead(
+  url: string,
+  head: Uint8Array,
+  initialBytes: number,
+): Promise<PixelRangePayloadHandle> {
+  const { tpakDataAbs, tpakDataLen } = findTpakChunkInHead(head, initialBytes)
+  const payloadAbsOffset = packPayloadOffset(head, tpakDataAbs, tpakDataLen)
+  const payloadByteLength = tpakDataLen - (payloadAbsOffset - tpakDataAbs)
+
+  return {
+    url,
+    prefetchedBytes: head,
+    payloadAbsOffset,
+    payloadByteLength,
+  }
+}
+
 async function parsePackManifestFromHead(
   url: string,
   head: Uint8Array,
   initialBytes: number,
 ): Promise<RemotePackHandle> {
-  // PNG signature check
-  if (head.byteLength < 8) throw new Error('initial fetch too small for PNG signature')
-  for (let i = 0; i < 8; i++) {
-    if (head[i] !== PNG_SIG[i]) throw new Error('not a PNG (signature mismatch)')
-  }
-
-  // Walk PNG chunks until we find tpAK.
-  let pos = 8
-  let tpakDataAbs = -1
-  let tpakDataLen = -1
-
-  while (pos + 8 <= head.byteLength) {
-    const length =
-      head[pos] * 0x1000000 + (head[pos + 1] << 16) + (head[pos + 2] << 8) + head[pos + 3]
-    const type = String.fromCharCode(head[pos + 4], head[pos + 5], head[pos + 6], head[pos + 7])
-
-    if (type === 'tpAK') {
-      tpakDataAbs = pos + 8
-      tpakDataLen = length
-      break
-    }
-    if (type === 'IEND') throw new Error('reached IEND without finding tpAK chunk')
-    pos += 8 + length + 4 // length + type + data + crc
-  }
-
-  if (tpakDataAbs === -1) {
-    throw new Error(
-      `tpAK chunk not found in initial ${initialBytes}-byte fetch (try a larger initialBytes)`,
-    )
-  }
+  const { tpakDataAbs, tpakDataLen } = findTpakChunkInHead(head, initialBytes)
 
   const packDataAbs = packPayloadOffset(head, tpakDataAbs, tpakDataLen)
 
@@ -185,6 +255,36 @@ async function parsePackManifestFromHead(
     prefetchedBytes: head,
     regionsAbsOffset,
   }
+}
+
+function findTpakChunkInHead(
+  head: Uint8Array,
+  initialBytes: number,
+): { tpakDataAbs: number; tpakDataLen: number } {
+  // PNG signature check
+  if (head.byteLength < 8) throw new Error('initial fetch too small for PNG signature')
+  for (let i = 0; i < 8; i++) {
+    if (head[i] !== PNG_SIG[i]) throw new Error('not a PNG (signature mismatch)')
+  }
+
+  // Walk PNG chunks until we find tpAK.
+  let pos = 8
+
+  while (pos + 8 <= head.byteLength) {
+    const length =
+      head[pos] * 0x1000000 + (head[pos + 1] << 16) + (head[pos + 2] << 8) + head[pos + 3]
+    const type = String.fromCharCode(head[pos + 4], head[pos + 5], head[pos + 6], head[pos + 7])
+
+    if (type === 'tpAK') {
+      return { tpakDataAbs: pos + 8, tpakDataLen: length }
+    }
+    if (type === 'IEND') throw new Error('reached IEND without finding tpAK chunk')
+    pos += 8 + length + 4 // length + type + data + crc
+  }
+
+  throw new Error(
+    `tpAK chunk not found in initial ${initialBytes}-byte fetch (try a larger initialBytes)`,
+  )
 }
 
 function packPayloadOffset(head: Uint8Array, tpakDataAbs: number, tpakDataLen: number): number {
@@ -364,6 +464,120 @@ export function estimatePackRangeWireBytes(
   return total
 }
 
+export async function openRangePack(url: string): Promise<RemoteRangePack> {
+  return new RemoteRangePack(await fetchPackManifest(url))
+}
+
+export class RemoteRangePack {
+  readonly list: string[] & (() => Promise<RemoteRangePackEntry[]>)
+  readonly entries: RemoteRangePackEntry[]
+  readonly stream: RemoteRangePackStreamApi
+
+  constructor(readonly remote: RemotePackHandle) {
+    this.entries = remote.manifest.files.map(file => ({
+      path: file.path,
+      size: file.originalSize,
+    }))
+    this.list = Object.assign(
+      async () => this.entries,
+      this.entries.map(entry => entry.path),
+    )
+    this.stream = new RemoteRangePackStreamApi(this)
+  }
+
+  async text(): Promise<string>
+  async text(path: string): Promise<string>
+  async text(paths: string[]): Promise<Map<string, string>>
+  async text(pathOrPaths?: string | string[]): Promise<string | Map<string, string>> {
+    return this.stream.text(pathOrPaths as never)
+  }
+
+  async blob(): Promise<Blob>
+  async blob(path: string): Promise<Blob>
+  async blob(paths: string[]): Promise<Map<string, Blob>>
+  async blob(pathOrPaths?: string | string[]): Promise<Blob | Map<string, Blob>> {
+    return this.stream.blob(pathOrPaths as never)
+  }
+
+  async extractAll(): Promise<Array<{ path: string; bytes: Uint8Array }>> {
+    const files = await fetchPackFilesStream(
+      this.remote,
+      this.remote.manifest.files.map(file => file.path),
+    )
+    const bytes = await Promise.all(files.map(file => readStreamBytes(file.stream)))
+
+    return files.map((file, index) => ({ path: file.entry.path, bytes: bytes[index]! }))
+  }
+}
+
+export class RemoteRangePackStreamApi {
+  constructor(private readonly pack: RemoteRangePack) {}
+
+  async text(): Promise<string>
+  async text(path: string): Promise<string>
+  async text(paths: string[]): Promise<Map<string, string>>
+  async text(pathOrPaths?: string | string[]): Promise<string | Map<string, string>> {
+    const result = await this.load(pathOrPaths)
+
+    if (result instanceof Map) {
+      const out = new Map<string, string>()
+
+      for (const [path, bytes] of result) out.set(path, new TextDecoder().decode(bytes))
+
+      return out
+    }
+
+    return new TextDecoder().decode(result)
+  }
+
+  async blob(): Promise<Blob>
+  async blob(path: string): Promise<Blob>
+  async blob(paths: string[]): Promise<Map<string, Blob>>
+  async blob(pathOrPaths?: string | string[]): Promise<Blob | Map<string, Blob>> {
+    const result = await this.load(pathOrPaths)
+
+    if (result instanceof Map) {
+      const out = new Map<string, Blob>()
+
+      for (const [path, bytes] of result) out.set(path, new Blob([bytes as unknown as ArrayBuffer]))
+
+      return out
+    }
+
+    return new Blob([result as unknown as ArrayBuffer])
+  }
+
+  private async load(
+    pathOrPaths?: string | string[],
+  ): Promise<Uint8Array | Map<string, Uint8Array>> {
+    if (typeof pathOrPaths === 'string') {
+      const file = await fetchPackFileStream(this.pack.remote, pathOrPaths)
+
+      return readStreamBytes(file.stream)
+    }
+
+    if (Array.isArray(pathOrPaths)) {
+      const files = await Promise.all(
+        pathOrPaths.map(async path => {
+          const file = await fetchPackFileStream(this.pack.remote, path)
+
+          return [path, await readStreamBytes(file.stream)] as const
+        }),
+      )
+
+      return new Map(files)
+    }
+
+    const files = await fetchPackFilesStream(
+      this.pack.remote,
+      this.pack.remote.manifest.files.map(file => file.path),
+    )
+    const bytes = await Promise.all(files.map(file => readStreamBytes(file.stream)))
+
+    return concatBytes(bytes)
+  }
+}
+
 function groupRequestedRanges(
   remote: RemotePackHandle,
   paths: readonly string[],
@@ -396,7 +610,7 @@ function groupRequestedRanges(
 }
 
 async function fetchRangeWithPrefetch(
-  remote: RemotePackHandle,
+  remote: { url: string; prefetchedBytes: Uint8Array },
   start: number,
   end: number,
 ): Promise<Uint8Array> {
@@ -695,4 +909,22 @@ function concatBytes(chunks: readonly Uint8Array[]): Uint8Array {
   }
 
   return out
+}
+
+async function readStreamBytes(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
+  const reader = stream.getReader()
+  const chunks: Uint8Array[] = []
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+
+      if (done) break
+      if (value) chunks.push(value)
+    }
+  } finally {
+    reader.releaseLock()
+  }
+
+  return concatBytes(chunks)
 }

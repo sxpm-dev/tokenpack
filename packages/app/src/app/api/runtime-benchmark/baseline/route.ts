@@ -2,16 +2,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { NextRequest, NextResponse } from 'next/server'
 import { dirname, join } from 'path'
 
-import type { AggregatedRow, Throttle } from '@/app/browser-fetch-bench/types'
+import type { AggregatedRow, BenchTab, Throttle } from '@/app/browser-fetch-bench/types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-type RuntimeTab = 'source' | 'script'
-
 interface RuntimeBaseline {
   createdAt: string
-  tab: RuntimeTab
+  tab: BenchTab
   source: string
   throttle: Throttle
   iterations: number
@@ -22,7 +20,7 @@ type BaselineStore = Record<string, RuntimeBaseline>
 
 const BASELINE_PATH = join(process.cwd(), 'benchmark-results', 'runtime-baselines.json')
 
-function keyFor(tab: RuntimeTab, source: string, throttle: Throttle, iterations: number): string {
+function keyFor(tab: BenchTab, source: string, throttle: Throttle, iterations: number): string {
   return `${tab}:${source}:${throttle}:iters-${iterations}`
 }
 
@@ -39,7 +37,7 @@ function writeStore(store: BaselineStore) {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
-  const tab = searchParams.get('tab') as RuntimeTab | null
+  const tab = searchParams.get('tab') as BenchTab | null
   const source = searchParams.get('source')
   const throttle = searchParams.get('throttle') as Throttle | null
   const iterations = Number(searchParams.get('iterations'))

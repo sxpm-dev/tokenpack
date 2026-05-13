@@ -11,12 +11,17 @@
  * Also strip `content-length` — it's wrong by definition for our re-encoded
  * body, and Playwright/CDP recomputes it for us.
  */
-export function stripWireHeaders(headers: Readonly<Record<string, string>>): Record<string, string> {
+export function stripWireHeaders(
+  headers: Readonly<Record<string, string>>,
+): Record<string, string> {
   const out: Record<string, string> = {}
+
   for (const [name, value] of Object.entries(headers)) {
     const k = name.toLowerCase()
+
     if (k === 'content-encoding' || k === 'content-length') continue
     out[name] = value
   }
+
   return out
 }

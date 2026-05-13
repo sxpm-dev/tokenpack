@@ -48,11 +48,10 @@ describe('AbstractAlgorithm.diff', () => {
     expect(ops).toContain('delete') // b.txt
 
     // Patch flow: applying the diff to packA reconstructs packB's tree.
-    const reconstructed = await (diffPack as DiffPack).apply(packA as DirPack)
+    const reconstructed = await (packA as DirPack).apply(diffPack as DiffPack)
     const reconstructedEntries = await reconstructed.extractAll()
     const expectedEntries = await (packB as DirPack).extractAll()
-    const sortByPath = (a: { path: string }, b: { path: string }) =>
-      a.path.localeCompare(b.path)
+    const sortByPath = (a: { path: string }, b: { path: string }) => a.path.localeCompare(b.path)
 
     reconstructedEntries.sort(sortByPath)
     expectedEntries.sort(sortByPath)

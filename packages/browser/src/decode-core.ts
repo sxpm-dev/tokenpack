@@ -13,13 +13,22 @@ export async function decodeSourceToPack(
   source: DecodeSource,
   options: DecodeOptions = {},
 ): Promise<Pack> {
+  const { bytes, algorithm } = await decodeSourceToPayload(source, options)
+
+  return payloadToPack(bytes, algorithm, options.decompress)
+}
+
+export async function decodeSourceToPayload(
+  source: DecodeSource,
+  options: DecodeOptions = {},
+): Promise<{ bytes: Uint8Array; algorithm: AbstractAlgorithm }> {
   const buffer = await sourceToBytes(source)
   const Ctor = await algorithmCatalog.detectFromBuffer(buffer, '.png')
   const algorithm = new Ctor({ key: options.key })
   const result = await algorithm.decode(buffer, { key: options.key, ext: '.png' })
   const bytes = new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
 
-  return payloadToPack(bytes, algorithm, options.decompress)
+  return { bytes, algorithm }
 }
 
 export async function detectSourceAlgorithmName(source: DecodeSource): Promise<string> {

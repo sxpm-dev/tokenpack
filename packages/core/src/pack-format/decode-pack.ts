@@ -40,13 +40,14 @@ export function decodePack(bytes: Uint8Array): DecodedPack {
   const manifestBytes = bytes.subarray(9, 9 + manifestSize)
   const manifest = readPackManifest(manifestBytes)
   const regionsStart = 9 + manifestSize
+  const fileByPath = new Map(manifest.files.map(file => [file.path, file]))
 
   return {
     manifest,
     regionsStart,
     bytes,
     extractRegion(path) {
-      const file = manifest.files.find(f => f.path === path)
+      const file = fileByPath.get(path)
 
       if (!file) throw new Error(`no entry for path: ${path}`)
       const start = regionsStart + file.offset

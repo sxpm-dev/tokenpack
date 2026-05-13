@@ -29,6 +29,14 @@ export interface ManifestAssetEntry {
 
 export interface PackManifest {
   version: 1
+  variant?: {
+    id: string
+    algo: string
+    channels: 3 | 4
+    loadMode: string
+    packCompressor: string
+  }
+  router?: { id: string; url?: string; localPath?: string }
   packs: ReadonlyArray<{ id: string; url?: string; localPath?: string }>
   assets: ReadonlyArray<ManifestAssetEntry>
 }

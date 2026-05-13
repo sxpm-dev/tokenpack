@@ -1,10 +1,11 @@
-import { chromium } from 'playwright'
 import { decode as decodeToken } from '@tokenpack/node'
+import { chromium } from 'playwright'
+
 import type { TargetConfig, ThrottleConfig } from '../config/types.js'
-import { runJourney } from '../record/journey.js'
-import { applyThrottle } from './throttle.js'
-import { loadManifest } from './manifest-loader.js'
 import { logger } from '../log/logger.js'
+import { runJourney } from '../record/journey.js'
+import { loadManifest } from './manifest-loader.js'
+import { applyThrottle } from './throttle.js'
 
 export interface LocalReplayResult {
   durationMs: number
@@ -30,18 +31,23 @@ export async function runTokenpackLocal(
   // Decode every pack referenced by the manifest, accumulating into a single
   // (internalPath → bytes) map. Multi-pack apps work the same way at this layer.
   const byInternalPath = new Map<string, Uint8Array>()
+
   for (const pack of manifest.packs) {
     const packPath = `${fixtureDir}/${pack.id}.png`
     const decoded = await decodeToken(packPath)
+
     if (!decoded.isPack()) throw new Error(`Pack at ${packPath} is not a DirPack`)
     const entries = await decoded.extractAll()
+
     for (const e of entries) byInternalPath.set(e.path, e.bytes)
   }
   const byUrl = new Map(manifest.assets.map(a => [a.url, a]))
 
   const browser = await chromium.launch({ headless: true })
+
   try {
     const context = await browser.newContext({ storageState: options.storageStatePath })
+
     if (options.extraHeaders) {
       await context.setExtraHTTPHeaders(options.extraHeaders)
     }
@@ -74,6 +80,7 @@ export async function runTokenpackLocal(
 
     const started = performance.now()
     let loadEventMs: number | null = null
+
     page.on('load', () => {
       loadEventMs = performance.now() - started
     })
@@ -87,6 +94,7 @@ export async function runTokenpackLocal(
       { mode: 'tokenpack-local', durationMs, loadEventMs, served, fellThrough },
       'local replay complete',
     )
+
     return { durationMs, loadEventMs, served, fellThrough }
   } finally {
     await browser.close()

@@ -4,6 +4,7 @@ import path from 'path'
 
 export type ApplyDiffEncoding = 'raw' | 'deflate' | 'brotli'
 export type ApplyDiffTokenGroup = 'fetch' | 'stream'
+export type ApplyDiffStrategy = 'single-bundle' | 'five-bundles'
 
 export interface ApplyDiffTokenFixture {
   id: string
@@ -27,9 +28,12 @@ export interface ApplyDiffTokenFixture {
 
 export interface ApplyDiffCase {
   id: string
+  strategy?: ApplyDiffStrategy
   sizeKB: number
   changeRatePct: number
   fileCount: number
+  bundleCount?: number
+  updatedBundleCount?: number
   changedFileCount: number
   changedPaths: string[]
   baseOriginalBytes: number
@@ -50,6 +54,7 @@ export interface ApplyDiffManifest {
   generatedAt: string
   sizesKB: number[]
   changeRatesPct: number[]
+  updatedBundleCounts?: number[]
   fileCount: number
   encodings: ApplyDiffEncoding[]
   tokenVariants: Array<{

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import type { PackEntry } from '../../src/archive-buffers'
+import { DirPack } from '../../src/pack/dir-pack'
+import { fromBytes } from '../../src/pack/from-bytes'
 import { applyDiff, decodeDiff } from '../../src/pack-format/apply-diff'
 import { computeDiffOps, encodeDiff } from '../../src/pack-format/encode-diff'
 import { type CompressFn } from '../../src/pack-format/encode-pack'
@@ -129,6 +131,49 @@ describe('diff: encode/decode + apply', () => {
 
     expect(reconstructed.map(e => e.path)).toEqual(['new.js'])
     expect(new TextDecoder().decode(reconstructed[0].bytes)).toBe('same content')
+  })
+
+  it('basePack.apply(diffPack) is lazy and does not extract the full base up front', async () => {
+    const prev: PackEntry[] = [
+      { path: 'a.js', bytes: enc.encode('aa') },
+      { path: 'b.js', bytes: enc.encode('bb') },
+    ]
+    const next: PackEntry[] = [
+      { path: 'a.js', bytes: enc.encode('AA') },
+      { path: 'b.js', bytes: enc.encode('bb') },
+      { path: 'c.js', bytes: enc.encode('cc') },
+    ]
+    const diffPack = fromBytes(await encodeDiff(prev, next, identity), {
+      decompress: identityDecompress,
+    })
+    let extractAllCalls = 0
+    let extractCalls = 0
+    const basePack = new DirPack(
+      prev.map(entry => ({ path: entry.path, size: entry.bytes.length })),
+      async path => {
+        extractCalls += 1
+        const entry = prev.find(candidate => candidate.path === path)
+
+        if (!entry) throw new Error(`missing ${path}`)
+
+        return entry.bytes
+      },
+      async () => {
+        extractAllCalls += 1
+
+        return prev
+      },
+    )
+
+    if (!diffPack.isDiff()) throw new Error('expected DiffPack')
+
+    const reconstructed = await basePack.apply(diffPack)
+
+    expect(extractAllCalls).toBe(0)
+    expect(extractCalls).toBe(0)
+    expect(reconstructed.list.sort()).toEqual(['a.js', 'b.js', 'c.js'])
+    expect(new TextDecoder().decode(await reconstructed.extract('b.js'))).toBe('bb')
+    expect(extractCalls).toBe(1)
   })
 
   it('throws on malformed diff bytes', () => {

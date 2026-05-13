@@ -1,0 +1,95 @@
+
+Target:      https://valeriis-my-site-261.editor.wix.com/edit/od/c3eee97d-b623-4f0f-80b2-a22eaf7fff3b?metaSiteId=d10191ef-d39a-432d-a235-4d8a9d1e7df8&http_referrer=odeditor.new&debug=all
+Replay:      captured entry document on original origin
+Mode:        isolate · sw · local · token-debug ON
+Throttle:    NONE
+Samples:     3 per mode (10 modes per iter)
+Report:      /Users/valerii/Develop/codeart/packages/replay-harness/results/valeriis-my-site-261-editor-wix-com-1778572903333-captured-app-isolate-sw-local-debug/report.html
+JSON:        /Users/valerii/Develop/codeart/packages/replay-harness/results/valeriis-my-site-261-editor-wix-com-1778572903333-captured-app-isolate-sw-local-debug/data.json
+CSV:         /Users/valerii/Develop/codeart/packages/replay-harness/results/valeriis-my-site-261-editor-wix-com-1778572903333-captured-app-isolate-sw-local-debug/data.csv
+Log:         /Users/valerii/Develop/codeart/packages/replay-harness/results/valeriis-my-site-261-editor-wix-com-1778572903333-captured-app-isolate-sw-local-debug/run.log
+Console:     /Users/valerii/Develop/codeart/packages/replay-harness/results/valeriis-my-site-261-editor-wix-com-1778572903333-captured-app-isolate-sw-local-debug/browser-console.json
+Console log: /Users/valerii/Develop/codeart/packages/replay-harness/results/valeriis-my-site-261-editor-wix-com-1778572903333-captured-app-isolate-sw-local-debug/browser-console.log
+Screenshots: /Users/valerii/Develop/codeart/packages/replay-harness/results/valeriis-my-site-261-editor-wix-com-1778572903333-captured-app-isolate-sw-local-debug/screenshots
+
+Variant:     linear-deflate-c3 · full · linear-deflate c3
+Metric            Baseline   BL-CDP     TP-SW     Δ TP vs BL            Δ TP vs BL-CDP
+────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────
+-- COLD LOAD --
+total duration    8564ms     7793ms     8261ms     -304ms (-3.5%)        +468ms (+6.0%)
+load event        8064ms     7291ms     7759ms     -305ms (-3.8%)        +467ms (+6.4%)
+-- RELOAD (warm cache) --
+total duration    6449ms     5641ms     4570ms     -1879ms (-29.1%)      -1071ms (-19.0%)
+load event        5948ms     5140ms     4069ms     -1879ms (-31.6%)      -1071ms (-20.8%)
+
+Variant:     linear-stream-deflate-c4 · stream · linear-stream-deflate c4
+Metric            Baseline   BL-CDP     TP-SW     Δ TP vs BL            Δ TP vs BL-CDP
+────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────
+-- COLD LOAD --
+total duration    8564ms     7793ms     7440ms     -1124ms (-13.1%)      -353ms (-4.5%)
+load event        8064ms     7291ms     6939ms     -1124ms (-13.9%)      -352ms (-4.8%)
+-- RELOAD (warm cache) --
+total duration    6449ms     5641ms     4824ms     -1625ms (-25.2%)      -817ms (-14.5%)
+load event        5948ms     5140ms     4323ms     -1625ms (-27.3%)      -817ms (-15.9%)
+
+Variant:     pixel-range-stream-deflate-c3 · stream · pixel-range-stream-deflate c3
+Metric            Baseline   BL-CDP     TP-SW     Δ TP vs BL            Δ TP vs BL-CDP
+────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────
+-- COLD LOAD --
+total duration    8564ms     7793ms     7268ms     -1297ms (-15.1%)      -525ms (-6.7%)
+load event        8064ms     7291ms     6766ms     -1298ms (-16.1%)      -525ms (-7.2%)
+-- RELOAD (warm cache) --
+total duration    6449ms     5641ms     4414ms     -2035ms (-31.6%)      -1227ms (-21.7%)
+load event        5948ms     5140ms     3913ms     -2035ms (-34.2%)      -1227ms (-23.9%)
+
+Variant:     pixel-range-none-range-fetch · range-fetch · pixel-range-none c3
+Metric            Baseline   BL-CDP     TP-SW     Δ TP vs BL            Δ TP vs BL-CDP
+────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────
+-- COLD LOAD --
+total duration    8564ms     7793ms     7177ms     -1388ms (-16.2%)      -616ms (-7.9%)
+load event        8064ms     7291ms     6675ms     -1389ms (-17.2%)      -616ms (-8.5%)
+-- RELOAD (warm cache) --
+total duration    6449ms     5641ms     4116ms     -2333ms (-36.2%)      -1525ms (-27.0%)
+load event        5948ms     5140ms     3614ms     -2334ms (-39.2%)      -1525ms (-29.7%)
+
+Variant:     pixel-range-none-range-stream · range-stream · pixel-range-none c3
+Metric            Baseline   BL-CDP     TP-SW     Δ TP vs BL            Δ TP vs BL-CDP
+────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────
+-- COLD LOAD --
+total duration    8564ms     7793ms     6605ms     -1960ms (-22.9%)      -1188ms (-15.2%)
+load event        8064ms     7291ms     6103ms     -1961ms (-24.3%)      -1188ms (-16.3%)
+-- RELOAD (warm cache) --
+total duration    6449ms     5641ms     4030ms     -2418ms (-37.5%)      -1610ms (-28.5%)
+load event        5948ms     5140ms     3529ms     -2419ms (-40.7%)      -1611ms (-31.3%)
+
+Variant:     pixel-range-none-range-fetch-all · range-fetch-all · pixel-range-none c3
+Metric            Baseline   BL-CDP     TP-SW     Δ TP vs BL            Δ TP vs BL-CDP
+────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────
+-- COLD LOAD --
+total duration    8564ms     7793ms     7560ms     -1004ms (-11.7%)      -233ms (-3.0%)
+load event        8064ms     7291ms     7058ms     -1005ms (-12.5%)      -233ms (-3.2%)
+-- RELOAD (warm cache) --
+total duration    6449ms     5641ms     4234ms     -2215ms (-34.3%)      -1407ms (-24.9%)
+load event        5948ms     5140ms     3731ms     -2216ms (-37.3%)      -1408ms (-27.4%)
+
+Variant:     pixel-range-none-range-stream-all · range-stream-all · pixel-range-none c3
+Metric            Baseline   BL-CDP     TP-SW     Δ TP vs BL            Δ TP vs BL-CDP
+────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────
+-- COLD LOAD --
+total duration    8564ms     7793ms     7611ms     -954ms (-11.1%)       -182ms (-2.3%)
+load event        8064ms     7291ms     7109ms     -955ms (-11.8%)       -182ms (-2.5%)
+-- RELOAD (warm cache) --
+total duration    6449ms     5641ms     4452ms     -1997ms (-31.0%)      -1189ms (-21.1%)
+load event        5948ms     5140ms     3951ms     -1997ms (-33.6%)      -1189ms (-23.1%)
+
+Variant:     pixel-range-none-range-stream-batch · range-stream-batch · pixel-range-none c3
+Metric            Baseline   BL-CDP     TP-SW     Δ TP vs BL            Δ TP vs BL-CDP
+────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────
+-- COLD LOAD --
+total duration    8564ms     7793ms     7829ms     -736ms (-8.6%)        +36ms (+0.5%)
+load event        8064ms     7291ms     7328ms     -736ms (-9.1%)        +36ms (+0.5%)
+-- RELOAD (warm cache) --
+total duration    6449ms     5641ms     4009ms     -2440ms (-37.8%)      -1632ms (-28.9%)
+load event        5948ms     5140ms     3508ms     -2440ms (-41.0%)      -1631ms (-31.7%)
+
+

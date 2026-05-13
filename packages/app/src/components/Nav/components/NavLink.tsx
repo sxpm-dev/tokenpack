@@ -15,8 +15,10 @@ export function NavLink({ item, active, onNavigate }: NavLinkProps) {
 
   return (
     <Link
-      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
-        active ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+      className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+        active
+          ? 'border-blue-300/80 bg-white/10 text-white shadow-[0_0_0_1px_rgba(147,197,253,0.55)]'
+          : 'border-transparent text-white/40 hover:bg-white/5 hover:text-white/70'
       }`}
       href={href}
       onClick={onNavigate}

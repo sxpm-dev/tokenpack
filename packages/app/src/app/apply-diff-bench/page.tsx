@@ -5,13 +5,25 @@ import { BroomIcon, DownloadSimpleIcon, PlayIcon } from '@phosphor-icons/react'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 
 import { formatBytes, formatMs, prepareBase, runVariant } from './runner'
-import type { ApplyDiffCase, ApplyDiffManifest, RowResult, Throttle, Variant } from './types'
+import type {
+  ApplyDiffCase,
+  ApplyDiffManifest,
+  ApplyDiffStrategy,
+  RowResult,
+  Throttle,
+  Variant,
+} from './types'
 
 const THROTTLES: Array<{ id: Throttle; label: string }> = [
   { id: 'local', label: 'Local' },
   { id: 'fast-cdn', label: 'Fast CDN' },
   { id: 'average', label: 'Average' },
   { id: 'slow', label: 'Slow' },
+]
+
+const STRATEGIES: Array<{ id: ApplyDiffStrategy; label: string }> = [
+  { id: 'single-bundle', label: '1 bundle' },
+  { id: 'five-bundles', label: '5 bundles' },
 ]
 
 type Status =
@@ -24,6 +36,7 @@ type StatusMap = Map<string, Status>
 
 export default function ApplyDiffBenchPage() {
   const [manifest, setManifest] = useState<ApplyDiffManifest | null>(null)
+  const [strategy, setStrategy] = useState<ApplyDiffStrategy>('single-bundle')
   const [caseId, setCaseId] = useState('')
   const [iterations, setIterations] = useState(5)
   const [throttle, setThrottle] = useState<Throttle>('local')
@@ -37,14 +50,23 @@ export default function ApplyDiffBenchPage() {
       .then(r => r.json())
       .then((m: ApplyDiffManifest) => {
         setManifest(m)
-        if (m.cases[0]) setCaseId(m.cases[0].id)
+        const first = m.cases[0]
+
+        if (first) {
+          setStrategy(caseStrategy(first))
+          setCaseId(first.id)
+        }
       })
       .catch(e => setTopError(String(e)))
   }, [])
 
+  const strategyCases = useMemo(
+    () => manifest?.cases.filter(item => caseStrategy(item) === strategy) ?? [],
+    [manifest, strategy],
+  )
   const activeCase = useMemo(
-    () => manifest?.cases.find(item => item.id === caseId) ?? manifest?.cases[0] ?? null,
-    [manifest, caseId],
+    () => strategyCases.find(item => item.id === caseId) ?? strategyCases[0] ?? null,
+    [caseId, strategyCases],
   )
   const variants = useMemo(() => (activeCase ? buildVariants(activeCase) : []), [activeCase])
   const doneRows = useMemo(
@@ -224,17 +246,44 @@ export default function ApplyDiffBenchPage() {
       <Surface className="rounded-2xl p-4 space-y-3">
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <label className="flex items-center gap-2">
+            <span className="text-white/50">Strategy:</span>
+            <select
+              className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs"
+              disabled={running}
+              value={strategy}
+              onChange={e => {
+                const nextStrategy = e.target.value as ApplyDiffStrategy
+                const nextCase = manifest.cases.find(item => caseStrategy(item) === nextStrategy)
+
+                setStrategy(nextStrategy)
+                setCaseId(nextCase?.id ?? '')
+                setStatuses(new Map())
+              }}
+            >
+              {STRATEGIES.filter(option =>
+                manifest.cases.some(item => caseStrategy(item) === option.id),
+              ).map(option => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2">
             <span className="text-white/50">Case:</span>
             <select
               className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs"
               disabled={running}
               value={activeCase?.id ?? ''}
-              onChange={e => setCaseId(e.target.value)}
+              onChange={e => {
+                setCaseId(e.target.value)
+                setStatuses(new Map())
+              }}
             >
-              {manifest.cases.map(item => (
+              {strategyCases.map(item => (
                 <option key={item.id} value={item.id}>
-                  {item.sizeKB}KB · {item.changeRatePct}% changed ·{' '}
-                  {formatBytes(item.changedOriginalBytes)}
+                  {caseOptionLabel(item)}
                 </option>
               ))}
             </select>
@@ -289,7 +338,7 @@ export default function ApplyDiffBenchPage() {
             <Metric label="Next" value={formatBytes(activeCase.nextOriginalBytes)} />
             <Metric
               label="Changed"
-              value={`${activeCase.changedFileCount}/${activeCase.fileCount} files · ${formatBytes(activeCase.changedOriginalBytes)}`}
+              value={`${changedCountLabel(activeCase)} · ${formatBytes(activeCase.changedOriginalBytes)}`}
             />
             <Metric label="Expected hash" value={activeCase.nextTreeSha256.slice(0, 12)} />
           </div>
@@ -315,6 +364,37 @@ function Metric({ label, value }: { label: string; value: string }) {
       <div className="mt-1 text-white/70">{value}</div>
     </div>
   )
+}
+
+function caseStrategy(item: ApplyDiffCase): ApplyDiffStrategy {
+  return item.strategy ?? 'single-bundle'
+}
+
+function caseOptionLabel(item: ApplyDiffCase): string {
+  const strategy = caseStrategy(item)
+  const size = formatBytes(item.nextOriginalBytes)
+  const changed = formatBytes(item.changedOriginalBytes)
+
+  if (strategy === 'five-bundles') {
+    const updated = item.updatedBundleCount ?? item.changedFileCount
+    const bundleCount = item.bundleCount ?? item.fileCount
+    const prefix = item.sizeKB > 100_000 ? 'real app' : size
+
+    return `${prefix} · ${updated}/${bundleCount} bundles updated · ${changed} changed`
+  }
+
+  return `${size} · ${item.changeRatePct}% changed · ${changed} changed`
+}
+
+function changedCountLabel(item: ApplyDiffCase): string {
+  if (caseStrategy(item) === 'five-bundles') {
+    const updated = item.updatedBundleCount ?? item.changedFileCount
+    const bundleCount = item.bundleCount ?? item.fileCount
+
+    return `${updated}/${bundleCount} bundles`
+  }
+
+  return `${item.changeRatePct}% · ${item.changedFileCount} files`
 }
 
 function buildVariants(item: ApplyDiffCase): Variant[] {
@@ -382,22 +462,22 @@ function ResultsTable({
   const bestBySection = bestRowIdsBySection(doneRows)
 
   return (
-    <Surface className="rounded-2xl p-3">
+    <Surface className="rounded-2xl p-3.5">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] text-left text-xs">
-          <thead className="text-[10px] uppercase tracking-widest text-white/35">
-            <tr className="border-b border-white/10">
-              <th className="px-3 py-3">Variant</th>
-              <th className="px-3 py-3">Group</th>
-              <th className="px-3 py-3 text-right">TTFB</th>
-              <th className="px-3 py-3 text-right">Transfer</th>
-              <th className="px-3 py-3 text-right">Decode</th>
-              <th className="px-3 py-3 text-right">Apply</th>
-              <th className="px-3 py-3 text-right">Total</th>
-              <th className="px-3 py-3 text-right">P95</th>
-              <th className="px-3 py-3 text-right">Wire</th>
-              <th className="px-3 py-3">Verify</th>
-              <th className="px-3 py-3 text-right">vs best</th>
+        <table className="w-full min-w-[980px] text-xs">
+          <thead>
+            <tr className="border-b border-white/10 text-[10px] uppercase tracking-widest text-white/40">
+              <th className="px-2 py-2 text-left font-normal">Kind</th>
+              <th className="px-2 py-2 text-left font-normal">Variant</th>
+              <th className="px-2 py-2 text-right font-normal">TTFB</th>
+              <th className="px-2 py-2 text-right font-normal">Transfer</th>
+              <th className="px-2 py-2 text-right font-normal">Decode</th>
+              <th className="px-2 py-2 text-right font-normal">Apply</th>
+              <th className="px-2 py-2 text-right font-normal">Total</th>
+              <th className="px-2 py-2 text-right font-normal">P95</th>
+              <th className="px-2 py-2 text-right font-normal">Wire</th>
+              <th className="px-2 py-2 text-left font-normal">Verify</th>
+              <th className="px-2 py-2 text-right font-normal">vs best</th>
             </tr>
           </thead>
           <tbody>
@@ -410,7 +490,7 @@ function ResultsTable({
                   {section !== previousSection && (
                     <tr key={`${section}-section`} className="border-b border-white/5">
                       <td
-                        className="px-3 pb-1 pt-4 text-[10px] uppercase tracking-widest text-white/30"
+                        className="px-2 pb-1 pt-4 text-[10px] uppercase tracking-widest text-white/30"
                         colSpan={11}
                       >
                         {section}
@@ -458,10 +538,9 @@ function ResultRow({
 
   if (status.state === 'pending' || status.state === 'running') {
     return (
-      <tr className={`border-b border-white/8 text-white/35 ${streamingClass}`}>
+      <tr className={`border-b border-white/5 text-white/35 ${streamingClass}`}>
         <VariantCell isBest={false} isSectionBest={false} status="idle" variant={variant} />
-        <td className="px-3 py-3">{kindLabel(variant.kind)}</td>
-        <td className="px-3 py-3" colSpan={9}>
+        <td className="px-2 py-1.5 text-[10px] italic text-white/30" colSpan={9}>
           {status.state === 'running' ? 'running…' : 'queued'}
         </td>
       </tr>
@@ -472,8 +551,7 @@ function ResultRow({
     return (
       <tr className={`border-b border-red-400/10 bg-red-500/5 text-red-300 ${streamingClass}`}>
         <VariantCell isBest={false} isSectionBest={false} status="error" variant={variant} />
-        <td className="px-3 py-3">{kindLabel(variant.kind)}</td>
-        <td className="px-3 py-3" colSpan={9}>
+        <td className="px-2 py-1.5" colSpan={9}>
           {status.error}
         </td>
       </tr>
@@ -485,26 +563,43 @@ function ResultRow({
   const ok = !expectedShort || row.kind === 'native-full' || row.verifyHash === expectedShort
 
   return (
-    <tr className={`border-b border-white/8 text-white/70 ${streamingClass}`}>
+    <tr className={`border-b border-white/5 text-white/70 ${streamingClass}`}>
       <VariantCell isBest={isBest} isSectionBest={isSectionBest} status="done" variant={variant} />
-      <td className="px-3 py-3 text-white/45">{kindLabel(row.kind)}</td>
-      <td className="px-3 py-3 text-right">{formatMs(row.median.ttfbMs)}</td>
-      <td className="px-3 py-3 text-right">{formatMs(row.median.transferMs)}</td>
-      <td className="px-3 py-3 text-right">{formatMs(row.median.decodeMs)}</td>
-      <td className="px-3 py-3 text-right">{formatMs(row.median.applyMs)}</td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-white/60">
+        {formatMs(row.median.ttfbMs)}
+      </td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-white/70">
+        {formatMs(row.median.transferMs)}
+      </td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-white/60">
+        {formatMs(row.median.decodeMs)}
+      </td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-white/60">
+        {formatMs(row.median.applyMs)}
+      </td>
       <td
-        className={`px-3 py-3 text-right font-semibold ${
+        className={`px-2 py-1.5 text-right tabular-nums font-medium ${
           isBest || isSectionBest ? 'text-green-300' : 'text-white'
         }`}
       >
         {formatMs(row.median.totalMs)}
       </td>
-      <td className="px-3 py-3 text-right text-white/45">{formatMs(row.p95.totalMs)}</td>
-      <td className="px-3 py-3 text-right">{formatBytes(row.median.wireBytes)}</td>
-      <td className={ok ? 'px-3 py-3 text-green-300/80' : 'px-3 py-3 text-red-300'}>
+      <td className="px-2 py-1.5 text-right tabular-nums text-white/45">
+        {formatMs(row.p95.totalMs)}
+      </td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-white/55">
+        {formatBytes(row.median.wireBytes)}
+      </td>
+      <td
+        className={
+          ok
+            ? 'px-2 py-1.5 font-mono text-[10px] text-green-300/80'
+            : 'px-2 py-1.5 font-mono text-[10px] text-red-300'
+        }
+      >
         {row.verifyHash ?? '—'} · {formatBytes(row.verifyBytes)}
       </td>
-      <td className="px-3 py-3 text-right">
+      <td className="px-2 py-1.5 text-right tabular-nums">
         <BestCompareCell best={bestOverall} row={row} />
       </td>
     </tr>
@@ -532,14 +627,17 @@ function VariantCell({
         : 'text-white/85'
 
   return (
-    <td className="px-3 py-3 font-medium">
-      <span className={labelClass}>
-        <span className="font-mono">{variant.label}</span>
-        {isToken && <TableBadge tone="blue">TK</TableBadge>}
-        {isStream && <TableBadge tone="purple">STREAM</TableBadge>}
-        {(isBest || isSectionBest) && <TableBadge tone="green">BEST</TableBadge>}
-      </span>
-    </td>
+    <>
+      <td className="px-2 py-1.5 text-white/45">{kindLabel(variant.kind)}</td>
+      <td className="px-2 py-1.5 font-medium">
+        <span className={labelClass}>
+          <span className="font-mono">{variant.label}</span>
+          {isToken && <TableBadge tone="blue">TK</TableBadge>}
+          {isStream && <TableBadge tone="purple">STREAM</TableBadge>}
+          {(isBest || isSectionBest) && <TableBadge tone="green">BEST</TableBadge>}
+        </span>
+      </td>
+    </>
   )
 }
 
@@ -592,15 +690,12 @@ function sectionLabel(kind: Variant['kind']): string {
 function kindLabel(kind: Variant['kind']): string {
   switch (kind) {
     case 'native-full':
-      return 'full http'
+      return 'native'
     case 'token-full':
-      return 'full token'
     case 'diff-apply':
-      return 'diff token'
     case 'range-changed-fetch':
-      return 'range fetch'
     case 'range-changed-stream':
-      return 'range stream'
+      return 'token'
   }
 }
 

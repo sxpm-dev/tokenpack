@@ -15,7 +15,7 @@ describe('node.diff', () => {
     const basePack = await decode(tokenA)
 
     if (!basePack.isPack()) throw new Error('expected DirPack')
-    const reconstructed = await diffPack.apply(basePack)
+    const reconstructed = await basePack.apply(diffPack)
     const reconstructedEntries = await reconstructed.extractAll()
     const nextPack = await decode(tokenB)
 
@@ -62,7 +62,7 @@ describe('node.diff', () => {
     const basePack = await decode(tokenA)
 
     if (!basePack.isPack()) throw new Error('expected DirPack')
-    const reconstructed = await diffPack.apply(basePack)
+    const reconstructed = await basePack.apply(diffPack)
 
     expect(Buffer.from(await reconstructed.extract('a.txt'))).toEqual(Buffer.from(next))
   })

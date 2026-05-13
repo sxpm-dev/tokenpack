@@ -16,13 +16,18 @@ const ALLOW = new Set([
   'integrity',
 ])
 
-export function scrubHeaders(input: Readonly<Record<string, string>>): Readonly<Record<string, string>> {
+export function scrubHeaders(
+  input: Readonly<Record<string, string>>,
+): Readonly<Record<string, string>> {
   const out: Record<string, string> = {}
+
   for (const [key, value] of Object.entries(input)) {
     const lower = key.toLowerCase()
+
     if (ALLOW.has(lower)) {
       out[lower] = value
     }
   }
+
   return Object.freeze(out)
 }

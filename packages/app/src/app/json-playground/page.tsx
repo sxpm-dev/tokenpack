@@ -1,7 +1,8 @@
 'use client'
 
 import { Button, Surface } from '@heroui/react'
-import { BracketsCurlyIcon, BroomIcon, PlayIcon } from '@phosphor-icons/react'
+import { BroomIcon, PlayIcon } from '@phosphor-icons/react'
+import { decode } from '@tokenpack/browser'
 import {
   estimatePackRangeWireBytes,
   fetchPackFile,
@@ -9,13 +10,15 @@ import {
   fetchPackManifest,
 } from '@tokenpack/browser/fetch-pack'
 import type { ReactNode } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { decompressRaw } from 'tokenpack/compressors'
 
 type Encoding = 'raw' | 'deflate' | 'brotli'
 type PackMode = 'fixture' | 'lazy'
 type Throttle = 'local' | 'fast-cdn' | 'average' | 'slow'
 type RowState = 'pending' | 'running' | 'done' | 'errored'
+type AccessScenario = 'root-keys' | 'object-by-path'
+type JsonTokenAlgo = 'pixel-range-none-c3' | 'linear-deflate-c3'
 
 interface JsonRecordSummary {
   id: string
@@ -40,6 +43,7 @@ interface Manifest {
   records: JsonRecordSummary[]
   rootPack: {
     available: boolean
+    algo: JsonTokenAlgo
     bytes: number
     error: string | null
     mode: PackMode
@@ -53,15 +57,21 @@ interface Manifest {
 interface BenchRow {
   id: string
   group: string
+  kind: string
   label: string
+  algo: string
+  scenario: AccessScenario
+  scenarioLabel: string
+  path: string
   state: RowState
   error?: string
   ttfbMs?: number
   transferMs?: number
-  decodeMs?: number
+  parseMs?: number
+  accessMs?: number
   totalMs?: number
   wireBytes?: number
-  emitted?: number
+  result?: string
   verify?: string
 }
 
@@ -166,7 +176,7 @@ export default function JsonPlaygroundPage() {
       <div>
         <h1 className="text-lg font-semibold tracking-tight">JSON Playground</h1>
         <p className="mt-0.5 text-xs text-white/40">
-          Full JSON, NDJSON streaming, direct APIs, and semantic pixel-range pack access over
+          Native JSON/NDJSON fetches, exact API endpoints, and pixel-range TokenPack access over
           client-spec-map.
         </p>
       </div>
@@ -281,68 +291,7 @@ export default function JsonPlaygroundPage() {
 
       {doneRows.length > 0 && <JsonSummary best={bestRow} rows={doneRows} />}
 
-      <Surface className="overflow-hidden rounded-2xl">
-        <div className="grid grid-cols-[minmax(280px,1.8fr)_minmax(130px,0.8fr)_repeat(8,minmax(88px,0.65fr))] gap-0 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-[10px] uppercase tracking-[0.18em] text-white/35">
-          <div>Scenario</div>
-          <div>Group</div>
-          <div>TTFB</div>
-          <div>Transfer</div>
-          <div>Parse / scan</div>
-          <div>Total</div>
-          <div>vs Best</div>
-          <div>Wire</div>
-          <div>Output</div>
-          <div>Verify</div>
-        </div>
-        <div className="divide-y divide-white/10">
-          {displayRows.map((row, index) => {
-            const previous = index > 0 ? displayRows[index - 1] : null
-            const showSection = !previous || previous.group !== row.group
-
-            return (
-              <div key={row.id}>
-                {showSection && (
-                  <div className="border-b border-white/10 px-4 pb-1 pt-4 text-[10px] uppercase tracking-[0.18em] text-white/30">
-                    {groupLabel(row.group)}
-                  </div>
-                )}
-                <div className="grid grid-cols-[minmax(280px,1.8fr)_minmax(130px,0.8fr)_repeat(8,minmax(88px,0.65fr))] gap-0 px-4 py-3 text-xs">
-                  <div className="flex items-center gap-2 font-medium">
-                    <BracketsCurlyIcon className="text-green-500" size={14} />
-                    <span>{row.label}</span>
-                    {bestRow?.id === row.id && (
-                      <span className="rounded bg-green-500/15 px-1 py-0.5 text-[9px] uppercase tracking-widest text-green-300">
-                        best
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-white/45">{groupLabel(row.group)}</div>
-                  {row.state === 'errored' ? (
-                    <div className="col-span-8 text-red-300">{row.error}</div>
-                  ) : row.state === 'running' ? (
-                    <div className="col-span-8 text-white/45">running</div>
-                  ) : row.state === 'pending' ? (
-                    <div className="col-span-8 text-white/25">queued</div>
-                  ) : (
-                    <>
-                      <Cell>{formatMs(row.ttfbMs)}</Cell>
-                      <Cell>{formatMs(row.transferMs)}</Cell>
-                      <Cell>{formatMs(row.decodeMs)}</Cell>
-                      <Cell strong>{formatMs(row.totalMs)}</Cell>
-                      <Cell>
-                        <VsBest best={bestRow} row={row} />
-                      </Cell>
-                      <Cell>{formatBytes(row.wireBytes)}</Cell>
-                      <Cell>{row.emitted ?? '—'}</Cell>
-                      <Cell>{row.verify ?? '—'}</Cell>
-                    </>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </Surface>
+      <ResultsTable bestRow={bestRow} rows={displayRows} />
 
       <JsonLegend />
     </main>
@@ -350,18 +299,18 @@ export default function JsonPlaygroundPage() {
 }
 
 function JsonSummary({ rows, best }: { rows: BenchRow[]; best: BenchRow | null }) {
-  const full = bestOfGroup(rows, 'full json')
-  const stream = bestOfGroup(rows, 'stream')
-  const exact = bestOfGroup(rows, 'exact api')
-  const range = bestOfGroup(rows, 'pixel range')
+  const full = bestOfGroup(rows, 'http json')
+  const stream = bestOfGroup(rows, 'http ndjson scan')
+  const exact = bestOfGroup(rows, 'server api')
+  const range = bestOfGroup(rows, 'tokenpack')
 
   return (
     <div className="grid gap-3 md:grid-cols-4">
       <JsonCard label="Winner" row={best} tone="green" />
-      <JsonCard label="Best full JSON" row={full} />
-      <JsonCard compareTo={full} label="Best server API" row={exact} />
-      <JsonCard compareTo={full} label="Best pixel range" row={range} />
-      <JsonCard compareTo={full} label="Best NDJSON stream" row={stream} />
+      <JsonCard label="Best document" row={full} />
+      <JsonCard compareTo={full} label="Best API" row={exact} />
+      <JsonCard compareTo={full} label="Best TokenPack" row={range} />
+      <JsonCard compareTo={full} label="Best stream" row={stream} />
     </div>
   )
 }
@@ -410,21 +359,20 @@ function JsonLegend() {
       <div className="text-[10px] uppercase tracking-widest text-white/30">Scenario guide</div>
       <div className="grid gap-3 text-[11px] leading-4 text-white/45 md:grid-cols-2">
         <p>
-          <span className="text-white/65">Full JSON</span> fetches the whole JSON source, decodes
-          text, parses JSON, then checks the selected target.
+          <span className="text-white/65">Native JSON document</span> fetches one full JSON file,
+          then decodes and parses on the client.
         </p>
         <p>
-          <span className="text-white/65">NDJSON stream</span> scans records until the selected
-          target is found. Wire currently shows response size, not necessarily consumed bytes after
-          early cancel.
+          <span className="text-white/65">Native NDJSON stream</span> fetches one line-delimited
+          document and stops scanning when the selected target is found.
         </p>
         <p>
-          <span className="text-white/65">Server API</span> is the server-side competitor: return
-          root keys or one selected record without client-side full JSON parsing.
+          <span className="text-white/65">Server API requests</span> return root keys or one
+          selected record from purpose-built endpoints.
         </p>
         <p>
-          <span className="text-white/65">Pixel range</span> reads the semantic pack manifest and
-          fetches only the selected record region from the pack.
+          <span className="text-white/65">Pixel-range TokenPack</span> reads a PNG-backed pack
+          manifest, then fetches selected record bytes by HTTP Range.
         </p>
       </div>
     </Surface>
@@ -440,31 +388,257 @@ function Metric({ label, value }: { label: string; value: string }) {
   )
 }
 
-function Cell({ children, strong = false }: { children: ReactNode; strong?: boolean }) {
-  return <div className={strong ? 'font-semibold text-white/85' : 'text-white/65'}>{children}</div>
+function ResultsTable({ rows, bestRow }: { rows: BenchRow[]; bestRow: BenchRow | null }) {
+  return (
+    <Surface className="overflow-x-auto rounded-2xl p-3.5">
+      <table className="w-full min-w-[1080px] text-xs">
+        <thead>
+          <tr className="border-b border-white/10 text-[10px] uppercase tracking-widest text-white/40">
+            <th className="px-2 py-2 text-left font-normal">Kind</th>
+            <th className="px-2 py-2 text-left font-normal">Algo</th>
+            <th className="px-2 py-2 text-left font-normal">Format / Case</th>
+            <th className="px-2 py-2 text-left font-normal">Scenario</th>
+            <th className="px-2 py-2 text-left font-normal">Path</th>
+            <th className="px-2 py-2 text-right font-normal">Load</th>
+            <th className="px-2 py-2 text-right font-normal">Parse</th>
+            <th className="px-2 py-2 text-right font-normal">Access</th>
+            <th className="px-2 py-2 text-right font-normal">Total</th>
+            <th className="px-2 py-2 text-right font-normal">Size</th>
+            <th className="px-2 py-2 text-left font-normal">Result</th>
+            <th className="px-2 py-2 text-left font-normal">Verify</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => {
+            const previous = index > 0 ? rows[index - 1] : null
+            const showSection = !previous || previous.group !== row.group
+
+            return (
+              <Fragment key={row.id}>
+                {showSection && (
+                  <tr className="border-b border-white/5">
+                    <td
+                      className="px-2 pb-1 pt-4 text-[10px] uppercase tracking-widest text-white/30"
+                      colSpan={12}
+                    >
+                      {groupLabel(row.group)}
+                    </td>
+                  </tr>
+                )}
+                <ResultRow bestRow={bestRow} row={row} />
+              </Fragment>
+            )
+          })}
+        </tbody>
+      </table>
+    </Surface>
+  )
+}
+
+function ResultRow({ row, bestRow }: { row: BenchRow; bestRow: BenchRow | null }) {
+  const isBest = row.state === 'done' && bestRow?.id === row.id
+  const isStream = row.kind === 'http-ndjson'
+  const streamClass = isStream ? 'border-l-2 border-purple-500/40 bg-purple-500/[0.025]' : ''
+
+  if (row.state === 'pending' || row.state === 'running') {
+    return (
+      <tr className={`border-b border-white/5 text-white/35 ${streamClass}`}>
+        <VariantCells isBest={isBest} row={row} />
+        <td className="px-2 py-1.5 text-[10px] italic text-white/30" colSpan={10}>
+          {row.state === 'running' ? 'running…' : 'queued'}
+        </td>
+      </tr>
+    )
+  }
+
+  if (row.state === 'errored') {
+    return (
+      <tr className={`border-b border-red-400/10 bg-red-500/5 text-red-300 ${streamClass}`}>
+        <VariantCells isBest={isBest} row={row} />
+        <td className="px-2 py-1.5" colSpan={10}>
+          {row.error}
+        </td>
+      </tr>
+    )
+  }
+
+  return (
+    <tr className={`border-b border-white/5 text-white/70 ${streamClass}`}>
+      <VariantCells isBest={isBest} row={row} />
+      <td className="px-2 py-1.5 text-white/65">{row.scenarioLabel}</td>
+      <td className="max-w-[260px] truncate px-2 py-1.5 font-mono text-[10px] text-white/45">
+        {row.path}
+      </td>
+      <NumberCell>{formatMs(row.transferMs)}</NumberCell>
+      <NumberCell>{formatMs(row.parseMs)}</NumberCell>
+      <NumberCell>{formatMs(row.accessMs)}</NumberCell>
+      <NumberCell strong className={isBest ? 'text-green-400' : 'text-white/85'}>
+        {formatMs(row.totalMs)}
+      </NumberCell>
+      <NumberCell>{formatBytes(row.wireBytes)}</NumberCell>
+      <td className="px-2 py-1.5 text-white/60">{row.result ?? '—'}</td>
+      <td
+        className={
+          row.verify === 'ok' ? 'px-2 py-1.5 text-green-300/80' : 'px-2 py-1.5 text-red-300'
+        }
+      >
+        {row.verify ?? '—'}
+      </td>
+    </tr>
+  )
+}
+
+function VariantCells({ row, isBest }: { row: BenchRow; isBest: boolean }) {
+  return (
+    <>
+      <td className="px-2 py-1.5 text-white/45">{row.kind}</td>
+      <td className="px-2 py-1.5 font-mono text-[10px] text-white/45">{row.algo}</td>
+      <td className="px-2 py-1.5 font-medium">
+        <span className={isBest ? 'text-green-400' : 'text-white/85'}>
+          <span className="font-mono">{row.label}</span>
+          {row.kind === 'token' && <TableBadge tone="blue">TK</TableBadge>}
+          {row.kind === 'http-ndjson' && <TableBadge tone="purple">STREAM</TableBadge>}
+          {isBest && <TableBadge tone="green">BEST</TableBadge>}
+        </span>
+      </td>
+    </>
+  )
+}
+
+function NumberCell({
+  children,
+  strong,
+  className = 'text-white/65',
+}: {
+  children: ReactNode
+  strong?: boolean
+  className?: string
+}) {
+  return (
+    <td
+      className={`px-2 py-1.5 text-right tabular-nums ${strong ? 'font-medium' : ''} ${className}`}
+    >
+      {children}
+    </td>
+  )
+}
+
+function TableBadge({ children, tone }: { children: string; tone: 'blue' | 'green' | 'purple' }) {
+  const toneClass = {
+    blue: 'bg-blue-500/15 text-blue-300',
+    green: 'bg-green-500/15 text-green-300',
+    purple: 'bg-purple-500/15 text-purple-300',
+  }[tone]
+
+  return (
+    <span
+      className={`ml-1.5 rounded px-1 py-0.5 text-[9px] uppercase tracking-widest ${toneClass}`}
+    >
+      {children}
+    </span>
+  )
 }
 
 function buildRows(): BenchRow[] {
   const rows: BenchRow[] = []
 
-  for (const encoding of JSON_ENCODINGS) {
-    rows.push(pendingRow(`json-parse-${encoding}`, `full JSON · ${encoding}`, 'full json'))
-  }
-  for (const encoding of JSON_ENCODINGS) {
-    rows.push(pendingRow(`ndjson-find-${encoding}`, `NDJSON find target · ${encoding}`, 'stream'))
-  }
+  rows.push(
+    pendingRow(
+      'token-range-root-keys',
+      'metadata',
+      'tokenpack',
+      'token',
+      'pixel-range-none-c3',
+      'root-keys',
+    ),
+  )
+  rows.push(
+    pendingRow(
+      'token-range-object-fetch',
+      'range fetch',
+      'tokenpack',
+      'token',
+      'pixel-range-none-c3',
+      'object-by-path',
+    ),
+  )
+  rows.push(
+    pendingRow(
+      'token-range-object-stream',
+      'range stream',
+      'tokenpack',
+      'token',
+      'pixel-range-none-c3',
+      'object-by-path',
+    ),
+  )
+  rows.push(
+    pendingRow(
+      'token-linear-root-keys',
+      'full token',
+      'tokenpack',
+      'token',
+      'linear-deflate-c3',
+      'root-keys',
+    ),
+  )
+  rows.push(
+    pendingRow(
+      'token-linear-object',
+      'full token',
+      'tokenpack',
+      'token',
+      'linear-deflate-c3',
+      'object-by-path',
+    ),
+  )
+  rows.push(pendingRow('api-root-keys', 'server fs', 'server api', 'api', 'server', 'root-keys'))
+  rows.push(pendingRow('api-object', 'server fs', 'server api', 'api', 'server', 'object-by-path'))
 
-  rows.push(pendingRow('keys-api', 'Server API · list root keys', 'exact api'))
-  rows.push(pendingRow('item-api', 'Server API · fetch selected record', 'exact api'))
-  rows.push(
-    pendingRow('range-manifest-keys', 'Pixel range · list root keys from manifest', 'pixel range'),
-  )
-  rows.push(
-    pendingRow('range-item-fetch', 'Pixel range · fetch selected record bytes', 'pixel range'),
-  )
-  rows.push(
-    pendingRow('range-item-stream', 'Pixel range · stream selected record bytes', 'pixel range'),
-  )
+  for (const encoding of JSON_ENCODINGS) {
+    rows.push(
+      pendingRow(
+        `json-root-keys-${encoding}`,
+        encoding,
+        'http json',
+        'http-json',
+        encoding,
+        'root-keys',
+      ),
+    )
+    rows.push(
+      pendingRow(
+        `json-object-${encoding}`,
+        encoding,
+        'http json',
+        'http-json',
+        encoding,
+        'object-by-path',
+      ),
+    )
+  }
+  for (const encoding of JSON_ENCODINGS) {
+    rows.push(
+      pendingRow(
+        `ndjson-root-keys-${encoding}`,
+        encoding,
+        'http ndjson scan',
+        'http-ndjson',
+        encoding,
+        'root-keys',
+      ),
+    )
+    rows.push(
+      pendingRow(
+        `ndjson-object-${encoding}`,
+        encoding,
+        'http ndjson scan',
+        'http-ndjson',
+        encoding,
+        'object-by-path',
+      ),
+    )
+  }
 
   return rows
 }
@@ -508,24 +682,17 @@ function bestOfGroup(rows: BenchRow[], group: string): BenchRow | null {
 
 function groupLabel(group: string): string {
   switch (group) {
-    case 'full json':
-      return 'Full JSON fetch + parse'
-    case 'stream':
-      return 'NDJSON stream scan'
-    case 'exact api':
-      return 'Server exact endpoint'
-    case 'pixel range':
-      return 'Pixel-range semantic pack'
+    case 'tokenpack':
+      return 'TokenPack'
+    case 'server api':
+      return 'Server API'
+    case 'http json':
+      return 'HTTP full JSON'
+    case 'http ndjson scan':
+      return 'HTTP NDJSON scan'
     default:
       return group
   }
-}
-
-function VsBest({ row, best }: { row: BenchRow; best: BenchRow | null }) {
-  if (!best || row.id === best.id) return <span className="text-white/25">—</span>
-  const ratio = compareMs(best.totalMs, row.totalMs)
-
-  return <span className={ratio.faster ? 'text-green-300' : 'text-red-300'}>{ratio.text}</span>
 }
 
 function compareMs(
@@ -539,8 +706,25 @@ function compareMs(
   return { text: `${(valueMs / baseMs).toFixed(1)}x slower`, faster: false }
 }
 
-function pendingRow(id: string, label: string, group: string): BenchRow {
-  return { id, group, label, state: 'pending' }
+function pendingRow(
+  id: string,
+  label: string,
+  group: string,
+  kind: string,
+  algo: string,
+  scenario: AccessScenario,
+): BenchRow {
+  return {
+    algo,
+    group,
+    id,
+    kind,
+    label,
+    path: scenario === 'root-keys' ? '$' : 'selected JSON path',
+    scenario,
+    scenarioLabel: scenario === 'root-keys' ? 'root keys' : 'object by path',
+    state: 'pending',
+  }
 }
 
 async function runCase(
@@ -550,25 +734,67 @@ async function runCase(
   throttle: Throttle,
   packMode: PackMode,
 ): Promise<BenchRow> {
-  if (id.startsWith('json-parse-')) {
-    return runFullJsonParse(id, id.replace('json-parse-', '') as Encoding, record, throttle)
+  if (id.startsWith('json-root-keys-')) {
+    return runFullJsonAccess(
+      id,
+      id.replace('json-root-keys-', '') as Encoding,
+      'root-keys',
+      record,
+      manifest,
+      throttle,
+    )
   }
-  if (id.startsWith('ndjson-find-')) {
-    return runNdjsonFind(id, id.replace('ndjson-find-', '') as Encoding, record, throttle)
+  if (id.startsWith('json-object-')) {
+    return runFullJsonAccess(
+      id,
+      id.replace('json-object-', '') as Encoding,
+      'object-by-path',
+      record,
+      manifest,
+      throttle,
+    )
   }
-  if (id === 'keys-api') return runKeysApi(id, manifest, throttle)
-  if (id === 'item-api') return runItemApi(id, record, throttle)
-  if (id === 'range-manifest-keys') return runRangeManifestKeys(id, manifest, throttle, packMode)
-  if (id === 'range-item-fetch') return runRangeItemFetch(id, record, throttle, packMode)
-  if (id === 'range-item-stream') return runRangeItemStream(id, record, throttle, packMode)
+  if (id.startsWith('ndjson-root-keys-')) {
+    return runNdjsonAccess(
+      id,
+      id.replace('ndjson-root-keys-', '') as Encoding,
+      'root-keys',
+      record,
+      manifest,
+      throttle,
+    )
+  }
+  if (id.startsWith('ndjson-object-')) {
+    return runNdjsonAccess(
+      id,
+      id.replace('ndjson-object-', '') as Encoding,
+      'object-by-path',
+      record,
+      manifest,
+      throttle,
+    )
+  }
+  if (id === 'api-root-keys') return runKeysApi(id, manifest, throttle)
+  if (id === 'api-object') return runItemApi(id, record, throttle)
+  if (id === 'token-range-root-keys') return runRangeManifestKeys(id, manifest, throttle, packMode)
+  if (id === 'token-range-object-fetch') return runRangeItemFetch(id, record, throttle, packMode)
+  if (id === 'token-range-object-stream') return runRangeItemStream(id, record, throttle, packMode)
+  if (id === 'token-linear-root-keys') {
+    return runLinearTokenAccess(id, 'root-keys', record, manifest, throttle, packMode)
+  }
+  if (id === 'token-linear-object') {
+    return runLinearTokenAccess(id, 'object-by-path', record, manifest, throttle, packMode)
+  }
 
   throw new Error(`unknown JSON playground case: ${id}`)
 }
 
-async function runFullJsonParse(
+async function runFullJsonAccess(
   id: string,
   encoding: Encoding,
+  scenario: AccessScenario,
   record: JsonRecordSummary,
+  manifest: Manifest,
   throttle: Throttle,
 ): Promise<BenchRow> {
   const start = performance.now()
@@ -579,28 +805,30 @@ async function runFullJsonParse(
   const transferEnd = performance.now()
   const text = new TextDecoder().decode(bytes)
   const parsed = JSON.parse(text) as Record<string, unknown>
-  const decodeEnd = performance.now()
-  const key = record.parentKey ?? record.id.replace('collection:', '')
+  const parseEnd = performance.now()
+  const access = accessJsonScenario(parsed, record, scenario, manifest)
+  const accessEnd = performance.now()
 
   return {
-    id,
-    group: 'full json',
-    label: `full JSON parse · ${encoding}`,
+    ...rowBase(id, encoding, 'http json', 'http-json', encoding, scenario, record),
     state: 'done',
-    decodeMs: decodeEnd - transferEnd,
-    emitted: Object.keys(parsed).length,
-    totalMs: decodeEnd - start,
+    accessMs: accessEnd - parseEnd,
+    parseMs: parseEnd - transferEnd,
+    result: access.result,
+    totalMs: accessEnd - start,
     transferMs: transferEnd - start,
     ttfbMs,
-    verify: key in parsed ? 'ok' : 'miss',
+    verify: access.ok ? 'ok' : 'miss',
     wireBytes: contentLength(response) ?? bytes.byteLength,
   }
 }
 
-async function runNdjsonFind(
+async function runNdjsonAccess(
   id: string,
   encoding: Encoding,
+  scenario: AccessScenario,
   record: JsonRecordSummary,
+  manifest: Manifest,
   throttle: Throttle,
 ): Promise<BenchRow> {
   const start = performance.now()
@@ -608,20 +836,19 @@ async function runNdjsonFind(
     `/api/json-playground/ndjson?encoding=${encoding}&throttle=${throttle}`,
   )
   const scanStart = performance.now()
-  const result = await findRecordInNdjson(response, record.id)
+  const result = await scanNdjson(response, record.id, scenario, manifest)
   const scanEnd = performance.now()
 
   return {
-    id,
-    group: 'stream',
-    label: `NDJSON stream find · ${encoding}`,
+    ...rowBase(id, encoding, 'http ndjson scan', 'http-ndjson', encoding, scenario, record),
     state: 'done',
-    decodeMs: scanEnd - scanStart,
-    emitted: result.lines,
+    accessMs: scanEnd - scanStart,
+    parseMs: 0,
+    result: result.result,
     totalMs: scanEnd - start,
     transferMs: scanEnd - start,
     ttfbMs,
-    verify: result.found ? 'ok' : 'miss',
+    verify: result.ok ? 'ok' : 'miss',
     wireBytes: contentLength(response),
   }
 }
@@ -635,12 +862,11 @@ async function runKeysApi(id: string, manifest: Manifest, throttle: Throttle): P
   const decodeEnd = performance.now()
 
   return {
-    id,
-    group: 'exact api',
-    label: 'Server API · list root keys',
+    ...rowBase(id, 'server fs', 'server api', 'api', 'server', 'root-keys', null),
     state: 'done',
-    decodeMs: decodeEnd - transferEnd,
-    emitted: keys.length,
+    accessMs: 0,
+    parseMs: decodeEnd - transferEnd,
+    result: `${keys.length} keys`,
     totalMs: decodeEnd - start,
     transferMs: transferEnd - start,
     ttfbMs,
@@ -664,12 +890,11 @@ async function runItemApi(
   const decodeEnd = performance.now()
 
   return {
-    id,
-    group: 'exact api',
-    label: 'Server API · fetch selected record',
+    ...rowBase(id, 'server fs', 'server api', 'api', 'server', 'object-by-path', record),
     state: 'done',
-    decodeMs: decodeEnd - transferEnd,
-    emitted: 1,
+    accessMs: 0,
+    parseMs: decodeEnd - transferEnd,
+    result: 'object',
     totalMs: decodeEnd - start,
     transferMs: transferEnd - start,
     ttfbMs,
@@ -690,12 +915,11 @@ async function runRangeManifestKeys(
   const rootKeys = remote.manifest.files.filter(file => file.path.startsWith('collections/'))
 
   return {
-    id,
-    group: 'pixel range',
-    label: 'Pixel range · list root keys from manifest',
+    ...rowBase(id, 'metadata', 'tokenpack', 'token', 'pixel-range-none-c3', 'root-keys', null),
     state: 'done',
-    decodeMs: 0,
-    emitted: rootKeys.length,
+    accessMs: 0,
+    parseMs: 0,
+    result: `${rootKeys.length} keys`,
     totalMs: end - start,
     transferMs: end - start,
     ttfbMs: end - start,
@@ -719,12 +943,19 @@ async function runRangeItemFetch(
   const decodeEnd = performance.now()
 
   return {
-    id,
-    group: 'pixel range',
-    label: 'Pixel range · fetch selected record bytes',
+    ...rowBase(
+      id,
+      'range fetch',
+      'tokenpack',
+      'token',
+      'pixel-range-none-c3',
+      'object-by-path',
+      record,
+    ),
     state: 'done',
-    decodeMs: decodeEnd - transferEnd,
-    emitted: 1,
+    accessMs: 0,
+    parseMs: decodeEnd - transferEnd,
+    result: 'object',
     totalMs: decodeEnd - start,
     transferMs: transferEnd - start,
     ttfbMs: manifestEnd - start,
@@ -749,17 +980,87 @@ async function runRangeItemStream(
   const decodeEnd = performance.now()
 
   return {
-    id,
-    group: 'pixel range',
-    label: 'Pixel range · stream selected record bytes',
+    ...rowBase(
+      id,
+      'range stream',
+      'tokenpack',
+      'token',
+      'pixel-range-none-c3',
+      'object-by-path',
+      record,
+    ),
     state: 'done',
-    decodeMs: decodeEnd - transferEnd,
-    emitted: 1,
+    accessMs: 0,
+    parseMs: decodeEnd - transferEnd,
+    result: 'object',
     totalMs: decodeEnd - start,
     transferMs: transferEnd - start,
     ttfbMs: manifestEnd - start,
     verify: parsed.id === record.id ? 'ok' : 'miss',
     wireBytes: estimatePackRangeWireBytes(remote, [record.path]),
+  }
+}
+
+async function runLinearTokenAccess(
+  id: string,
+  scenario: AccessScenario,
+  record: JsonRecordSummary,
+  manifest: Manifest,
+  throttle: Throttle,
+  packMode: PackMode,
+): Promise<BenchRow> {
+  const start = performance.now()
+  const { response, ttfbMs } = await fetchTimed(
+    rootPackUrl(throttle, packMode, 'linear-deflate-c3'),
+  )
+  const bytes = new Uint8Array(await response.arrayBuffer())
+  const transferEnd = performance.now()
+  const pack = await decode(bytes)
+  const parseEnd = performance.now()
+
+  if (!pack.isPack()) throw new Error('linear token did not decode to a pack')
+
+  if (scenario === 'root-keys') {
+    const rootKeys = pack.entries.filter(entry => entry.path.startsWith('collections/'))
+    const accessEnd = performance.now()
+
+    return {
+      ...rowBase(id, 'full token', 'tokenpack', 'token', 'linear-deflate-c3', 'root-keys', null),
+      state: 'done',
+      accessMs: accessEnd - parseEnd,
+      parseMs: parseEnd - transferEnd,
+      result: `${rootKeys.length} keys`,
+      totalMs: accessEnd - start,
+      transferMs: transferEnd - start,
+      ttfbMs,
+      verify: rootKeys.length === manifest.rootKeys.length ? 'ok' : 'miss',
+      wireBytes: contentLength(response) ?? bytes.byteLength,
+    }
+  }
+
+  const fileBytes = await pack.extract(record.path)
+  const parsed = JSON.parse(new TextDecoder().decode(fileBytes)) as { id?: string }
+  const accessEnd = performance.now()
+
+  return {
+    ...rowBase(
+      id,
+      'full token',
+      'tokenpack',
+      'token',
+      'linear-deflate-c3',
+      'object-by-path',
+      record,
+    ),
+    state: 'done',
+    accessMs: accessEnd - parseEnd,
+    parseMs: parseEnd - transferEnd,
+    result: 'object',
+    totalMs: accessEnd - start,
+    transferMs: transferEnd - start,
+    ttfbMs,
+    verify: parsed.id === record.id ? 'ok' : 'miss',
+    wireBytes: contentLength(response) ?? bytes.byteLength,
   }
 }
 
@@ -776,16 +1077,88 @@ async function fetchTimed(url: string): Promise<TimedResponse> {
   return { response, ttfbMs: performance.now() - start }
 }
 
-async function findRecordInNdjson(
+function rowBase(
+  id: string,
+  label: string,
+  group: string,
+  kind: string,
+  algo: string,
+  scenario: AccessScenario,
+  record: JsonRecordSummary | null,
+): Pick<
+  BenchRow,
+  'algo' | 'group' | 'id' | 'kind' | 'label' | 'path' | 'scenario' | 'scenarioLabel'
+> {
+  return {
+    algo,
+    group,
+    id,
+    kind,
+    label,
+    path: scenario === 'root-keys' ? '$' : (record?.path ?? 'selected JSON path'),
+    scenario,
+    scenarioLabel: scenario === 'root-keys' ? 'root keys' : 'object by path',
+  }
+}
+
+function accessJsonScenario(
+  root: Record<string, unknown>,
+  record: JsonRecordSummary,
+  scenario: AccessScenario,
+  manifest: Manifest,
+): { ok: boolean; result: string } {
+  if (scenario === 'root-keys') {
+    const keyCount = Object.keys(root).length
+
+    return { ok: keyCount === manifest.rootKeys.length, result: `${keyCount} keys` }
+  }
+
+  const value = findObjectByRecord(root, record)
+
+  return { ok: value !== null, result: value === null ? 'miss' : resultType(value) }
+}
+
+function findObjectByRecord(
+  root: Record<string, unknown>,
+  record: JsonRecordSummary,
+): unknown | null {
+  if (record.kind === 'collection') {
+    const key = record.id.replace('collection:', '')
+
+    return key in root ? root[key] : null
+  }
+
+  const collection = record.parentKey ? root[record.parentKey] : null
+
+  if (!isObject(collection) || !Array.isArray(collection.components)) return null
+
+  return (
+    collection.components.find(
+      component => isObject(component) && component.componentId === record.label,
+    ) ?? null
+  )
+}
+
+function resultType(value: unknown): string {
+  if (Array.isArray(value)) return 'array'
+  if (isObject(value)) return 'object'
+
+  return typeof value
+}
+
+async function scanNdjson(
   response: Response,
   id: string,
-): Promise<{ found: boolean; lines: number }> {
+  scenario: AccessScenario,
+  manifest: Manifest,
+): Promise<{ ok: boolean; result: string }> {
   if (!response.body) throw new Error('NDJSON response has no body')
 
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   let pending = ''
   let lines = 0
+  const rootKeys = new Set<string>()
 
   try {
     for (;;) {
@@ -802,10 +1175,21 @@ async function findRecordInNdjson(
         pending = pending.slice(newline + 1)
         if (line.trim()) {
           lines += 1
-          if ((JSON.parse(line) as { id?: string }).id === id) {
+          const parsed = JSON.parse(line) as { id?: string; kind?: string; parentKey?: string }
+
+          if (scenario === 'root-keys' && parsed.kind === 'collection' && parsed.id) {
+            rootKeys.add(parsed.id.replace('collection:', ''))
+            if (rootKeys.size === manifest.rootKeys.length) {
+              await reader.cancel()
+
+              return { ok: true, result: `${rootKeys.size} keys` }
+            }
+          }
+
+          if (scenario === 'object-by-path' && parsed.id === id) {
             await reader.cancel()
 
-            return { found: true, lines }
+            return { ok: true, result: 'object' }
           }
         }
         newline = pending.indexOf('\n')
@@ -815,13 +1199,29 @@ async function findRecordInNdjson(
     pending += decoder.decode()
     if (pending.trim()) {
       lines += 1
-      if ((JSON.parse(pending) as { id?: string }).id === id) return { found: true, lines }
+      const parsed = JSON.parse(pending) as { id?: string; kind?: string }
+
+      if (scenario === 'root-keys' && parsed.kind === 'collection' && parsed.id) {
+        rootKeys.add(parsed.id.replace('collection:', ''))
+      }
+      if (scenario === 'object-by-path' && parsed.id === id) return { ok: true, result: 'object' }
     }
 
-    return { found: false, lines }
+    if (scenario === 'root-keys') {
+      return {
+        ok: rootKeys.size === manifest.rootKeys.length,
+        result: `${rootKeys.size} keys`,
+      }
+    }
+
+    return { ok: false, result: `${lines} lines` }
   } finally {
     reader.releaseLock()
   }
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 async function readTextStream(stream: ReadableStream<Uint8Array>): Promise<string> {
@@ -847,8 +1247,9 @@ function aggregateRow(template: BenchRow, samples: BenchRow[]): BenchRow {
   return {
     ...template,
     state: 'done',
-    decodeMs: median(samples.map(sample => sample.decodeMs ?? 0)),
-    emitted: samples[0]?.emitted,
+    accessMs: median(samples.map(sample => sample.accessMs ?? 0)),
+    parseMs: median(samples.map(sample => sample.parseMs ?? 0)),
+    result: samples[0]?.result,
     totalMs: median(samples.map(sample => sample.totalMs ?? 0)),
     transferMs: median(samples.map(sample => sample.transferMs ?? 0)),
     ttfbMs: median(samples.map(sample => sample.ttfbMs ?? 0)),
@@ -861,8 +1262,14 @@ function updateRow(rows: BenchRow[], id: string, patch: Partial<BenchRow>): Benc
   return rows.map(row => (row.id === id ? { ...row, ...patch } : row))
 }
 
-function rootPackUrl(throttle: Throttle, packMode: PackMode): string {
-  return withNonce(`/api/json-playground/root-pack?throttle=${throttle}&mode=${packMode}`)
+function rootPackUrl(
+  throttle: Throttle,
+  packMode: PackMode,
+  algo: JsonTokenAlgo = 'pixel-range-none-c3',
+): string {
+  return withNonce(
+    `/api/json-playground/root-pack?throttle=${throttle}&mode=${packMode}&algo=${algo}`,
+  )
 }
 
 function withNonce(url: string): string {

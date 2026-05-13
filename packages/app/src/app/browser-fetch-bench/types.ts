@@ -1,6 +1,8 @@
 export type Group = 'text' | 'script'
 
-export type Throttle = 'local' | 'fast-cdn' | 'average' | 'slow'
+export type BenchTab = 'source' | 'exact' | 'script'
+
+export type Throttle = 'local' | 'fast-cdn' | 'average' | 'slow' | 'slow-parallel'
 
 export interface Variant {
   /** Group identifier for the table grouping. */
@@ -15,7 +17,16 @@ export interface Variant {
    * Script tab only. `script-tag` loads native HTTP JavaScript through
    * `<script src>` instead of fetch + TextDecoder + Function().
    */
-  loadMode?: 'fetch' | 'script-tag' | 'range-pack-fetch' | 'range-pack-stream'
+  loadMode?:
+    | 'fetch'
+    | 'script-tag'
+    | 'native-exact'
+    | 'range-pack-fetch'
+    | 'range-pack-stream'
+    | 'range-pack-exact-stream'
+    | 'router-text'
+    | 'router-exact-text'
+    | 'router-materialize'
   /**
    * True for token variants whose algorithm declares `capabilities.streamable`.
    * The runner pipes such variants through `decodeStream(response.body)`.
@@ -47,6 +58,13 @@ export interface Sample {
   totalMs: number
   /** Encoded wire bytes. */
   wireBytes: number
+  /** Number of network resources observed for the timed variant sample. */
+  requestCount: number
+}
+
+export interface RouterFixtureStats {
+  wireBytes: number
+  requestCount: number
 }
 
 export interface DecodeFingerprint {

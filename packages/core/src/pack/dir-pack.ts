@@ -6,6 +6,7 @@ import type { DiffPack, DirPack as IDirPack, PackEntryInfo } from './types'
 export type ExtractOneFn = (path: string) => Promise<Uint8Array>
 export type ExtractAllFn = () => Promise<Array<{ path: string; bytes: Uint8Array }>>
 export type DiffToFn = (a: IDirPack, b: IDirPack) => Promise<unknown>
+export type ApplyDiffFn = (base: IDirPack, diff: DiffPack) => Promise<IDirPack>
 
 export class DirPack implements IDirPack {
   readonly list: string[]
@@ -16,6 +17,7 @@ export class DirPack implements IDirPack {
     private readonly extractOne: ExtractOneFn,
     private readonly extractAllFn: ExtractAllFn,
     private readonly diffToFn?: DiffToFn,
+    private readonly applyDiffFn?: ApplyDiffFn,
   ) {
     this.entries = entries
     this.list = entries.map(e => e.path)
@@ -25,8 +27,16 @@ export class DirPack implements IDirPack {
     return true
   }
 
+  isRouter(): this is import('./types').RouterPack {
+    return false
+  }
+
   isDiff(): this is DiffPack {
     return false
+  }
+
+  async materialize(): Promise<never> {
+    throw new Error('DirPack.materialize: not configured (env package must attach runtime support)')
   }
 
   async extract(path: string): Promise<Uint8Array> {
@@ -63,5 +73,11 @@ export class DirPack implements IDirPack {
     }
 
     return this.diffToFn(this, other)
+  }
+
+  async apply(diff: DiffPack): Promise<IDirPack> {
+    if (this.applyDiffFn) return this.applyDiffFn(this, diff)
+
+    return diff.apply(this)
   }
 }

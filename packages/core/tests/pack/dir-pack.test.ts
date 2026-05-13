@@ -87,4 +87,17 @@ describe('DirPack', () => {
 
     await expect(p.diffTo(q)).rejects.toThrow(/not configured/i)
   })
+
+  it('apply delegates to the diff pack when no custom apply function is injected', async () => {
+    const p = new DirPack([{ path: 'a.js', size: 3 }], fixtureExtract, async () => [])
+    const diff = {
+      list: ['a.js'],
+      entries: [],
+      isPack: () => false,
+      isDiff: () => true,
+      apply: async (base: unknown) => base,
+    }
+
+    await expect(p.apply(diff as never)).resolves.toBe(p)
+  })
 })

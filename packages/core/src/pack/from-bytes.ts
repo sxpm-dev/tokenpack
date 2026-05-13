@@ -51,14 +51,20 @@ export function fromBytes(bytes: Uint8Array, opts: FromBytesOptions): Pack {
   if (fmt === FORMAT_PACK) {
     const decoded = decodePack(bytes)
     const entries = decoded.manifest.files.map(f => ({ path: f.path, size: f.originalSize }))
+    const fileByPath = new Map(decoded.manifest.files.map(file => [file.path, file]))
+    const regionFor = (file: (typeof decoded.manifest.files)[number]) =>
+      decoded.bytes.subarray(
+        decoded.regionsStart + file.offset,
+        decoded.regionsStart + file.offset + file.compressedSize,
+      )
 
     return new DirPack(
       entries,
       async path => {
-        const file = decoded.manifest.files.find(f => f.path === path)
+        const file = fileByPath.get(path)
 
         if (!file) throw new Error(`no entry for path: ${path}`)
-        const region = decoded.extractRegion(path)
+        const region = regionFor(file)
 
         return opts.decompress(region, file.compressor, {
           level: file.level,
@@ -69,7 +75,7 @@ export function fromBytes(bytes: Uint8Array, opts: FromBytesOptions): Pack {
         Promise.all(
           decoded.manifest.files.map(async f => ({
             path: f.path,
-            bytes: await opts.decompress(decoded.extractRegion(f.path), f.compressor, {
+            bytes: await opts.decompress(regionFor(f), f.compressor, {
               level: f.level,
               uncompressedLength: f.originalSize,
             }),

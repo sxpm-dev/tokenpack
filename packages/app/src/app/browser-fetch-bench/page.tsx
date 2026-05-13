@@ -9,14 +9,13 @@ import {
   FloppyDiskIcon,
   MinusCircleIcon,
   PlayIcon,
-  WarningCircleIcon,
   WarningOctagonIcon,
 } from '@phosphor-icons/react'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 
 import { formatBytes, formatMs, runVariant } from './runner'
-import type { AggregatedRow, Throttle, Variant } from './types'
-import { SCRIPT_VARIANTS, TEXT_VARIANTS } from './variants'
+import type { AggregatedRow, BenchTab, RouterFixtureStats, Throttle, Variant } from './types'
+import { EXACT_VARIANTS, SCRIPT_VARIANTS, TEXT_VARIANTS } from './variants'
 
 interface ThrottleOption {
   id: Throttle
@@ -27,12 +26,14 @@ const THROTTLE_OPTIONS: readonly ThrottleOption[] = [
   { id: 'local', label: 'Local' },
   { id: 'fast-cdn', label: 'Fast CDN' },
   { id: 'average', label: 'Average' },
-  { id: 'slow', label: 'Slow' },
+  { id: 'slow', label: 'Slow shared' },
+  { id: 'slow-parallel', label: 'Slow parallel' },
 ] as const
 
 interface Manifest {
   sources: RuntimeCase[]
   rangePackCases: RuntimeRangePackCase[]
+  routerCases: RuntimeRouterCase[]
   scriptCases: RuntimeCase[]
   scenarios: { id: string; available: boolean; mime: string | null }[]
 }
@@ -50,12 +51,24 @@ interface RuntimeRangePackCase {
   id: string
   tab?: 'content' | 'script'
   source: string
+  sourceKind: 'json' | 'text'
   chunkCount: number
   rawBytes: number
   fileCount: number
 }
 
-type Tab = 'source' | 'script'
+interface RuntimeRouterCase {
+  id: string
+  tab?: 'content' | 'script'
+  source: string
+  sourceKind: 'json' | 'text'
+  chunkCount: number
+  rawBytes: number
+  fileCount: number
+  chunkTokenCount: number
+  wireBytes: number
+  requestCount: number
+}
 
 // Per-variant lifecycle. The table renders one row per variant in every state
 // so skipped, in-flight, queued, and failed runs are all visible at once.
@@ -70,7 +83,7 @@ type StatusMap = Map<string, VariantStatus>
 
 interface RuntimeBaseline {
   createdAt: string
-  tab: Tab
+  tab: BenchTab
   source: string
   throttle: Throttle
   iterations: number
@@ -103,7 +116,7 @@ export default function RuntimeBenchmarkPage() {
   const [manifest, setManifest] = useState<Manifest | null>(null)
   const [source, setSource] = useState('')
   const [iterations, setIterations] = useState(5)
-  const [activeTab, setActiveTab] = useState<Tab>('source')
+  const [activeTab, setActiveTab] = useState<BenchTab>('source')
   const [throttle, setThrottle] = useState<Throttle>('local')
   // Partial-compat token variants (the brotli-decode ones) fail on Chromium <
   // 124 / Firefox < 126 / Safari < 18. Default-skipped so first-time runs are
@@ -112,7 +125,15 @@ export default function RuntimeBenchmarkPage() {
   const [running, setRunning] = useState(false)
   const [progress, setProgress] = useState('')
   const [textStatuses, setTextStatuses] = useState<StatusMap>(emptyMap)
+  const [exactStatuses, setExactStatuses] = useState<StatusMap>(emptyMap)
   const [scriptStatuses, setScriptStatuses] = useState<StatusMap>(emptyMap)
+  const [deselectedTextVariants, setDeselectedTextVariants] = useState<Set<string>>(() => new Set())
+  const [deselectedExactVariants, setDeselectedExactVariants] = useState<Set<string>>(
+    () => new Set(),
+  )
+  const [deselectedScriptVariants, setDeselectedScriptVariants] = useState<Set<string>>(
+    () => new Set(),
+  )
   const [topError, setTopError] = useState<string | null>(null)
   const [baseline, setBaseline] = useState<RuntimeBaseline | null>(null)
   const [baselineMessage, setBaselineMessage] = useState('')
@@ -122,7 +143,9 @@ export default function RuntimeBenchmarkPage() {
       .then(r => r.json())
       .then((m: Manifest) => {
         setManifest(m)
-        if (m.sources[0]) setSource(m.sources[0].id)
+        const first = contentCasesFor(m)[0] ?? scriptCasesFor(m)[0]
+
+        if (first) setSource(first.id)
       })
       .catch(e => setTopError(String(e)))
   }, [])
@@ -160,10 +183,15 @@ export default function RuntimeBenchmarkPage() {
     () => filterGeneratedVariants(TEXT_VARIANTS, manifest, 'content'),
     [manifest],
   )
+  const exactVariants = useMemo(
+    () => filterGeneratedVariants(EXACT_VARIANTS, manifest, 'content'),
+    [manifest],
+  )
   const scriptVariants = useMemo(
     () => filterGeneratedVariants(SCRIPT_VARIANTS, manifest, 'script'),
     [manifest],
   )
+
   const currentBaseline = useMemo(() => {
     if (!baseline) return null
     if (baseline.tab !== activeTab) return null
@@ -179,17 +207,46 @@ export default function RuntimeBenchmarkPage() {
     setRunning(true)
     setTopError(null)
 
-    const isSourceTab = activeTab === 'source'
-    const allVariants = isSourceTab ? textVariants : scriptVariants
+    const isScriptTab = activeTab === 'script'
+    const allVariants =
+      activeTab === 'source' ? textVariants : activeTab === 'exact' ? exactVariants : scriptVariants
+    const deselectedVariants =
+      activeTab === 'source'
+        ? deselectedTextVariants
+        : activeTab === 'exact'
+          ? deselectedExactVariants
+          : deselectedScriptVariants
     // Variants we'll actually iterate. Skipped variants get a 'skipped' status
     // up front so the table renders them with a clear marker — they aren't
     // hidden, just not run.
-    const toRun = allVariants.filter(v => runSkipped || v.compat !== 'partial')
-    const setStatuses = isSourceTab ? setTextStatuses : setScriptStatuses
+    const toRun = allVariants.filter(
+      v => !deselectedVariants.has(v.id) && (runSkipped || v.compat !== 'partial'),
+    )
+    const setStatuses =
+      activeTab === 'source'
+        ? setTextStatuses
+        : activeTab === 'exact'
+          ? setExactStatuses
+          : setScriptStatuses
 
-    setStatuses(initialStatuses(allVariants, runSkipped))
+    const initial = initialStatuses(allVariants, runSkipped)
+
+    for (const variant of allVariants) {
+      if (deselectedVariants.has(variant.id)) {
+        initial.set(variant.id, { state: 'skipped', reason: 'Unchecked for this run.' })
+      }
+    }
+
+    setStatuses(initial)
 
     try {
+      if (toRun.length === 0) {
+        setProgress('No selected variants to run.')
+        window.setTimeout(() => setProgress(''), 2000)
+
+        return
+      }
+
       for (let i = 0; i < toRun.length; i++) {
         const variant: Variant = toRun[i]
 
@@ -199,8 +256,9 @@ export default function RuntimeBenchmarkPage() {
           const row = await runVariant(variant, iterations, {
             source,
             sourceKind: activeCase?.sourceKind ?? 'text',
-            withExecute: !isSourceTab,
+            withExecute: isScriptTab,
             throttle,
+            routerFixtureStats: routerFixtureStatsFor(manifest, activeTab, source),
           })
 
           setStatuses(prev => new Map(prev).set(variant.id, { state: 'done', row }))
@@ -240,10 +298,13 @@ export default function RuntimeBenchmarkPage() {
     const lines: string[] = []
 
     lines.push(
-      'group,variant,iterations,median_total_ms,p95_total_ms,median_decode_ms,median_execute_ms,wire_bytes,decoded_hash,decoded_bytes,per_run_total_ms',
+      'group,variant,iterations,median_total_ms,p95_total_ms,median_decode_ms,median_execute_ms,wire_bytes,requests,decoded_hash,decoded_bytes,per_run_total_ms',
     )
     for (const s of textStatuses.values()) {
       if (s.state === 'done') lines.push(csvRow('text', s.row))
+    }
+    for (const s of exactStatuses.values()) {
+      if (s.state === 'done') lines.push(csvRow('exact', s.row))
     }
     for (const s of scriptStatuses.values()) {
       if (s.state === 'done') lines.push(csvRow('script', s.row))
@@ -291,11 +352,11 @@ export default function RuntimeBenchmarkPage() {
     }
   }
 
-  function handleTabChange(nextTab: Tab) {
+  function handleTabChange(nextTab: BenchTab) {
     setActiveTab(nextTab)
     setBaselineMessage('')
 
-    const nextCases = nextTab === 'source' ? manifest?.sources : manifest?.scriptCases
+    const nextCases = nextTab === 'script' ? scriptCasesFor(manifest) : contentCasesFor(manifest)
 
     if (nextCases?.[0] && !nextCases.some(item => item.id === source)) {
       setSource(nextCases[0].id)
@@ -310,13 +371,41 @@ export default function RuntimeBenchmarkPage() {
     )
   }
 
-  const isSourceTab = activeTab === 'source'
-  const activeStatuses = isSourceTab ? textStatuses : scriptStatuses
-  const activeVariants = isSourceTab ? textVariants : scriptVariants
-  const activeCases = isSourceTab ? manifest.sources : manifest.scriptCases
+  const isScriptTab = activeTab === 'script'
+  const activeStatuses =
+    activeTab === 'source' ? textStatuses : activeTab === 'exact' ? exactStatuses : scriptStatuses
+  const activeVariants =
+    activeTab === 'source' ? textVariants : activeTab === 'exact' ? exactVariants : scriptVariants
+  const activeDeselectedVariants =
+    activeTab === 'source'
+      ? deselectedTextVariants
+      : activeTab === 'exact'
+        ? deselectedExactVariants
+        : deselectedScriptVariants
+  const activeCases = isScriptTab ? scriptCasesFor(manifest) : contentCasesFor(manifest)
   const activeCaseIndex = activeCases.findIndex(item => item.id === source)
   const activeCase = activeCaseIndex >= 0 ? activeCases[activeCaseIndex] : null
   const hasAnyDone = [...activeStatuses.values()].some(s => s.state === 'done')
+  const setActiveDeselectedVariants =
+    activeTab === 'source'
+      ? setDeselectedTextVariants
+      : activeTab === 'exact'
+        ? setDeselectedExactVariants
+        : setDeselectedScriptVariants
+  const selectedVariantCount = activeVariants.filter(
+    variant => !activeDeselectedVariants.has(variant.id),
+  ).length
+
+  function handleVariantSelected(variantId: string, selected: boolean) {
+    setActiveDeselectedVariants(previous => {
+      const next = new Set(previous)
+
+      if (selected) next.delete(variantId)
+      else next.add(variantId)
+
+      return next
+    })
+  }
 
   return (
     <div className="mx-auto max-w-6xl space-y-5 px-4 py-5 sm:px-5">
@@ -342,6 +431,16 @@ export default function RuntimeBenchmarkPage() {
           </span>
         </TabButton>
         <TabButton
+          active={activeTab === 'exact'}
+          disabled={running}
+          onClick={() => handleTabChange('exact')}
+        >
+          Exact files
+          <span className="ml-2 text-[10px] text-white/35 font-normal normal-case tracking-normal">
+            selected files only
+          </span>
+        </TabButton>
+        <TabButton
           active={activeTab === 'script'}
           disabled={running}
           onClick={() => handleTabChange('script')}
@@ -356,7 +455,7 @@ export default function RuntimeBenchmarkPage() {
       <Surface className="rounded-2xl p-4 space-y-3">
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <label className="flex items-center gap-2">
-            <span className="text-white/50">{isSourceTab ? 'Case:' : 'Script:'}</span>
+            <span className="text-white/50">{isScriptTab ? 'Script:' : 'Source:'}</span>
             <select
               className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs"
               disabled={running}
@@ -368,7 +467,7 @@ export default function RuntimeBenchmarkPage() {
             >
               {activeCases.map((s, index) => (
                 <option key={s.id} value={s.id}>
-                  {caseLabel(s, isSourceTab ? 'source' : 'script', index)}
+                  {caseLabel(s, isScriptTab ? 'script' : 'source', index)}
                 </option>
               ))}
             </select>
@@ -427,7 +526,9 @@ export default function RuntimeBenchmarkPage() {
 
           <Button isDisabled={running} isPending={running} onPress={handleRun}>
             <PlayIcon className="mr-1.5" size={14} />{' '}
-            {running ? 'Running…' : `Run ${isSourceTab ? 'source' : 'script'}`}
+            {running
+              ? 'Running…'
+              : `Run ${activeTab === 'exact' ? 'exact' : isScriptTab ? 'script' : 'source'} (${selectedVariantCount})`}
           </Button>
           <Button isDisabled={running} size="sm" variant="ghost" onPress={handleClearCaches}>
             <BroomIcon className="mr-1.5" size={12} /> Clear caches
@@ -474,16 +575,35 @@ export default function RuntimeBenchmarkPage() {
         )}
       </Surface>
 
-      {isSourceTab ? (
+      {activeTab === 'source' ? (
         <>
           <SectionTitle>
             Source content · {throttle} · <code>{source}</code>
           </SectionTitle>
           <ResultsTable
             baseline={currentBaseline}
+            deselectedVariantIds={activeDeselectedVariants}
+            disabled={running}
             statuses={textStatuses}
             variants={activeVariants}
             withExecute={false}
+            onSelectedChange={handleVariantSelected}
+          />
+          <RuntimeLegend withExecute={false} />
+        </>
+      ) : activeTab === 'exact' ? (
+        <>
+          <SectionTitle>
+            Exact files · {throttle} · <code>{source}</code>
+          </SectionTitle>
+          <ResultsTable
+            baseline={currentBaseline}
+            deselectedVariantIds={activeDeselectedVariants}
+            disabled={running}
+            statuses={exactStatuses}
+            variants={activeVariants}
+            withExecute={false}
+            onSelectedChange={handleVariantSelected}
           />
           <RuntimeLegend withExecute={false} />
         </>
@@ -496,14 +616,32 @@ export default function RuntimeBenchmarkPage() {
           <ResultsTable
             withExecute
             baseline={currentBaseline}
+            deselectedVariantIds={activeDeselectedVariants}
+            disabled={running}
             statuses={scriptStatuses}
             variants={activeVariants}
+            onSelectedChange={handleVariantSelected}
           />
           <RuntimeLegend withExecute />
         </>
       )}
     </div>
   )
+}
+
+function routerFixtureStatsFor(
+  manifest: Manifest,
+  tab: BenchTab,
+  source: string,
+): RouterFixtureStats | undefined {
+  if (tab === 'exact') return undefined
+
+  const apiTab = tab === 'source' ? 'content' : 'script'
+  const routerCase = manifest.routerCases.find(item => item.tab === apiTab && item.id === source)
+
+  return routerCase
+    ? { wireBytes: routerCase.wireBytes, requestCount: routerCase.requestCount }
+    : undefined
 }
 
 function filterGeneratedVariants(
@@ -515,14 +653,64 @@ function filterGeneratedVariants(
 
   const availableTokenIds = new Set(manifest.scenarios.filter(s => s.available).map(s => s.id))
   const hasRangePackCases = manifest.rangePackCases.some(rangePack => rangePack.tab === tab)
+  const hasRouterCases = manifest.routerCases.some(routerCase => routerCase.tab === tab)
 
   return variants.filter(v => {
-    if (v.loadMode === 'range-pack-fetch' || v.loadMode === 'range-pack-stream') {
+    if (
+      v.loadMode === 'range-pack-fetch' ||
+      v.loadMode === 'range-pack-stream' ||
+      v.loadMode === 'range-pack-exact-stream'
+    ) {
       return hasRangePackCases
+    }
+    if (
+      v.loadMode === 'router-text' ||
+      v.loadMode === 'router-exact-text' ||
+      v.loadMode === 'router-materialize'
+    ) {
+      return hasRouterCases
     }
 
     return !v.isToken || availableTokenIds.has(v.id)
   })
+}
+
+function contentCasesFor(manifest: Manifest | null): RuntimeCase[] {
+  return casesForTab(manifest, 'content')
+}
+
+function scriptCasesFor(manifest: Manifest | null): RuntimeCase[] {
+  return casesForTab(manifest, 'script')
+}
+
+function casesForTab(manifest: Manifest | null, tab: 'content' | 'script'): RuntimeCase[] {
+  if (!manifest) return []
+  const out = new Map<string, RuntimeCase>()
+
+  for (const item of tab === 'content' ? manifest.sources : manifest.scriptCases) {
+    out.set(item.id, item)
+  }
+  for (const item of manifest.rangePackCases) {
+    if (item.tab !== tab || out.has(item.id)) continue
+    out.set(item.id, runtimeCaseFromPackCase(item))
+  }
+  for (const item of manifest.routerCases) {
+    if (item.tab !== tab || out.has(item.id)) continue
+    out.set(item.id, runtimeCaseFromPackCase(item))
+  }
+
+  return [...out.values()]
+}
+
+function runtimeCaseFromPackCase(item: RuntimeRangePackCase | RuntimeRouterCase): RuntimeCase {
+  return {
+    id: item.id,
+    source: item.source,
+    sourceKind: item.sourceKind,
+    chunkCount: item.chunkCount,
+    rawBytes: item.rawBytes,
+    chunkIndexes: Array.from({ length: item.chunkCount }, (_, index) => index),
+  }
 }
 
 function caseLabel(item: RuntimeCase, kind: 'source' | 'script', index = 0): string {
@@ -682,7 +870,7 @@ function TabButton({
   )
 }
 
-function csvRow(group: 'text' | 'script', r: AggregatedRow): string {
+function csvRow(group: 'text' | 'exact' | 'script', r: AggregatedRow): string {
   return [
     group,
     r.variantId,
@@ -692,6 +880,7 @@ function csvRow(group: 'text' | 'script', r: AggregatedRow): string {
     r.median.decodeMs,
     r.median.executeMs ?? '',
     r.median.wireBytes,
+    r.median.requestCount,
     r.fingerprint?.hash ?? '',
     r.fingerprint?.bytes ?? '',
     `"${r.perRunTotal.join(';')}"`,
@@ -718,11 +907,17 @@ function ResultsTable({
   statuses,
   withExecute,
   baseline,
+  deselectedVariantIds,
+  disabled,
+  onSelectedChange,
 }: {
   variants: Variant[]
   statuses: StatusMap
   withExecute: boolean
   baseline: RuntimeBaseline | null
+  deselectedVariantIds: ReadonlySet<string>
+  disabled: boolean
+  onSelectedChange: (variantId: string, selected: boolean) => void
 }) {
   // Best total + canonical hash are computed only from completed runs.
   const doneRows: AggregatedRow[] = []
@@ -736,16 +931,34 @@ function ResultsTable({
     () => new Map((baseline?.rows ?? []).map(row => [row.variantId, row])),
     [baseline],
   )
+  const visibleRows = useMemo(
+    () =>
+      variants.map(variant => ({
+        variant,
+        status: statuses.get(variant.id) ?? { state: 'pending' },
+      })),
+    [statuses, variants],
+  )
 
-  const colCount = withExecute ? 11 : 10
+  const colCount = withExecute ? 12 : 11
+
+  if (visibleRows.length === 0) {
+    return (
+      <Surface className="rounded-2xl p-4">
+        <div className="py-8 text-center text-[12px] text-white/35">
+          Run this bench to populate results.
+        </div>
+      </Surface>
+    )
+  }
 
   return (
     <Surface className="rounded-2xl p-3.5 overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
           <tr className="border-b border-white/10 text-white/40 uppercase tracking-widest text-[10px]">
+            <th className="w-8 py-2 px-2 font-normal" />
             <th className="text-left py-2 px-2 font-normal">Variant</th>
-            <th className="text-left py-2 px-2 font-normal">Compat</th>
             <th className="text-right py-2 px-2 font-normal">TTFB</th>
             <th className="text-right py-2 px-2 font-normal">Transfer</th>
             <th className="text-right py-2 px-2 font-normal">Decode</th>
@@ -754,14 +967,15 @@ function ResultsTable({
             <th className="text-right py-2 px-2 font-normal">vs Base</th>
             <th className="text-right py-2 px-2 font-normal">p95</th>
             <th className="text-right py-2 px-2 font-normal">Wire</th>
+            <th className="text-right py-2 px-2 font-normal">Req</th>
             <th className="text-left py-2 px-2 font-normal">Verify</th>
           </tr>
         </thead>
         <tbody>
-          {variants.map((v, index) => {
-            const status = statuses.get(v.id) ?? { state: 'pending' as const }
+          {visibleRows.map(({ variant: v, status }, index) => {
             const section = variantSectionTitle(v)
-            const prevSection = index > 0 ? variantSectionTitle(variants[index - 1]) : null
+            const prevSection =
+              index > 0 ? variantSectionTitle(visibleRows[index - 1].variant) : null
             const showSection = section !== prevSection
 
             return (
@@ -781,9 +995,12 @@ function ResultsTable({
                   bestTotal={bestTotal}
                   canonical={canonical}
                   colCount={colCount}
+                  disabled={disabled}
+                  selected={!deselectedVariantIds.has(v.id)}
                   status={status}
                   variant={v}
                   withExecute={withExecute}
+                  onSelectedChange={onSelectedChange}
                 />
               </Fragment>
             )
@@ -795,7 +1012,18 @@ function ResultsTable({
 }
 
 function variantSectionTitle(variant: Variant): string {
-  if (variant.loadMode === 'range-pack-fetch' || variant.loadMode === 'range-pack-stream') {
+  if (
+    variant.loadMode === 'router-text' ||
+    variant.loadMode === 'router-exact-text' ||
+    variant.loadMode === 'router-materialize'
+  ) {
+    return 'Router token bundle'
+  }
+  if (
+    variant.loadMode === 'range-pack-fetch' ||
+    variant.loadMode === 'range-pack-stream' ||
+    variant.loadMode === 'range-pack-exact-stream'
+  ) {
     return 'Pixel-range partial file ranges'
   }
   if (variant.loadMode === 'script-tag') return 'Native script tag'
@@ -812,6 +1040,9 @@ function ResultRow({
   withExecute,
   colCount,
   baselineRow,
+  selected,
+  disabled,
+  onSelectedChange,
 }: {
   variant: Variant
   status: VariantStatus
@@ -820,7 +1051,22 @@ function ResultRow({
   withExecute: boolean
   colCount: number
   baselineRow: AggregatedRow | null
+  selected: boolean
+  disabled: boolean
+  onSelectedChange: (variantId: string, selected: boolean) => void
 }) {
+  const checkboxCell = (
+    <td className="py-1.5 px-2 align-middle">
+      <input
+        checked={selected}
+        className="h-3.5 w-3.5 align-middle accent-green-500"
+        disabled={disabled}
+        title={selected ? 'Run this variant' : 'Variant unchecked'}
+        type="checkbox"
+        onChange={event => onSelectedChange(variant.id, event.target.checked)}
+      />
+    </td>
+  )
   const variantCell = (
     <td className="py-1.5 px-2">
       <span
@@ -851,19 +1097,14 @@ function ResultRow({
       </span>
     </td>
   )
-  const compatCell = (
-    <td className="py-1.5 px-2">
-      <CompatBadge compat={variant.compat} note={variant.compatNote} />
-    </td>
-  )
 
   if (status.state === 'pending') {
     return (
-      <tr className="border-b border-white/5 opacity-50">
+      <tr className={`border-b border-white/5 ${selected ? 'opacity-50' : 'opacity-30'}`}>
+        {checkboxCell}
         {variantCell}
-        {compatCell}
         <td className="py-1.5 px-2 text-[10px] text-white/30 italic" colSpan={colCount - 2}>
-          queued
+          {selected ? 'queued' : 'unchecked'}
         </td>
       </tr>
     )
@@ -872,8 +1113,8 @@ function ResultRow({
   if (status.state === 'running') {
     return (
       <tr className="border-b border-white/5">
+        {checkboxCell}
         {variantCell}
-        {compatCell}
         <td className="py-1.5 px-2 text-[10px] text-white/55 animate-pulse" colSpan={colCount - 2}>
           running…
         </td>
@@ -883,9 +1124,9 @@ function ResultRow({
 
   if (status.state === 'skipped') {
     return (
-      <tr className="border-b border-white/5 opacity-60">
+      <tr className={`border-b border-white/5 ${selected ? 'opacity-60' : 'opacity-30'}`}>
+        {checkboxCell}
         {variantCell}
-        {compatCell}
         <td className="py-1.5 px-2" colSpan={colCount - 2}>
           <span
             className="inline-flex items-center gap-1.5 text-[10.5px] text-white/45"
@@ -902,9 +1143,9 @@ function ResultRow({
 
   if (status.state === 'errored') {
     return (
-      <tr className="border-b border-white/5 bg-red-500/[0.025]">
+      <tr className={`border-b border-white/5 bg-red-500/[0.025] ${selected ? '' : 'opacity-30'}`}>
+        {checkboxCell}
         {variantCell}
-        {compatCell}
         <td className="py-1.5 px-2" colSpan={colCount - 2}>
           <span
             className="inline-flex items-center gap-1.5 text-[10.5px] text-red-300"
@@ -926,9 +1167,9 @@ function ResultRow({
     : ''
 
   return (
-    <tr className={`border-b border-white/5 ${streamingClass}`}>
+    <tr className={`border-b border-white/5 ${streamingClass} ${selected ? '' : 'opacity-30'}`}>
+      {checkboxCell}
       {variantCell}
-      {compatCell}
       <td className="py-1.5 px-2 text-right tabular-nums text-white/60">
         {formatMs(r.median.ttfbMs)}
       </td>
@@ -959,6 +1200,9 @@ function ResultRow({
       <td className="py-1.5 px-2 text-right tabular-nums text-white/55">
         <WireCell row={r} variant={variant} />
       </td>
+      <td className="py-1.5 px-2 text-right tabular-nums text-white/45">
+        {formatCount(r.median.requestCount)}
+      </td>
       <td className="py-1.5 px-2">
         <VerifyCell canonical={canonical} row={r} variant={variant} />
       </td>
@@ -976,6 +1220,10 @@ function WireCell({ row, variant }: { row: AggregatedRow; variant: Variant }) {
   }
 
   return <span>{formatBytes(row.median.wireBytes)}</span>
+}
+
+function formatCount(value: number): string {
+  return Number.isFinite(value) ? String(Math.round(value)) : '—'
 }
 
 function BaselineDeltaCell({
@@ -1072,28 +1320,6 @@ function VerifyCell({
       <Icon className={colorCls} size={12} weight={status === 'mismatch' ? 'fill' : 'regular'} />
       <span className={`font-mono text-[10px] tabular-nums ${hashCls}`}>{fp.hash}</span>
       <span className="text-[10px] text-white/35 tabular-nums">{formatBytes(fp.bytes)}</span>
-    </span>
-  )
-}
-
-function CompatBadge({ compat, note }: { compat: 'full' | 'partial'; note: string }) {
-  if (compat === 'full') {
-    return (
-      <span
-        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] uppercase tracking-widest bg-green-500/15 text-green-300"
-        title={note}
-      >
-        <CheckCircleIcon size={10} weight="fill" /> Full
-      </span>
-    )
-  }
-
-  return (
-    <span
-      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] uppercase tracking-widest bg-yellow-500/15 text-yellow-300"
-      title={note}
-    >
-      <WarningCircleIcon size={10} weight="fill" /> Partial
     </span>
   )
 }

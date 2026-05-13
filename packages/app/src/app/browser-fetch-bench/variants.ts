@@ -29,6 +29,22 @@ const BROWSER_FETCH_PAGE_EXCLUDE_VARIANTS: readonly string[] = [
   // linear PNG surface; the streaming C4 path owns PNG parsing and is valid.
   'linear-deflate-c4',
 ]
+const ENABLE_FULL_BROWSER_FETCH_BENCH = false
+const FOCUSED_TEXT_VARIANT_IDS = new Set([
+  'http-brotli',
+  'pixel-range-range-stream-all',
+  'router-token-text-all',
+])
+const FOCUSED_SCRIPT_VARIANT_IDS = new Set([
+  'http-brotli',
+  'pixel-range-range-stream-all',
+  'router-token-materialize-all',
+])
+const FOCUSED_EXACT_VARIANT_IDS = new Set([
+  'http-brotli-exact',
+  'pixel-range-range-stream-exact',
+  'router-token-text-exact',
+])
 
 function browserFetchAlgoInfos(): AlgorithmInfo[] {
   return listAlgorithmInfos(algorithmCatalog)
@@ -160,7 +176,7 @@ function buildTokenVariants(group: 'text' | 'script', sourceful: boolean): Varia
   return out
 }
 
-export const TEXT_VARIANTS: Variant[] = [
+const ALL_TEXT_VARIANTS: Variant[] = [
   ...ENCODINGS.map<Variant>(e => ({
     group: 'text',
     id: `http-${e}`,
@@ -193,10 +209,21 @@ export const TEXT_VARIANTS: Variant[] = [
     compatNote:
       'Partial remote pack access: pixel-range-none outer container, deflate per-file regions. Fetch manifest once, then stream all file regions with HTTP Range.',
   },
+  {
+    group: 'text',
+    id: 'router-token-text-all',
+    label: 'router token text all',
+    isToken: true,
+    loadMode: 'router-text',
+    url: ({ source }) => `/api/runtime-benchmark/router/content/${source}/router.png`,
+    compat: 'full',
+    compatNote:
+      'Router token entrypoint: decode router.png, then bulk extract all routed file bytes through pack.stream.extractAll().',
+  },
   ...buildTokenVariants('text', /* sourceful */ true),
 ]
 
-export const SCRIPT_VARIANTS: Variant[] = [
+const ALL_SCRIPT_VARIANTS: Variant[] = [
   ...ENCODINGS.map<Variant>(e => ({
     group: 'script',
     id: `http-${e}`,
@@ -239,5 +266,68 @@ export const SCRIPT_VARIANTS: Variant[] = [
     compatNote:
       'Partial remote pack access for generated scripts: pixel-range-none outer container, deflate per-file regions. Fetch manifest once, then stream all script regions with HTTP Range.',
   },
+  {
+    group: 'script',
+    id: 'router-token-materialize-all',
+    label: 'router token materialize all',
+    isToken: true,
+    loadMode: 'router-materialize',
+    url: ({ source }) => `/api/runtime-benchmark/router/script/${source}/router.png`,
+    compat: 'full',
+    compatNote:
+      'Router token entrypoint: decode router.png, let pack.stream.materialize() load routed JS chunks and execute them.',
+  },
   ...buildTokenVariants('script', /* sourceful */ true),
 ]
+
+const ALL_EXACT_VARIANTS: Variant[] = [
+  {
+    group: 'text',
+    id: 'http-brotli-exact',
+    label: 'http-brotli exact files',
+    isToken: false,
+    loadMode: 'native-exact',
+    url: ({ source }) => `/api/runtime-benchmark/text?source=${source}&encoding=brotli`,
+    compat: 'full',
+    compatNote:
+      'Native HTTP exact-file mode: fetches only the selected source files with browser-native brotli Content-Encoding.',
+  },
+  {
+    group: 'text',
+    id: 'pixel-range-range-stream-exact',
+    label: 'pixel-range-none range stream exact files',
+    isToken: true,
+    isStreamable: true,
+    loadMode: 'range-pack-exact-stream',
+    url: ({ source }) => `/api/runtime-benchmark/range-pack?tab=content&source=${source}`,
+    compat: 'full',
+    compatNote:
+      'Exact remote pack access: pack.stream.text(paths) fetches one HTTP Range body per selected file.',
+  },
+  {
+    group: 'text',
+    id: 'router-token-text-exact',
+    label: 'router token text exact files',
+    isToken: true,
+    loadMode: 'router-exact-text',
+    url: ({ source }) => `/api/runtime-benchmark/router/content/${source}/router.png`,
+    compat: 'full',
+    compatNote:
+      'Router token exact-file mode: decode router.png, then pack.stream.text(paths) loads only selected routed files.',
+  },
+]
+
+// Focus mode while router-token loading is under active investigation.
+// Flip ENABLE_FULL_BROWSER_FETCH_BENCH back to true to restore every generated
+// token/range/materialization variant without reconstructing the catalog wiring.
+export const TEXT_VARIANTS: Variant[] = ENABLE_FULL_BROWSER_FETCH_BENCH
+  ? ALL_TEXT_VARIANTS
+  : ALL_TEXT_VARIANTS.filter(variant => FOCUSED_TEXT_VARIANT_IDS.has(variant.id))
+
+export const SCRIPT_VARIANTS: Variant[] = ENABLE_FULL_BROWSER_FETCH_BENCH
+  ? ALL_SCRIPT_VARIANTS
+  : ALL_SCRIPT_VARIANTS.filter(variant => FOCUSED_SCRIPT_VARIANT_IDS.has(variant.id))
+
+export const EXACT_VARIANTS: Variant[] = ENABLE_FULL_BROWSER_FETCH_BENCH
+  ? ALL_EXACT_VARIANTS
+  : ALL_EXACT_VARIANTS.filter(variant => FOCUSED_EXACT_VARIANT_IDS.has(variant.id))

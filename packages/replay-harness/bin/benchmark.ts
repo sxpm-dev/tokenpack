@@ -4,22 +4,47 @@
 // Usage:
 //   yarn ... run benchmark <url-or-targetId> [throttle] [samples] [--local] [--token-debug]
 
-import { writeFile, mkdir, readFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { dirname, resolve as resolvePath } from 'node:path'
-import { runBenchmark } from '../src/replay/orchestrator.js'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { dirname, relative, resolve as resolvePath } from 'node:path'
+
 import { resolveTargetArg } from '../src/config/resolve-target.js'
-import { loadManifest } from '../src/replay/manifest-loader.js'
-import { startLocalPackServer } from '../src/replay/local-pack-server.js'
 import { PRESETS } from '../src/config/throttles.js'
+import {
+  DEFAULT_REPLAY_TOKEN_VARIANTS,
+  type ReplayTokenVariant,
+} from '../src/config/token-variants.js'
 import { BenchmarkConfigSchema } from '../src/config/types.js'
+import { ROUTER_TOKEN_FILE, ROUTER_TOKEN_ID } from '../src/encode/router-token.js'
 import { logger } from '../src/log/logger.js'
-import { buildHtmlReport } from '../src/report/html-report.js'
+import { installRunLog } from '../src/log/run-log.js'
+import { ASSET_STORE_INDEX, loadAssetStore } from '../src/record/asset-store.js'
+import { startLocalPackServer } from '../src/replay/local-pack-server.js'
+import { loadManifest } from '../src/replay/manifest-loader.js'
+import { runBenchmark } from '../src/replay/orchestrator.js'
+import { runTokenpackSw } from '../src/replay/tokenpack-sw.js'
 import { rowsToCsv } from '../src/report/csv.js'
+import { buildHtmlReport } from '../src/report/html-report.js'
+import type { RunReport } from '../src/report/types.js'
 
 const args = process.argv.slice(2)
+const isolate = args.includes('--isolate')
 const local = args.includes('--local')
+const sw = args.includes('--sw')
 const tokenDebug = args.includes('--token-debug')
+const capturedApp = args.includes('--captured-app')
+const bundleChunksFlag =
+  args.find(a => a.startsWith('--bundle-chunks=')) ?? args.find(a => a.startsWith('--chunk-count='))
+const bundleChunks = bundleChunksFlag
+  ? Number(bundleChunksFlag.slice(bundleChunksFlag.indexOf('=') + 1))
+  : null
+
+if (bundleChunks !== null && (!Number.isInteger(bundleChunks) || bundleChunks < 1)) {
+  logger.error({ flag: bundleChunksFlag }, 'invalid --bundle-chunks (expected positive integer)')
+  process.exit(1)
+}
+
+const bundle = args.includes('--bundle') || bundleChunks !== null
 const positional = args.filter(a => !a.startsWith('--'))
 
 const arg = positional[0] ?? 'public-demo'
@@ -28,60 +53,165 @@ const samples = Number(positional[2] ?? 10)
 
 const target = resolveTargetArg(arg)
 const throttle = PRESETS[throttleName]
+
 if (!throttle) {
   logger.error({ throttleName, available: Object.keys(PRESETS) }, 'unknown throttle preset')
   process.exit(1)
 }
 
-const fixtureDir = resolvePath(`fixtures/${target.id}`)
-const manifestPath = `${fixtureDir}/manifest.json`
+const fixtureTargetId = bundle
+  ? bundleChunks && bundleChunks > 1
+    ? `${target.id}-bundle-${bundleChunks}`
+    : `${target.id}-bundle`
+  : target.id
+const fixtureShape = bundle
+  ? bundleChunks && bundleChunks > 1
+    ? 'bundle-chunks'
+    : 'bundle-single'
+  : 'service-groups'
+const fixtureDir = resolvePath(`fixtures/${fixtureTargetId}`)
+const variantsPath = `${fixtureDir}/variants.json`
 const ts = Date.now()
-const stem = `results/${target.id}-${ts}${local ? '-local' : ''}${tokenDebug ? '-debug' : ''}`
-const csvPath = `${stem}.csv`
-const jsonPath = `${stem}.json`
-const htmlPath = `${stem}.html`
+const bundleStem = bundle
+  ? bundleChunks && bundleChunks > 1
+    ? `-bundle-${bundleChunks}`
+    : '-bundle'
+  : ''
+const reportId = `${target.id}-${ts}${bundleStem}${capturedApp ? '-captured-app' : ''}${isolate ? '-isolate' : ''}${sw ? '-sw' : ''}${local ? '-local' : ''}${tokenDebug ? '-debug' : ''}`
+const reportDir = resolvePath(`results/${reportId}`)
+const csvPath = `${reportDir}/data.csv`
+const jsonPath = `${reportDir}/data.json`
+const htmlPath = `${reportDir}/report.html`
+const logPath = `${reportDir}/run.log`
+const consoleJsonPath = `${reportDir}/browser-console.json`
+const consoleLogPath = `${reportDir}/browser-console.log`
+const screenshotDir = tokenDebug ? `${reportDir}/screenshots` : undefined
+const closeRunLog = installRunLog(logPath)
+
+interface VariantIndex {
+  variants: Array<ReplayTokenVariant & { manifestPath: string; fixtureDir: string }>
+}
+
+const variantIndex: VariantIndex = existsSync(variantsPath)
+  ? (JSON.parse(await readFile(variantsPath, 'utf8')) as VariantIndex)
+  : {
+      variants: DEFAULT_REPLAY_TOKEN_VARIANTS.slice(0, 1).map(variant => ({
+        ...variant,
+        manifestPath: `${fixtureDir}/manifest.json`,
+        fixtureDir,
+      })),
+    }
+const tokenVariants: ReplayTokenVariant[] = variantIndex.variants.map(v => ({
+  id: v.id,
+  algo: v.algo,
+  channels: v.channels,
+  loadMode: v.loadMode,
+  packCompressor: v.packCompressor,
+}))
+const manifestPath = variantIndex.variants[0]?.manifestPath ?? `${fixtureDir}/manifest.json`
+let packUrls: Record<string, Record<string, string>>
+let server: { url: string; close: () => Promise<void> } | undefined
+
+if (isolate && !existsSync(`${fixtureDir}/${ASSET_STORE_INDEX}`)) {
+  logger.error(
+    { assetStorePath: `${fixtureDir}/${ASSET_STORE_INDEX}` },
+    'isolated asset store missing — re-run record to create it',
+  )
+  process.exit(1)
+}
+const assetStore = isolate ? await loadAssetStore(fixtureDir) : undefined
+
+if (capturedApp && !isolate) {
+  logger.error('--captured-app requires --isolate so captured assets are served from the fixture')
+  process.exit(1)
+}
+
+const benchmarkTarget = { ...target }
+
+if (capturedApp) {
+  logger.info(
+    { replayUrl: benchmarkTarget.url, sourceUrl: assetStore?.entryDocument?.url },
+    'serving captured app entry document on original origin',
+  )
+}
 
 const config = BenchmarkConfigSchema.parse({
-  target,
+  target: benchmarkTarget,
   throttle,
   samples,
   warmupRuns: local ? 0 : 1,
   outputCsv: csvPath,
 })
 
-const manifest = await loadManifest(manifestPath)
-let packUrls: Record<string, string>
-let server: { url: string; close: () => Promise<void> } | undefined
-
 if (local) {
   server = await startLocalPackServer(fixtureDir)
   packUrls = {}
-  for (const p of manifest.packs) {
-    packUrls[p.id] = `${server.url}${p.id}.png`
+  for (const variant of variantIndex.variants) {
+    const manifest = await loadManifest(variant.manifestPath)
+    const variantPrefix = relative(fixtureDir, variant.fixtureDir).replace(/\\/g, '/')
+    const urlPrefix = variantPrefix === '' ? '' : `${variantPrefix}/`
+
+    packUrls[variant.id] = {}
+    packUrls[variant.id]![ROUTER_TOKEN_ID] = `${server.url}${urlPrefix}${ROUTER_TOKEN_FILE}`
+    for (const p of manifest.packs) {
+      packUrls[variant.id]![p.id] = `${server.url}${urlPrefix}${p.id}.png`
+    }
   }
-  logger.info({ localServer: server.url, packCount: manifest.packs.length }, 'serving packs locally')
+  logger.info(
+    { localServer: server.url, variantCount: tokenVariants.length },
+    'serving packs locally',
+  )
 } else {
   packUrls = {}
-  for (const p of manifest.packs) {
-    if (!p.url) {
-      logger.error({ packId: p.id }, 'pack URL missing — run upload first or pass --local')
+  for (const variant of variantIndex.variants) {
+    const manifest = await loadManifest(variant.manifestPath)
+
+    packUrls[variant.id] = {}
+    if (!manifest.router?.url) {
+      logger.error(
+        { variant: variant.id, routerId: manifest.router?.id ?? ROUTER_TOKEN_ID },
+        'router token URL missing — run upload first or pass --local',
+      )
       process.exit(1)
     }
-    packUrls[p.id] = p.url
+    packUrls[variant.id]![ROUTER_TOKEN_ID] = manifest.router.url
+    for (const p of manifest.packs) {
+      if (!p.url) {
+        logger.error(
+          { variant: variant.id, packId: p.id },
+          'pack URL missing — run upload first or pass --local',
+        )
+        process.exit(1)
+      }
+      packUrls[variant.id]![p.id] = p.url
+    }
   }
 }
 
 logger.info(
   {
     url: target.url,
+    benchmarkUrl: benchmarkTarget.url,
     throttle: throttleName,
     samples,
     mode: local ? 'local' : 'cdn',
+    isolate,
+    sw,
+    capturedApp,
+    bundle,
+    bundleChunks,
     tokenDebug,
-    authMode: target.authMode,
+    fixtureDir,
+    variants: tokenVariants.map(v => v.id),
+    authMode: benchmarkTarget.authMode,
     csvPath,
     jsonPath,
     htmlPath,
+    logPath,
+    consoleJsonPath,
+    consoleLogPath,
+    reportDir,
+    screenshotDir,
   },
   'benchmark starting',
 )
@@ -91,11 +221,13 @@ logger.info(
 // fall-throughs distinctly in markers.
 const statsPath = `${fixtureDir}/stats.json`
 const skippedUrls = new Set<string>()
+
 if (existsSync(statsPath)) {
   try {
     const stats = JSON.parse(await readFile(statsPath, 'utf8')) as {
       skipped?: { groups?: Array<{ urls?: string[] }> }
     }
+
     for (const g of stats.skipped?.groups ?? []) {
       for (const u of g.urls ?? []) skippedUrls.add(u)
     }
@@ -113,37 +245,58 @@ if (existsSync(statsPath)) {
 try {
   const report = await runBenchmark(config, manifestPath, {
     packUrls,
-    mode: local ? 'local' : 'cdn',
+    mode: isolate ? 'isolate' : local ? 'local' : 'cdn',
+    tokenVariants,
     tokenDebug,
     withReload: true,
     skippedUrls,
+    assetStore,
+    serveEntryDocument: capturedApp,
+    tokenpackRunner: sw ? runTokenpackSw : undefined,
+    deliveryMode: sw ? 'sw' : 'cdp',
+    screenshotDir,
   })
+
   report.throttle = throttleName
+  report.fixture = {
+    id: fixtureTargetId,
+    shape: fixtureShape,
+    ...(bundleChunks && bundleChunks > 1 ? { chunks: bundleChunks } : {}),
+  }
+  relativizeScreenshotPaths(report, reportDir)
 
   await mkdir(dirname(jsonPath), { recursive: true })
   await writeFile(jsonPath, JSON.stringify(report, null, 2), 'utf8')
-  await writeFile(htmlPath, buildHtmlReport(report, jsonPath.replace(/^results\//, '')), 'utf8')
+  await writeBenchmarkConsoleArtifacts(report, consoleJsonPath, consoleLogPath)
+  await writeFile(htmlPath, buildHtmlReport(report, 'data.json'), 'utf8')
 
   interface CsvRow extends Record<string, string | number | boolean | null | undefined> {
     iter: number
     mode: 'baseline' | 'baseline-cdp' | 'tokenpack'
+    tokenVariantId: string | null
     phase: 'cold' | 'reload'
     targetId: string
     durationMs: number
     loadEventMs: number | null
+    timedOut: boolean | null
+    error: string | null
     served: number | null
     fellThrough: number | null
     totalBytes: number | null
   }
   const csvRows: CsvRow[] = []
+
   for (const r of report.iterations) {
     csvRows.push({
       iter: r.iter,
       mode: r.mode,
+      tokenVariantId: r.tokenVariantId ?? null,
       phase: 'cold',
       targetId: r.targetId,
       durationMs: r.cold.durationMs,
       loadEventMs: r.cold.loadEventMs,
+      timedOut: r.cold.timedOut ?? null,
+      error: r.cold.error ?? null,
       served: r.cold.served ?? null,
       fellThrough: r.cold.fellThrough ?? null,
       totalBytes: r.cold.totalBytes ?? null,
@@ -152,10 +305,13 @@ try {
       csvRows.push({
         iter: r.iter,
         mode: r.mode,
+        tokenVariantId: r.tokenVariantId ?? null,
         phase: 'reload',
         targetId: r.targetId,
         durationMs: r.reload.durationMs,
         loadEventMs: r.reload.loadEventMs,
+        timedOut: r.reload.timedOut ?? null,
+        error: r.reload.error ?? null,
         served: r.reload.served ?? null,
         fellThrough: r.reload.fellThrough ?? null,
         totalBytes: r.reload.totalBytes ?? null,
@@ -169,6 +325,7 @@ try {
     const d = t - b
     const pct = b === 0 ? 0 : (d / b) * 100
     const sign = d >= 0 ? '+' : ''
+
     return `${sign}${Math.round(d)}ms (${sign}${pct.toFixed(1)}%)`
   }
   const tripleRow = (label: string, bl: number, blCdp: number, tp: number): string =>
@@ -177,35 +334,149 @@ try {
   /* eslint-disable no-console */
   console.log('')
   console.log(`Target:      ${target.url}`)
-  console.log(`Mode:        ${local ? 'local' : 'cdn'} · strategy: ${report.strategy}${tokenDebug ? ' · token-debug ON' : ''}`)
+  if (capturedApp) console.log('Replay:      captured entry document on original origin')
+  console.log(
+    `Mode:        ${isolate ? 'isolate · ' : ''}${sw ? 'sw · ' : ''}${local ? 'local' : 'cdn'}${tokenDebug ? ' · token-debug ON' : ''}`,
+  )
   console.log(`Throttle:    ${throttleName}`)
-  console.log(`Samples:     ${samples} per mode (3 modes per iter)`)
+  console.log(`Samples:     ${samples} per mode (${2 + tokenVariants.length} modes per iter)`)
   console.log(`Report:      ${htmlPath}`)
   console.log(`JSON:        ${jsonPath}`)
   console.log(`CSV:         ${csvPath}`)
+  console.log(`Log:         ${logPath}`)
+  console.log(`Console:     ${consoleJsonPath}`)
+  console.log(`Console log: ${consoleLogPath}`)
+  if (screenshotDir) console.log(`Screenshots: ${screenshotDir}`)
   console.log('')
-  console.log('Metric            Baseline   BL-CDP     TokenPack  Δ TP vs BL            Δ TP vs BL-CDP')
-  console.log('────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────')
-  console.log('-- COLD LOAD --')
-  console.log(tripleRow('total duration',
-    report.summary.cold.baseline.duration.avgMs,
-    report.summary.cold.baselineCdp.duration.avgMs,
-    report.summary.cold.tokenpack.duration.avgMs))
-  console.log(tripleRow('load event',
-    report.summary.cold.baseline.loadEvent.avgMs,
-    report.summary.cold.baselineCdp.loadEvent.avgMs,
-    report.summary.cold.tokenpack.loadEvent.avgMs))
-  console.log('-- RELOAD (warm cache) --')
-  console.log(tripleRow('total duration',
-    report.summary.reload.baseline.duration.avgMs,
-    report.summary.reload.baselineCdp.duration.avgMs,
-    report.summary.reload.tokenpack.duration.avgMs))
-  console.log(tripleRow('load event',
-    report.summary.reload.baseline.loadEvent.avgMs,
-    report.summary.reload.baselineCdp.loadEvent.avgMs,
-    report.summary.reload.tokenpack.loadEvent.avgMs))
+  for (const variant of tokenVariants) {
+    const summary = report.variantSummaries?.[variant.id] ?? report.summary
+
+    console.log(
+      `Variant:     ${variant.id} · ${variant.loadMode} · ${variant.algo} c${variant.channels}`,
+    )
+    console.log(
+      `Metric            Baseline   BL-CDP     ${sw ? 'TP-SW' : 'TokenPack'}${sw ? '     ' : '  '}Δ TP vs BL            Δ TP vs BL-CDP`,
+    )
+    console.log(
+      '────────────────  ─────────  ─────────  ─────────  ────────────────────  ──────────────',
+    )
+    console.log('-- COLD LOAD --')
+    console.log(
+      tripleRow(
+        'total duration',
+        summary.cold.baseline.duration.avgMs,
+        summary.cold.baselineCdp.duration.avgMs,
+        summary.cold.tokenpack.duration.avgMs,
+      ),
+    )
+    console.log(
+      tripleRow(
+        'load event',
+        summary.cold.baseline.loadEvent.avgMs,
+        summary.cold.baselineCdp.loadEvent.avgMs,
+        summary.cold.tokenpack.loadEvent.avgMs,
+      ),
+    )
+    console.log('-- RELOAD (warm cache) --')
+    console.log(
+      tripleRow(
+        'total duration',
+        summary.reload.baseline.duration.avgMs,
+        summary.reload.baselineCdp.duration.avgMs,
+        summary.reload.tokenpack.duration.avgMs,
+      ),
+    )
+    console.log(
+      tripleRow(
+        'load event',
+        summary.reload.baseline.loadEvent.avgMs,
+        summary.reload.baselineCdp.loadEvent.avgMs,
+        summary.reload.tokenpack.loadEvent.avgMs,
+      ),
+    )
+    console.log('')
+  }
   console.log('')
   /* eslint-enable no-console */
 } finally {
   await server?.close()
+  closeRunLog()
+}
+
+function relativizeScreenshotPaths(
+  report: Awaited<ReturnType<typeof runBenchmark>>,
+  baseDir: string,
+): void {
+  for (const iter of report.iterations) {
+    for (const phase of [iter.cold, iter.reload]) {
+      const screenshotPath = phase?.sanity?.screenshotPath
+
+      if (!screenshotPath) continue
+      phase.sanity!.screenshotPath = relative(baseDir, screenshotPath)
+    }
+  }
+}
+
+async function writeBenchmarkConsoleArtifacts(
+  report: RunReport,
+  jsonPath: string,
+  logPath: string,
+): Promise<void> {
+  const phases = report.iterations.flatMap(iter =>
+    (
+      [
+        ['cold', iter.cold],
+        ['reload', iter.reload],
+      ] as const
+    )
+      .filter(([, phase]) => Boolean(phase))
+      .map(([phaseName, phase]) => ({
+        iter: iter.iter,
+        mode: iter.mode,
+        tokenVariantId: iter.tokenVariantId ?? null,
+        phase: phaseName,
+        finalUrl: phase!.sanity?.finalUrl,
+        consoleMessages: phase!.sanity?.consoleMessages ?? [],
+        consoleErrors: phase!.sanity?.consoleErrors ?? [],
+        pageErrors: phase!.sanity?.pageErrors ?? [],
+      })),
+  )
+
+  await writeFile(
+    jsonPath,
+    JSON.stringify(
+      {
+        target: report.target,
+        capturedAt: report.capturedAt,
+        mode: report.mode,
+        deliveryMode: report.deliveryMode,
+        phases,
+      },
+      null,
+      2,
+    ),
+    'utf8',
+  )
+
+  const lines: string[] = []
+
+  for (const phase of phases) {
+    const label = [
+      `iter=${phase.iter}`,
+      `mode=${phase.mode}`,
+      phase.tokenVariantId ? `variant=${phase.tokenVariantId}` : null,
+      `phase=${phase.phase}`,
+    ]
+      .filter(Boolean)
+      .join(' ')
+
+    for (const message of phase.consoleMessages) {
+      lines.push(`[${label}][${message.type}] ${message.text}`)
+    }
+    for (const message of phase.pageErrors) {
+      lines.push(`[${label}][pageerror] ${message}`)
+    }
+  }
+
+  await writeFile(logPath, `${lines.join('\n')}${lines.length ? '\n' : ''}`, 'utf8')
 }

@@ -1,8 +1,8 @@
 'use client'
 
-import { Table } from '@heroui/react'
+import { Surface } from '@heroui/react'
 import { CheckCircleIcon } from '@phosphor-icons/react'
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import type { SortDescriptor } from 'react-aria-components'
 
 import { AlgoBadges } from '@/components/AlgoBadges'
@@ -12,7 +12,6 @@ import { usePlaygroundAlgorithms } from '@/lib/use-playground-algorithms'
 import { buildScenarioConfig } from '../constants'
 import type { BenchRow, SummaryRow, SummarySortKey } from '../types'
 import { avg, fmtBytes, fmtMs, getRows } from '../utils'
-import { ColHeader } from './ColHeader'
 
 interface SummaryTableProps {
   data: BenchRow[]
@@ -22,8 +21,6 @@ interface SummaryTableProps {
 
 const ARCHIVE_NAMES = new Set(['zip', 'tar.gz', 'deflate', 'brotli-11', 'brotli-6'])
 
-/** Strip the `-c<n>` suffix to recover the algo name registered in the
- *  catalog. Used to look up classification for badge rendering. */
 function algoNameFromScenario(scenario: string): string {
   return scenario.replace(/-c\d+$/, '')
 }
@@ -83,102 +80,229 @@ export function SummaryTable({ data, condition, source }: SummaryTableProps) {
       return asc ? cmp : -cmp
     })
   }, [rawRows, sort])
+  const sections = useMemo(
+    () => groupRows(sorted, row => rowMeta(row, catalog).section),
+    [catalog, sorted],
+  )
 
   return (
-    <Table className="overflow-x-auto">
-      <Table.Content
-        aria-label="Benchmark summary"
-        className="text-xs font-mono w-full"
-        sortDescriptor={sort}
-        onSortChange={setSort}
+    <Surface className="rounded-2xl p-3.5 overflow-x-auto">
+      <table className="w-full min-w-[980px] text-xs">
+        <thead>
+          <tr className="border-b border-white/10 text-[10px] uppercase tracking-widest text-white/40">
+            <th className="px-2 py-2 text-left font-normal">Kind</th>
+            <SortableHeader label="Variant" sort={sort} sortKey="scenario" onSortChange={setSort} />
+            <SortableHeader
+              numeric
+              label="TTFB"
+              sort={sort}
+              sortKey="ttfb"
+              onSortChange={setSort}
+            />
+            <SortableHeader
+              numeric
+              label="1st byte"
+              sort={sort}
+              sortKey="firstByte"
+              onSortChange={setSort}
+            />
+            <SortableHeader
+              numeric
+              label="Total"
+              sort={sort}
+              sortKey="total"
+              onSortChange={setSort}
+            />
+            <SortableHeader
+              numeric
+              label="Decode"
+              sort={sort}
+              sortKey="decode"
+              onSortChange={setSort}
+            />
+            <SortableHeader
+              numeric
+              label="Transfer"
+              sort={sort}
+              sortKey="transfer"
+              onSortChange={setSort}
+            />
+            <SortableHeader
+              numeric
+              label="MB/s"
+              sort={sort}
+              sortKey="throughput"
+              onSortChange={setSort}
+            />
+          </tr>
+        </thead>
+        <tbody>
+          {sections.map(section => (
+            <Fragment key={section.title}>
+              <tr className="border-b border-white/5">
+                <td
+                  className="px-2 pb-1 pt-4 text-[10px] uppercase tracking-widest text-white/30"
+                  colSpan={8}
+                >
+                  {section.title}
+                </td>
+              </tr>
+              {section.rows.map(r => {
+                const isBest = r.total === minTotal
+                const meta = rowMeta(r, catalog)
+                const stddevText =
+                  r.totalMsStddev !== undefined && r.totalMsStddev > 0
+                    ? `±${r.totalMsStddev.toFixed(0)}ms`
+                    : ''
+                const streamClass = meta.isStreaming
+                  ? 'border-l-2 border-purple-500/40 bg-purple-500/[0.025]'
+                  : ''
+
+                return (
+                  <tr key={r.scenario} className={`border-b border-white/5 ${streamClass}`}>
+                    <td className="px-2 py-3 text-white/45">{meta.kind}</td>
+                    <td className="px-2 py-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className="h-2 w-2 shrink-0 rounded-full"
+                          style={{ background: COLORS[r.scenario] }}
+                        />
+                        <span className={meta.isToken ? 'text-white/85' : 'text-white/65'}>
+                          {r.scenario}
+                        </span>
+                        {meta.isToken && <AlgoBadges hideBatch hideEnv algoName={meta.algoName} />}
+                        {meta.isToken && <TableBadge tone="blue">TK</TableBadge>}
+                        {meta.isStreaming && <TableBadge tone="purple">STREAM</TableBadge>}
+                        {isBest && <TableBadge tone="green">BEST</TableBadge>}
+                        {isBest && (
+                          <CheckCircleIcon className="text-green-400/75" size={12} weight="fill" />
+                        )}
+                      </div>
+                    </td>
+                    <NumberCell>{fmtMs(r.ttfb)}</NumberCell>
+                    <NumberCell className="text-indigo-300/75">{fmtMs(r.firstByte)}</NumberCell>
+                    <NumberCell strong className={isBest ? 'text-green-400' : 'text-white/85'}>
+                      {fmtMs(r.total)}
+                      {stddevText && (
+                        <span className="ml-1 text-[10px] font-normal text-white/30">
+                          {stddevText}
+                        </span>
+                      )}
+                    </NumberCell>
+                    <NumberCell>{fmtMs(r.decode)}</NumberCell>
+                    <td className="px-2 py-3 text-right tabular-nums text-white/65">
+                      <div className="flex flex-col leading-tight">
+                        <span>{fmtBytes(r.transfer)}</span>
+                        <span className="text-[10px] text-white/30">{formatTransferRatio(r)}</span>
+                      </div>
+                    </td>
+                    <NumberCell>{r.throughput.toFixed(1)}</NumberCell>
+                  </tr>
+                )
+              })}
+            </Fragment>
+          ))}
+        </tbody>
+      </table>
+    </Surface>
+  )
+}
+
+function rowMeta(row: SummaryRow, catalog: ReturnType<typeof usePlaygroundAlgorithms>) {
+  const isArchive = ARCHIVE_NAMES.has(row.scenario)
+  const isToken = !isArchive
+  const algoName = isToken ? algoNameFromScenario(row.scenario) : ''
+  const classification = classifyMeta(catalog.find(algo => algo.name === algoName))
+  const isStreaming = isToken && (row.pathTaken === 'stream' || classification.stream)
+
+  return {
+    algoName,
+    isStreaming,
+    isToken,
+    kind: isToken ? 'token' : 'archive',
+    section: isToken
+      ? isStreaming
+        ? 'TokenPack stream'
+        : 'TokenPack batch'
+      : 'Traditional archives',
+  }
+}
+
+function groupRows<T>(
+  rows: T[],
+  sectionFor: (row: T) => string,
+): Array<{ title: string; rows: T[] }> {
+  const order = ['TokenPack batch', 'TokenPack stream', 'Traditional archives']
+
+  return order
+    .map(title => ({ title, rows: rows.filter(row => sectionFor(row) === title) }))
+    .filter(section => section.rows.length > 0)
+}
+
+function SortableHeader({
+  label,
+  sortKey,
+  sort,
+  onSortChange,
+  numeric,
+}: {
+  label: string
+  sortKey: SummarySortKey
+  sort: SortDescriptor
+  onSortChange: (sort: SortDescriptor) => void
+  numeric?: boolean
+}) {
+  const active = sort.column === sortKey
+  const nextDirection = active && sort.direction === 'ascending' ? 'descending' : 'ascending'
+
+  return (
+    <th className={`px-2 py-2 font-normal ${numeric ? 'text-right' : 'text-left'}`}>
+      <button
+        className={`inline-flex items-center gap-1 ${numeric ? 'justify-end' : 'justify-start'} ${
+          active ? 'text-white/60' : 'text-white/40 hover:text-white/65'
+        }`}
+        type="button"
+        onClick={() => onSortChange({ column: sortKey, direction: nextDirection })}
       >
-        <Table.Header>
-          <Table.Column key="scenario" allowsSorting isRowHeader id="scenario">
-            <ColHeader label="Scenario" sort={sort} sortKey="scenario" />
-          </Table.Column>
-          <Table.Column key="ttfb" allowsSorting id="ttfb">
-            <ColHeader label="TTFB" sort={sort} sortKey="ttfb" />
-          </Table.Column>
-          <Table.Column key="firstByte" allowsSorting id="firstByte">
-            <ColHeader label="1st byte" sort={sort} sortKey="firstByte" />
-          </Table.Column>
-          <Table.Column key="total" allowsSorting id="total">
-            <ColHeader label="Total" sort={sort} sortKey="total" />
-          </Table.Column>
-          <Table.Column key="decode" allowsSorting id="decode">
-            <ColHeader label="Decode" sort={sort} sortKey="decode" />
-          </Table.Column>
-          <Table.Column key="transfer" allowsSorting id="transfer">
-            <ColHeader label="Transfer" sort={sort} sortKey="transfer" />
-          </Table.Column>
-          <Table.Column key="throughput" allowsSorting id="throughput">
-            <ColHeader label="MB/s" sort={sort} sortKey="throughput" />
-          </Table.Column>
-        </Table.Header>
-        <Table.Body>
-          {sorted.map(r => {
-            const isBest = r.total === minTotal
-            const isArchive = ARCHIVE_NAMES.has(r.scenario)
-            const isToken = !isArchive
-            const algoName = isToken ? algoNameFromScenario(r.scenario) : ''
-            const classification = classifyMeta(catalog.find(algo => algo.name === algoName))
-            const isStreaming = isToken && (r.pathTaken === 'stream' || classification.stream)
-            const stddevText =
-              r.totalMsStddev !== undefined && r.totalMsStddev > 0
-                ? `±${r.totalMsStddev.toFixed(0)}ms`
-                : ''
+        {label}
+        {active && <span>{sort.direction === 'ascending' ? '^' : 'v'}</span>}
+      </button>
+    </th>
+  )
+}
 
-            const toneClass = isBest
-              ? 'text-green-400'
-              : isToken
-                ? 'text-blue-400/80'
-                : 'text-white/40'
-            const streamClass = isStreaming
-              ? 'border-l-2 border-purple-500/40 bg-purple-500/[0.025]'
-              : ''
+function NumberCell({
+  children,
+  strong,
+  className = 'text-white/70',
+}: {
+  children: React.ReactNode
+  strong?: boolean
+  className?: string
+}) {
+  return (
+    <td className={`px-2 py-3 text-right tabular-nums ${strong ? 'font-medium' : ''} ${className}`}>
+      {children}
+    </td>
+  )
+}
 
-            return (
-              <Table.Row key={r.scenario} className={`${toneClass} ${streamClass}`} id={r.scenario}>
-                <Table.Cell>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ background: COLORS[r.scenario] }}
-                    />
-                    {r.scenario}
-                    {isToken && <AlgoBadges hideBatch hideEnv algoName={algoName} />}
-                    {isBest && (
-                      <CheckCircleIcon className="text-green-400/70" size={12} weight="fill" />
-                    )}
-                  </div>
-                </Table.Cell>
-                <Table.Cell>{fmtMs(r.ttfb)}</Table.Cell>
-                <Table.Cell className="text-indigo-300/70">{fmtMs(r.firstByte)}</Table.Cell>
-                <Table.Cell className="font-semibold">
-                  {fmtMs(r.total)}
-                  {stddevText && (
-                    <span className="ml-1 text-[10px] text-white/30">{stddevText}</span>
-                  )}
-                </Table.Cell>
-                <Table.Cell>{fmtMs(r.decode)}</Table.Cell>
-                <Table.Cell>
-                  <div className="flex flex-col leading-tight">
-                    <span>{fmtBytes(r.transfer)}</span>
-                    <span className="text-[10px] text-white/30">{formatTransferRatio(r)}</span>
-                  </div>
-                </Table.Cell>
-                <Table.Cell>{r.throughput.toFixed(1)}</Table.Cell>
-              </Table.Row>
-            )
-          })}
-        </Table.Body>
-      </Table.Content>
-    </Table>
+function TableBadge({ children, tone }: { children: string; tone: 'blue' | 'green' | 'purple' }) {
+  const toneClass = {
+    blue: 'bg-blue-500/15 text-blue-300',
+    green: 'bg-green-500/15 text-green-300',
+    purple: 'bg-purple-500/15 text-purple-300',
+  }[tone]
+
+  return (
+    <span className={`rounded px-1 py-0.5 text-[9px] uppercase tracking-widest ${toneClass}`}>
+      {children}
+    </span>
   )
 }
 
 function formatTransferRatio(row: SummaryRow): string {
-  if (row.decoded <= 0 || row.transfer <= 0) return '—'
+  if (row.decoded <= 0 || row.transfer <= 0) return '-'
 
   const pct = Math.round((row.transfer / row.decoded) * 100)
 

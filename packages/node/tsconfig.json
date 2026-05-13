@@ -8,6 +8,7 @@
     "outDir": "dist",
     "rootDir": ".",
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
     "noEmit": true,
     "resolveJsonModule": true,
     "lib": ["ES2022"]

@@ -12,6 +12,7 @@
     "benchmark:run:extended": "../../node_modules/.bin/tsx scripts/benchmark/run-extended.ts",
     "benchmark:runtime": "../../node_modules/.bin/tsx scripts/generate-runtime-fixtures.ts",
     "benchmark:apply-diff": "../../node_modules/.bin/tsx scripts/generate-apply-diff-fixtures.ts",
+    "benchmark:apply-diff:case": "../../node_modules/.bin/tsx scripts/generate-apply-diff-fixtures.ts --strategy=five-bundles --size=1000 --updated=1",
     "benchmark:json-playground": "../../node_modules/.bin/tsx scripts/generate-json-playground-fixtures.ts",
     "runtime:fixtures": "yarn benchmark:runtime",
     "lint": "eslint .",

@@ -18,6 +18,7 @@
     "./codecs/zstdpix": "./src/codecs/zstdpix.ts"
   },
   "scripts": {
+    "build": "tsup src/index.ts --format esm --platform node --target es2022 --out-dir dist --dts --external sharp --external upng-js --external tokenpack",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write src",
@@ -33,6 +34,7 @@
     "eslint": "^9.39.0",
     "prettier": "^3.8.3",
     "tokenpack-eslint-config": "workspace:*",
+    "tsup": "^8.5.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vitest": "^2.1.9"

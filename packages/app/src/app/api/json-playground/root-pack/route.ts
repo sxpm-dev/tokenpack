@@ -9,6 +9,7 @@ import {
   NO_CACHE_HEADERS,
   param,
   parsePackMode,
+  parseTokenAlgo,
   rootPackPath,
   throttledBody,
 } from '../_shared'
@@ -17,15 +18,17 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function GET(req: NextRequest) {
+  const algo = parseTokenAlgo(param(req, 'algo'))
+
   try {
-    await ensureRootPack(parsePackMode(param(req, 'mode')))
+    await ensureRootPack(parsePackMode(param(req, 'mode')), algo)
   } catch (error) {
     if (!(error instanceof JsonPlaygroundFixtureError)) throw error
 
     return NextResponse.json({ error: error.message }, { status: 404 })
   }
 
-  const fixturePath = rootPackPath()
+  const fixturePath = rootPackPath(algo)
   const totalBytes = statSync(fixturePath).size
   const range = parseRange(req.headers.get('range'), totalBytes)
   const condition = networkConditionFor(param(req, 'throttle'))

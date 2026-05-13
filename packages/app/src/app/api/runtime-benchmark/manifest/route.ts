@@ -2,6 +2,7 @@ import {
   jsonNoCache,
   listRuntimeContentCases,
   listRuntimeRangePackCases,
+  listRuntimeRouterCases,
   listRuntimeScriptCases,
   readRuntimeManifest,
 } from '../_shared'
@@ -16,6 +17,7 @@ export async function GET() {
     return jsonNoCache({
       sources: [],
       rangePackCases: [],
+      routerCases: [],
       scriptCases: [],
       scenarios: [],
       runtimeFixtures: {
@@ -30,6 +32,7 @@ export async function GET() {
   return jsonNoCache({
     sources: listRuntimeContentCases(runtimeManifest),
     rangePackCases: listRuntimeRangePackCases(runtimeManifest),
+    routerCases: listRuntimeRouterCases(runtimeManifest),
     scriptCases: listRuntimeScriptCases(runtimeManifest),
     scenarios: runtimeManifest.algorithms.flatMap(algo =>
       algo.channels.map(ch => ({

@@ -7,7 +7,7 @@ import path from 'path'
 export const RUNTIME_FIXTURES = path.join(process.cwd(), 'benchmark-fixtures', 'runtime')
 
 export interface RuntimeFixtureEntry {
-  kind: 'native' | 'token' | 'range-pack'
+  kind: 'native' | 'token' | 'range-pack' | 'router'
   tab: 'content' | 'script'
   source: string
   sourceKind: 'json' | 'text'
@@ -28,6 +28,13 @@ export interface RuntimeFixtureEntry {
   files?: Array<{
     path: string
     originalBytes: number
+    sha256: string
+  }>
+  chunks?: Array<{
+    id: string
+    href: string
+    file: string
+    bytes: number
     sha256: string
   }>
 }
@@ -129,6 +136,41 @@ export function listRuntimeRangePackCases(manifest: RuntimeFixtureManifest) {
       chunkCount: fixture.chunkCount,
       rawBytes: fixture.originalBytes,
       fileCount: fixture.files?.length ?? fixture.chunkCount,
+    })
+  }
+
+  return out
+}
+
+export function listRuntimeRouterCases(manifest: RuntimeFixtureManifest) {
+  const out: Array<{
+    id: string
+    tab: 'content' | 'script'
+    source: string
+    sourceKind: 'json' | 'text'
+    chunkCount: number
+    rawBytes: number
+    fileCount: number
+    chunkTokenCount: number
+    wireBytes: number
+    requestCount: number
+  }> = []
+
+  for (const fixture of manifest.fixtures) {
+    if (fixture.kind !== 'router') continue
+
+    out.push({
+      id: runtimeStrategyId(fixture.source, fixture.chunkCount),
+      tab: fixture.tab,
+      source: fixture.source,
+      sourceKind: fixture.sourceKind,
+      chunkCount: fixture.chunkCount,
+      rawBytes: fixture.originalBytes,
+      fileCount: fixture.files?.length ?? fixture.chunkCount,
+      chunkTokenCount: fixture.chunks?.length ?? fixture.chunkCount,
+      wireBytes:
+        fixture.bytes + (fixture.chunks?.reduce((sum, chunk) => sum + chunk.bytes, 0) ?? 0),
+      requestCount: 1 + (fixture.chunks?.length ?? fixture.chunkCount),
     })
   }
 
@@ -237,6 +279,26 @@ export function findRuntimeRangePackFixture(
   )
 }
 
+export function findRuntimeRouterFixture(
+  manifest: RuntimeFixtureManifest,
+  source: string,
+  tab: 'content' | 'script',
+): RuntimeFixtureEntry | null {
+  const parsed = parseRuntimeStrategyId(source)
+
+  if (!parsed) return null
+
+  return (
+    manifest.fixtures.find(
+      fixture =>
+        fixture.kind === 'router' &&
+        fixture.tab === tab &&
+        fixture.source === parsed.source &&
+        fixture.chunkCount === parsed.chunkCount,
+    ) ?? null
+  )
+}
+
 export function runtimeFixturePath(fixture: RuntimeFixtureEntry): string {
   return path.join(RUNTIME_FIXTURES, fixture.file)
 }
@@ -282,27 +344,49 @@ export function param(req: NextRequest, name: string): string | null {
 // across the offline benchmark + the in-app runtime benchmark.
 
 export interface NetworkCondition {
-  name: 'local' | 'fast-cdn' | 'average' | 'slow'
+  name: 'local' | 'fast-cdn' | 'average' | 'slow' | 'slow-parallel'
   latencyMs: number
   bandwidthBps: number
   label: string
+  bandwidthScope: 'none' | 'shared' | 'per-response'
 }
 
 export const NETWORK_CONDITIONS: readonly NetworkCondition[] = [
-  { name: 'local', latencyMs: 0, bandwidthBps: Infinity, label: 'Local · no throttle' },
+  {
+    name: 'local',
+    latencyMs: 0,
+    bandwidthBps: Infinity,
+    label: 'Local · no throttle',
+    bandwidthScope: 'none',
+  },
   {
     name: 'fast-cdn',
     latencyMs: 10,
     bandwidthBps: 100 * 1024 * 1024,
-    label: 'Fast CDN · 10ms · 100 MB/s',
+    label: 'Fast CDN · 10ms · 100 MB/s shared',
+    bandwidthScope: 'shared',
   },
   {
     name: 'average',
     latencyMs: 50,
     bandwidthBps: 10 * 1024 * 1024,
-    label: 'Average · 50ms · 10 MB/s',
+    label: 'Average · 50ms · 10 MB/s shared',
+    bandwidthScope: 'shared',
   },
-  { name: 'slow', latencyMs: 100, bandwidthBps: 2 * 1024 * 1024, label: 'Slow · 100ms · 2 MB/s' },
+  {
+    name: 'slow',
+    latencyMs: 100,
+    bandwidthBps: 2 * 1024 * 1024,
+    label: 'Slow · 100ms · 2 MB/s shared',
+    bandwidthScope: 'shared',
+  },
+  {
+    name: 'slow-parallel',
+    latencyMs: 100,
+    bandwidthBps: 2 * 1024 * 1024,
+    label: 'Slow parallel · 100ms · 2 MB/s per response',
+    bandwidthScope: 'per-response',
+  },
 ] as const
 
 export function networkConditionFor(name: string | null): NetworkCondition {
@@ -354,9 +438,10 @@ function bandwidthLimiterFor(condition: NetworkCondition): SharedBandwidthLimite
  * timings match the pre-throttle implementation byte-for-byte.
  *
  * For throttled conditions we return a `ReadableStream` that applies per-request
- * latency, then emits chunks paced by a shared bandwidth limiter. The shared
- * limiter is important for runtime chunk strategies: 20 parallel requests should
- * share one simulated 100MB/s pipe instead of each receiving 100MB/s.
+ * latency, then emits chunks paced either by a shared bandwidth limiter or by a
+ * per-response limiter. Shared mode models one client pipe. Per-response mode is
+ * an optimistic upper bound for CDN / multi-connection strategies where parallel
+ * requests can each make bandwidth progress.
  *
  * The first chunk is intentionally small so TTFB is close to the latency value;
  * later chunks are larger to avoid timer overhead dominating fast-cdn cases.
@@ -374,7 +459,8 @@ export function throttledBody(body: Buffer, condition: NetworkCondition): any {
   }
 
   const view = new Uint8Array(body.buffer, body.byteOffset, body.byteLength)
-  const limiter = bandwidthLimiterFor(condition)
+  const sharedLimiter =
+    condition.bandwidthScope === 'shared' ? bandwidthLimiterFor(condition) : null
 
   return new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -387,7 +473,11 @@ export function throttledBody(body: Buffer, condition: NetworkCondition): any {
         const end = Math.min(offset + size, view.byteLength)
         const chunk = view.subarray(offset, end)
 
-        await limiter.waitFor(chunk.byteLength, bandwidthBps)
+        if (sharedLimiter) {
+          await sharedLimiter.waitFor(chunk.byteLength, bandwidthBps)
+        } else if (condition.bandwidthScope === 'per-response' && isFinite(bandwidthBps)) {
+          await sleep((chunk.byteLength / bandwidthBps) * 1000)
+        }
         controller.enqueue(chunk)
         offset = end
       }

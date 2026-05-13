@@ -1,9 +1,8 @@
 /**
  * Classify a request URL for the asset-marker / fell-through accounting.
  *
- * The harness intercepts every request via CDP `Fetch.enable` (TP + BL-CDP) or
- * observes every response (BL). Without filtering, our markers get polluted
- * with two categories of noise:
+ * Some harness modes can observe requests beyond the recorded asset manifest.
+ * Without filtering, our markers get polluted with two categories of noise:
  *
  *   1. Pack PNGs we fetch ourselves — the local/remote pack URL hits CDP
  *      because our pattern is `*`. It's our delivery infrastructure, not a
@@ -14,7 +13,8 @@
  *      anything useful.
  */
 
-const MEDIA_EXT_RE = /\.(png|jpe?g|gif|webp|avif|bmp|ico|mp4|webm|mp3|wav|ogg|m4a|m4v|mov|mkv)(\?.*)?$/i
+const MEDIA_EXT_RE =
+  /\.(png|jpe?g|gif|webp|avif|bmp|ico|mp4|webm|mp3|wav|ogg|m4a|m4v|mov|mkv)(\?.*)?$/i
 
 export type UrlClass =
   /** Our own pack URL (local server or CDN). Don't count, don't record. */
@@ -24,11 +24,9 @@ export type UrlClass =
   /** Normal request that wasn't in the manifest. Count + marker. */
   | 'normal'
 
-export function classifyFellthroughUrl(
-  url: string,
-  packUrls: ReadonlySet<string>,
-): UrlClass {
+export function classifyFellthroughUrl(url: string, packUrls: ReadonlySet<string>): UrlClass {
   if (packUrls.has(url)) return 'pack-self'
   if (MEDIA_EXT_RE.test(url)) return 'media-noise'
+
   return 'normal'
 }

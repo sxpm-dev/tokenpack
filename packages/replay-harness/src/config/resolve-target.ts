@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+
 import { publicDemo } from './targets/public-demo.js'
 import type { TargetConfig } from './types.js'
 
@@ -23,6 +24,7 @@ export function resolveTargetArg(arg: string): TargetConfig {
     target = known
   } else if (/^https?:\/\//.test(arg)) {
     const host = new URL(arg).host.replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')
+
     target = {
       id: host,
       url: arg,
@@ -38,8 +40,10 @@ export function resolveTargetArg(arg: string): TargetConfig {
   // doesn't take auth with it. The `login` script writes here; record /
   // baseline / benchmark read from here automatically.
   const candidatePath = target.storageStatePath ?? `session-storages/${target.id}.json`
+
   if (existsSync(candidatePath)) {
     return { ...target, authMode: 'storageState', storageStatePath: candidatePath }
   }
+
   return target
 }

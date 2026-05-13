@@ -158,23 +158,36 @@ export abstract class PixelAlgorithm extends AbstractAlgorithm {
     opts: DecodeOptions = {},
   ): ReadableStream<Uint8Array> {
     const algorithm = this
+    let readerPromise: Promise<ReadableStreamDefaultReader<Uint8Array>> | null = null
+
+    async function reader() {
+      if (!readerPromise) {
+        readerPromise = runDecodeStream(algorithm, source, opts).then(stream => stream.getReader())
+      }
+
+      return readerPromise
+    }
 
     return new ReadableStream<Uint8Array>({
-      async start(controller) {
+      async pull(controller) {
         try {
-          const decoded = await runDecodeStream(algorithm, source, opts)
-          const reader = decoded.getReader()
+          const output = await reader()
+          const { done, value } = await output.read()
 
-          while (true) {
-            const { done, value } = await reader.read()
+          if (done) {
+            controller.close()
 
-            if (done) break
-            controller.enqueue(value)
+            return
           }
-          controller.close()
+          controller.enqueue(value)
         } catch (e) {
           controller.error(e)
         }
+      },
+      async cancel(reason) {
+        const output = await readerPromise
+
+        await output?.cancel(reason).catch(() => undefined)
       },
     })
   }
@@ -286,12 +299,7 @@ function runDecodeSurfaceStream(
 
     if (pixelCount === 0) return
     const fcBytes = pixels.subarray(0, pixelCount * fileChannels)
-    const bppBytes = fromFileChannels(
-      Buffer.from(fcBytes.buffer, fcBytes.byteOffset, fcBytes.byteLength),
-      pixelCount,
-      fileChannels,
-      bpp,
-    )
+    const bppBytes = fromFileChannels(fcBytes, pixelCount, fileChannels, bpp)
 
     let dataBytes: Uint8Array
 
@@ -312,7 +320,7 @@ function runDecodeSurfaceStream(
     const toFeed = dataBytes.subarray(0, Math.min(remaining, dataBytes.byteLength))
 
     fedToOuter += toFeed.byteLength
-    dataController.enqueue(new Uint8Array(toFeed))
+    dataController.enqueue(toFeed)
   }
 
   // Output stream: pipe dataStream → compressor. Starts as soon
@@ -332,9 +340,10 @@ function runDecodeSurfaceStream(
     try {
       for await (const row of rows) {
         if (!headerParsed) {
-          pixelBuf = appendBytes(pixelBuf, row)
           const compactBytes = COMPACT_HEADER_PIXELS * fileChannels
           const fullBytes = HEADER_PIXELS * fileChannels
+
+          pixelBuf = appendBytes(pixelBuf, row)
 
           if (pixelBuf.byteLength >= compactBytes && isCompactToken(pixelBuf)) {
             const ch = readCompactHeader(pixelBuf)
@@ -372,23 +381,37 @@ function runDecodeSurfaceStream(
     }
   })()
 
+  let outputReaderPromise: Promise<ReadableStreamDefaultReader<Uint8Array>> | null = null
+
+  async function outputReader() {
+    if (!outputReaderPromise) {
+      outputReaderPromise = outputStreamPromise.then(stream => stream.getReader())
+    }
+
+    return outputReaderPromise
+  }
+
   return new ReadableStream<Uint8Array>({
-    async start(controller) {
+    async pull(controller) {
       try {
-        const outBytes = await outputStreamPromise
-        const reader = outBytes.getReader()
+        const reader = await outputReader()
+        const { done, value } = await reader.read()
 
-        while (true) {
-          const { done, value } = await reader.read()
+        if (done) {
+          await pumpPromise
+          controller.close()
 
-          if (done) break
-          controller.enqueue(value)
+          return
         }
-        await pumpPromise
-        controller.close()
+        controller.enqueue(value)
       } catch (e) {
         controller.error(e)
       }
+    },
+    async cancel(reason) {
+      const output = await outputReaderPromise
+
+      await output?.cancel(reason).catch(() => undefined)
     },
   })
 }

@@ -17,6 +17,8 @@ yarn add @tokenpack/browser   # workspace pkg, installs from local sources
 - React hook: `useTokenPack(src)`.
 - Streaming PNG decode (`@tokenpack/browser/decodeStream`).
 - Service Worker helper, `postMessage` transport, inline data-URI helper on dedicated subpaths.
+- Router-token materialization uses the shared core contract; browser supplies
+  URL/blob/image decoding plus DOM execution for JS and CSS assets.
 
 ---
 
@@ -27,10 +29,10 @@ yarn add @tokenpack/browser   # workspace pkg, installs from local sources
 ```ts
 import { encode, decode } from '@tokenpack/browser'
 
-const r = await encode('hello world')                 // string is encoded as UTF-8
+const r = await encode('hello world') // string is encoded as UTF-8
 const pack = await decode(r.blobs[0])
 if (!pack.isPack() && !pack.isDiff()) {
-  console.log(await pack.text())                      // → "hello world"
+  console.log(await pack.text()) // → "hello world"
 }
 
 // `r` exposes multiple ways to consume the result:
@@ -61,7 +63,7 @@ document.body.append(r.image)
 // Or decode + iterate later:
 const pack = await decode(r.blobs[0])
 if (pack.isPack()) {
-  console.log(pack.list)                              // ['config.json', 'hello.txt', 'assets/logo.png']
+  console.log(pack.list) // ['config.json', 'hello.txt', 'assets/logo.png']
   const config = await pack.json('config.json')
 }
 ```
@@ -69,11 +71,11 @@ if (pack.isPack()) {
 ### Decode anything
 
 ```ts
-await decode('/api/snapshot.png')                     // URL → fetch + decode
-await decode(blob)                                    // Blob (e.g. <input type="file">)
+await decode('/api/snapshot.png') // URL → fetch + decode
+await decode(blob) // Blob (e.g. <input type="file">)
 await decode(uint8Array)
 await decode(arrayBuffer)
-await decode(htmlImageElement)                        // already-rendered <img>
+await decode(htmlImageElement) // already-rendered <img>
 await decode(imageBitmap)
 ```
 
@@ -82,7 +84,7 @@ await decode(imageBitmap)
 ```tsx
 import { TokenImage } from '@tokenpack/browser/components'
 
-<TokenImage
+;<TokenImage
   src="/data.png"
   fallback={<Spinner />}
   onDecoded={async pack => {
@@ -102,7 +104,7 @@ import { TokenImage } from '@tokenpack/browser/components'
 import { TokenAsImage } from '@tokenpack/browser/components'
 
 // Use when the payload IS itself an image (e.g. screenshot encoded as TokenPack).
-<TokenAsImage src="/encoded-screenshot.png" alt="screenshot" />
+;<TokenAsImage src="/encoded-screenshot.png" alt="screenshot" />
 ```
 
 ### React hook
@@ -133,11 +135,11 @@ const prev = await decode(v1.blobs[0])
 const next = await decode(v2.blobs[0])
 
 if (prev.isPack() && next.isPack()) {
-  const diffResult = await prev.diffTo(next)          // EncodeResult — same shape as encode()
+  const diffResult = await prev.diffTo(next) // EncodeResult — same shape as encode()
   // ship diffResult.blobs[0] over the wire; on the receiver:
   const diffPack = await decode((diffResult as { blobs: Blob[] }).blobs[0])
   if (diffPack.isDiff()) {
-    const reconstructed = await diffPack.apply(prev)
+    const reconstructed = await prev.apply(diffPack)
   }
 }
 ```
@@ -148,11 +150,55 @@ if (prev.isPack() && next.isPack()) {
 import { decodeStream } from '@tokenpack/browser'
 
 const response = await fetch('/big-pack.png')
-const pack = await decodeStream(response.body!)       // pulls bytes as they arrive
+const pack = await decodeStream(response.body!) // pulls bytes as they arrive
 ```
 
 For non-PNG (WebP/AVIF) the helper transparently falls back to the buffered
 `decode()` path (no streaming WebP decoder exists in browsers today).
+
+### Router tokens and materialization (locked target contract)
+
+Router tokens let the browser load a bundle entry token plus related chunk
+tokens from the same base URL. The router is still a `Pack`, so normal decode
+entry points return the same union and callers narrow with `pack.isRouter()`:
+
+```ts
+const pack = await decode('/bundle/router.png')
+const streamed = await decodeStream('/bundle/router.png')
+const router = await decodeRouter('/bundle/router.png')
+```
+
+`decodeRouter()` is explicit: it fetches/processes the router entry token,
+throws if it is not a router token, and resolves chunk hrefs relative to the
+router URL. Blob, buffer, image, and bitmap router sources need an explicit
+base URL when relative chunks are present.
+
+Router chunk files are still PNG artifacts. For the current pixel-range chunk
+algorithm, the segment payload is stored in the PNG `tpAK` range chunk; pixels
+are decoration and the router manifest remains the only file metadata owner.
+
+Router packs expose the materialization API that gives TokenPack control over
+how assets are loaded and decoded:
+
+```ts
+await router.list()
+await router.text('/app.js')
+await router.blob('/styles.css')
+await router.extractAll()
+await router.materialize()
+await router.stream.text('/big.js')
+await router.stream.extractAll()
+await router.stream.materialize(['/app.js', '/styles.css'])
+```
+
+`materialize()` executes frontend assets: CSS is inserted into the document,
+and JS is executed by the runtime. `text()`, `blob()`, and `extractAll()`
+return content without execution. The `stream.*` facade streams chunk tokens
+where useful; it does not change whether the router entry token itself was
+decoded by `decode()` or `decodeStream()`.
+
+See the canonical design in
+[Router Token and Materialization](../../docs/architecture/router-token-and-materialization.md).
 
 ---
 
@@ -160,34 +206,35 @@ For non-PNG (WebP/AVIF) the helper transparently falls back to the buffered
 
 ### Top-level
 
-| Symbol | Notes |
-|---|---|
-| `encode(content \| builder, opts?)` | string / Uint8Array / ArrayBuffer / Blob / `PackBuilder` |
-| `decode(source, opts?)` | URL string / Blob / Uint8Array / ArrayBuffer / HTMLImageElement / ImageBitmap |
-| `decodeStream(source, opts?)` | ReadableStream / Blob / URL string |
-| `inspect(source, opts?)` | Returns the algorithm binding + (optional) pixel-header info for a token |
-| `PackBuilder` | re-exported from core |
-| Pack types | `Pack`, `FilePack`, `DirPack`, `DiffPack`, `DiffEntry`, `DiffOpKind`, `PackEntryInfo` |
+| Symbol                              | Notes                                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------------------- |
+| `encode(content \| builder, opts?)` | string / Uint8Array / ArrayBuffer / Blob / `PackBuilder`                              |
+| `decode(source, opts?)`             | URL string / Blob / Uint8Array / ArrayBuffer / HTMLImageElement / ImageBitmap         |
+| `decodeStream(source, opts?)`       | ReadableStream / Blob / URL string                                                    |
+| `inspect(source, opts?)`            | Returns the algorithm binding + (optional) pixel-header info for a token              |
+| `PackBuilder`                       | re-exported from core                                                                 |
+| Pack types                          | `Pack`, `FilePack`, `DirPack`, `DiffPack`, `RouterPack`, `DiffEntry`, `DiffOpKind`, `PackEntryInfo` |
 
 ### Subpath imports
 
-| Subpath | Exports |
-|---|---|
+| Subpath                         | Exports                          |
+| ------------------------------- | -------------------------------- |
 | `@tokenpack/browser/components` | `<TokenImage>`, `<TokenAsImage>` |
-| `@tokenpack/browser/hooks` | `useTokenPack` |
+| `@tokenpack/browser/hooks`      | `useTokenPack`                   |
 
 ### Encode options
 
 ```ts
 interface EncodeBrowserOptions {
-  algo?: string                     // catalog algorithm name; default 'linear'
-  compressor?: string               // per-file compressor for PackBuilder; default 'deflate-9'
-  algoOptions?: {                   // nested per-component overrides
+  algo?: string // catalog algorithm name; default 'linear'
+  compressor?: string // per-file compressor for PackBuilder; default 'deflate-9'
+  algoOptions?: {
+    // nested per-component overrides
     compressor?: { level?: number }
     surface?: { channels?: 1 | 2 | 3 | 4 }
   }
-  key?: string                      // AES-256-GCM passphrase
-  name?: string                     // file-format only — wraps payload with name
+  key?: string // AES-256-GCM passphrase
+  name?: string // file-format only — wraps payload with name
 }
 ```
 
@@ -196,7 +243,7 @@ interface EncodeBrowserOptions {
 ```ts
 interface DecodeOptions {
   key?: string
-  compressor?: string               // used when produced pack later calls diffTo()
+  compressor?: string // used when produced pack later calls diffTo()
 }
 ```
 

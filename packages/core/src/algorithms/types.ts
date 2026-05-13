@@ -81,7 +81,7 @@ export interface DecodeOptions {
  * Result of `algo.diff(packA, packB)`. Lazy: pick the shape you want.
  *
  *   .text()  → `FileDiff[]` line-level diff per file
- *   .token() → diff token bytes (decode → DiffPack with `.entries`/`.apply()`)
+ *   .token() → diff token bytes (decode → DiffPack; apply via basePack.apply(diffPack))
  */
 export interface DiffResult {
   text(): Promise<FileDiff[]>
@@ -206,7 +206,7 @@ export abstract class AbstractAlgorithm {
    * Pack-level diff. Returns a chainable result whose `.text()` produces a
    * line-level `FileDiff[]` and `.token()` produces a structured diff token
    * (Uint8Array). The diff token is wrapped using THIS algorithm's `encode()`
-   * so applying it later (via `decode → diffPack.apply(prev)`) is symmetric
+   * so applying it later (via `decode → basePack.apply(diffPack)`) is symmetric
    * with the source tokens' packaging.
    *
    * Subclasses may override to redefine diff semantics (e.g. PixelRange could

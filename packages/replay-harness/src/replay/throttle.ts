@@ -1,4 +1,5 @@
 import type { CDPSession } from 'playwright'
+
 import type { ThrottleConfig } from '../config/types.js'
 
 export async function applyThrottle(client: CDPSession, throttle: ThrottleConfig): Promise<void> {

@@ -82,6 +82,6 @@ export abstract class TokenBase<TSource, TOptions> extends PackTokenBase<TSource
     if (!base.isPack()) throw new Error('Token.applyDiff(): source must be a directory pack')
     if (!diff.isDiff()) throw new Error('Token.applyDiff(): diff token must decode to a diff pack')
 
-    return diff.apply(base)
+    return base.apply(diff)
   }
 }

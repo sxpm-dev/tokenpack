@@ -24,8 +24,18 @@ export class FilePack implements IFilePack {
     return false
   }
 
+  isRouter(): this is import('./types').RouterPack {
+    return false
+  }
+
   isDiff(): this is DiffPack {
     return false
+  }
+
+  async materialize(): Promise<never> {
+    throw new Error(
+      'FilePack.materialize: not configured (env package must attach runtime support)',
+    )
   }
 
   async content(): Promise<Uint8Array> {

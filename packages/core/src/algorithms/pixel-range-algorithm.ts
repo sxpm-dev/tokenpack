@@ -125,10 +125,14 @@ export abstract class PixelRangeAlgorithm extends AbstractAlgorithm {
     opts: DecodeOptions = {},
   ): ReadableStream<Uint8Array> {
     const algorithm = this
+    let readerPromise: Promise<ReadableStreamDefaultReader<Uint8Array>> | null = null
+    let total = 0
+    let bodyLength = 0
+    let first = true
 
-    return new ReadableStream<Uint8Array>({
-      async start(controller) {
-        try {
+    async function reader(): Promise<ReadableStreamDefaultReader<Uint8Array>> {
+      if (!readerPromise) {
+        readerPromise = (async () => {
           const tpakBody = extractPngChunkDataStream(source, 'tpAK')
           const body = await unwrapTpakBodyStream(tpakBody)
           const algorithmId = (algorithm.constructor as unknown as { id: number }).id
@@ -138,20 +142,35 @@ export abstract class PixelRangeAlgorithm extends AbstractAlgorithm {
               `tpAK payload belongs to algorithm id ${body.algorithmId}, not ${algorithmId}`,
             )
           }
+          bodyLength = body.uncompressedLength
 
-          const decoded = algorithm.compressor.decompressWebStream(body.payload, {
-            level: body.compressionLevel,
-            uncompressedLength: body.uncompressedLength,
-          })
-          const reader = decoded.getReader()
-          let total = 0
-          let first = true
+          return algorithm.compressor
+            .decompressWebStream(body.payload, {
+              level: body.compressionLevel,
+              uncompressedLength: body.uncompressedLength,
+            })
+            .getReader()
+        })()
+      }
 
-          while (true) {
-            const { done, value } = await reader.read()
+      return readerPromise
+    }
 
-            if (done) break
-            if (!value) continue
+    return new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        try {
+          const output = await reader()
+          const { done, value } = await output.read()
+
+          if (done) {
+            if (bodyLength > 0 && total !== bodyLength) {
+              throw new Error(`tpAK payload decoded to ${total} bytes; expected ${bodyLength}`)
+            }
+            controller.close()
+
+            return
+          }
+          if (value) {
             total += value.byteLength
             if (first) {
               first = false
@@ -159,15 +178,14 @@ export abstract class PixelRangeAlgorithm extends AbstractAlgorithm {
             }
             controller.enqueue(value)
           }
-          if (body.uncompressedLength > 0 && total !== body.uncompressedLength) {
-            throw new Error(
-              `tpAK payload decoded to ${total} bytes; expected ${body.uncompressedLength}`,
-            )
-          }
-          controller.close()
         } catch (error) {
           controller.error(error)
         }
+      },
+      async cancel(reason) {
+        const output = await readerPromise
+
+        await output?.cancel(reason).catch(() => undefined)
       },
     })
   }
@@ -258,53 +276,70 @@ function extractPngChunkDataStream(
   source: ReadableStream<Uint8Array>,
   chunkType: string,
 ): ReadableStream<Uint8Array> {
+  let reader: StreamByteReader | null = null
+  let scannedSignature = false
+  let remaining = 0
+  let closed = false
+
+  async function ensureChunkFound() {
+    if (!reader) reader = new StreamByteReader(source)
+    if (!scannedSignature) {
+      const sig = await reader.readExactly(8)
+
+      if (
+        sig[0] !== 0x89 ||
+        sig[1] !== 0x50 ||
+        sig[2] !== 0x4e ||
+        sig[3] !== 0x47 ||
+        sig[4] !== 0x0d ||
+        sig[5] !== 0x0a ||
+        sig[6] !== 0x1a ||
+        sig[7] !== 0x0a
+      ) {
+        throw new Error('not a PNG')
+      }
+      scannedSignature = true
+    }
+
+    while (remaining === 0) {
+      const header = await reader.readExactly(8)
+      const length = header[0] * 0x1000000 + (header[1] << 16) + (header[2] << 8) + header[3]
+      const type = String.fromCharCode(header[4], header[5], header[6], header[7])
+
+      if (type === chunkType) {
+        remaining = length
+
+        return
+      }
+
+      await reader.skip(length + 4)
+      if (type === 'IEND') throw new Error(`no ${chunkType} chunk found in PNG`)
+    }
+  }
+
   return new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const reader = new StreamByteReader(source)
-
+    async pull(controller) {
       try {
-        const sig = await reader.readExactly(8)
+        if (closed) return
+        await ensureChunkFound()
+        const chunk = await reader!.readUpTo(remaining)
 
-        if (
-          sig[0] !== 0x89 ||
-          sig[1] !== 0x50 ||
-          sig[2] !== 0x4e ||
-          sig[3] !== 0x47 ||
-          sig[4] !== 0x0d ||
-          sig[5] !== 0x0a ||
-          sig[6] !== 0x1a ||
-          sig[7] !== 0x0a
-        ) {
-          throw new Error('not a PNG')
-        }
-
-        while (true) {
-          const header = await reader.readExactly(8)
-          const length = header[0] * 0x1000000 + (header[1] << 16) + (header[2] << 8) + header[3]
-          const type = String.fromCharCode(header[4], header[5], header[6], header[7])
-
-          if (type === chunkType) {
-            let remaining = length
-
-            while (remaining > 0) {
-              const chunk = await reader.readUpTo(remaining)
-
-              remaining -= chunk.byteLength
-              controller.enqueue(chunk)
-            }
-            controller.close()
-            await reader.cancel()
-
-            return
-          }
-
-          await reader.skip(length + 4)
-          if (type === 'IEND') throw new Error(`no ${chunkType} chunk found in PNG`)
+        remaining -= chunk.byteLength
+        controller.enqueue(chunk)
+        if (remaining === 0) {
+          closed = true
+          controller.close()
+          await reader!.cancel()
         }
       } catch (error) {
         controller.error(error)
-        await reader.cancel().catch(() => undefined)
+        await reader?.cancel().catch(() => undefined)
       }
+    },
+    cancel() {
+      closed = true
+
+      return reader?.cancel()
     },
   })
 }

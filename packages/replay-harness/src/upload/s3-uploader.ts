@@ -1,5 +1,7 @@
 import { readFile } from 'node:fs/promises'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+
 import { logger } from '../log/logger.js'
 
 export interface UploadConfig {
@@ -14,9 +16,12 @@ export interface UploadConfig {
 export function uploadConfigFromEnv(): UploadConfig {
   const need = (k: string): string => {
     const v = process.env[k]
+
     if (!v) throw new Error(`Missing env: ${k}`)
+
     return v
   }
+
   return {
     endpoint: need('REPLAY_UPLOAD_ENDPOINT'),
     region: process.env.REPLAY_UPLOAD_REGION ?? 'auto',
@@ -55,6 +60,8 @@ export async function uploadPack(
   )
 
   const publicUrl = `${config.publicBaseUrl.replace(/\/$/, '')}/${objectKey}`
+
   logger.info({ publicUrl, bytes: body.byteLength }, 'pack uploaded')
+
   return publicUrl
 }

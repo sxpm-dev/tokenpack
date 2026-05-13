@@ -8,6 +8,7 @@
 
 import type { Pack } from 'tokenpack/pack/types'
 
+import { maybeRouterToken } from './router-token'
 import { Token } from './token'
 
 export type DecodeSource = string | URL | Buffer | Uint8Array
@@ -20,5 +21,5 @@ export interface DecodeOptions {
 }
 
 export async function decode(source: DecodeSource, options: DecodeOptions = {}): Promise<Pack> {
-  return new Token(source, options).pack()
+  return maybeRouterToken(await new Token(source, options).pack(), source, options)
 }

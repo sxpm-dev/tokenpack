@@ -20,7 +20,7 @@
 
 import { decodeSurfaceStream, PixelAlgorithm } from 'tokenpack/algorithms/pixel-algorithm'
 import { PixelRangeAlgorithm } from 'tokenpack/algorithms/pixel-range-algorithm'
-import { decompressRaw } from 'tokenpack/compressors'
+import type { AbstractAlgorithm } from 'tokenpack/algorithms/types'
 import {
   COMPACT_HEADER_PIXELS,
   HEADER_PIXELS,
@@ -28,15 +28,14 @@ import {
   readCompactHeader,
   readHeader,
 } from 'tokenpack/header'
-import { fromBytes } from 'tokenpack/pack/from-bytes'
 import type { Pack } from 'tokenpack/pack/types'
 import type { SurfaceStreamHandle } from 'tokenpack/surfaces/types'
 
 import { BrowserStreamingPngSurface } from './algorithms'
 import { browserAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
-import { buildDiffToFn } from './build-diff-to'
 import type { DecodeOptions } from './decode'
-import { decodeSourceToPack, payloadToPack } from './decode-core'
+import { decodeSourceToPayload, payloadToPack } from './decode-core'
+import { maybeRouterToken } from './router-token'
 
 export type DecodeStreamSource = ReadableStream<Uint8Array> | Blob | string
 
@@ -54,6 +53,19 @@ export async function decodeStream(
   source: DecodeStreamSource,
   options: DecodeOptions = {},
 ): Promise<Pack> {
+  const originalSource = source
+  const { bytes, algorithm } = await decodeStreamPayload(source, options)
+  const pack = payloadToPack(bytes, algorithm, options.decompress)
+
+  return typeof originalSource === 'string'
+    ? maybeRouterToken(pack, originalSource, options)
+    : Promise.resolve(pack)
+}
+
+export async function decodeStreamPayload(
+  source: DecodeStreamSource,
+  options: DecodeOptions = {},
+): Promise<{ bytes: Uint8Array; algorithm: AbstractAlgorithm }> {
   const { stream, peek } = await peekAndRebuild(source)
 
   // Resolve the algorithm. We need a peek to identify the format: the
@@ -61,7 +73,7 @@ export async function decodeStream(
   // filename here. For now we support PNG-magic detection as the dominant
   // case; non-PNG inputs collect to a Blob and use the buffered decode().
   if (!isPng(peek)) {
-    return decodeSourceToPack(await streamToBlob(stream), options)
+    return decodeSourceToPayload(await streamToBlob(stream), options)
   }
 
   const pixelRangeAlgorithmId = detectPixelRangeAlgorithmIdFromPngPrefix(peek)
@@ -73,7 +85,7 @@ export async function decodeStream(
     if (algorithm instanceof PixelRangeAlgorithm) {
       const decoded = await streamToBytes(algorithm.decodeStream(stream, options))
 
-      return payloadToPack(decoded, algorithm, options.decompress)
+      return { bytes: decoded, algorithm }
     }
   }
 
@@ -85,25 +97,20 @@ export async function decodeStream(
   try {
     detected = await detectAlgorithmFromRows(handle)
   } catch {
-    return decodeSourceToPack(await streamToBlob(fallbackStream), options)
+    return decodeSourceToPayload(await streamToBlob(fallbackStream), options)
   }
 
   const Ctor = algorithmCatalog.getById(detected.algorithmId)
   const algorithm = new Ctor({ key: options.key })
 
   if (!(algorithm instanceof PixelAlgorithm) || !Ctor.capabilities.streamable) {
-    return decodeSourceToPack(await streamToBlob(fallbackStream), options)
+    return decodeSourceToPayload(await streamToBlob(fallbackStream), options)
   }
 
   fallbackStream.cancel().catch(() => undefined)
   const decoded = await decodeSurfaceStream(algorithm, detected.handle, options)
 
-  return fromBytes(decoded, {
-    decompress: options.decompress ?? decompressRaw,
-    // Curry the source-decoded algorithm so `prevPack.diffTo(nextPack)`
-    // produces a diff token packaged with the same algorithm as the inputs.
-    diffTo: buildDiffToFn(algorithm),
-  })
+  return { bytes: decoded, algorithm }
 }
 
 function detectPixelRangeAlgorithmIdFromPngPrefix(peek: Uint8Array): number | null {
@@ -153,9 +160,14 @@ async function detectAlgorithmFromRows(handle: SurfaceStreamHandle): Promise<{
 
     if (done) break
     queued.push(value)
-    pixelBuf = appendBytes(pixelBuf, value)
 
     const compactBytes = COMPACT_HEADER_PIXELS * handle.fileChannels
+    const fullBytes = HEADER_PIXELS * handle.fileChannels
+    const needHeaderBytes = Math.max(0, fullBytes - pixelBuf.byteLength)
+
+    if (needHeaderBytes > 0) {
+      pixelBuf = appendBytes(pixelBuf, value.subarray(0, needHeaderBytes))
+    }
 
     if (pixelBuf.byteLength >= compactBytes && isCompactToken(pixelBuf)) {
       return {
@@ -163,8 +175,6 @@ async function detectAlgorithmFromRows(handle: SurfaceStreamHandle): Promise<{
         handle: replayHandle(handle, queued, iterator),
       }
     }
-
-    const fullBytes = HEADER_PIXELS * handle.fileChannels
 
     if (pixelBuf.byteLength >= fullBytes) {
       try {

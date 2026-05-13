@@ -2,11 +2,10 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import {
-  ensureRootPack,
-  JsonPlaygroundFixtureError,
   loadJsonPlaygroundData,
   param,
   parsePackMode,
+  parseTokenAlgo,
   readRootPackStatus,
   safeRecordSummary,
 } from '../_shared'
@@ -16,24 +15,20 @@ export const revalidate = 0
 
 export async function GET(req: NextRequest) {
   const data = loadJsonPlaygroundData()
+
   const mode = parsePackMode(param(req, 'mode'))
-  const status = readRootPackStatus()
+  const tokenAlgo = parseTokenAlgo(param(req, 'algo'))
+  const status = readRootPackStatus(tokenAlgo)
   let rootPack = status.meta
   let rootPackError: string | null = null
   let rootPackAvailable = status.available && !status.stale
 
-  if (mode === 'lazy' || (status.available && !status.stale)) {
-    try {
-      rootPack = await ensureRootPack(mode)
-      rootPackAvailable = true
-    } catch (error) {
-      if (!(error instanceof JsonPlaygroundFixtureError)) throw error
-      rootPackError = error.message
-      rootPackAvailable = false
-    }
-  } else if (!status.available || status.stale) {
+  if (!rootPackAvailable) {
+    rootPack = null
     rootPackError =
-      'JSON playground root pack fixture is missing or stale. Run `yarn benchmark:json-playground`, or switch pack mode to lazy.'
+      mode === 'lazy'
+        ? 'JSON playground root pack fixture is missing or stale. It will be generated when the pack is requested.'
+        : 'JSON playground root pack fixture is missing or stale. Run `yarn benchmark:json-playground`, or switch pack mode to lazy.'
     rootPackAvailable = false
   }
 
@@ -54,6 +49,7 @@ export async function GET(req: NextRequest) {
     rootPack: {
       available: Boolean(rootPack && rootPackAvailable),
       bytes: rootPack?.tokenBytes ?? 0,
+      algo: tokenAlgo,
       error: rootPackError,
       mode,
       path: status.path,

@@ -48,6 +48,7 @@
     "./surfaces/streaming-png-decoder": "./src/surfaces/streaming-png-decoder.ts"
   },
   "scripts": {
+    "build": "tsup src/index.ts --format esm --platform node --target es2022 --out-dir dist --dts",
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",
     "format": "prettier --write src tests",
@@ -60,6 +61,7 @@
     "eslint": "^9.39.0",
     "prettier": "^3.8.3",
     "tokenpack-eslint-config": "workspace:*",
+    "tsup": "^8.5.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vitest": "^2.1.9"

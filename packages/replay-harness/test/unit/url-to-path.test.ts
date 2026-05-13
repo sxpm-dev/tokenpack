@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest'
+
 import { urlToInternalPath } from '../../src/encode/url-to-path.js'
 
 describe('urlToInternalPath', () => {
   it('preserves host and path with safe characters', () => {
-    expect(urlToInternalPath('https://cdn.example.com/lib/foo.js')).toBe('cdn.example.com/lib/foo.js')
+    expect(urlToInternalPath('https://cdn.example.com/lib/foo.js')).toBe(
+      'cdn.example.com/lib/foo.js',
+    )
   })
 
   it('hashes the query string into the filename', () => {
     const a = urlToInternalPath('https://x.com/a.js?v=1')
     const b = urlToInternalPath('https://x.com/a.js?v=2')
+
     expect(a).not.toBe(b)
     expect(a.startsWith('x.com/a.')).toBe(true)
   })
@@ -28,6 +32,7 @@ describe('urlToInternalPath', () => {
 
   it('is deterministic', () => {
     const u = 'https://x.com/a.js?v=1&q=2'
+
     expect(urlToInternalPath(u)).toBe(urlToInternalPath(u))
   })
 })

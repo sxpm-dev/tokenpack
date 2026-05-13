@@ -11,15 +11,15 @@
  */
 export function urlToPackGroup(input: string): string {
   const url = new URL(input)
-  const hostPart = url.port
-    ? `${url.host.replace(`:${url.port}`, '')}_${url.port}`
-    : url.host
+  const hostPart = url.port ? `${url.host.replace(`:${url.port}`, '')}_${url.port}` : url.host
 
   // Strip the filename (last segment), keeping the directory path.
   const dir = url.pathname.replace(/\/[^/]*$/, '')
   const trimmed = dir.replace(/^\/+/, '').replace(/\/+$/, '')
+
   if (trimmed === '') return hostPart.toLowerCase()
 
   const dirPart = trimmed.replace(/[^a-zA-Z0-9._-]+/g, '-')
+
   return `${hostPart}--${dirPart}`.toLowerCase()
 }

@@ -1,5 +1,6 @@
 export type Throttle = 'local' | 'fast-cdn' | 'average' | 'slow'
 export type Encoding = 'raw' | 'deflate' | 'brotli'
+export type ApplyDiffStrategy = 'single-bundle' | 'five-bundles'
 export type VariantKind =
   | 'native-full'
   | 'token-full'
@@ -18,9 +19,12 @@ export interface TokenVariant {
 
 export interface ApplyDiffCase {
   id: string
+  strategy?: ApplyDiffStrategy
   sizeKB: number
   changeRatePct: number
   fileCount: number
+  bundleCount?: number
+  updatedBundleCount?: number
   changedFileCount: number
   changedPaths: string[]
   baseOriginalBytes: number
@@ -53,6 +57,7 @@ export interface ApplyDiffManifest {
   generatedAt?: string
   sizesKB?: number[]
   changeRatesPct?: number[]
+  updatedBundleCounts?: number[]
   fileCount?: number
   encodings?: Encoding[]
   tokenVariants: TokenVariant[]

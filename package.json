@@ -19,6 +19,7 @@
     "tokenpack": "yarn workspace tokenpack-cli tokenpack",
     "tokenpack-skill": "yarn workspace tokenpack-claude-skill exec tsx src/cli.ts",
     "benchmark": "yarn workspace tokenpack-app benchmark",
+    "build:lib": "yarn workspace tokenpack build && yarn workspace @tokenpack/node build && yarn workspace @tokenpack/browser build",
     "app": "yarn workspace tokenpack-app dev",
     "app:build": "yarn workspace tokenpack-app build",
     "start": "yarn workspace tokenpack-app start"

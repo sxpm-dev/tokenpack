@@ -195,7 +195,7 @@ async function runDiffApply({
   if (!diffPack.isDiff()) throw new Error(`diff token ${token.id} did not decode to a diff pack`)
 
   const applyStart = performance.now()
-  const nextPack = await diffPack.apply(basePack)
+  const nextPack = await basePack.apply(diffPack)
   const entries = await nextPack.extractAll()
   const applyEnd = performance.now()
 

@@ -1,17 +1,25 @@
 // Runtime benchmark runner — executes one variant N iterations and produces
 // per-iteration Sample[].
 
-import { decode, decodeStream } from '@tokenpack/browser'
+import { decode, decodeStream, type MaterializedFile } from '@tokenpack/browser'
 import {
   estimatePackRangeWireBytes,
   fetchPackFilesCompressed,
   fetchPackFilesStream,
   fetchPackManifest,
+  openRangePack,
 } from '@tokenpack/browser/fetch-pack'
 import { Bench } from 'tinybench'
 import { decompressRaw } from 'tokenpack/compressors'
 
-import type { AggregatedRow, DecodeFingerprint, Sample, Throttle, Variant } from './types'
+import type {
+  AggregatedRow,
+  DecodeFingerprint,
+  RouterFixtureStats,
+  Sample,
+  Throttle,
+  Variant,
+} from './types'
 
 interface RunOptions {
   source: string
@@ -19,6 +27,7 @@ interface RunOptions {
   withExecute: boolean
   /** Network throttle level. `local` = no throttle. */
   throttle: Throttle
+  routerFixtureStats?: RouterFixtureStats
 }
 
 // Function-constructor reference for executing benchmark scripts. Aliased so
@@ -37,7 +46,7 @@ export async function runVariant(
   const bench = new Bench({
     iterations,
     time: 0,
-    warmupIterations: 2,
+    warmupIterations: 0,
     warmupTime: 0,
     throws: true,
   })
@@ -88,7 +97,24 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
 
   const fetchStart = performance.now()
 
-  if (variant.loadMode === 'range-pack-fetch' || variant.loadMode === 'range-pack-stream') {
+  if (
+    variant.loadMode === 'router-text' ||
+    variant.loadMode === 'router-exact-text' ||
+    variant.loadMode === 'router-materialize'
+  ) {
+    const url = withQuery(baseUrl, {
+      nonce: crypto.randomUUID(),
+      ...(options.throttle !== 'local' ? { throttle: options.throttle } : {}),
+    })
+
+    return runRouterOnce(variant, url, fetchStart, options)
+  }
+
+  if (
+    variant.loadMode === 'range-pack-fetch' ||
+    variant.loadMode === 'range-pack-stream' ||
+    variant.loadMode === 'range-pack-exact-stream'
+  ) {
     const url = withQuery(baseUrl, {
       nonce: crypto.randomUUID(),
       ...(options.throttle !== 'local' ? { throttle: options.throttle } : {}),
@@ -99,6 +125,18 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
 
   if (variant.loadMode === 'script-tag') {
     return runScriptTagOnce(variant, urls, fetchStart, options.source, chunkCount)
+  }
+
+  if (variant.loadMode === 'native-exact') {
+    const exactUrls = chooseExactIndexes(chunkCount).map(chunkIndex =>
+      withQuery(baseUrl, {
+        chunk: String(chunkIndex),
+        nonce: crypto.randomUUID(),
+        ...(options.throttle !== 'local' ? { throttle: options.throttle } : {}),
+      }),
+    )
+
+    return runNativeExactOnce(variant, exactUrls, fetchStart, options)
   }
 
   const chunks = await Promise.all(urls.map(url => fetchChunk(variant, url)))
@@ -140,6 +178,7 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
       executeMs,
       totalMs: totalEnd - fetchStart,
       wireBytes,
+      requestCount: chunks.length,
     },
     bytesReady,
   }
@@ -152,8 +191,13 @@ async function runRangePackOnce(
   options: RunOptions,
 ): Promise<RunOnceResult> {
   const absoluteUrl = new URL(url, window.location.href).href
+
+  if (variant.loadMode === 'range-pack-exact-stream') {
+    return runRangePackExactOnce(variant, absoluteUrl, fetchStart, options)
+  }
+
   const remote = await fetchPackManifest(absoluteUrl)
-  const paths = remote.manifest.files.map(file => file.path).sort()
+  const paths = remote.manifest.files.map(file => file.path)
   const manifestReady = performance.now()
   let bytesReady: Uint8Array
   let decodeMs: number
@@ -165,6 +209,7 @@ async function runRangePackOnce(
     const decoded = await Promise.all(streamFiles.map(file => readStream(file.stream)))
     const streamEnd = performance.now()
 
+    verifyRangePackDecodedFiles(streamFiles, decoded, variant.id)
     bytesReady = concatBytes(decoded)
     if (options.withExecute) {
       const scriptTiming = await executeScriptChunksViaTags(options.source, decoded, variant.id)
@@ -196,6 +241,7 @@ async function runRangePackOnce(
     )
     const decodeEnd = performance.now()
 
+    verifyRangePackDecodedFiles(compressedFiles, decoded, variant.id)
     bytesReady = concatBytes(decoded)
     decodeMs = decodeEnd - transferEnd
     if (options.withExecute) {
@@ -221,9 +267,10 @@ async function runRangePackOnce(
       .map(timing => timing.responseStart)
       .filter(start => start > 0)
       .sort((a, b) => a - b)[0] ?? manifestReady
-  const estimatedWireBytes = estimatePackRangeWireBytes(remote, paths, { maxGapBytes: 0 })
+  const estimatedWireBytes = estimatePackRangeWireBytes(remote, paths)
   const timingWireBytes = wireBytesFromTimings(timings)
   const wireBytes = Math.max(timingWireBytes ?? 0, estimatedWireBytes)
+  const requestCount = Math.max(timings.length, estimatePackRangeRequestCount(remote, paths))
 
   return {
     sample: {
@@ -233,8 +280,230 @@ async function runRangePackOnce(
       executeMs,
       totalMs: totalEnd - fetchStart,
       wireBytes,
+      requestCount,
     },
     bytesReady,
+  }
+}
+
+async function runRangePackExactOnce(
+  variant: Variant,
+  absoluteUrl: string,
+  fetchStart: number,
+  options: RunOptions,
+): Promise<RunOnceResult> {
+  const pack = await openRangePack(absoluteUrl)
+  const manifestReady = performance.now()
+  const entries = await pack.list()
+  const paths = chooseExactPaths(entries.map(entry => entry.path))
+  const selectedText = (await pack.stream.text(paths)) as Map<string, string>
+  const contentReadyEnd = performance.now()
+  const decoded = paths.map(path => new TextEncoder().encode(selectedText.get(path) ?? ''))
+  const contentDecodeStart = performance.now()
+
+  materializeSourceContent(decoded, options.sourceKind, variant.id)
+  const decodeMs = performance.now() - contentDecodeStart
+  const totalEnd = performance.now()
+  const timings = resourceTimingsFor(absoluteUrl, fetchStart)
+  const firstByte =
+    timings
+      .map(timing => timing.responseStart)
+      .filter(start => start > 0)
+      .sort((a, b) => a - b)[0] ?? manifestReady
+  const estimatedWireBytes = estimatePackRangeWireBytesExact(pack.remote, paths)
+  const timingWireBytes = wireBytesFromTimings(timings)
+
+  return {
+    sample: {
+      ttfbMs: firstByte - fetchStart,
+      transferMs: contentReadyEnd - fetchStart,
+      decodeMs,
+      executeMs: null,
+      totalMs: totalEnd - fetchStart,
+      wireBytes: Math.max(timingWireBytes ?? 0, estimatedWireBytes),
+      requestCount: Math.max(
+        timings.length,
+        estimatePackRangeRequestCountExact(pack.remote, paths),
+      ),
+    },
+    bytesReady: concatBytes(decoded),
+  }
+}
+
+interface RouterListedFile {
+  path: string
+  url: string
+  segments: Array<{ chunkId: string }>
+}
+
+async function runRouterOnce(
+  variant: Variant,
+  url: string,
+  fetchStart: number,
+  options: RunOptions,
+): Promise<RunOnceResult> {
+  const absoluteUrl = new URL(url, window.location.href).href
+  const pack = await decodeStream(absoluteUrl)
+
+  if (!pack.isRouter()) throw new Error(`router benchmark expected router token: ${variant.id}`)
+  const routerReady = performance.now()
+  const listed = (await pack.list()) as RouterListedFile[]
+  const paths = listed.map(file => file.path)
+
+  if (paths.length === 0) throw new Error(`router benchmark has no routed files: ${variant.id}`)
+
+  let bytesReady: Uint8Array
+  let decodeMs = 0
+  let executeMs: number | null = null
+  let transferEnd = routerReady
+
+  if (variant.loadMode === 'router-materialize') {
+    const host = globalThis as typeof globalThis & {
+      __benchmarkResult?: Record<string, (result: ScriptChunkResult) => void>
+    }
+    const results: ScriptChunkResult[] = []
+
+    host.__benchmarkResult ??= {}
+    host.__benchmarkResult[options.source] = result => {
+      results[result.chunkIndex] = result
+    }
+    try {
+      const materializeStart = performance.now()
+
+      const materialized = await pack.stream.materialize()
+      const materializedFiles = Array.isArray(materialized)
+        ? (materialized as MaterializedFile[])
+        : [materialized as MaterializedFile]
+      const materializeEnd = performance.now()
+      const materializedExecuteMs = materializedExecutionTime(materializedFiles)
+
+      transferEnd = materializeEnd - materializedExecuteMs
+      executeMs = materializedExecuteMs
+      decodeMs = Math.max(0, materializeEnd - materializeStart - materializedExecuteMs)
+      verifyScriptResults(
+        options.source,
+        variant.id,
+        materializedScriptCount(materializedFiles),
+        results,
+      )
+      bytesReady = concatBytes(materializedFiles.map(file => file.bytes))
+    } finally {
+      delete host.__benchmarkResult[options.source]
+    }
+  } else if (variant.loadMode === 'router-exact-text') {
+    const exactPaths = chooseExactPaths(paths)
+    const textByPath = (await pack.stream.text(exactPaths)) as Map<string, string>
+    const materializeStart = performance.now()
+    const filesByPath = new Map(listed.map(file => [file.path, file]))
+    const decoded = exactPaths.map(path => {
+      const file = filesByPath.get(path)
+      const text = textByPath.get(path) ?? (file ? textByPath.get(file.url) : undefined) ?? ''
+
+      return new TextEncoder().encode(text)
+    })
+
+    materializeSourceContent(decoded, options.sourceKind, variant.id)
+    decodeMs = performance.now() - materializeStart
+    transferEnd = materializeStart
+    bytesReady = concatBytes(decoded)
+  } else {
+    const decoded = (await pack.stream.extractAll()).map(file => file.bytes)
+    const materializeStart = performance.now()
+
+    materializeSourceContent(decoded, options.sourceKind, variant.id)
+    decodeMs = performance.now() - materializeStart
+    transferEnd = materializeStart
+    bytesReady = concatBytes(decoded)
+  }
+
+  const totalEnd = performance.now()
+  const timings = resourceTimingsForRouterBundle(absoluteUrl, fetchStart)
+  const manifest = (await pack.manifest()) as {
+    chunks: Array<{ id?: string; byteLength?: number }>
+  }
+  const firstByte =
+    timings
+      .map(timing => timing.responseStart)
+      .filter(start => start > 0)
+      .sort((a, b) => a - b)[0] ?? routerReady
+  const selectedChunkIds =
+    variant.loadMode === 'router-exact-text'
+      ? new Set(
+          chooseExactPaths(paths).flatMap(path => {
+            const file = listed.find(item => item.path === path)
+
+            return file ? file.segments.map(segment => segment.chunkId) : []
+          }),
+        )
+      : new Set(listed.flatMap(file => file.segments.map(segment => segment.chunkId)))
+  const manifestChunkWireBytes = manifest.chunks.reduce((sum, chunk, index) => {
+    const id = chunk.id ?? `chunk-${String(index).padStart(2, '0')}`
+
+    return selectedChunkIds.has(id) ? sum + (chunk.byteLength ?? 0) : sum
+  }, 0)
+  const estimatedWireBytes = Math.max(
+    manifestChunkWireBytes,
+    options.routerFixtureStats?.wireBytes ?? 0,
+  )
+  const wireBytes = Math.max(wireBytesFromTimings(timings) ?? 0, estimatedWireBytes)
+  const estimatedRequestCount = 1 + selectedChunkIds.size
+  const requestCount = Math.max(
+    timings.length,
+    estimatedRequestCount,
+    options.routerFixtureStats?.requestCount ?? 0,
+  )
+
+  return {
+    sample: {
+      ttfbMs: firstByte - fetchStart,
+      transferMs: transferEnd - fetchStart,
+      decodeMs,
+      executeMs,
+      totalMs: totalEnd - fetchStart,
+      wireBytes,
+      requestCount,
+    },
+    bytesReady,
+  }
+}
+
+function materializedExecutionTime(files: readonly MaterializedFile[]): number {
+  return files.reduce((sum, file) => sum + (file.timing?.executeMs ?? 0), 0)
+}
+
+function materializedScriptCount(files: readonly MaterializedFile[]): number {
+  const jsCount = files.filter(file => file.kind === 'js').length
+
+  return jsCount > 0 ? jsCount : files.length
+}
+
+async function runNativeExactOnce(
+  variant: Variant,
+  urls: string[],
+  fetchStart: number,
+  options: RunOptions,
+): Promise<RunOnceResult> {
+  const chunks = await Promise.all(urls.map(url => fetchChunk(variant, url)))
+  const firstByte = Math.min(...chunks.map(chunk => chunk.firstByte))
+  const transferEnd = Math.max(...chunks.map(chunk => chunk.transferEnd))
+  const decoded = chunks.map(chunk => chunk.bytesReady)
+  const contentDecodeStart = performance.now()
+
+  materializeSourceContent(decoded, options.sourceKind, variant.id)
+
+  const totalEnd = performance.now()
+
+  return {
+    sample: {
+      ttfbMs: firstByte - fetchStart,
+      transferMs: transferEnd - fetchStart,
+      decodeMs: performance.now() - contentDecodeStart,
+      executeMs: null,
+      totalMs: totalEnd - fetchStart,
+      wireBytes: chunks.reduce((sum, chunk) => sum + chunk.wireBytes, 0),
+      requestCount: chunks.length,
+    },
+    bytesReady: concatBytes(decoded),
   }
 }
 
@@ -274,6 +543,7 @@ async function runScriptTagOnce(
         executeMs: null,
         totalMs: totalEnd - fetchStart,
         wireBytes,
+        requestCount: loads.length,
       },
       bytesReady: new Uint8Array(),
     }
@@ -325,6 +595,102 @@ function resourceTimingFor(url: string): PerformanceResourceTiming | null {
 function resourceTimingsFor(url: string, since = -Infinity): PerformanceResourceTiming[] {
   return (performance.getEntriesByName(url, 'resource') as PerformanceResourceTiming[]).filter(
     entry => entry.startTime >= since - 1,
+  )
+}
+
+function resourceTimingsForRouterBundle(
+  routerUrl: string,
+  since: number,
+): PerformanceResourceTiming[] {
+  const base = routerUrl.split('?')[0]!
+  const prefix = base.slice(0, base.lastIndexOf('/') + 1)
+
+  return (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).filter(
+    entry => entry.startTime >= since - 1 && entry.name.startsWith(prefix),
+  )
+}
+
+function estimatePackRangeRequestCount(
+  remote: {
+    fileByPath: ReadonlyMap<string, { path: string; offset: number; compressedSize: number }>
+    prefetchedBytes: Uint8Array
+    regionsAbsOffset: number
+  },
+  paths: readonly string[],
+): number {
+  if (paths.length === 0) return 1
+  const ranges = paths
+    .map(path => {
+      const entry = remote.fileByPath.get(path)
+
+      if (!entry) throw new Error(`path not found in pack manifest: ${path}`)
+      const start = remote.regionsAbsOffset + entry.offset
+
+      return { start, end: start + entry.compressedSize - 1 }
+    })
+    .sort((a, b) => a.start - b.start)
+  let currentEnd = -1
+  let currentNeedsRequest = false
+  let bodyRequests = 0
+
+  for (const range of ranges) {
+    if (currentEnd < 0 || range.start > currentEnd + 16 * 1024 + 1) {
+      if (currentNeedsRequest) bodyRequests += 1
+      currentEnd = range.end
+      currentNeedsRequest = range.end >= remote.prefetchedBytes.byteLength
+    } else {
+      currentEnd = Math.max(currentEnd, range.end)
+      currentNeedsRequest ||= range.end >= remote.prefetchedBytes.byteLength
+    }
+  }
+  if (currentNeedsRequest) bodyRequests += 1
+
+  return 1 + bodyRequests
+}
+
+function estimatePackRangeWireBytesExact(
+  remote: {
+    fileByPath: ReadonlyMap<string, { path: string; offset: number; compressedSize: number }>
+    prefetchedBytes: Uint8Array
+    regionsAbsOffset: number
+  },
+  paths: readonly string[],
+): number {
+  return (
+    remote.prefetchedBytes.byteLength +
+    paths.reduce((sum, path) => {
+      const entry = remote.fileByPath.get(path)
+
+      if (!entry) throw new Error(`path not found in pack manifest: ${path}`)
+      const start = remote.regionsAbsOffset + entry.offset
+      const end = start + entry.compressedSize - 1
+
+      if (end < remote.prefetchedBytes.byteLength) return sum
+
+      return sum + end - Math.max(start, remote.prefetchedBytes.byteLength) + 1
+    }, 0)
+  )
+}
+
+function estimatePackRangeRequestCountExact(
+  remote: {
+    fileByPath: ReadonlyMap<string, { path: string; offset: number; compressedSize: number }>
+    prefetchedBytes: Uint8Array
+    regionsAbsOffset: number
+  },
+  paths: readonly string[],
+): number {
+  return (
+    1 +
+    paths.reduce((sum, path) => {
+      const entry = remote.fileByPath.get(path)
+
+      if (!entry) throw new Error(`path not found in pack manifest: ${path}`)
+      const start = remote.regionsAbsOffset + entry.offset
+      const end = start + entry.compressedSize - 1
+
+      return end < remote.prefetchedBytes.byteLength ? sum : sum + 1
+    }, 0)
   )
 }
 
@@ -434,6 +800,39 @@ interface ScriptChunkResult {
   totalPayloadLength: number
   expectedPayloadLength: number
   expectedPayloadSha256: string
+}
+
+interface RangePackDecodedFile {
+  entry: {
+    path: string
+    originalSize: number
+  }
+}
+
+function verifyRangePackDecodedFiles(
+  files: readonly RangePackDecodedFile[],
+  decoded: readonly Uint8Array[],
+  variantId: string,
+): void {
+  if (files.length === 0) {
+    throw new Error(`range-pack verification failed for ${variantId}: manifest has no files`)
+  }
+  if (decoded.length !== files.length) {
+    throw new Error(
+      `range-pack verification failed for ${variantId}: decoded ${decoded.length}/${files.length} files`,
+    )
+  }
+
+  for (let i = 0; i < files.length; i++) {
+    const expected = files[i].entry.originalSize
+    const actual = decoded[i]?.byteLength ?? 0
+
+    if (actual !== expected) {
+      throw new Error(
+        `range-pack verification failed for ${variantId}: ${files[i].entry.path} decoded to ${actual} bytes; expected ${expected}`,
+      )
+    }
+  }
 }
 
 function executeScriptChunks(
@@ -548,12 +947,34 @@ function verifyScriptResults(
   if (loaded.length !== chunkCount) {
     throw new Error(`script verification failed for ${variantId}: ${loaded.length}/${chunkCount}`)
   }
+  const seen = new Set<number>()
+
+  for (const result of loaded) {
+    if (result.caseId !== caseId) {
+      throw new Error(`script verification failed for ${variantId}: callback case mismatch`)
+    }
+    if (result.chunkCount !== chunkCount) {
+      throw new Error(
+        `script verification failed for ${variantId}: callback expected ${result.chunkCount} chunks, runner expected ${chunkCount}`,
+      )
+    }
+    if (result.chunkIndex < 0 || result.chunkIndex >= chunkCount || seen.has(result.chunkIndex)) {
+      throw new Error(
+        `script verification failed for ${variantId}: invalid or duplicate chunk ${result.chunkIndex}`,
+      )
+    }
+    seen.add(result.chunkIndex)
+  }
+
   const final = loaded.find(result => result.loadedCount === chunkCount)
+  const summedPayloadLength = loaded.reduce((sum, result) => sum + result.payloadLength, 0)
 
   if (
     !final ||
     final.loadedCount !== chunkCount ||
-    final.totalPayloadLength !== final.expectedPayloadLength
+    final.totalPayloadLength !== final.expectedPayloadLength ||
+    summedPayloadLength !== final.expectedPayloadLength ||
+    !final.expectedPayloadSha256
   ) {
     throw new Error(`script payload verification failed for ${variantId}`)
   }
@@ -582,6 +1003,18 @@ function chunkCountFromSource(source: string): number {
   const match = /__chunks-(\d+)(?:__chunk-\d+)?$/.exec(source)
 
   return match ? Number(match[1]) : 1
+}
+
+function chooseExactIndexes(count: number): number[] {
+  if (count <= 0) return []
+
+  return [...new Set([0, Math.floor((count - 1) / 2), count - 1])]
+}
+
+function chooseExactPaths(paths: readonly string[]): string[] {
+  const sorted = [...paths].sort()
+
+  return chooseExactIndexes(sorted.length).map(index => sorted[index]!)
 }
 
 function withQuery(url: string, query: Record<string, string>): string {
@@ -667,7 +1100,7 @@ function aggregate(
   samples: Sample[],
   fingerprint: DecodeFingerprint | null,
 ): AggregatedRow {
-  type NumericKey = 'ttfbMs' | 'transferMs' | 'decodeMs' | 'totalMs' | 'wireBytes'
+  type NumericKey = 'ttfbMs' | 'transferMs' | 'decodeMs' | 'totalMs' | 'wireBytes' | 'requestCount'
   const sortedBy = (k: NumericKey) => [...samples].map(s => s[k]).sort((a, b) => a - b)
   const stats = (k: NumericKey) => {
     const sorted = sortedBy(k)
@@ -696,6 +1129,7 @@ function aggregate(
       executeMs: execStats?.[field] ?? null,
       totalMs: stats('totalMs')[field],
       wireBytes: stats('wireBytes')[field],
+      requestCount: stats('requestCount')[field],
     }
   }
 

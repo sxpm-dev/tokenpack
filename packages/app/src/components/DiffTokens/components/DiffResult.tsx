@@ -47,8 +47,8 @@ export function DiffResult({
   useEffect(() => {
     let cancelled = false
 
-    diffPack
-      .apply(basePack)
+    basePack
+      .apply(diffPack)
       .then(applied => {
         if (cancelled) return
         setResolved({ base: basePack, diff: diffPack, applied })
