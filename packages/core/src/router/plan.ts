@@ -4,6 +4,7 @@ import type {
   PlannedRouterBundle,
   PlannedRouterChunk,
   RouterFileManifestEntry,
+  RouterFileSegment,
   RouterSourceFile,
   RouterTokenManifest,
   RouterTokenPack,
@@ -13,6 +14,8 @@ export const DEFAULT_ROUTER_TARGET_CHUNK_BYTES = 1024 * 1024
 export const DEFAULT_ROUTER_MAX_SEGMENTS_PER_FILE = 5
 export const DEFAULT_ROUTER_MIN_SPLIT_RATIO = 2
 export const DEFAULT_ROUTER_FILE_COMPRESSOR = 'deflate-9'
+export const DEFAULT_ROUTER_CHUNK_LAYOUT = 'tiny-files-clustered'
+export const DEFAULT_ROUTER_TINY_FILE_BYTES = 32 * 1024
 
 interface ChunkBox {
   id: string
@@ -27,6 +30,13 @@ interface SourceFileWithChunk {
   file: RouterSourceFile
 }
 
+interface CompressedSourceFile extends SourceFileWithChunk {
+  index: number
+  compressed: Awaited<ReturnType<typeof compressRaw>>
+  payload: Uint8Array
+  segments: RouterFileSegment[]
+}
+
 export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedRouterBundle> {
   const targetChunkBytes = positiveInt(
     input.options.targetChunkBytes,
@@ -36,20 +46,39 @@ export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedR
     input.options.maxSegmentsPerFile,
     DEFAULT_ROUTER_MAX_SEGMENTS_PER_FILE,
   )
+  const minSplitRatio = positiveNumber(input.options.minSplitRatio, DEFAULT_ROUTER_MIN_SPLIT_RATIO)
+  const fileCompressor = input.options.fileCompressor ?? DEFAULT_ROUTER_FILE_COMPRESSOR
+  const chunkLayout = input.options.chunkLayout ?? DEFAULT_ROUTER_CHUNK_LAYOUT
+  const tinyFileBytes = positiveInt(input.options.tinyFileBytes, DEFAULT_ROUTER_TINY_FILE_BYTES)
   const sourceFiles = await resolveSourceFiles(input)
+  const compressedFiles = await Promise.all(
+    sourceFiles.map(async (source, index): Promise<CompressedSourceFile> => {
+      const compressed = await compressRaw(source.file.bytes, fileCompressor)
+
+      return {
+        ...source,
+        index,
+        compressed,
+        payload: compressed.bytes,
+        segments: [],
+      }
+    }),
+  )
+  const layoutFiles = layoutRouterFiles(compressedFiles, {
+    chunkLayout,
+    tinyFileBytes,
+  })
   const chunks: ChunkBox[] = []
   const usedChunkIds = new Set<string>()
-  const files: RouterFileManifestEntry[] = []
+  const files: RouterFileManifestEntry[] = new Array(sourceFiles.length)
   let currentSmallBox: ChunkBox | null = null
 
-  for (const source of sourceFiles) {
+  for (const source of layoutFiles) {
     const bytes = source.file.bytes
-    const compressed = await compressRaw(bytes, DEFAULT_ROUTER_FILE_COMPRESSOR)
-    const payload = compressed.bytes
-    const segments = []
+    const payload = source.payload
     let compressedOffset = 0
 
-    if (payload.byteLength > targetChunkBytes * DEFAULT_ROUTER_MIN_SPLIT_RATIO) {
+    if (payload.byteLength > targetChunkBytes * minSplitRatio) {
       currentSmallBox = null
       const segmentBytes = roundUpToNiceSize(
         Math.max(targetChunkBytes, Math.ceil(payload.byteLength / maxSegmentsPerFile)),
@@ -63,7 +92,7 @@ export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedR
         box.parts.push(segmentBytesView)
         box.byteLength += segmentBytesView.byteLength
         chunks.push(box)
-        segments.push({
+        source.segments.push({
           chunkId: box.id,
           offset: 0,
           length: segmentBytesView.byteLength,
@@ -85,7 +114,7 @@ export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedR
 
       currentSmallBox.parts.push(segmentBytesView)
       currentSmallBox.byteLength += segmentBytesView.byteLength
-      segments.push({
+      source.segments.push({
         chunkId: currentSmallBox.id,
         offset,
         length: segmentBytesView.byteLength,
@@ -93,17 +122,17 @@ export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedR
       })
     }
 
-    files.push({
+    files[source.index] = {
       url: source.file.url,
       path: source.file.path,
       status: source.file.status ?? 200,
       headers: source.file.headers ?? {},
-      compressor: compressed.compressor,
-      level: compressed.level,
+      compressor: source.compressed.compressor,
+      level: source.compressed.level,
       byteLength: bytes.byteLength,
       compressedByteLength: payload.byteLength,
-      segments,
-    })
+      segments: source.segments,
+    }
   }
 
   const plannedChunks: PlannedRouterChunk[] = chunks.map(box => ({
@@ -119,13 +148,66 @@ export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedR
       href: chunk.href,
       byteLength: chunk.bytes.byteLength,
     })),
-    files,
+    files: assertCompleteManifestFiles(files),
   }
 
   return { manifest, chunks: plannedChunks }
 }
 
+interface RouterLayoutOptions {
+  chunkLayout: RouterTokenPack['options']['chunkLayout']
+  tinyFileBytes: number
+}
+
+function layoutRouterFiles(
+  files: readonly CompressedSourceFile[],
+  options: RouterLayoutOptions,
+): CompressedSourceFile[] {
+  if (options.chunkLayout === 'source-order' || files.some(file => file.chunkId || file.href)) {
+    return [...files]
+  }
+
+  const tiny: CompressedSourceFile[] = []
+  const regular: CompressedSourceFile[] = []
+
+  for (const file of files) {
+    const bucket = file.payload.byteLength <= options.tinyFileBytes ? tiny : regular
+
+    bucket.push(file)
+  }
+
+  tiny.sort((a, b) => {
+    const group = routerLocalityKey(a.file.path).localeCompare(routerLocalityKey(b.file.path))
+
+    return group || a.file.path.localeCompare(b.file.path) || a.index - b.index
+  })
+
+  return [...tiny, ...regular]
+}
+
+function routerLocalityKey(path: string): string {
+  const parts = path.split('/')
+
+  if (parts.length <= 1) return ''
+
+  return parts.slice(0, -1).join('/')
+}
+
+function assertCompleteManifestFiles(
+  files: Array<RouterFileManifestEntry | undefined>,
+): RouterFileManifestEntry[] {
+  for (const [index, file] of files.entries()) {
+    if (!file) throw new Error(`router manifest missing planned file at index ${index}`)
+  }
+
+  return files as RouterFileManifestEntry[]
+}
+
 async function resolveSourceFiles(input: RouterTokenPack): Promise<SourceFileWithChunk[]> {
+  if (input.options.files) {
+    return input.options.files.map(file => ({ file }))
+  }
+
   if (input.options.chunks) {
     return input.options.chunks.flatMap(chunk =>
       chunk.files.map(file => ({ chunkId: chunk.id, href: chunk.href, file })),
@@ -198,6 +280,10 @@ function concatBytes(parts: Uint8Array[], total: number): Uint8Array {
 
 function positiveInt(value: number | undefined, fallback: number): number {
   return Number.isFinite(value) && value! > 0 ? Math.floor(value!) : fallback
+}
+
+function positiveNumber(value: number | undefined, fallback: number): number {
+  return Number.isFinite(value) && value! > 0 ? value! : fallback
 }
 
 function roundUpToNiceSize(value: number): number {

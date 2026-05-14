@@ -1,7 +1,7 @@
 // Encode the existing recorded asset store as one logical TokenPack group.
 //
 // Usage:
-//   yarn ... run encode:bundle <url-or-targetId> [--min-group-size=<KB>] [--bundle-chunks=<N>]
+//   yarn ... run encode:bundle <url-or-targetId> [--min-group-size=<KB>] [--bundle-chunks=<N>] [--token-router]
 //
 // This does not record the site again. It reads fixtures/<target>/assets and
 // writes fixtures/<target>-bundle with the same asset store plus bundled packs.
@@ -23,6 +23,7 @@ const args = process.argv.slice(2)
 const positional = args.filter(a => !a.startsWith('--'))
 const flags = args.filter(a => a.startsWith('--'))
 const arg = positional[0] ?? 'public-demo'
+const tokenRouter = flags.includes('--token-router')
 const minGroupSizeFlag = flags.find(f => f.startsWith('--min-group-size='))
 const minGroupSizeKb = minGroupSizeFlag
   ? Number(minGroupSizeFlag.slice('--min-group-size='.length))
@@ -45,16 +46,14 @@ const bundleChunks = bundleChunksFlag
   : 1
 
 if (!Number.isInteger(bundleChunks) || bundleChunks < 1) {
-  logger.error(
-    { flag: bundleChunksFlag },
-    'invalid --bundle-chunks (expected positive integer)',
-  )
+  logger.error({ flag: bundleChunksFlag }, 'invalid --bundle-chunks (expected positive integer)')
   process.exit(1)
 }
 
 const target = resolveTargetArg(arg)
 const sourceFixtureDir = resolvePath(`fixtures/${target.id}`)
-const bundleFixtureId = bundleChunks === 1 ? `${target.id}-bundle` : `${target.id}-bundle-${bundleChunks}`
+const bundleFixtureId =
+  bundleChunks === 1 ? `${target.id}-bundle` : `${target.id}-bundle-${bundleChunks}`
 const bundleFixtureDir = resolvePath(`fixtures/${bundleFixtureId}`)
 const indexPath = `${sourceFixtureDir}/${ASSET_STORE_INDEX}`
 
@@ -78,17 +77,16 @@ for (const entry of index.assets) {
 
 await rm(bundleFixtureDir, { recursive: true, force: true })
 await mkdir(bundleFixtureDir, { recursive: true })
-await cp(
-  `${sourceFixtureDir}/${ASSET_STORE_DIR}`,
-  `${bundleFixtureDir}/${ASSET_STORE_DIR}`,
-  { recursive: true },
-)
+await cp(`${sourceFixtureDir}/${ASSET_STORE_DIR}`, `${bundleFixtureDir}/${ASSET_STORE_DIR}`, {
+  recursive: true,
+})
 
 const out = await encodeReplayVariants(assets, bundleFixtureDir, {
   minGroupSizeBytes,
   forcePackId: 'all-recorded-assets',
   forcePackCount: bundleChunks,
   allowPackSplit: false,
+  tokenRouter,
 })
 
 logger.info(
@@ -98,6 +96,7 @@ logger.info(
     assetCount: assets.length,
     minGroupSizeKb,
     bundleChunks,
+    tokenRouter,
     variantCount: out.variants.length,
     variants: out.variants.map(v => ({
       id: v.variant.id,

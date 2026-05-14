@@ -1,7 +1,14 @@
 // Runtime benchmark runner — executes one variant N iterations and produces
 // per-iteration Sample[].
 
-import { decode, decodeStream, type MaterializedFile } from '@tokenpack/browser'
+import {
+  decode,
+  decodeStream,
+  type MaterializedFile,
+  type MaterializeOptions,
+  type RouterLoadPlan,
+  type RouterToken,
+} from '@tokenpack/browser'
 import {
   estimatePackRangeWireBytes,
   fetchPackFilesCompressed,
@@ -16,6 +23,7 @@ import type {
   AggregatedRow,
   DecodeFingerprint,
   RouterFixtureStats,
+  RouterPlanSummary,
   Sample,
   Throttle,
   Variant,
@@ -113,6 +121,7 @@ async function runOnce(variant: Variant, options: RunOptions): Promise<RunOnceRe
   if (
     variant.loadMode === 'range-pack-fetch' ||
     variant.loadMode === 'range-pack-stream' ||
+    variant.loadMode === 'range-pack-exact-fetch' ||
     variant.loadMode === 'range-pack-exact-stream'
   ) {
     const url = withQuery(baseUrl, {
@@ -192,7 +201,10 @@ async function runRangePackOnce(
 ): Promise<RunOnceResult> {
   const absoluteUrl = new URL(url, window.location.href).href
 
-  if (variant.loadMode === 'range-pack-exact-stream') {
+  if (
+    variant.loadMode === 'range-pack-exact-fetch' ||
+    variant.loadMode === 'range-pack-exact-stream'
+  ) {
     return runRangePackExactOnce(variant, absoluteUrl, fetchStart, options)
   }
 
@@ -296,13 +308,35 @@ async function runRangePackExactOnce(
   const manifestReady = performance.now()
   const entries = await pack.list()
   const paths = chooseExactPaths(entries.map(entry => entry.path))
-  const selectedText = (await pack.stream.text(paths)) as Map<string, string>
-  const contentReadyEnd = performance.now()
-  const decoded = paths.map(path => new TextEncoder().encode(selectedText.get(path) ?? ''))
+  let contentReadyEnd: number
+  let decoded: Uint8Array[]
+  let decodeMs = 0
+
+  if (variant.loadMode === 'range-pack-exact-stream') {
+    const selectedText = (await pack.stream.text(paths)) as Map<string, string>
+
+    contentReadyEnd = performance.now()
+    decoded = paths.map(path => new TextEncoder().encode(selectedText.get(path) ?? ''))
+  } else {
+    const compressedFiles = await fetchPackFilesCompressed(pack.remote, paths)
+    const transferEnd = performance.now()
+
+    decoded = await Promise.all(
+      compressedFiles.map(file =>
+        decompressRaw(file.bytes, file.entry.compressor, {
+          level: file.entry.level,
+          uncompressedLength: file.entry.originalSize,
+        }),
+      ),
+    )
+    verifyRangePackDecodedFiles(compressedFiles, decoded, variant.id)
+    contentReadyEnd = performance.now()
+    decodeMs = contentReadyEnd - transferEnd
+  }
   const contentDecodeStart = performance.now()
 
   materializeSourceContent(decoded, options.sourceKind, variant.id)
-  const decodeMs = performance.now() - contentDecodeStart
+  decodeMs += performance.now() - contentDecodeStart
   const totalEnd = performance.now()
   const timings = resourceTimingsFor(absoluteUrl, fetchStart)
   const firstByte =
@@ -346,11 +380,21 @@ async function runRouterOnce(
   const pack = await decodeStream(absoluteUrl)
 
   if (!pack.isRouter()) throw new Error(`router benchmark expected router token: ${variant.id}`)
+  const router = pack as RouterToken
   const routerReady = performance.now()
-  const listed = (await pack.list()) as RouterListedFile[]
+  const listed = (await router.list()) as RouterListedFile[]
   const paths = listed.map(file => file.path)
 
   if (paths.length === 0) throw new Error(`router benchmark has no routed files: ${variant.id}`)
+
+  const requestedPaths =
+    variant.loadMode === 'router-exact-text' ? chooseExactPaths(paths) : undefined
+  const routerOptions: MaterializeOptions = variant.routerStrategy
+    ? { strategy: variant.routerStrategy }
+    : {}
+  const routerPlan = requestedPaths
+    ? await router.plan(requestedPaths, routerOptions)
+    : await router.plan(routerOptions)
 
   let bytesReady: Uint8Array
   let decodeMs = 0
@@ -370,7 +414,7 @@ async function runRouterOnce(
     try {
       const materializeStart = performance.now()
 
-      const materialized = await pack.stream.materialize()
+      const materialized = await router.materialize(routerOptions)
       const materializedFiles = Array.isArray(materialized)
         ? (materialized as MaterializedFile[])
         : [materialized as MaterializedFile]
@@ -391,8 +435,8 @@ async function runRouterOnce(
       delete host.__benchmarkResult[options.source]
     }
   } else if (variant.loadMode === 'router-exact-text') {
-    const exactPaths = chooseExactPaths(paths)
-    const textByPath = (await pack.stream.text(exactPaths)) as Map<string, string>
+    const exactPaths = requestedPaths ?? chooseExactPaths(paths)
+    const textByPath = (await router.text(exactPaths, routerOptions)) as Map<string, string>
     const materializeStart = performance.now()
     const filesByPath = new Map(listed.map(file => [file.path, file]))
     const decoded = exactPaths.map(path => {
@@ -407,7 +451,7 @@ async function runRouterOnce(
     transferEnd = materializeStart
     bytesReady = concatBytes(decoded)
   } else {
-    const decoded = (await pack.stream.extractAll()).map(file => file.bytes)
+    const decoded = (await router.loadAll(routerOptions)).map(file => file.bytes)
     const materializeStart = performance.now()
 
     materializeSourceContent(decoded, options.sourceKind, variant.id)
@@ -418,7 +462,7 @@ async function runRouterOnce(
 
   const totalEnd = performance.now()
   const timings = resourceTimingsForRouterBundle(absoluteUrl, fetchStart)
-  const manifest = (await pack.manifest()) as {
+  const manifest = (await router.manifest()) as {
     chunks: Array<{ id?: string; byteLength?: number }>
   }
   const firstByte =
@@ -426,27 +470,30 @@ async function runRouterOnce(
       .map(timing => timing.responseStart)
       .filter(start => start > 0)
       .sort((a, b) => a - b)[0] ?? routerReady
-  const selectedChunkIds =
-    variant.loadMode === 'router-exact-text'
-      ? new Set(
-          chooseExactPaths(paths).flatMap(path => {
-            const file = listed.find(item => item.path === path)
+  const selectedChunkIds = requestedPaths
+    ? new Set(
+        requestedPaths.flatMap(path => {
+          const file = listed.find(item => item.path === path)
 
-            return file ? file.segments.map(segment => segment.chunkId) : []
-          }),
-        )
-      : new Set(listed.flatMap(file => file.segments.map(segment => segment.chunkId)))
-  const manifestChunkWireBytes = manifest.chunks.reduce((sum, chunk, index) => {
-    const id = chunk.id ?? `chunk-${String(index).padStart(2, '0')}`
+          return file ? file.segments.map(segment => segment.chunkId) : []
+        }),
+      )
+    : new Set(listed.flatMap(file => file.segments.map(segment => segment.chunkId)))
+  const wholeChunkWireBytes =
+    routerPlan.kind === 'whole-chunks'
+      ? manifest.chunks.reduce((sum, chunk, index) => {
+          const id = chunk.id ?? `chunk-${String(index).padStart(2, '0')}`
 
-    return selectedChunkIds.has(id) ? sum + (chunk.byteLength ?? 0) : sum
-  }, 0)
+          return selectedChunkIds.has(id) ? sum + (chunk.byteLength ?? 0) : sum
+        }, 0)
+      : 0
   const estimatedWireBytes = Math.max(
-    manifestChunkWireBytes,
+    wholeChunkWireBytes,
+    routerPlan.estimate.fetchedBytes,
     options.routerFixtureStats?.wireBytes ?? 0,
   )
   const wireBytes = Math.max(wireBytesFromTimings(timings) ?? 0, estimatedWireBytes)
-  const estimatedRequestCount = 1 + selectedChunkIds.size
+  const estimatedRequestCount = 1 + routerPlan.estimate.requestCount
   const requestCount = Math.max(
     timings.length,
     estimatedRequestCount,
@@ -462,8 +509,40 @@ async function runRouterOnce(
       totalMs: totalEnd - fetchStart,
       wireBytes,
       requestCount,
+      routerPlan: summarizeRouterPlan(routerPlan),
     },
     bytesReady,
+  }
+}
+
+function summarizeRouterPlan(plan: RouterLoadPlan): RouterPlanSummary {
+  return {
+    kind: plan.kind,
+    mode: plan.mode,
+    reason: plan.reason,
+    requestCount: plan.estimate.requestCount,
+    selectedBytes: plan.estimate.selectedBytes,
+    fetchedBytes: plan.estimate.fetchedBytes,
+    chunkCount: plan.estimate.chunkCount,
+    segmentCount: plan.estimate.segmentCount,
+    concurrency: plan.concurrency,
+    chunks:
+      plan.kind === 'whole-chunks'
+        ? plan.chunks.map(chunk => ({
+            id: chunk.id,
+            href: chunk.href,
+            byteLength: chunk.byteLength ?? null,
+          }))
+        : [],
+    ranges:
+      plan.kind === 'merged-ranges' || plan.kind === 'single-merged'
+        ? plan.ranges.map(range => ({
+            chunkId: range.chunk.id,
+            offset: range.offset,
+            length: range.length,
+            segmentCount: range.segments.length,
+          }))
+        : [],
   }
 }
 
@@ -1130,6 +1209,7 @@ function aggregate(
       totalMs: stats('totalMs')[field],
       wireBytes: stats('wireBytes')[field],
       requestCount: stats('requestCount')[field],
+      routerPlan: samples.find(sample => sample.routerPlan)?.routerPlan ?? null,
     }
   }
 
@@ -1141,6 +1221,7 @@ function aggregate(
     min: pick('min'),
     max: pick('max'),
     perRunTotal: samples.map(s => s.totalMs),
+    routerPlan: samples.find(sample => sample.routerPlan)?.routerPlan ?? null,
     fingerprint,
   }
 }

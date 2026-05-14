@@ -3,7 +3,9 @@
 // The replay harness still intercepts real app requests through CDP, but file
 // placement and chunk loading are owned by the router token decoded in-browser.
 
-import { decodeRouter, type RouterToken } from '@tokenpack/browser'
+import { decodeRouter, type RouterDebugEvent, type RouterToken } from '@tokenpack/browser'
+
+type SequencedRouterDebugEvent = RouterDebugEvent & { seq: number }
 
 declare global {
   interface Window {
@@ -27,9 +29,12 @@ const ROUTER_TOKEN_ID = '__router'
 let router: RouterToken | null = null
 let routerReady: Promise<RouterToken> | null = null
 const loadedText = new Map<string, Promise<string>>()
+const routerDebugEvents: SequencedRouterDebugEvent[] = []
+let routerDebugSeq = 0
 let routerSettled = false
 
 window.__getPackFile = async (_packId, internalPath) => {
+  const debugStartIndex = routerDebugEvents.length
   const cacheState: 'miss' | 'pending' | 'hit' = !routerReady
     ? 'miss'
     : routerSettled
@@ -52,6 +57,17 @@ window.__getPackFile = async (_packId, internalPath) => {
   const fileFetchMs = performance.now() - fileStart
   const t1 = performance.now()
   const extractMs = performance.now() - t1
+  const endMs = performance.now()
+
+  routerDebugEvents.push({
+    type: 'file-cache',
+    seq: nextRouterDebugSeq(),
+    path: internalPath,
+    cacheState,
+    startMs: fileStart,
+    durationMs: endMs - fileStart,
+    bytes: text.length,
+  })
 
   return {
     text,
@@ -60,6 +76,7 @@ window.__getPackFile = async (_packId, internalPath) => {
     fileFetchMs,
     extractMs,
     cacheState,
+    routerDebugEvents: routerDebugEvents.slice(debugStartIndex),
   }
 }
 
@@ -69,7 +86,13 @@ async function getRouter(): Promise<RouterToken> {
     const routerUrl = window.__PACK_URLS[ROUTER_TOKEN_ID]
 
     if (!routerUrl) throw new Error('router token URL missing from __PACK_URLS.__router')
-    routerReady = Promise.resolve(decodeRouter(routerUrl))
+    routerReady = Promise.resolve(
+      decodeRouter(routerUrl, {
+        debug: event => {
+          routerDebugEvents.push({ ...event, seq: nextRouterDebugSeq() })
+        },
+      }),
+    )
     routerReady
       .then(value => {
         router = value
@@ -81,6 +104,12 @@ async function getRouter(): Promise<RouterToken> {
   }
 
   return routerReady
+}
+
+function nextRouterDebugSeq(): number {
+  routerDebugSeq += 1
+
+  return routerDebugSeq
 }
 
 export {}

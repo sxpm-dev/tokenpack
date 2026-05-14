@@ -1,8 +1,9 @@
 // Benchmark: alternated baseline-vs-TokenPack samples for a target.
-// --local serves packs from a static HTTP server; otherwise CDN URLs from manifest.
+// --local serves packs from a static HTTP server; otherwise --remote-base-url
+// resolves relative fixture artifacts against a CDN/base URL.
 //
 // Usage:
-//   yarn ... run benchmark <url-or-targetId> [throttle] [samples] [--local] [--token-debug]
+//   yarn ... run benchmark <url-or-targetId> [throttle] [samples] [--local] [--token-debug] [--token-router]
 
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
@@ -12,6 +13,7 @@ import { resolveTargetArg } from '../src/config/resolve-target.js'
 import { PRESETS } from '../src/config/throttles.js'
 import {
   DEFAULT_REPLAY_TOKEN_VARIANTS,
+  isTokenRouterComparisonVariant,
   type ReplayTokenVariant,
 } from '../src/config/token-variants.js'
 import { BenchmarkConfigSchema } from '../src/config/types.js'
@@ -32,7 +34,12 @@ const isolate = args.includes('--isolate')
 const local = args.includes('--local')
 const sw = args.includes('--sw')
 const tokenDebug = args.includes('--token-debug')
+const tokenRouter = args.includes('--token-router')
 const capturedApp = args.includes('--captured-app')
+const remoteBaseUrlFlag = args.find(a => a.startsWith('--remote-base-url='))
+const remoteBaseUrl = remoteBaseUrlFlag
+  ? remoteBaseUrlFlag.slice(remoteBaseUrlFlag.indexOf('=') + 1)
+  : process.env.REPLAY_PACK_BASE_URL
 const bundleChunksFlag =
   args.find(a => a.startsWith('--bundle-chunks=')) ?? args.find(a => a.startsWith('--chunk-count='))
 const bundleChunks = bundleChunksFlag
@@ -101,16 +108,46 @@ const variantIndex: VariantIndex = existsSync(variantsPath)
         fixtureDir,
       })),
     }
-const tokenVariants: ReplayTokenVariant[] = variantIndex.variants.map(v => ({
-  id: v.id,
-  algo: v.algo,
-  channels: v.channels,
-  loadMode: v.loadMode,
-  packCompressor: v.packCompressor,
-}))
-const manifestPath = variantIndex.variants[0]?.manifestPath ?? `${fixtureDir}/manifest.json`
+const tokenVariants: ReplayTokenVariant[] = variantIndex.variants
+  .filter(v => !tokenRouter || isTokenRouterComparisonVariant(v))
+  .map(v => ({
+    id: v.id,
+    algo: v.algo,
+    channels: v.channels,
+    loadMode: v.loadMode,
+    packCompressor: v.packCompressor,
+  }))
+const selectedVariantIds = new Set(tokenVariants.map(v => v.id))
+const selectedVariantIndex = {
+  variants: variantIndex.variants.filter(v => selectedVariantIds.has(v.id)),
+}
+
+if (tokenRouter && !tokenVariants.some(v => v.loadMode === 'router-materialize')) {
+  logger.error(
+    { fixtureDir, variants: variantIndex.variants.map(v => v.id) },
+    'router variant missing — re-run record/encode with --token-router',
+  )
+  process.exit(1)
+}
+const manifestPath = selectedVariantIndex.variants[0]?.manifestPath ?? `${fixtureDir}/manifest.json`
 let packUrls: Record<string, Record<string, string>>
 let server: { url: string; close: () => Promise<void> } | undefined
+
+function joinUrl(base: string, path: string): string {
+  return new URL(path.replace(/^\/+/, ''), base.endsWith('/') ? base : `${base}/`).href
+}
+
+function artifactPath(
+  fixtureBaseDir: string,
+  variantFixtureDir: string,
+  artifact: string | undefined,
+  fallback: string,
+): string {
+  const variantPrefix = relative(fixtureBaseDir, variantFixtureDir).replace(/\\/g, '/')
+  const localPath = artifact ?? fallback
+
+  return variantPrefix === '' ? localPath : `${variantPrefix}/${localPath}`
+}
 
 if (isolate && !existsSync(`${fixtureDir}/${ASSET_STORE_INDEX}`)) {
   logger.error(
@@ -146,13 +183,15 @@ const config = BenchmarkConfigSchema.parse({
 if (local) {
   server = await startLocalPackServer(fixtureDir)
   packUrls = {}
-  for (const variant of variantIndex.variants) {
+  for (const variant of selectedVariantIndex.variants) {
     const manifest = await loadManifest(variant.manifestPath)
     const variantPrefix = relative(fixtureDir, variant.fixtureDir).replace(/\\/g, '/')
     const urlPrefix = variantPrefix === '' ? '' : `${variantPrefix}/`
 
     packUrls[variant.id] = {}
-    packUrls[variant.id]![ROUTER_TOKEN_ID] = `${server.url}${urlPrefix}${ROUTER_TOKEN_FILE}`
+    if (manifest.router) {
+      packUrls[variant.id]![ROUTER_TOKEN_ID] = `${server.url}${urlPrefix}${ROUTER_TOKEN_FILE}`
+    }
     for (const p of manifest.packs) {
       packUrls[variant.id]![p.id] = `${server.url}${urlPrefix}${p.id}.png`
     }
@@ -162,28 +201,28 @@ if (local) {
     'serving packs locally',
   )
 } else {
+  if (!remoteBaseUrl) {
+    logger.error(
+      'remote pack base URL missing — pass --remote-base-url=https://... or set REPLAY_PACK_BASE_URL, or pass --local',
+    )
+    process.exit(1)
+  }
   packUrls = {}
-  for (const variant of variantIndex.variants) {
+  for (const variant of selectedVariantIndex.variants) {
     const manifest = await loadManifest(variant.manifestPath)
 
     packUrls[variant.id] = {}
-    if (!manifest.router?.url) {
-      logger.error(
-        { variant: variant.id, routerId: manifest.router?.id ?? ROUTER_TOKEN_ID },
-        'router token URL missing — run upload first or pass --local',
+    if (manifest.router) {
+      packUrls[variant.id]![ROUTER_TOKEN_ID] = joinUrl(
+        remoteBaseUrl,
+        artifactPath(fixtureDir, variant.fixtureDir, manifest.router.localPath, ROUTER_TOKEN_FILE),
       )
-      process.exit(1)
     }
-    packUrls[variant.id]![ROUTER_TOKEN_ID] = manifest.router.url
     for (const p of manifest.packs) {
-      if (!p.url) {
-        logger.error(
-          { variant: variant.id, packId: p.id },
-          'pack URL missing — run upload first or pass --local',
-        )
-        process.exit(1)
-      }
-      packUrls[variant.id]![p.id] = p.url
+      packUrls[variant.id]![p.id] = joinUrl(
+        remoteBaseUrl,
+        artifactPath(fixtureDir, variant.fixtureDir, p.localPath, `${p.id}.png`),
+      )
     }
   }
 }
@@ -195,12 +234,14 @@ logger.info(
     throttle: throttleName,
     samples,
     mode: local ? 'local' : 'cdn',
+    remoteBaseUrl: local ? undefined : remoteBaseUrl,
     isolate,
     sw,
     capturedApp,
     bundle,
     bundleChunks,
     tokenDebug,
+    tokenRouter,
     fixtureDir,
     variants: tokenVariants.map(v => v.id),
     authMode: benchmarkTarget.authMode,

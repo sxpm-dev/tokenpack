@@ -33,7 +33,7 @@ import type { SurfaceStreamHandle } from 'tokenpack/surfaces/types'
 
 import { BrowserStreamingPngSurface } from './algorithms'
 import { browserAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
-import type { DecodeOptions } from './decode'
+import type { DecodeOptions, DecodeSource } from './decode'
 import { decodeSourceToPayload, payloadToPack } from './decode-core'
 import { maybeRouterToken } from './router-token'
 
@@ -57,9 +57,9 @@ export async function decodeStream(
   const { bytes, algorithm } = await decodeStreamPayload(source, options)
   const pack = payloadToPack(bytes, algorithm, options.decompress)
 
-  return typeof originalSource === 'string'
-    ? maybeRouterToken(pack, originalSource, options)
-    : Promise.resolve(pack)
+  return typeof originalSource === 'string' || options.baseUrl
+    ? maybeRouterToken(pack, originalSource as DecodeSource, options)
+    : pack
 }
 
 export async function decodeStreamPayload(

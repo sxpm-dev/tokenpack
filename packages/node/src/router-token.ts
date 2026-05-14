@@ -86,6 +86,43 @@ export class RouterToken {
     return this.manifestPromise
   }
 
+  async plan(pathOrUrl?: string | string[]): Promise<unknown> {
+    const files =
+      typeof pathOrUrl === 'string'
+        ? [await this.resolveFile(pathOrUrl)]
+        : Array.isArray(pathOrUrl)
+          ? await Promise.all(pathOrUrl.map(path => this.resolveFile(path)))
+          : await this.list()
+    const chunks = await this.chunkById()
+    const chunkIds = new Set<string>()
+    let selectedBytes = 0
+
+    for (const file of files) {
+      for (const segment of file.segments) {
+        if (!chunks.has(segment.chunkId)) {
+          throw new Error(`router file references missing chunk: ${segment.chunkId}`)
+        }
+        chunkIds.add(segment.chunkId)
+        selectedBytes += segment.length
+      }
+    }
+
+    return {
+      kind: 'whole-chunks',
+      mode: 'buffered',
+      chunks: [...chunkIds].map(id => chunks.get(id)),
+      concurrency: chunkIds.size,
+      reason: 'node-router-buffered',
+      estimate: {
+        requestCount: chunkIds.size,
+        selectedBytes,
+        fetchedBytes: [...chunkIds].reduce((sum, id) => sum + (chunks.get(id)?.byteLength ?? 0), 0),
+        chunkCount: chunkIds.size,
+        segmentCount: files.reduce((sum, file) => sum + file.segments.length, 0),
+      },
+    }
+  }
+
   async content(): Promise<Uint8Array> {
     const files = await this.loadAll()
 

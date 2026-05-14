@@ -1,3 +1,5 @@
+import type { RouterDebugEvent, RouterDebugPlanFile } from '@tokenpack/browser'
+
 /**
  * Per-asset timing record. Captured in both baseline and tokenpack modes
  * when --token-debug is on.
@@ -46,6 +48,8 @@ export interface AssetMarker {
   totalMs: number | null
   /** Body size in bytes (raw for pack, wire for origin). */
   bytes: number | null
+  /** Router-token internal events that happened while serving this asset. */
+  routerDebugEvents?: RouterDebugEvent[]
 }
 
 export interface PhaseRecord {
@@ -57,7 +61,105 @@ export interface PhaseRecord {
   served?: number
   fellThrough?: number
   totalBytes?: number
+  /** URL set covered by the TokenPack manifest for this phase/variant. */
+  manifestUrls?: string[]
   assetMarkers?: AssetMarker[]
+  routerDebug?: RouterDebugSummary
+}
+
+export interface RouterDebugSummary {
+  eventCount: number
+  manifest: {
+    count: number
+    durationMs: number
+    tokenDecodeMs: number
+    jsonParseMs: number
+  }
+  plan: {
+    count: number
+    durationMs: number
+    byReason: Record<string, number>
+    byStrategy: Record<string, number>
+    byMode: Record<string, number>
+    byKind: Record<string, number>
+    requestCount: number
+    chunkCount: number
+    segmentCount: number
+    selectedBytes: number
+    fetchedBytes: number
+  }
+  fileCache: {
+    count: number
+    durationMs: number
+    miss: number
+    pending: number
+    hit: number
+    bytes: number
+  }
+  chunks: {
+    count: number
+    durationMs: number
+    miss: number
+    pending: number
+    hit: number
+  }
+  ranges: {
+    count: number
+    durationMs: number
+    bytes: number
+    fallback: number
+  }
+  decompress: {
+    count: number
+    durationMs: number
+    compressedBytes: number
+    rawBytes: number
+  }
+  materialize: {
+    count: number
+    durationMs: number
+    decodeMs: number
+    executeMs: number
+    bytes: number
+  }
+  planDecisions: RouterDebugPlanDecision[]
+  perChunk: RouterDebugChunkSummary[]
+}
+
+export interface RouterDebugPlanDecision {
+  path: string
+  paths: string[]
+  files?: RouterDebugPlanFile[]
+  kind: string
+  mode: string
+  strategy: string
+  reason: string
+  fileCount: number
+  requestCount: number
+  chunkCount: number
+  segmentCount: number
+  selectedBytes: number
+  fetchedBytes: number
+  concurrency: number
+  durationMs: number
+  chunkIds: string[]
+}
+
+export interface RouterDebugChunkSummary {
+  chunkId: string
+  url?: string
+  pngBytes?: number
+  payloadBytes: number
+  chunkDecodeMs: number
+  rangeMs: number
+  rangeBytes: number
+  handleMs: number
+  miss: number
+  pending: number
+  hit: number
+  rangeCount: number
+  fallbackRangeCount: number
+  filesServed: number
 }
 
 export interface PhaseSanity {
@@ -134,6 +236,14 @@ export interface RunReport {
 export interface ModeStats {
   duration: RunSummaryStats
   loadEvent: RunSummaryStats
+  assetWindow?: {
+    count: number
+    avgStartMs: number
+    avgEndMs: number
+    avgWindowMs: number
+    minWindowMs: number
+    maxWindowMs: number
+  }
   timeouts?: number
   errors?: number
   avgServed?: number

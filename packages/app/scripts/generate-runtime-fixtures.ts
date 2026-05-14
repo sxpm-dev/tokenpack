@@ -1,4 +1,3 @@
-import '@tokenpack/browser'
 import '@tokenpack/node'
 
 /* eslint-disable no-console */
@@ -12,7 +11,9 @@ import {
   PackBuilder,
   TokenPack,
 } from '@tokenpack/node'
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 
+import { browserFetchBenchAlgos } from './benchmark/bench-algos'
 import {
   APP_RUNTIME_CACHE_DIR,
   APP_RUNTIME_FIXTURE_DIR,
@@ -34,6 +35,7 @@ type Encoding = 'raw' | 'deflate' | 'brotli'
 type TokenGroup = 'fetch' | 'stream'
 
 const ENCODINGS: readonly Encoding[] = ['brotli']
+const ROUTER_FILE_COMPRESSOR = 'deflate-9'
 const LABEL_W = 42
 
 function fmtBytes(bytes: number): string {
@@ -104,7 +106,7 @@ interface RangePackFixture {
   chunkCount: number
   algo: 'pixel-range-none'
   compressor: 'none'
-  regionCompressor: 'deflate-9'
+  regionCompressor: string
   file: string
   bytes: number
   originalBytes: number
@@ -124,7 +126,7 @@ interface RouterFixture {
   chunkCount: number
   algo: 'pixel-range-none'
   compressor: 'none'
-  regionCompressor: 'deflate-9'
+  regionCompressor: string
   file: string
   bytes: number
   originalBytes: number
@@ -200,6 +202,29 @@ interface RuntimeAssetCase {
   chunkCount: number
   contentFiles: RuntimeLogicalFile[]
   scriptFiles: RuntimeLogicalFile[]
+}
+
+function listFocusedBrowserTokenAlgos(): AlgoBinding[] {
+  return browserFetchBenchAlgos()
+    .filter(info => info.name === 'linear-upng-deflate')
+    .map(info => {
+      const Ctor = algorithmCatalog.getByName(info.name)
+      const surface = new (Ctor.Surface as unknown as new () => {
+        id: string
+        extension: string
+      })()
+      const streamable = Ctor.capabilities.streamable
+
+      return {
+        name: info.name,
+        group: streamable ? 'stream' : 'fetch',
+        channels: Ctor.capabilities.channels,
+        surface: surface.id,
+        extension: surface.extension,
+        compressor: Ctor.Compressor.familyId,
+        streamable,
+      }
+    })
 }
 
 function parseArgs(argv: string[]): Args {
@@ -394,7 +419,7 @@ function runtimeRouterCacheDir(
     chunksDigest,
     'router',
     'pixel-range-none',
-    'deflate-9',
+    ROUTER_FILE_COMPRESSOR,
   ].join('__')
 
   return path.join(APP_RUNTIME_CACHE_DIR, 'router', key)
@@ -500,8 +525,9 @@ async function encodeRuntimeRouter(
         algo: 'pixel-range-none',
         channels: 3,
         loadMode: 'router',
-        packCompressor: 'deflate-9',
+        packCompressor: ROUTER_FILE_COMPRESSOR,
       },
+      fileCompressor: ROUTER_FILE_COMPRESSOR,
     }),
     {
       algo: 'pixel-range-none',
@@ -837,11 +863,10 @@ async function main() {
   const args = parseArgs(process.argv.slice(2))
   const sources = selectedRuntimeBenchSources(args.sources)
   const realisticCases = selectedRealisticRuntimeCases(args.sources)
-  // Browser Fetch Bench is currently focused on three scenarios only:
-  // native brotli, pixel-range-none range stream, and router token loading.
-  // Keep regular per-algorithm token fixture generation disabled here so
-  // `runtime:fixtures` stays fast and aligned with the visible page.
-  const algorithms: AlgoBinding[] = []
+  // Browser Fetch Bench keeps the regular token matrix intentionally tiny.
+  // UPNG+deflate is the focused codec comparator for router decode/materialize
+  // experiments because it is browser-decodable without Brotli support.
+  const algorithms = args.nativeOnly ? [] : listFocusedBrowserTokenAlgos()
   const totalStart = progress('Runtime fixture generator', '')
   const implementationMtime = computeImplementationMtime()
   let nativeCacheHits = 0
@@ -967,7 +992,7 @@ async function main() {
           chunkCount: assetCase.chunkCount,
           algo: 'pixel-range-none',
           compressor: 'none',
-          regionCompressor: 'deflate-9',
+          regionCompressor: ROUTER_FILE_COMPRESSOR,
           file: routerFile,
           bytes: writtenRouter.bytes,
           originalBytes: totalLogicalBytes(files),
@@ -1018,6 +1043,52 @@ async function main() {
           })
         }
         progressDone(nativeStart, `${ENCODINGS.length} encoding(s)`)
+
+        if (algorithms.length > 0) {
+          const tokenStart = progress(
+            `    ${tab} tokens ${fileIndex + 1}/${files.length}`,
+            `${algorithms.length} algorithm(s), ${fmtBytes(logicalFile.bytes.byteLength)} source`,
+          )
+          let tokenVariants = 0
+
+          for (const algo of algorithms) {
+            for (const channels of algo.channels) {
+              const { token, reused } = await encodeRuntimeToken(
+                logicalFile.bytes,
+                algo,
+                channels,
+                implementationMtime,
+              )
+              const file = `${tab}/${assetCase.id}/chunks-${assetCase.chunkCount}/token/${algo.group}/${algo.name}-c${channels}/chunk-${padChunk(fileIndex)}${algo.extension}`
+              const written = writeFixture(file, token)
+
+              if (reused) tokenCacheHits++
+              else tokenEncoded++
+              if (written.reused) fixtureReused++
+              else fixtureWritten++
+              manifest.fixtures.push({
+                kind: 'token',
+                tab,
+                source: assetCase.id,
+                sourceKind: assetCase.sourceKind,
+                chunkCount: assetCase.chunkCount,
+                chunkIndex: fileIndex,
+                group: algo.group,
+                algo: algo.name,
+                channels,
+                surface: algo.surface,
+                compressor: algo.compressor,
+                streamable: algo.streamable,
+                file,
+                bytes: written.bytes,
+                originalBytes: logicalFile.bytes.byteLength,
+                sha256: written.sha256,
+              })
+              tokenVariants += 1
+            }
+          }
+          progressDone(tokenStart, `${tokenVariants} token variant(s)`)
+        }
       }
     }
 
@@ -1135,7 +1206,7 @@ async function main() {
             chunkCount,
             algo: 'pixel-range-none',
             compressor: 'none',
-            regionCompressor: 'deflate-9',
+            regionCompressor: ROUTER_FILE_COMPRESSOR,
             file: routerFile,
             bytes: writtenRouter.bytes,
             originalBytes: totalLogicalBytes(files),

@@ -4,6 +4,7 @@ import {
   type ReplayPackLoadMode,
 } from '../config/token-variants.js'
 import { fmtBytes, fmtMs, fmtPct, fmtSign } from '../format.js'
+import { summarizeRouterDebug } from './router-debug.js'
 import type {
   AssetMarker,
   ModeStats,
@@ -12,6 +13,8 @@ import type {
   RunRecord,
   RunReport,
   RunSummaryStats,
+  RouterDebugPlanDecision,
+  RouterDebugSummary,
 } from './types.js'
 
 function escape(s: string): string {
@@ -57,9 +60,7 @@ function variantLabelHtml(variant: {
 </div>`
 }
 
-function variantStrategyHtml(variant: {
-  loadMode: string
-}): string {
+function variantStrategyHtml(variant: { loadMode: string }): string {
   return `
 <details class="variant-strategy" open>
   <summary>Selected strategy pseudocode</summary>
@@ -129,6 +130,18 @@ function phaseBlock(
 
     return `<span class="${ms <= 0 ? 'good' : 'bad'}">${fmtSign(ms)}<br><span class="dim">${fmtPct(pct)}</span></span>`
   }
+  const assetWindowCell = (s: ModeStats['assetWindow']): string =>
+    s
+      ? `first ${fmtMs(s.avgStartMs)}<br>last ${fmtMs(s.avgEndMs)}<br><strong>between ${fmtMs(s.avgWindowMs)}</strong><br><span class="dim">(${fmtMs(s.minWindowMs)}–${fmtMs(s.maxWindowMs)})</span>`
+      : '<span class="dim">—</span>'
+  const assetWindowDelta = (
+    tokenpack: ModeStats['assetWindow'],
+    baseline: ModeStats['assetWindow'],
+  ): string => {
+    if (!tokenpack || !baseline) return '—'
+
+    return deltaRaw(tokenpack.avgWindowMs - baseline.avgWindowMs, baseline.avgWindowMs)
+  }
   const tpAvg = p.tokenpack.duration.avgMs
   const blAvg = p.baseline.duration.avgMs
   const blCdpAvg = p.baselineCdp.duration.avgMs
@@ -189,6 +202,12 @@ function phaseBlock(
       <td>${delta(p.deltaTpVsBl, 'loadEvent')}</td>
     </tr>
     <tr>
+      <td>Asset request window<br><span class="dim">first start → last in page window</span></td>
+      <td>${assetWindowCell(p.baseline.assetWindow)}</td>
+      <td>${assetWindowCell(p.tokenpack.assetWindow)}</td>
+      <td>${assetWindowDelta(p.tokenpack.assetWindow, p.baseline.assetWindow)}</td>
+    </tr>
+    <tr>
       <td>Coverage (avg)</td>
       <td>—</td>
       <td>served ${Math.round(p.tokenpack.avgServed ?? 0)} · fell-through ${Math.round(p.tokenpack.avgFellThrough ?? 0)}</td>
@@ -227,6 +246,14 @@ function phaseBlock(
       <td>${cell(p.tokenpack.loadEvent)}</td>
       <td>${delta(p.deltaTpVsBl, 'loadEvent')}</td>
       <td>${delta(p.deltaTpVsBlCdp, 'loadEvent')}</td>
+    </tr>
+    <tr>
+      <td>Asset request window<br><span class="dim">first start → last in page window</span></td>
+      <td>${assetWindowCell(p.baseline.assetWindow)}</td>
+      <td>${assetWindowCell(p.baselineCdp.assetWindow)}</td>
+      <td>${assetWindowCell(p.tokenpack.assetWindow)}</td>
+      <td>${assetWindowDelta(p.tokenpack.assetWindow, p.baseline.assetWindow)}</td>
+      <td>${assetWindowDelta(p.tokenpack.assetWindow, p.baselineCdp.assetWindow)}</td>
     </tr>
     <tr>
       <td>Coverage (avg)</td>
@@ -281,11 +308,66 @@ function avg(xs: ReadonlyArray<number | undefined>): number {
   return ys.length === 0 ? 0 : ys.reduce((s, v) => s + v, 0) / ys.length
 }
 
-function modeStats(phases: ReadonlyArray<PhaseRecord>, withCoverage: boolean): ModeStats {
+function markerDurationForWindow(marker: AssetMarker, source: AssetMarker['source']): number | null {
+  if (source === 'pack') return marker.totalMs ?? marker.fetchMs ?? null
+
+  return marker.fetchMs ?? marker.totalMs ?? null
+}
+
+function assetRequestWindowStats(
+  phases: ReadonlyArray<PhaseRecord>,
+  source: AssetMarker['source'],
+): ModeStats['assetWindow'] {
+  const windows: Array<{ startMs: number; endMs: number; windowMs: number }> = []
+
+  for (const phase of phases) {
+    if (phase.timedOut || phase.error || !phase.assetMarkers?.length) continue
+    const markers = phase.assetMarkers.filter(marker => marker.source === source)
+    const intervals = markers
+      .map(marker => {
+        const duration = markerDurationForWindow(marker, source)
+
+        if (duration === null) return null
+
+        return {
+          startMs: marker.observedMs,
+          endMs: marker.observedMs + duration,
+        }
+      })
+      .filter(
+        (interval): interval is { startMs: number; endMs: number } =>
+          interval !== null && interval.endMs <= phase.durationMs,
+      )
+
+    if (intervals.length === 0) continue
+    const startMs = Math.min(...intervals.map(interval => interval.startMs))
+    const endMs = Math.max(...intervals.map(interval => interval.endMs))
+
+    windows.push({ startMs, endMs, windowMs: endMs - startMs })
+  }
+
+  if (windows.length === 0) return undefined
+
+  return {
+    count: windows.length,
+    avgStartMs: windows.reduce((sum, item) => sum + item.startMs, 0) / windows.length,
+    avgEndMs: windows.reduce((sum, item) => sum + item.endMs, 0) / windows.length,
+    avgWindowMs: windows.reduce((sum, item) => sum + item.windowMs, 0) / windows.length,
+    minWindowMs: Math.min(...windows.map(item => item.windowMs)),
+    maxWindowMs: Math.max(...windows.map(item => item.windowMs)),
+  }
+}
+
+function modeStats(
+  phases: ReadonlyArray<PhaseRecord>,
+  withCoverage: boolean,
+  assetSource: AssetMarker['source'],
+): ModeStats {
   const successfulPhases = phases.filter(p => !p.timedOut && !p.error)
   const out: ModeStats = {
     duration: statsOf(successfulPhases.map(p => p.durationMs)),
     loadEvent: statsOf(nonNullNumbers(successfulPhases.map(p => p.loadEventMs))),
+    assetWindow: assetRequestWindowStats(successfulPhases, assetSource),
     timeouts: phases.filter(p => p.timedOut).length,
     errors: phases.filter(p => p.error && !p.timedOut).length,
   }
@@ -303,9 +385,9 @@ function buildPhaseSummary(
   baselineCdpPhases: ReadonlyArray<PhaseRecord>,
   tokenpackPhases: ReadonlyArray<PhaseRecord>,
 ): PhaseSummary {
-  const bl = modeStats(baselinePhases, false)
-  const blCdp = modeStats(baselineCdpPhases, true)
-  const tp = modeStats(tokenpackPhases, true)
+  const bl = modeStats(baselinePhases, false, 'origin')
+  const blCdp = modeStats(baselineCdpPhases, true, 'origin')
+  const tp = modeStats(tokenpackPhases, true, 'pack')
 
   return {
     baseline: bl,
@@ -419,10 +501,11 @@ function iterationsTable(
 
 function sanityInline(p: PhaseRecord): string {
   if (!p.sanity) return ''
-  const issues =
-    (p.sanity.consoleErrors?.length ?? 0) + (p.sanity.pageErrors?.length ?? 0)
+  const issues = (p.sanity.consoleErrors?.length ?? 0) + (p.sanity.pageErrors?.length ?? 0)
   const issueText =
-    issues > 0 ? ` · <span class="bad">${issues} console/page issue${issues === 1 ? '' : 's'}</span>` : ''
+    issues > 0
+      ? ` · <span class="bad">${issues} console/page issue${issues === 1 ? '' : 's'}</span>`
+      : ''
   const shot = p.sanity.screenshotPath
     ? ` · <a href="${escape(p.sanity.screenshotPath)}">shot</a>`
     : ''
@@ -504,9 +587,7 @@ function sanityComparisonGallery(
         if (kind === 'reload' && !hasReload) continue
         cards.push(
           sanityCard(baseline, kind, phaseGetter, 'Baseline'),
-          ...(showBaselineCdp
-            ? [sanityCard(baselineCdp, kind, phaseGetter, 'Baseline-CDP')]
-            : []),
+          ...(showBaselineCdp ? [sanityCard(baselineCdp, kind, phaseGetter, 'Baseline-CDP')] : []),
           sanityCard(tokenpack, kind, phaseGetter, variantId),
         )
       }
@@ -635,9 +716,7 @@ function bestRecordWithMarkers(
 
   return (
     rows.filter(r => hasUsableMarkers(getPhase(r))).sort(byDuration)[0] ??
-    rows
-      .filter(r => Boolean(getPhase(r)?.assetMarkers?.length))
-      .sort(byDuration)[0] ??
+    rows.filter(r => Boolean(getPhase(r)?.assetMarkers?.length)).sort(byDuration)[0] ??
     rows.filter(r => Boolean(getPhase(r))).sort(byDuration)[0] ??
     rows[rows.length - 1]
   )
@@ -1073,9 +1152,103 @@ function assetName(url: string): string {
   }
 }
 
+function routerPathKey(urlOrPath: string): string {
+  try {
+    const parsed = new URL(urlOrPath)
+
+    return `${parsed.hostname}${parsed.pathname}`
+  } catch {
+    return urlOrPath.replace(/^https?:\/\//, '').split('?')[0] ?? urlOrPath
+  }
+}
+
+function markerByRouterPath(
+  markers: ReadonlyArray<AssetMarker> | undefined,
+): Map<string, AssetMarker> {
+  const byPath = new Map<string, AssetMarker>()
+
+  for (const marker of markers ?? []) {
+    byPath.set(routerPathKey(marker.url), marker)
+  }
+
+  return byPath
+}
+
+interface RouterPhaseComparison {
+  matched: number
+  green: number
+  red: number
+  routerWindowMs: number
+  baselineWindowMs: number
+  criticalDeltaMs: number
+  perFileDeltaSumMs: number
+}
+
+function routerPhaseComparison(
+  routerByPath: ReadonlyMap<string, AssetMarker>,
+  baselineByPath: ReadonlyMap<string, AssetMarker>,
+): RouterPhaseComparison | null {
+  let matched = 0
+  let green = 0
+  let red = 0
+  let routerWindowMs = 0
+  let baselineWindowMs = 0
+  let perFileDeltaSumMs = 0
+
+  for (const [path, router] of routerByPath) {
+    const baseline = baselineByPath.get(path)
+
+    if (
+      router.totalMs === null ||
+      router.totalMs === undefined ||
+      baseline?.fetchMs === undefined
+    ) {
+      continue
+    }
+
+    const delta = baseline.fetchMs - router.totalMs
+
+    matched += 1
+    perFileDeltaSumMs += delta
+    if (delta >= 0) green += 1
+    else red += 1
+    routerWindowMs = Math.max(routerWindowMs, router.observedMs + router.totalMs)
+    baselineWindowMs = Math.max(baselineWindowMs, baseline.observedMs + baseline.fetchMs)
+  }
+
+  if (matched === 0) return null
+
+  return {
+    matched,
+    green,
+    red,
+    routerWindowMs,
+    baselineWindowMs,
+    criticalDeltaMs: baselineWindowMs - routerWindowMs,
+    perFileDeltaSumMs,
+  }
+}
+
+function routerComparisonNote(comparison: RouterPhaseComparison | null): string {
+  if (!comparison) return ''
+
+  const criticalClass = comparison.criticalDeltaMs >= 0 ? 'good' : 'bad'
+  const sumClass = comparison.perFileDeltaSumMs >= 0 ? 'good' : 'bad'
+
+  return `
+<div class="callout muted">
+  <strong>Matched asset window:</strong>
+  router <strong>${fmtMs(comparison.routerWindowMs)}</strong>,
+  baseline <strong>${fmtMs(comparison.baselineWindowMs)}</strong>,
+  critical-path delta <strong class="${criticalClass}">${fmtSign(comparison.criticalDeltaMs)}</strong>.
+  <span class="dim">Per-file deltas are diagnostic only: ${comparison.green} green / ${comparison.red} red across ${comparison.matched} matched rows, sum <span class="${sumClass}">${fmtSign(comparison.perFileDeltaSumMs)}</span>. They overlap and should not be read as page time saved.</span>
+</div>`
+}
+
 function packSelector(
   scope: string,
   packs: ReadonlyArray<{ packId: string; count: number }>,
+  label = 'Token',
 ): string {
   if (packs.length === 0) return ''
   const safeScope = safeId(scope)
@@ -1088,11 +1261,19 @@ function packSelector(
 
   return `
 <label class="pack-filter">
-  <span>Token</span>
+  <span>${escape(label)}</span>
   <select data-pack-select="${safeScope}">
     ${options}
   </select>
 </label>`
+}
+
+function formatCounts(counts: Readonly<Record<string, number>>, empty = '-'): string {
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+
+  return entries.length === 0
+    ? empty
+    : entries.map(([key, count]) => `${escape(key)} ${count}`).join(' · ')
 }
 
 function tokenStats(markers: ReadonlyArray<AssetMarker>, span: number): string {
@@ -1107,6 +1288,19 @@ function tokenStats(markers: ReadonlyArray<AssetMarker>, span: number): string {
   let missCount = 0
   let pendingCount = 0
   let hitCount = 0
+  let routerManifestMs = 0
+  let routerChunkMs = 0
+  let routerRangeMs = 0
+  let routerDecompressMs = 0
+  let routerMaterializeMs = 0
+  let routerPlanMs = 0
+  let routerFileMiss = 0
+  let routerFilePending = 0
+  let routerFileHit = 0
+  let routerChunkMiss = 0
+  let routerChunkPending = 0
+  let routerChunkHit = 0
+  const routerChunks = new Set<string>()
 
   for (const m of markers) {
     const totalMs = m.totalMs ?? 0
@@ -1130,6 +1324,29 @@ function tokenStats(markers: ReadonlyArray<AssetMarker>, span: number): string {
     } else if (m.cacheState === 'hit') {
       hitCount++
     }
+
+    for (const event of m.routerDebugEvents ?? []) {
+      if (event.type === 'manifest') routerManifestMs += event.durationMs
+      else if (event.type === 'plan') routerPlanMs += event.durationMs
+      else if (event.type === 'chunk') {
+        routerChunkMs += event.durationMs
+        routerChunks.add(event.chunkId)
+        if (event.cacheState === 'miss') routerChunkMiss++
+        else if (event.cacheState === 'pending') routerChunkPending++
+        else routerChunkHit++
+      } else if (event.type === 'range') {
+        routerRangeMs += event.durationMs
+        routerChunks.add(event.chunkId)
+      } else if (event.type === 'decompress') {
+        routerDecompressMs += event.durationMs
+      } else if (event.type === 'materialize') {
+        routerMaterializeMs += event.durationMs
+      } else if (event.type === 'file-cache') {
+        if (event.cacheState === 'miss') routerFileMiss++
+        else if (event.cacheState === 'pending') routerFilePending++
+        else routerFileHit++
+      }
+    }
   }
   const p95 = (values: ReadonlyArray<number>): number => {
     if (values.length === 0) return 0
@@ -1137,6 +1354,20 @@ function tokenStats(markers: ReadonlyArray<AssetMarker>, span: number): string {
 
     return sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1)] ?? 0
   }
+
+  const routerStats =
+    routerManifestMs || routerChunkMs || routerRangeMs || routerDecompressMs || routerMaterializeMs
+      ? `
+  <div><strong>${fmtMs(routerManifestMs)}</strong><span>router manifest</span></div>
+  <div><strong>${fmtMs(routerPlanMs)}</strong><span>router plan</span></div>
+  <div><strong>${fmtMs(routerChunkMs)}</strong><span>router chunk decode</span></div>
+  <div><strong>${fmtMs(routerRangeMs)}</strong><span>router range fetch</span></div>
+  <div><strong>${fmtMs(routerDecompressMs)}</strong><span>router decompress</span></div>
+  <div><strong>${fmtMs(routerMaterializeMs)}</strong><span>router materialize</span></div>
+  <div><strong>${routerFileMiss}/${routerFilePending}/${routerFileHit}</strong><span>file miss/pending/hit</span></div>
+  <div><strong>${routerChunks.size}</strong><span>router chunks touched</span></div>
+  <div><strong>${routerChunkMiss}/${routerChunkPending}/${routerChunkHit}</strong><span>chunk miss/pending/hit</span></div>`
+      : ''
 
   return `
 <div class="token-stats">
@@ -1151,6 +1382,7 @@ function tokenStats(markers: ReadonlyArray<AssetMarker>, span: number): string {
   <div><strong>${fmtMs(p95(fileFetchMsValues))}</strong><span>p95 range wait</span></div>
   <div><strong>${fmtMs(maxExtractMs)}</strong><span>max extract/decompress</span></div>
   <div><strong>${missCount}/${pendingCount}/${hitCount}</strong><span>miss/pending/hit</span></div>
+  ${routerStats}
 </div>`
 }
 
@@ -1159,6 +1391,8 @@ function tokenWaterfall(
   scope: string,
 ): string {
   const packs = packOptions(tokenpackMarkers)
+  const hasRouterDebug = (tokenpackMarkers ?? []).some(m => (m.routerDebugEvents?.length ?? 0) > 0)
+  const selectorLabel = hasRouterDebug ? 'Request group' : 'Token'
 
   if (packs.length === 0) {
     return '<p class="dim">No TokenPack pack markers available for a waterfall.</p>'
@@ -1202,9 +1436,9 @@ function tokenWaterfall(
               ? `wait ${fmtMs((m.packInitMs ?? 0) + (m.fileFetchMs ?? 0))}`
               : m.cacheState === 'hit' && (m.fileFetchMs ?? 0) <= 1 && totalMs <= 1
                 ? 'ready'
-              : m.fileFetchMs !== undefined && m.fileFetchMs > 0
-                ? `${fileLabel} ${fmtMs(m.fileFetchMs)}`
-                : fmtMs(totalMs)
+                : m.fileFetchMs !== undefined && m.fileFetchMs > 0
+                  ? `${fileLabel} ${fmtMs(m.fileFetchMs)}`
+                  : fmtMs(totalMs)
           const isReadyHit = barLabel === 'ready'
           const barColor = m.cacheState === 'pending' ? '#777d86' : color
           const labelLeft = Math.min(78, left + width + 0.6)
@@ -1248,6 +1482,11 @@ function tokenWaterfall(
   <div class="waterfall-meta">
     <span class="pack-chip" style="background:${color}"></span><code>${escape(pack.packId)}</code>
     <span class="dim">${pack.count} files · ${fmtBytes(bytesSum)} · window ${fmtMs(span)}</span>
+    ${
+      hasRouterDebug
+        ? '<span class="badge muted">router runtime uses the Router tab chunks, not this group label</span>'
+        : ''
+    }
   </div>
   ${tokenStats(markers, span)}
   <table class="grid compact waterfall">
@@ -1267,8 +1506,211 @@ function tokenWaterfall(
     .join('')
 
   return `
-${packSelector(scope, packs)}
+${packSelector(scope, packs, selectorLabel)}
 ${packSections}`
+}
+
+function routerDebugPanel(
+  markers: ReadonlyArray<AssetMarker> | undefined,
+  baselineMarkers: ReadonlyArray<AssetMarker> | undefined,
+  scope: string,
+): string {
+  const summary = summarizeRouterDebug(markers)
+
+  if (!summary) return '<p class="dim">No router debug events available for this phase.</p>'
+  const routerByPath = markerByRouterPath(markers)
+  const baselineByPath = markerByRouterPath(baselineMarkers)
+  const comparison = routerPhaseComparison(routerByPath, baselineByPath)
+  const planRows =
+    summary.planDecisions.length > 0
+      ? summary.planDecisions
+          .slice(0, 120)
+          .map(plan => {
+            const key = routerPathKey(plan.path)
+            const isSingleFilePlan = plan.fileCount === 1
+            const router = isSingleFilePlan ? routerByPath.get(key) : undefined
+            const baseline = isSingleFilePlan ? baselineByPath.get(key) : undefined
+            const delta =
+              router?.totalMs !== null &&
+              router?.totalMs !== undefined &&
+              baseline?.fetchMs !== undefined
+                ? baseline.fetchMs - router.totalMs
+                : null
+            const deltaClass = delta === null ? '' : delta >= 0 ? 'good' : 'bad'
+
+            return `
+    <tr>
+      <td class="router-plan-path">${formatRouterPlanFiles(plan)}</td>
+      <td><strong>${escape(plan.strategy)}</strong><br><span class="dim">${escape(plan.reason)}</span></td>
+      <td>${escape(plan.kind)}<br><span class="dim">${escape(plan.mode)}</span></td>
+      <td>${plan.requestCount}<br><span class="dim">c${plan.concurrency}</span></td>
+      <td>${plan.chunkCount}<br><span class="dim">${plan.segmentCount} seg</span></td>
+      <td>${fmtBytes(plan.selectedBytes)}<br><span class="dim">${fmtBytes(plan.fetchedBytes)} fetched</span></td>
+      <td>${router ? fmtMs(router.totalMs) : '<span class="dim">-</span>'}<br><span class="dim">${isSingleFilePlan ? `${router?.cacheState ?? 'not observed'}${router?.fileFetchMs ? ` · file ${fmtMs(router.fileFetchMs)}` : ''}` : 'batch plan'}</span></td>
+      <td>${baseline?.fetchMs !== undefined ? fmtMs(baseline.fetchMs) : '<span class="dim">-</span>'}<br><span class="dim">${isSingleFilePlan ? fmtBytes(baseline?.bytes) : 'not 1:1 comparable'}</span></td>
+      <td class="${deltaClass}">${delta === null ? '<span class="dim">-</span>' : fmtSign(delta)}</td>
+      <td class="router-chunk-list">${formatChunkList(plan.chunkIds)}</td>
+    </tr>`
+          })
+          .join('')
+      : `<tr><td colspan="10" class="dim">${routerDebugEmptyMessage(summary)}</td></tr>`
+  const chunkRows =
+    summary.perChunk.length > 0
+      ? summary.perChunk
+          .slice(0, 80)
+          .map(
+            chunk => `
+    <tr data-router-chunk-scope="${escape(scope)}" data-router-chunk-id="${escape(chunk.chunkId)}">
+      <td><code title="${escape(chunk.url ?? chunk.chunkId)}">${escape(chunk.chunkId)}</code></td>
+      <td>${fmtBytes(chunk.pngBytes)}</td>
+      <td>${fmtBytes(chunk.payloadBytes)}</td>
+      <td>${fmtMs(chunk.chunkDecodeMs)}</td>
+      <td>${fmtMs(chunk.rangeMs)}<br><span class="dim">${chunk.rangeCount} ranges · ${chunk.fallbackRangeCount} fallback</span></td>
+      <td>${fmtMs(chunk.handleMs)}</td>
+      <td>${chunk.miss}/${chunk.pending}/${chunk.hit}</td>
+      <td>${chunk.filesServed}</td>
+    </tr>`,
+          )
+          .join('')
+      : `<tr><td colspan="8" class="dim">${routerDebugEmptyMessage(summary)}</td></tr>`
+  const chunkFilter = routerChunkSelector(scope, summary.perChunk.map(chunk => chunk.chunkId))
+
+  return `
+<div class="token-stats">
+  <div><strong>${summary.eventCount}</strong><span>router events</span></div>
+  <div><strong>${fmtMs(summary.manifest.durationMs)}</strong><span>manifest total</span></div>
+  <div><strong>${fmtMs(summary.manifest.tokenDecodeMs)}</strong><span>manifest token decode</span></div>
+  <div><strong>${fmtMs(summary.plan.durationMs)}</strong><span>planning</span></div>
+  <div><strong>${formatCounts(summary.plan.byStrategy)}</strong><span>strategy</span></div>
+  <div><strong>${formatCounts(summary.plan.byMode)}</strong><span>read mode</span></div>
+  <div><strong>${formatCounts(summary.plan.byKind)}</strong><span>plan kind</span></div>
+  <div><strong>${formatCounts(summary.plan.byReason)}</strong><span>plan reason</span></div>
+  <div><strong>${summary.fileCache.miss}/${summary.fileCache.pending}/${summary.fileCache.hit}</strong><span>file miss/pending/hit</span></div>
+  <div><strong>${fmtMs(summary.fileCache.durationMs)}</strong><span>file wait/cache</span></div>
+  <div><strong>${summary.plan.requestCount}</strong><span>planned requests</span></div>
+  <div><strong>${fmtBytes(summary.plan.selectedBytes)}</strong><span>selected bytes</span></div>
+  <div><strong>${fmtBytes(summary.plan.fetchedBytes)}</strong><span>planned fetched bytes</span></div>
+  <div><strong>${fmtMs(summary.chunks.durationMs)}</strong><span>chunk decode/wait</span></div>
+  <div><strong>${fmtMs(summary.ranges.durationMs)}</strong><span>range fetch</span></div>
+  <div><strong>${fmtMs(summary.decompress.durationMs)}</strong><span>file decompress</span></div>
+  <div><strong>${fmtMs(summary.materialize.durationMs)}</strong><span>materialize</span></div>
+  <div><strong>${summary.chunks.miss}/${summary.chunks.pending}/${summary.chunks.hit}</strong><span>chunk miss/pending/hit</span></div>
+</div>
+${routerComparisonNote(comparison)}
+<h3>Load Plan Batches</h3>
+<p class="dim">Rows are router planner batches. Multi-file rows list chunks for the whole batch, not just the first displayed file; per-file baseline deltas are shown only for true single-file plans.</p>
+<table class="grid compact router-plans">
+  <thead>
+    <tr>
+      <th>Plan files</th>
+      <th>Strategy / reason</th>
+      <th>Plan / read</th>
+      <th>Chunk req</th>
+      <th>Chunks</th>
+      <th>Bytes</th>
+      <th>Router file</th>
+      <th>Baseline file</th>
+      <th title="Per-file wait delta: baseline fetch wait minus router request wait. Diagnostic only; these rows overlap in wall-clock time.">Per-file delta</th>
+      <th>Chunk ids</th>
+    </tr>
+  </thead>
+  <tbody>${planRows}</tbody>
+</table>
+<h3>Chunk I/O</h3>
+${chunkFilter}
+<table class="grid compact">
+  <thead>
+    <tr>
+      <th>Chunk</th>
+      <th>PNG</th>
+      <th>Payload</th>
+      <th>Full decode/wait</th>
+      <th>Range fetch</th>
+      <th>Handle</th>
+      <th>Miss/Pending/Hit</th>
+      <th>Files</th>
+    </tr>
+  </thead>
+  <tbody>${chunkRows}</tbody>
+</table>`
+}
+
+function routerChunkSelector(scope: string, chunkIds: ReadonlyArray<string>): string {
+  if (chunkIds.length === 0) return ''
+  const uniqueIds = [...new Set(chunkIds)].sort((a, b) => a.localeCompare(b))
+  const options = [
+    '<option value="__all">All chunks</option>',
+    ...uniqueIds.map(id => `<option value="${escape(id)}">${escape(id)}</option>`),
+  ].join('')
+
+  return `
+<label class="pack-filter">
+  <span>Chunk</span>
+  <select data-router-chunk-select="${escape(scope)}">
+    ${options}
+  </select>
+</label>`
+}
+
+function routerDebugEmptyMessage(summary: RouterDebugSummary): string {
+  if (summary.fileCache.hit > 0 && summary.fileCache.miss === 0 && summary.fileCache.pending === 0) {
+    return 'All requested files were served from the router file cache in this phase; no chunk planning or chunk I/O ran.'
+  }
+
+  return 'No router planning/chunk I/O events were captured for this phase.'
+}
+
+function formatChunkList(chunkIds: ReadonlyArray<string>): string {
+  if (chunkIds.length === 0) return '<span class="dim">-</span>'
+  const visible = chunkIds.slice(0, 8).map(id => `<code>${escape(id)}</code>`).join(' ')
+  const hidden = chunkIds.length > 8 ? ` <span class="dim">+${chunkIds.length - 8}</span>` : ''
+
+  return `${visible}${hidden}`
+}
+
+function formatRouterPlanFiles(plan: RouterDebugPlanDecision): string {
+  const files =
+    plan.files?.map(file => ({
+      path: file.path,
+      chunkIds: file.chunkIds,
+      segmentCount: file.segmentCount,
+      rawBytes: file.rawBytes,
+      compressedBytes: file.compressedBytes,
+    })) ??
+    plan.paths.map(path => ({
+      path,
+      chunkIds: [] as string[],
+      segmentCount: 0,
+      rawBytes: 0,
+      compressedBytes: 0,
+    }))
+  const visible = files.slice(0, plan.fileCount === 1 ? 1 : 5)
+  const capturedCount = files.length
+  const remainingCount = Math.max(0, plan.fileCount - visible.length)
+  const capturedNote =
+    capturedCount > 0 && capturedCount < plan.fileCount
+      ? ` · ${capturedCount}/${plan.fileCount} paths captured in this run`
+      : ''
+  const title = plan.fileCount === 1 ? 'Single file' : `Batch: ${plan.fileCount} files`
+  const rows = visible
+    .map(file => {
+      const chunks =
+        file.chunkIds.length > 0
+          ? `${file.chunkIds.length} chunk${file.chunkIds.length === 1 ? '' : 's'}`
+          : 'chunks unavailable'
+      const segments =
+        file.segmentCount > 0
+          ? `${file.segmentCount} segment${file.segmentCount === 1 ? '' : 's'}`
+          : 'segments unavailable'
+      const bytes = file.compressedBytes > 0 ? ` · ${fmtBytes(file.compressedBytes)}` : ''
+
+      return `<div class="router-plan-file"><code title="${escape(file.path)}">${escape(file.path)}</code><span class="dim">router · ${escape(chunks)} · ${escape(segments)}${bytes}</span></div>`
+    })
+    .join('')
+  const remaining =
+    remainingCount > 0 ? `<div class="dim">+${remainingCount} more files${capturedNote}</div>` : ''
+
+  return `<strong>${escape(title)}</strong>${rows}${remaining}`
 }
 
 function markerPhaseContent(
@@ -1278,6 +1720,8 @@ function markerPhaseContent(
   deliveryMode: 'cdp' | 'sw',
   comparableUrls?: ReadonlySet<string>,
 ): string {
+  const hasRouterDebug = (tokenpackMarkers ?? []).some(m => (m.routerDebugEvents?.length ?? 0) > 0)
+
   return tabbedSection(`${scope}-views`, [
     {
       id: 'markers',
@@ -1287,8 +1731,14 @@ function markerPhaseContent(
     {
       id: 'waterfall',
       label: 'Waterfall',
-      note: 'by token',
+      note: hasRouterDebug ? 'by request group' : 'by token',
       content: tokenWaterfall(tokenpackMarkers, `${scope}-waterfall`),
+    },
+    {
+      id: 'router',
+      label: 'Router',
+      note: 'debug',
+      content: routerDebugPanel(tokenpackMarkers, baselineMarkers, `${scope}-router`),
     },
   ])
 }
@@ -1312,6 +1762,16 @@ export function buildHtmlReport(report: RunReport, jsonPath: string): string {
     coldTokenpack: RunRecord | undefined,
     reloadTokenpack: RunRecord | undefined,
   ): string => {
+    const phaseComparableUrls = (
+      phase: PhaseRecord | null | undefined,
+      baselineCdpMarkers: ReadonlyArray<AssetMarker> | undefined,
+    ): ReadonlySet<string> | undefined => {
+      if (phase?.manifestUrls) return new Set(phase.manifestUrls)
+
+      if (deliveryMode === 'sw') return markerUrlSet(phase?.assetMarkers)
+
+      return markerUrlSet(baselineCdpMarkers)
+    }
     const tabs: TabSpec[] = [
       {
         id: 'cold-markers',
@@ -1322,9 +1782,7 @@ export function buildHtmlReport(report: RunReport, jsonPath: string): string {
           baselineColdMarkers?.cold.assetMarkers,
           coldTokenpack?.cold.assetMarkers,
           deliveryMode,
-          deliveryMode === 'sw'
-            ? undefined
-            : markerUrlSet(baselineCdpColdMarkers?.cold.assetMarkers),
+          phaseComparableUrls(coldTokenpack?.cold, baselineCdpColdMarkers?.cold.assetMarkers),
         ),
       },
     ]
@@ -1339,9 +1797,10 @@ export function buildHtmlReport(report: RunReport, jsonPath: string): string {
           baselineReloadMarkers?.reload?.assetMarkers,
           reloadTokenpack?.reload?.assetMarkers,
           deliveryMode,
-          deliveryMode === 'sw'
-            ? undefined
-            : markerUrlSet(baselineCdpReloadMarkers?.reload?.assetMarkers),
+          phaseComparableUrls(
+            reloadTokenpack?.reload,
+            baselineCdpReloadMarkers?.reload?.assetMarkers,
+          ),
         ),
       })
     }
@@ -1508,6 +1967,14 @@ ${markerTabs('markers-default', tokenpackColdMarkers, tokenpackReloadMarkers)}`
   .token-stats > div { border: 1px solid #8884; background: #8881; border-radius: 4px; padding: 7px 9px; }
   .token-stats strong { display: block; font-size: 14px; line-height: 1.2; }
   .token-stats span { display: block; color: #888; font-size: 11px; margin-top: 2px; }
+  .router-plans { margin-bottom: 14px; }
+  .router-plan-path { max-width: 520px; word-break: break-all; }
+  .router-plan-path code { font-size: 11px; }
+  .router-plan-file { margin-top: 3px; word-break: break-all; }
+  .router-plan-file code { display: block; font-size: 11px; line-height: 1.25; }
+  .router-plan-file .dim { display: block; margin-top: 1px; }
+  .router-chunk-list { max-width: 360px; line-height: 1.5; }
+  .router-chunk-list code { display: inline-block; margin: 0 3px 3px 0; padding: 1px 4px; border-radius: 3px; background: #8882; }
   .grid.waterfall th, .grid.waterfall td { vertical-align: middle; }
   .grid.waterfall .wf-url { width: 360px; max-width: 360px; word-break: break-all; }
   .wf-full-url { display: block; margin-top: 3px; color: #888; font-size: 10px; line-height: 1.25; }
@@ -1597,12 +2064,25 @@ ${iterationsTable(report.iterations, hasReload, deliveryMode !== 'sw')}
   document.addEventListener('change', event => {
     const target = event.target
     if (!(target instanceof HTMLSelectElement)) return
-    const scope = target.getAttribute('data-pack-select')
-    if (!scope) return
+    const packScope = target.getAttribute('data-pack-select')
 
-    for (const section of document.querySelectorAll('[data-pack-scope]')) {
-      if (section.getAttribute('data-pack-scope') === scope) {
-        section.hidden = section.getAttribute('data-pack-id') !== target.value
+    if (packScope) {
+      for (const section of document.querySelectorAll('[data-pack-scope]')) {
+        if (section.getAttribute('data-pack-scope') === packScope) {
+          section.hidden = section.getAttribute('data-pack-id') !== target.value
+        }
+      }
+
+      return
+    }
+
+    const chunkScope = target.getAttribute('data-router-chunk-select')
+    if (!chunkScope) return
+
+    for (const row of document.querySelectorAll('[data-router-chunk-scope]')) {
+      if (row.getAttribute('data-router-chunk-scope') === chunkScope) {
+        row.hidden =
+          target.value !== '__all' && row.getAttribute('data-router-chunk-id') !== target.value
       }
     }
   })

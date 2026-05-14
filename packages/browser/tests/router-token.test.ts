@@ -3,6 +3,8 @@ import { createServer, type Server } from 'node:http'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
+import type { RouterDebugEvent } from '../src/router-token'
+
 let server: Server | null = null
 
 describe('router token', () => {
@@ -73,6 +75,43 @@ describe('router token', () => {
     const blob = await pack.blob('https://example.test/assets/app.js')
 
     expect(await blob.text()).toBe(script)
+  })
+
+  it('discovers router packs from blob stream sources when a baseUrl is provided', async () => {
+    const { decodeStream } = await import('../src/decode-stream')
+    const { encode, TokenPack } = await import('@tokenpack/node')
+    const source = 'body { color: rgb(1, 2, 3); }'
+    const bundle = await encode(
+      new TokenPack().router({
+        chunks: [
+          {
+            id: 'style',
+            files: [
+              {
+                url: 'https://example.test/assets/app.css',
+                path: 'assets/app.css',
+                bytes: new TextEncoder().encode(source),
+                status: 200,
+                headers: { 'content-type': 'text/css' },
+              },
+            ],
+          },
+        ],
+      }),
+    )
+    const router = await artifactBytes(findArtifact(bundle, 'router.png'))
+    const chunk = await artifactBytes(findArtifact(bundle, 'style.png'))
+    const baseUrl = await serveTokens({
+      '/router.png': router,
+      '/style.png': chunk,
+    })
+    const pack = await decodeStream(new Blob([router]), {
+      baseUrl: `${baseUrl}/router.png`,
+    })
+
+    expect(pack.isRouter()).toBe(true)
+    if (!pack.isRouter()) throw new Error('expected decoded router pack')
+    expect(await pack.text('assets/app.css')).toBe(source)
   })
 
   it('keeps overlapping file paths addressable by URL', async () => {
@@ -225,6 +264,147 @@ describe('router token', () => {
     expect(chunkRequests).toEqual([{ path: '/shared.png', range: undefined }])
   })
 
+  it('batches same-tick single-file loads into one router plan', async () => {
+    const { decodeRouter } = await import('../src/router-token')
+    const { encode, TokenPack } = await import('@tokenpack/node')
+    const first = new Uint8Array(randomBytes(8 * 1024))
+    const second = new Uint8Array(randomBytes(4 * 1024))
+    const third = new Uint8Array(randomBytes(2 * 1024))
+    const bundle = await encode(
+      new TokenPack().router({
+        chunks: [
+          {
+            id: 'shared',
+            files: [
+              {
+                url: 'https://example.test/assets/first.bin',
+                path: 'assets/first.bin',
+                bytes: first,
+                status: 200,
+                headers: { 'content-type': 'application/octet-stream' },
+              },
+              {
+                url: 'https://example.test/assets/second.bin',
+                path: 'assets/second.bin',
+                bytes: second,
+                status: 200,
+                headers: { 'content-type': 'application/octet-stream' },
+              },
+              {
+                url: 'https://example.test/assets/third.bin',
+                path: 'assets/third.bin',
+                bytes: third,
+                status: 200,
+                headers: { 'content-type': 'application/octet-stream' },
+              },
+            ],
+          },
+        ],
+      }),
+    )
+    const requests: Array<{ path: string; range: string | undefined }> = []
+    const events: RouterDebugEvent[] = []
+    const baseUrl = await serveTokens(
+      {
+        '/router.png': await artifactBytes(findArtifact(bundle, 'router.png')),
+        '/shared.png': await artifactBytes(findArtifact(bundle, 'shared.png')),
+      },
+      requests,
+    )
+    const pack = await decodeRouter(`${baseUrl}/router.png`, {
+      debug: event => events.push(event),
+    })
+
+    if (!pack.isRouter()) throw new Error('expected decoded router pack')
+    const loaded = await Promise.all([
+      pack.stream.blob('assets/first.bin'),
+      pack.stream.blob('assets/second.bin'),
+      pack.stream.blob('assets/third.bin'),
+    ])
+
+    await expect(loaded[0]!.arrayBuffer()).resolves.toEqual(first.buffer.slice(0))
+    await expect(loaded[1]!.arrayBuffer()).resolves.toEqual(second.buffer.slice(0))
+    await expect(loaded[2]!.arrayBuffer()).resolves.toEqual(third.buffer.slice(0))
+
+    const batchEvents = events.filter(event => event.type === 'batch')
+    const planEvents = events.filter(event => event.type === 'plan')
+
+    expect(batchEvents).toHaveLength(1)
+    expect(batchEvents[0]).toMatchObject({ fileCount: 3 })
+    expect(planEvents).toHaveLength(1)
+    expect(planEvents[0]).toMatchObject({ fileCount: 3 })
+  })
+
+  it('exposes inspectable merged range plans for partial multi-file reads', async () => {
+    const { decodeRouter } = await import('../src/router-token')
+    const { encode, TokenPack } = await import('@tokenpack/node')
+    const first = new Uint8Array(randomBytes(8 * 1024))
+    const second = new Uint8Array(randomBytes(4 * 1024))
+    const third = new Uint8Array(randomBytes(2 * 1024))
+    const bundle = await encode(
+      new TokenPack().router({
+        chunks: [
+          {
+            id: 'shared',
+            files: [
+              {
+                url: 'https://example.test/assets/first.bin',
+                path: 'assets/first.bin',
+                bytes: first,
+                status: 200,
+                headers: { 'content-type': 'application/octet-stream' },
+              },
+              {
+                url: 'https://example.test/assets/second.bin',
+                path: 'assets/second.bin',
+                bytes: second,
+                status: 200,
+                headers: { 'content-type': 'application/octet-stream' },
+              },
+              {
+                url: 'https://example.test/assets/third.bin',
+                path: 'assets/third.bin',
+                bytes: third,
+                status: 200,
+                headers: { 'content-type': 'application/octet-stream' },
+              },
+            ],
+          },
+        ],
+      }),
+    )
+    const baseUrl = await serveTokens({
+      '/router.png': await artifactBytes(findArtifact(bundle, 'router.png')),
+      '/shared.png': await artifactBytes(findArtifact(bundle, 'shared.png')),
+    })
+    const pack = await decodeRouter(`${baseUrl}/router.png`)
+
+    if (!pack.isRouter()) throw new Error('expected decoded router pack')
+    const plan = await pack.plan(['assets/first.bin', 'assets/second.bin'])
+
+    expect(plan).toMatchObject({
+      kind: 'whole-chunks',
+      reason: 'whole-chunks-cheaper-than-ranges',
+      estimate: {
+        requestCount: 1,
+        chunkCount: 1,
+      },
+    })
+    const forcedRangePlan = await pack.plan(['assets/first.bin', 'assets/second.bin'], {
+      strategy: 'range-fetch',
+    })
+
+    expect(forcedRangePlan).toMatchObject({
+      kind: 'single-merged',
+      reason: 'forced-segments',
+      estimate: {
+        requestCount: 1,
+        chunkCount: 1,
+        segmentCount: 2,
+      },
+    })
+  })
+
   it('loads partial routed file segments with HTTP range requests against chunk PNGs', async () => {
     const { decodeRouter } = await import('../src/router-token')
     const { encode, TokenPack } = await import('@tokenpack/node')
@@ -283,6 +463,125 @@ describe('router token', () => {
     expect(chunkRequests.every(request => request.range?.startsWith('bytes='))).toBe(true)
     expect(chunkRequests.some(request => /^bytes=(?!0-)/.test(request.range ?? ''))).toBe(true)
   })
+
+  it('allows explicit full strategy to fetch whole chunk tokens for partial reads', async () => {
+    const { decodeRouter } = await import('../src/router-token')
+    const { encode, TokenPack } = await import('@tokenpack/node')
+    const first = new Uint8Array(randomBytes(16 * 1024))
+    const second = new Uint8Array(randomBytes(1024))
+    const bundle = await encode(
+      new TokenPack().router({
+        chunks: [
+          {
+            id: 'shared',
+            files: [
+              {
+                url: 'https://example.test/assets/first.bin',
+                path: 'assets/first.bin',
+                bytes: first,
+                status: 200,
+                headers: { 'content-type': 'application/octet-stream' },
+              },
+              {
+                url: 'https://example.test/assets/second.bin',
+                path: 'assets/second.bin',
+                bytes: second,
+                status: 200,
+                headers: { 'content-type': 'application/octet-stream' },
+              },
+            ],
+          },
+        ],
+      }),
+    )
+    const requests: Array<{ path: string; range: string | undefined }> = []
+    const baseUrl = await serveTokens(
+      {
+        '/router.png': await artifactBytes(findArtifact(bundle, 'router.png')),
+        '/shared.png': await artifactBytes(findArtifact(bundle, 'shared.png')),
+      },
+      requests,
+    )
+    const pack = await decodeRouter(`${baseUrl}/router.png`, { strategy: 'full' })
+
+    if (!pack.isRouter()) throw new Error('expected decoded router pack')
+    await expect(pack.plan('assets/second.bin')).resolves.toMatchObject({
+      kind: 'whole-chunks',
+      reason: 'forced-full-chunks',
+    })
+    const blob = await pack.blob('assets/second.bin')
+
+    expect(Array.from(await blobToBytes(blob))).toEqual(Array.from(second))
+    expect(requests.filter(request => request.path.includes('/shared.png'))).toEqual([
+      { path: '/shared.png', range: undefined },
+    ])
+  })
+
+  it('materializes scripts in manifest order while loads can finish out of order', async () => {
+    const { decodeRouter } = await import('../src/router-token')
+    const { encode, TokenPack } = await import('@tokenpack/node')
+    const previousDocument = (globalThis as { document?: unknown }).document
+    const first = 'globalThis.__routerMaterializeOrder.push("first");'
+    const second = 'globalThis.__routerMaterializeOrder.push("second");'
+    const bundle = await encode(
+      new TokenPack().router({
+        chunks: [
+          {
+            id: 'slow',
+            files: [
+              {
+                url: 'https://example.test/assets/first.js',
+                path: 'assets/first.js',
+                bytes: new TextEncoder().encode(first),
+                status: 200,
+                headers: { 'content-type': 'application/javascript' },
+              },
+            ],
+          },
+          {
+            id: 'fast',
+            files: [
+              {
+                url: 'https://example.test/assets/second.js',
+                path: 'assets/second.js',
+                bytes: new TextEncoder().encode(second),
+                status: 200,
+                headers: { 'content-type': 'application/javascript' },
+              },
+            ],
+          },
+        ],
+      }),
+    )
+    const requests: Array<{ path: string; range: string | undefined }> = []
+    const baseUrl = await serveTokens(
+      {
+        '/router.png': await artifactBytes(findArtifact(bundle, 'router.png')),
+        '/slow.png': await artifactBytes(findArtifact(bundle, 'slow.png')),
+        '/fast.png': await artifactBytes(findArtifact(bundle, 'fast.png')),
+      },
+      requests,
+      { '/slow.png': 25 },
+    )
+
+    ;(globalThis as { document?: unknown }).document = fakeDocument()
+    ;(globalThis as { __routerMaterializeOrder?: string[] }).__routerMaterializeOrder = []
+    try {
+      const pack = await decodeRouter(`${baseUrl}/router.png`)
+
+      if (!pack.isRouter()) throw new Error('expected decoded router pack')
+      await pack.materialize()
+
+      expect(
+        (globalThis as { __routerMaterializeOrder?: string[] }).__routerMaterializeOrder,
+      ).toEqual(['first', 'second'])
+      expect(requests.some(request => request.path === '/fast.png')).toBe(true)
+      expect(requests.some(request => request.path === '/slow.png')).toBe(true)
+    } finally {
+      ;(globalThis as { document?: unknown }).document = previousDocument
+      delete (globalThis as { __routerMaterializeOrder?: string[] }).__routerMaterializeOrder
+    }
+  })
 })
 
 function findArtifact<T extends { filename: string }>(artifacts: T[], filename: string): T {
@@ -300,6 +599,7 @@ async function artifactBytes(artifact: { blob: Blob }): Promise<Uint8Array> {
 async function serveTokens(
   files: Record<string, Uint8Array>,
   requests: Array<{ path: string; range: string | undefined }> = [],
+  delays: Record<string, number> = {},
 ): Promise<string> {
   server = createServer((req, res) => {
     const path = (req.url ?? '/').split('?')[0] ?? '/'
@@ -326,26 +626,33 @@ async function serveTokens(
       path,
       range: Array.isArray(req.headers.range) ? req.headers.range[0] : req.headers.range,
     })
-    const range = parseRange(req.headers.range, bytes.byteLength)
+    const respond = () => {
+      const range = parseRange(req.headers.range, bytes.byteLength)
 
-    if (!range) {
+      if (!range) {
+        res
+          .writeHead(200, {
+            ...headers,
+            'content-length': String(bytes.byteLength),
+          })
+          .end(bytes)
+
+        return
+      }
+
       res
-        .writeHead(200, {
+        .writeHead(206, {
           ...headers,
-          'content-length': String(bytes.byteLength),
+          'content-length': String(range.end - range.start + 1),
+          'content-range': `bytes ${range.start}-${range.end}/${bytes.byteLength}`,
         })
-        .end(bytes)
-
-      return
+        .end(bytes.subarray(range.start, range.end + 1))
     }
 
-    res
-      .writeHead(206, {
-        ...headers,
-        'content-length': String(range.end - range.start + 1),
-        'content-range': `bytes ${range.start}-${range.end}/${bytes.byteLength}`,
-      })
-      .end(bytes.subarray(range.start, range.end + 1))
+    const delay = delays[path] ?? 0
+
+    if (delay > 0) setTimeout(respond, delay)
+    else respond()
   })
 
   await new Promise<void>(resolve => server!.listen(0, '127.0.0.1', resolve))
@@ -370,6 +677,23 @@ function deterministicBytes(length: number): Uint8Array {
   }
 
   return bytes
+}
+
+function fakeDocument(): unknown {
+  return {
+    createElement(tag: string) {
+      return { tagName: tag.toUpperCase(), nonce: '', text: '', textContent: '' }
+    },
+    head: {
+      appendChild(element: { tagName?: string; text?: string }) {
+        if (element.tagName === 'SCRIPT' && element.text) {
+          new Function(element.text)()
+        }
+
+        return element
+      },
+    },
+  }
 }
 
 function parseRange(

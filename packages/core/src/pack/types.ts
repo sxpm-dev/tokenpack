@@ -59,6 +59,7 @@ export interface RouterPack extends PackBase {
   list: string[] & (() => Promise<unknown[]>)
   entries: ReadonlyArray<PackEntryInfo>
   manifest(): Promise<unknown>
+  plan(path?: string | string[]): Promise<unknown>
   content(): Promise<Uint8Array>
   extractAll(): Promise<Array<{ path: string; bytes: Uint8Array }>>
   text(): Promise<string>

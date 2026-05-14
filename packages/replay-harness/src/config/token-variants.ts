@@ -80,12 +80,44 @@ export const DEFAULT_REPLAY_TOKEN_VARIANTS: readonly ReplayTokenVariant[] = [
     loadMode: 'range-stream-batch',
     packCompressor: 'deflate-9',
   },
+]
+
+export const ROUTER_REPLAY_TOKEN_VARIANT: ReplayTokenVariant = {
+  id: 'router-pixel-range-none-materialize',
+  algo: 'pixel-range-none',
+  channels: 3,
+  loadMode: 'router-materialize',
+  packCompressor: 'deflate-9',
+}
+
+export const TOKEN_ROUTER_COMPARISON_VARIANT_IDS = new Set([
+  ROUTER_REPLAY_TOKEN_VARIANT.id,
+  'pixel-range-none-range-stream',
+])
+
+export function variantsWithTokenRouter(): readonly ReplayTokenVariant[] {
+  return [...DEFAULT_REPLAY_TOKEN_VARIANTS, ROUTER_REPLAY_TOKEN_VARIANT]
+}
+
+export function isRouterReplayTokenVariant(variant: Pick<ReplayTokenVariant, 'loadMode'>): boolean {
+  return variant.loadMode === 'router-materialize'
+}
+
+export function isTokenRouterComparisonVariant(variant: Pick<ReplayTokenVariant, 'id'>): boolean {
+  return TOKEN_ROUTER_COMPARISON_VARIANT_IDS.has(variant.id)
+}
+
+export const LEGACY_DEFAULT_REPLAY_TOKEN_VARIANT: ReplayTokenVariant = {
+  id: 'linear-stream-deflate-c4',
+  algo: 'linear-stream-deflate',
+  channels: 4,
+  loadMode: 'stream',
+  packCompressor: 'deflate-9',
+}
+
+export const ROUTER_REPLAY_TOKEN_VARIANTS: readonly ReplayTokenVariant[] = [
   {
-    id: 'router-pixel-range-none-materialize',
-    algo: 'pixel-range-none',
-    channels: 3,
-    loadMode: 'router-materialize',
-    packCompressor: 'deflate-9',
+    ...ROUTER_REPLAY_TOKEN_VARIANT,
   },
 ]
 

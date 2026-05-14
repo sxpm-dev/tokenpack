@@ -188,6 +188,147 @@ describe('node encode + decode round-trip', () => {
     }
   })
 
+  it('router token: honors split ratio when planning large file segments', async () => {
+    const bytes = deterministicBytes(128 * 1024)
+    const artifacts = await encode(
+      new TokenPack().withBuffer('assets/big.bin', bytes).router({
+        targetChunkBytes: 1024,
+        maxSegmentsPerFile: 5,
+        minSplitRatio: 1000,
+      }),
+    )
+    const dir = await mkdtemp(join(tmpdir(), 'tokenpack-router-split-ratio-test-'))
+
+    try {
+      await Promise.all(
+        artifacts.map(async artifact => {
+          await writeFile(
+            join(dir, artifact.filename),
+            new Uint8Array(await artifact.blob.arrayBuffer()),
+          )
+        }),
+      )
+
+      const pack = await decodeRouter(join(dir, 'router.png'))
+
+      if (!pack.isRouter()) throw new Error('expected RouterPack')
+      const manifest = (await pack.manifest()) as {
+        chunks: unknown[]
+        files: Array<{ segments: unknown[] }>
+      }
+
+      expect(manifest.chunks).toHaveLength(1)
+      expect(manifest.files[0]!.segments).toHaveLength(1)
+      expect(Array.from(await pack.blob('assets/big.bin').then(blobToBytes))).toEqual(
+        Array.from(bytes),
+      )
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('router token: honors a custom per-file compressor', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'tokenpack-router-compressor-test-'))
+    const artifacts = await encode(
+      new TokenPack().withFile('assets/app.js', 'console.log("hello router")').router({
+        fileCompressor: 'deflate-6',
+      }),
+    )
+
+    try {
+      await Promise.all(
+        artifacts.map(async artifact => {
+          await writeFile(
+            join(dir, artifact.filename),
+            new Uint8Array(await artifact.blob.arrayBuffer()),
+          )
+        }),
+      )
+
+      const pack = await decodeRouter(join(dir, 'router.png'))
+
+      if (!pack.isRouter()) throw new Error('expected RouterPack')
+      const manifest = (await pack.manifest()) as {
+        files: Array<{ compressor?: string }>
+      }
+
+      expect(manifest.files[0]!.compressor).toBe('deflate-6')
+      expect(await pack.text('assets/app.js')).toBe('console.log("hello router")')
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('router token: clusters tiny files in chunk bytes while preserving manifest order', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'tokenpack-router-layout-test-'))
+    const large = deterministicBytes(64 * 1024)
+    const tinyB = new Uint8Array(1024).fill(2)
+    const tinyA = new Uint8Array(1024).fill(1)
+    const artifacts = await encode(
+      new TokenPack().router({
+        files: [
+          {
+            url: 'https://example.test/app/large.js',
+            path: 'app/large.js',
+            bytes: large,
+          },
+          {
+            url: 'https://example.test/pkg/b.js',
+            path: 'pkg/b.js',
+            bytes: tinyB,
+          },
+          {
+            url: 'https://example.test/pkg/a.js',
+            path: 'pkg/a.js',
+            bytes: tinyA,
+          },
+        ],
+        targetChunkBytes: 128 * 1024,
+        fileCompressor: 'none',
+      }),
+    )
+
+    try {
+      await Promise.all(
+        artifacts.map(async artifact => {
+          await writeFile(
+            join(dir, artifact.filename),
+            new Uint8Array(await artifact.blob.arrayBuffer()),
+          )
+        }),
+      )
+
+      const pack = await decodeRouter(join(dir, 'router.png'))
+
+      if (!pack.isRouter()) throw new Error('expected RouterPack')
+      const manifest = (await pack.manifest()) as {
+        files: Array<{ path: string; segments: Array<{ offset: number; length: number }> }>
+      }
+
+      expect(manifest.files.map(file => file.path)).toEqual([
+        'app/large.js',
+        'pkg/b.js',
+        'pkg/a.js',
+      ])
+      expect(manifest.files[2]!.segments[0]).toMatchObject({ offset: 0, length: tinyA.length })
+      expect(manifest.files[1]!.segments[0]).toMatchObject({
+        offset: tinyA.length,
+        length: tinyB.length,
+      })
+      expect(manifest.files[0]!.segments[0]).toMatchObject({
+        offset: tinyA.length + tinyB.length,
+        length: large.length,
+      })
+      expect(Array.from(await pack.blob('pkg/a.js').then(blobToBytes))).toEqual(Array.from(tinyA))
+      expect(Array.from(await pack.blob('pkg/b.js').then(blobToBytes))).toEqual(Array.from(tinyB))
+      expect(Array.from(await pack.blob('app/large.js').then(blobToBytes))).toEqual(
+        Array.from(large),
+      )
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
   it('diff: produce + apply round-trip via Pack methods', async () => {
     const v1 = await encode(new PackBuilder().withFile('a.js', 'aa').withFile('b.js', 'bb'))
     const v2 = await encode(new PackBuilder().withFile('a.js', 'AA').withFile('c.js', 'cc'))

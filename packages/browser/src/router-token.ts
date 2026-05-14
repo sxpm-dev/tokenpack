@@ -17,22 +17,31 @@ import {
   fetchPixelRangePayloadStream,
   type PixelRangePayloadHandle,
 } from './fetch-pack'
+import {
+  planRouterLoad,
+  type RouterChunkRange,
+  type RouterLoadPlan,
+  type RouterLoadPlannerOptions,
+  type RouterLoadStrategy,
+  type RouterPlannedSegment,
+  type RouterReadMode,
+  segmentCoversChunkPayload,
+} from './router-load-plan'
 import { Token } from './token'
 
+export type { RouterLoadPlan, RouterLoadStrategy } from './router-load-plan'
 export type { RouterTokenManifest } from 'tokenpack'
-
-export type RouterLoadStrategy =
-  | 'auto'
-  | 'full'
-  | 'range-fetch'
-  | 'range-stream'
-  | 'range-fetch-all'
-  | 'range-stream-all'
 
 export interface DecodeRouterOptions extends DecodeOptions {
   /** Required when `source` is not a URL string, because chunk hrefs are relative. */
   baseUrl?: string
   strategy?: RouterLoadStrategy
+  /**
+   * Small window used to batch app-driven single-file requests before planning.
+   * Set to 0 to flush at the end of the current microtask.
+   */
+  singleLoadBatchWindowMs?: number
+  debug?: RouterDebugCallback
 }
 
 export interface RouterFileEntry extends RouterFileManifestEntry {
@@ -43,6 +52,36 @@ export interface MaterializeOptions {
   strategy?: RouterLoadStrategy
   as?: 'auto' | 'bytes' | 'text' | 'js' | 'css'
   nonce?: string
+  /**
+   * Overrides DecodeRouterOptions.singleLoadBatchWindowMs for this call.
+   * Useful when benchmarking exact single-file latency versus burst loading.
+   */
+  singleLoadBatchWindowMs?: number
+  planner?: Partial<
+    Pick<
+      RouterLoadPlannerOptions,
+      | 'rangeRequestPenaltyBytes'
+      | 'mergeRangeGapBytes'
+      | 'maxRangesPerChunk'
+      | 'tinyFileBytes'
+      | 'tinyFileBurstFileCount'
+      | 'tinyFileRequestPenaltyBytes'
+      | 'tinyFileMaxRangesPerChunk'
+      | 'largeFileWholeChunkBytes'
+      | 'largeFileWholeChunkMaxWasteRatio'
+      | 'maxParallelChunkRequests'
+      | 'maxParallelSegmentRequests'
+    >
+  >
+}
+
+export interface RouterDebugPlanFile {
+  path: string
+  url: string
+  chunkIds: string[]
+  segmentCount: number
+  rawBytes: number
+  compressedBytes: number
 }
 
 export interface MaterializedFile {
@@ -57,6 +96,112 @@ export interface MaterializedFile {
   }
 }
 
+export type RouterDebugEvent =
+  | {
+      type: 'manifest'
+      startMs: number
+      durationMs: number
+      tokenDecodeMs: number
+      jsonParseMs: number
+      chunkCount: number
+      fileCount: number
+      byteLength?: number
+    }
+  | {
+      type: 'plan'
+      startMs: number
+      durationMs: number
+      kind: RouterLoadPlan['kind']
+      mode: RouterReadMode
+      strategy: RouterLoadStrategy
+      reason: string
+      fileCount: number
+      paths: string[]
+      files?: RouterDebugPlanFile[]
+      chunkIds: string[]
+      requestCount: number
+      chunkCount: number
+      segmentCount: number
+      selectedBytes: number
+      fetchedBytes: number
+      concurrency: number
+    }
+  | {
+      type: 'batch'
+      batchId: number
+      mode: RouterReadMode
+      strategy: RouterLoadStrategy
+      startMs: number
+      durationMs: number
+      fileCount: number
+      paths: string[]
+      files?: RouterDebugPlanFile[]
+    }
+  | {
+      type: 'file-cache'
+      path: string
+      cacheState: 'miss' | 'pending' | 'hit'
+      startMs: number
+      durationMs: number
+      bytes: number
+    }
+  | {
+      type: 'chunk'
+      chunkId: string
+      url: string
+      mode: RouterReadMode
+      cacheState: 'miss' | 'pending' | 'hit'
+      startMs: number
+      durationMs: number
+      pngBytes?: number
+      payloadBytes: number
+    }
+  | {
+      type: 'payload-handle'
+      chunkId: string
+      url: string
+      cacheState: 'miss' | 'pending' | 'hit'
+      startMs: number
+      durationMs: number
+      payloadOffset: number
+      payloadBytes: number
+      prefetchedBytes: number
+    }
+  | {
+      type: 'range'
+      chunkId: string
+      url: string
+      mode: RouterReadMode
+      startMs: number
+      durationMs: number
+      offset: number
+      length: number
+      bytes: number
+      fallback: boolean
+    }
+  | {
+      type: 'decompress'
+      path: string
+      compressor?: string
+      level?: number
+      startMs: number
+      durationMs: number
+      compressedBytes: number
+      rawBytes: number
+    }
+  | {
+      type: 'materialize'
+      path: string
+      kind: MaterializedFile['kind']
+      startMs: number
+      durationMs: number
+      decodeMs: number
+      executeMs: number
+      bytes: number
+    }
+
+export type RouterDebugCallback = (event: RouterDebugEvent) => void
+
 interface ChunkEntry extends RouterChunkManifestEntry {
   url: string
 }
@@ -66,20 +211,52 @@ interface FileLookupIndex {
   byPath: Map<string, RouterFileEntry[]>
 }
 
-type RouterReadMode = 'buffered' | 'stream'
-
 interface ChunkPayloadHandleCacheEntry {
   initialBytes: number
   promise: Promise<PixelRangePayloadHandle>
 }
 
+interface Deferred<T> {
+  promise: Promise<T>
+  resolve: (value: T) => void
+  reject: (reason?: unknown) => void
+}
+
+interface ProgressiveFileState {
+  file: RouterFileEntry
+  compressed?: Uint8Array
+  directCompressed?: Uint8Array
+  pendingSegments: number
+  deferred: Deferred<Uint8Array>
+}
+
+interface ProgressiveLoad {
+  ready: Map<RouterFileEntry, Promise<Uint8Array>>
+  done: Promise<void>
+}
+
+interface PendingSingleLoad {
+  file: RouterFileEntry
+  cacheKey: string
+  deferred: Deferred<Uint8Array>
+}
+
+interface SingleLoadBatch {
+  id: number
+  startMs: number
+  mode: RouterReadMode
+  options: MaterializeOptions
+  items: PendingSingleLoad[]
+}
+
 const textDecoder = new TextDecoder()
 const CHUNK_PAYLOAD_HEADER_BYTES = 8192
+const SINGLE_LOAD_BATCH_WINDOW_MS = 4
 
 export async function decodeRouter(
   source: DecodeSource,
   options: DecodeRouterOptions = {},
-): Promise<Pack> {
+): Promise<RouterToken> {
   const decoded =
     typeof source === 'string'
       ? await decodeStream(source, options)
@@ -88,7 +265,7 @@ export async function decodeRouter(
 
   if (!pack.isRouter()) throw new Error('decodeRouter(source): token is not a router token')
 
-  return pack
+  return pack as RouterToken
 }
 
 export const pack = decodeRouter
@@ -104,7 +281,11 @@ export class RouterToken {
   private fileLookupPromise: Promise<FileLookupIndex> | null = null
   private chunkPayloadHandleCache = new Map<string, ChunkPayloadHandleCacheEntry>()
   private chunkBytesCache = new Map<string, Promise<Uint8Array>>()
+  private chunkBytesSettled = new Set<string>()
+  private chunkPayloadHandleSettled = new Set<string>()
   private bytesCache = new Map<string, Promise<Uint8Array>>()
+  private singleLoadBatches = new Map<string, SingleLoadBatch>()
+  private nextBatchId = 0
 
   constructor(
     private readonly source: DecodeSource,
@@ -133,6 +314,27 @@ export class RouterToken {
     this.manifestPromise ??= this.readManifest()
 
     return this.manifestPromise
+  }
+
+  async plan(options?: MaterializeOptions): Promise<RouterLoadPlan>
+  async plan(pathOrUrl: string, options?: MaterializeOptions): Promise<RouterLoadPlan>
+  async plan(pathOrUrls: string[], options?: MaterializeOptions): Promise<RouterLoadPlan>
+  async plan(
+    pathOrUrlsOrOptions?: string | string[] | MaterializeOptions,
+    maybeOptions: MaterializeOptions = {},
+  ): Promise<RouterLoadPlan> {
+    const options =
+      typeof pathOrUrlsOrOptions === 'string' || Array.isArray(pathOrUrlsOrOptions)
+        ? maybeOptions
+        : (pathOrUrlsOrOptions ?? {})
+    const files =
+      typeof pathOrUrlsOrOptions === 'string'
+        ? [await this.resolveFile(pathOrUrlsOrOptions)]
+        : Array.isArray(pathOrUrlsOrOptions)
+          ? await Promise.all(pathOrUrlsOrOptions.map(path => this.resolveFile(path)))
+          : await this.list()
+
+    return this.createLoadPlan(files, this.readModeFor(options), options)
   }
 
   private async files(): Promise<RouterFileEntry[]> {
@@ -172,7 +374,7 @@ export class RouterToken {
     let cached = this.bytesCache.get(cacheKey)
 
     if (!cached) {
-      cached = this.loadOne(entry, mode)
+      cached = this.enqueueSingleLoad(entry, mode, options, cacheKey)
       this.bytesCache.set(cacheKey, cached)
     }
 
@@ -240,7 +442,7 @@ export class RouterToken {
     options: MaterializeOptions = {},
   ): Promise<Array<{ entry: RouterFileEntry; bytes: Uint8Array }>> {
     const files = await this.list()
-    const loaded = await this.loadMany(files, this.readModeFor(options))
+    const loaded = await this.loadMany(files, this.readModeFor(options), options)
 
     return files.map(file => ({ entry: file, bytes: loaded.get(file)! }))
   }
@@ -280,13 +482,24 @@ export class RouterToken {
   ): Promise<MaterializedFile> {
     const entry = await this.resolveFile(pathOrUrl)
     const bytes = await this.loadWithMode(pathOrUrl, options, this.readModeFor(options))
-    const decodeStart = now()
-    const text = textDecoder.decode(bytes)
-    const decodeMs = now() - decodeStart
     const kind = materializedKind(entry, options.as ?? 'auto')
+    const decodeStart = now()
+    const text = kind === 'bytes' ? '' : textDecoder.decode(bytes)
+    const decodeMs = now() - decodeStart
     const executeStart = now()
     const element = executeMaterialized(kind, text, options.nonce)
     const executeMs = now() - executeStart
+
+    this.emitDebug({
+      type: 'materialize',
+      path: entry.path,
+      kind,
+      startMs: decodeStart,
+      durationMs: decodeMs + executeMs,
+      decodeMs,
+      executeMs,
+      bytes: bytes.byteLength,
+    })
 
     return { entry, bytes, text, kind, element, timing: { decodeMs, executeMs } }
   }
@@ -300,26 +513,27 @@ export class RouterToken {
     return this.materializeEntries(files, options)
   }
 
-  private async materializeEntries(
+  async materializeEntries(
     files: RouterFileEntry[],
     options: MaterializeOptions,
+    mode: RouterReadMode = this.readModeFor(options),
   ): Promise<MaterializedFile[]> {
-    const loaded = await this.loadMany(files, this.readModeFor(options))
+    const load = await this.startProgressiveLoad(files, mode, options)
+    const materialized: MaterializedFile[] = []
 
-    return Promise.all(
-      files.map(async file => {
-        const bytes = loaded.get(file)!
-        const decodeStart = now()
-        const text = textDecoder.decode(bytes)
-        const decodeMs = now() - decodeStart
-        const kind = materializedKind(file, options.as ?? 'auto')
-        const executeStart = now()
-        const element = executeMaterialized(kind, text, options.nonce)
-        const executeMs = now() - executeStart
+    try {
+      for (const file of files) {
+        const bytes = await load.ready.get(file)!
 
-        return { entry: file, bytes, text, kind, element, timing: { decodeMs, executeMs } }
-      }),
-    )
+        materialized.push(this.materializeLoadedFile(file, bytes, options))
+      }
+      await load.done
+    } catch (error) {
+      await load.done.catch(() => undefined)
+      throw error
+    }
+
+    return materialized
   }
 
   private readModeFor(options: MaterializeOptions = {}): RouterReadMode {
@@ -331,15 +545,30 @@ export class RouterToken {
   }
 
   private async readManifest(): Promise<RouterTokenManifest> {
+    const startMs = now()
+    const tokenStartMs = now()
     const pack = await new Token(this.source, this.options).pack()
+    const tokenDecodeMs = now() - tokenStartMs
 
     if (pack.isDiff()) throw new Error('router token cannot be a diff token')
     const text = pack.isPack() ? await pack.text(ROUTER_MANIFEST_PATH) : await pack.text()
+    const jsonStartMs = now()
     const manifest = JSON.parse(text) as RouterTokenManifest
+    const jsonParseMs = now() - jsonStartMs
 
     if (manifest.version !== 1) {
       throw new Error(`unsupported router token manifest version: ${manifest.version}`)
     }
+    this.emitDebug({
+      type: 'manifest',
+      startMs,
+      durationMs: now() - startMs,
+      tokenDecodeMs,
+      jsonParseMs,
+      chunkCount: manifest.chunks.length,
+      fileCount: manifest.files.length,
+      byteLength: text.length,
+    })
 
     return manifest
   }
@@ -402,7 +631,7 @@ export class RouterToken {
     mode: RouterReadMode,
   ): Promise<Map<string, string>> {
     const files = await Promise.all(paths.map(path => this.resolveFile(path)))
-    const loaded = await this.loadMany(files, mode)
+    const loaded = await this.loadMany(files, mode, options)
     const out = new Map<string, string>()
 
     for (const file of files) out.set(file.url, textDecoder.decode(loaded.get(file)!))
@@ -416,7 +645,7 @@ export class RouterToken {
     mode: RouterReadMode,
   ): Promise<Map<string, Blob>> {
     const files = await Promise.all(paths.map(path => this.resolveFile(path)))
-    const loaded = await this.loadMany(files, mode)
+    const loaded = await this.loadMany(files, mode, options)
     const out = new Map<string, Blob>()
 
     for (const file of files) {
@@ -426,152 +655,551 @@ export class RouterToken {
     return out
   }
 
-  private async loadOne(entry: RouterFileEntry, mode: RouterReadMode): Promise<Uint8Array> {
-    const chunks = await this.chunkById()
-    const out = new Uint8Array(entry.compressedByteLength ?? entry.byteLength)
-
-    await this.primeChunkPayloadHandles([entry], chunks)
-
-    await Promise.all(
-      entry.segments.map(async segment => {
-        const chunk = chunks.get(segment.chunkId)
-
-        if (!chunk) throw new Error(`router file references missing chunk: ${segment.chunkId}`)
-        const bytes = await this.segmentBytes(chunk, segment, mode)
-
-        out.set(bytes, segment.fileOffset ?? 0)
-      }),
-    )
-
-    if (!entry.compressor) return out
-
-    return decompressRaw(out, entry.compressor, {
-      level: entry.level ?? 0,
-      uncompressedLength: entry.byteLength,
-    })
-  }
-
   async loadMany(
     files: RouterFileEntry[],
     mode: RouterReadMode,
+    options: MaterializeOptions = {},
   ): Promise<Map<RouterFileEntry, Uint8Array>> {
-    const chunks = await this.chunkById()
+    return this.executeLoadMany(files, mode, options)
+  }
 
-    if (await this.isCompleteFileSet(files)) {
-      return this.loadCompleteFileSet(files, chunks, mode)
+  private enqueueSingleLoad(
+    file: RouterFileEntry,
+    mode: RouterReadMode,
+    options: MaterializeOptions,
+    cacheKey: string,
+  ): Promise<Uint8Array> {
+    const batchKey = this.singleLoadBatchKey(mode, options)
+    let batch = this.singleLoadBatches.get(batchKey)
+
+    if (!batch) {
+      batch = {
+        id: ++this.nextBatchId,
+        startMs: now(),
+        mode,
+        options,
+        items: [],
+      }
+      this.singleLoadBatches.set(batchKey, batch)
+      this.scheduleSingleLoadBatchFlush(batchKey, batch)
     }
 
-    await this.primeChunkPayloadHandles(files, chunks)
-    const entries = await Promise.all(
-      files.map(async file => [file, await this.loadOne(file, mode)] as const),
-    )
+    const deferred = createDeferred<Uint8Array>()
 
-    return new Map(entries)
+    batch.items.push({ file, cacheKey, deferred })
+
+    return deferred.promise
   }
 
-  private async isCompleteFileSet(files: readonly RouterFileEntry[]): Promise<boolean> {
-    const allFiles = await this.list()
+  private async flushSingleLoadBatch(batchKey: string, batch: SingleLoadBatch): Promise<void> {
+    if (this.singleLoadBatches.get(batchKey) !== batch) return
+    this.singleLoadBatches.delete(batchKey)
 
-    if (files.length !== allFiles.length) return false
-    const requested = new Set(files)
+    const files = uniqueFiles(batch.items.map(item => item.file))
+    const strategy = batch.options.strategy ?? this.options.strategy ?? 'auto'
 
-    return allFiles.every(file => requested.has(file))
-  }
+    this.emitDebug({
+      type: 'batch',
+      batchId: batch.id,
+      mode: batch.mode,
+      strategy,
+      startMs: batch.startMs,
+      durationMs: now() - batch.startMs,
+      fileCount: files.length,
+      paths: files.map(file => file.path),
+      files: routerDebugPlanFiles(files),
+    })
 
-  private async loadCompleteFileSet(
-    files: readonly RouterFileEntry[],
-    chunks: ReadonlyMap<string, ChunkEntry>,
-    mode: RouterReadMode,
-  ): Promise<Map<RouterFileEntry, Uint8Array>> {
-    const chunkIds = new Set<string>()
-    const compressedByFile = new Map<RouterFileEntry, Uint8Array>()
+    try {
+      const loaded = await this.executeLoadMany(files, batch.mode, batch.options)
 
-    for (const file of files) {
-      compressedByFile.set(file, new Uint8Array(file.compressedByteLength ?? file.byteLength))
-      for (const segment of file.segments) {
-        if (!chunks.has(segment.chunkId)) {
-          throw new Error(`router file references missing chunk: ${segment.chunkId}`)
+      for (const item of batch.items) {
+        const bytes = loaded.get(item.file)
+
+        if (!bytes) throw new Error(`router batch did not load file: ${item.file.path}`)
+        item.deferred.resolve(bytes)
+      }
+    } catch (error) {
+      for (const item of batch.items) {
+        if (this.bytesCache.get(item.cacheKey) === item.deferred.promise) {
+          this.bytesCache.delete(item.cacheKey)
         }
-        chunkIds.add(segment.chunkId)
+        item.deferred.reject(error)
       }
     }
+  }
 
-    const chunkBytesById = new Map(
-      await Promise.all(
-        [...chunkIds].map(async chunkId => {
-          const chunk = chunks.get(chunkId)!
+  private singleLoadBatchKey(mode: RouterReadMode, options: MaterializeOptions): string {
+    const strategy = options.strategy ?? this.options.strategy ?? 'auto'
+    const planner = options.planner ? JSON.stringify(options.planner) : ''
+    const batchWindowMs = this.singleLoadBatchWindowMs(options)
 
-          return [chunkId, await this.chunkBytes(chunk, mode)] as const
-        }),
+    return `${mode}:${strategy}:${batchWindowMs}:${planner}`
+  }
+
+  private scheduleSingleLoadBatchFlush(batchKey: string, batch: SingleLoadBatch): void {
+    const batchWindowMs = this.singleLoadBatchWindowMs(batch.options)
+
+    if (batchWindowMs <= 0) {
+      queueMicrotask(() => this.flushSingleLoadBatch(batchKey, batch))
+
+      return
+    }
+
+    setTimeout(() => this.flushSingleLoadBatch(batchKey, batch), batchWindowMs)
+  }
+
+  private singleLoadBatchWindowMs(options: MaterializeOptions): number {
+    const configured = options.singleLoadBatchWindowMs ?? this.options.singleLoadBatchWindowMs
+
+    if (configured === undefined) return SINGLE_LOAD_BATCH_WINDOW_MS
+    if (!Number.isFinite(configured) || configured <= 0) return 0
+
+    return configured
+  }
+
+  private async executeLoadMany(
+    files: readonly RouterFileEntry[],
+    mode: RouterReadMode,
+    options: MaterializeOptions = {},
+  ): Promise<Map<RouterFileEntry, Uint8Array>> {
+    const plan = await this.createLoadPlan(files, mode, options)
+
+    if (plan.kind === 'whole-chunks') {
+      return this.loadFromWholeChunks(files, plan.chunks, plan.mode, plan.concurrency)
+    }
+
+    if (plan.kind === 'merged-ranges' || plan.kind === 'single-merged') {
+      return this.loadFromRanges(files, plan.ranges, plan.mode, plan.concurrency)
+    }
+
+    const compressedByFile = new Map<RouterFileEntry, Uint8Array>()
+    const directCompressedByFile = new Map<RouterFileEntry, Uint8Array>()
+
+    await mapWithConcurrency(plan.segments, plan.concurrency, async item => {
+      const bytes = await this.segmentBytes(item.chunk, item.segment, plan.mode)
+
+      this.addCompressedSegment(
+        item.file,
+        item.segment,
+        bytes,
+        compressedByFile,
+        directCompressedByFile,
+      )
+    })
+
+    const entries = await Promise.all(
+      files.map(
+        async file =>
+          [
+            file,
+            await this.decompressFile(
+              file,
+              directCompressedByFile.get(file) ?? compressedByFile.get(file)!,
+            ),
+          ] as const,
       ),
     )
 
-    await Promise.all(
-      files.map(async file => {
-        const compressed = compressedByFile.get(file)!
+    return new Map(entries)
+  }
 
-        for (const segment of file.segments) {
-          const chunkBytes = chunkBytesById.get(segment.chunkId)!
-
-          compressed.set(
-            chunkBytes.subarray(segment.offset, segment.offset + segment.length),
-            segment.fileOffset ?? 0,
-          )
-        }
-      }),
+  private async startProgressiveLoad(
+    files: readonly RouterFileEntry[],
+    mode: RouterReadMode,
+    options: MaterializeOptions = {},
+  ): Promise<ProgressiveLoad> {
+    const plan = await this.createLoadPlan(files, mode, options)
+    const states = new Map(
+      files.map(file => [
+        file,
+        {
+          file,
+          pendingSegments: file.segments.length,
+          deferred: createDeferred<Uint8Array>(),
+        } satisfies ProgressiveFileState,
+      ]),
     )
+    const ready = new Map([...states].map(([file, state]) => [file, state.deferred.promise]))
+    const done = (async () => {
+      try {
+        if (plan.kind === 'whole-chunks') {
+          await this.progressiveWholeChunks(files, plan.chunks, plan.mode, plan.concurrency, states)
+        } else if (plan.kind === 'merged-ranges' || plan.kind === 'single-merged') {
+          await this.progressiveRanges(plan.ranges, plan.mode, plan.concurrency, states)
+        } else {
+          await this.progressiveSegments(plan.segments, plan.mode, plan.concurrency, states)
+        }
+      } catch (error) {
+        rejectPending(states, error)
+        throw error
+      }
+    })()
+
+    done.catch(() => undefined)
+
+    return { ready, done }
+  }
+
+  private async progressiveSegments(
+    segments: readonly RouterPlannedSegment[],
+    mode: RouterReadMode,
+    concurrency: number,
+    states: Map<RouterFileEntry, ProgressiveFileState>,
+  ): Promise<void> {
+    await mapWithConcurrency(segments, concurrency, async item => {
+      const bytes = await this.segmentBytes(item.chunk, item.segment, mode)
+
+      await this.addProgressiveSegment(states.get(item.file)!, item.segment, bytes)
+    })
+  }
+
+  private async progressiveRanges(
+    ranges: readonly RouterChunkRange[],
+    mode: RouterReadMode,
+    concurrency: number,
+    states: Map<RouterFileEntry, ProgressiveFileState>,
+  ): Promise<void> {
+    await mapWithConcurrency(ranges, concurrency, async range => {
+      const bytes = await this.rangeBytes(range.chunk, range.offset, range.length, mode)
+
+      await Promise.all(
+        range.segments.map(item => {
+          const localOffset = item.segment.offset - range.offset
+          const segmentBytes = bytes.subarray(localOffset, localOffset + item.segment.length)
+
+          return this.addProgressiveSegment(states.get(item.file)!, item.segment, segmentBytes)
+        }),
+      )
+    })
+  }
+
+  private async progressiveWholeChunks(
+    files: readonly RouterFileEntry[],
+    chunks: readonly ChunkEntry[],
+    mode: RouterReadMode,
+    concurrency: number,
+    states: Map<RouterFileEntry, ProgressiveFileState>,
+  ): Promise<void> {
+    const byChunk = new Map<string, Array<{ file: RouterFileEntry; segment: RouterFileSegment }>>()
+
+    for (const file of files) {
+      for (const segment of file.segments) {
+        const items = byChunk.get(segment.chunkId) ?? []
+
+        items.push({ file, segment })
+        byChunk.set(segment.chunkId, items)
+      }
+    }
+
+    await mapWithConcurrency(chunks, concurrency, async chunk => {
+      const chunkBytes = await this.chunkBytes(chunk, mode)
+      const items = byChunk.get(chunk.id) ?? []
+
+      await Promise.all(
+        items.map(item => {
+          const bytes = chunkBytes.subarray(
+            item.segment.offset,
+            item.segment.offset + item.segment.length,
+          )
+
+          return this.addProgressiveSegment(states.get(item.file)!, item.segment, bytes)
+        }),
+      )
+    })
+  }
+
+  private async addProgressiveSegment(
+    state: ProgressiveFileState,
+    segment: RouterFileSegment,
+    bytes: Uint8Array,
+  ): Promise<void> {
+    if (this.isCompleteCompressedFileSegment(state.file, segment, bytes)) {
+      state.directCompressed = bytes
+    } else {
+      state.directCompressed = undefined
+      state.compressed ??= new Uint8Array(this.compressedLength(state.file))
+      state.compressed.set(bytes, segment.fileOffset ?? 0)
+    }
+
+    state.pendingSegments -= 1
+    if (state.pendingSegments > 0) return
+
+    try {
+      const compressed = state.directCompressed ?? state.compressed
+
+      if (!compressed) throw new Error(`router file had no loaded bytes: ${state.file.path}`)
+      state.deferred.resolve(await this.decompressFile(state.file, compressed))
+    } catch (error) {
+      state.deferred.reject(error)
+      throw error
+    }
+  }
+
+  private materializeLoadedFile(
+    file: RouterFileEntry,
+    bytes: Uint8Array,
+    options: MaterializeOptions,
+  ): MaterializedFile {
+    const startMs = now()
+    const kind = materializedKind(file, options.as ?? 'auto')
+    const decodeStart = now()
+    const text = kind === 'bytes' ? '' : textDecoder.decode(bytes)
+    const decodeMs = now() - decodeStart
+    const executeStart = now()
+    const element = executeMaterialized(kind, text, options.nonce)
+    const executeMs = now() - executeStart
+
+    this.emitDebug({
+      type: 'materialize',
+      path: file.path,
+      kind,
+      startMs,
+      durationMs: now() - startMs,
+      decodeMs,
+      executeMs,
+      bytes: bytes.byteLength,
+    })
+
+    return { entry: file, bytes, text, kind, element, timing: { decodeMs, executeMs } }
+  }
+
+  private async createLoadPlan(
+    files: readonly RouterFileEntry[],
+    mode: RouterReadMode,
+    options: MaterializeOptions,
+  ): Promise<RouterLoadPlan> {
+    const startMs = now()
+    const strategy = options.strategy ?? this.options.strategy ?? 'auto'
+    const plan = planRouterLoad(files, await this.chunkById(), {
+      allFiles: await this.list(),
+      mode,
+      ...(options.planner ?? {}),
+      strategy,
+    })
+
+    this.emitDebug({
+      type: 'plan',
+      startMs,
+      durationMs: now() - startMs,
+      kind: plan.kind,
+      mode: plan.mode,
+      strategy,
+      reason: plan.reason,
+      fileCount: files.length,
+      paths: files.map(file => file.path),
+      files: routerDebugPlanFiles(files),
+      chunkIds: chunkIdsForPlan(plan),
+      requestCount: plan.estimate.requestCount,
+      chunkCount: plan.estimate.chunkCount,
+      segmentCount: plan.estimate.segmentCount,
+      selectedBytes: plan.estimate.selectedBytes,
+      fetchedBytes: plan.estimate.fetchedBytes,
+      concurrency: plan.concurrency,
+    })
+
+    return plan
+  }
+
+  private async loadFromWholeChunks(
+    files: readonly RouterFileEntry[],
+    chunks: readonly ChunkEntry[],
+    mode: RouterReadMode,
+    concurrency: number,
+  ): Promise<Map<RouterFileEntry, Uint8Array>> {
+    const compressedByFile = new Map<RouterFileEntry, Uint8Array>()
+    const directCompressedByFile = new Map<RouterFileEntry, Uint8Array>()
+    const chunkBytesById = new Map<string, Uint8Array>()
+
+    await mapWithConcurrency(chunks, concurrency, async chunk => {
+      chunkBytesById.set(chunk.id, await this.chunkBytes(chunk, mode))
+    })
+
+    for (const file of files) {
+      for (const segment of file.segments) {
+        const chunkBytes = chunkBytesById.get(segment.chunkId)!
+        const bytes = chunkBytes.subarray(segment.offset, segment.offset + segment.length)
+
+        this.addCompressedSegment(file, segment, bytes, compressedByFile, directCompressedByFile)
+      }
+    }
 
     const entries = await Promise.all(
-      files.map(async file => {
-        const compressed = compressedByFile.get(file)!
-        const bytes = file.compressor
-          ? await decompressRaw(compressed, file.compressor, {
-              level: file.level ?? 0,
-              uncompressedLength: file.byteLength,
-            })
-          : compressed
-
-        return [file, bytes] as const
-      }),
+      files.map(
+        async file =>
+          [
+            file,
+            await this.decompressFile(
+              file,
+              directCompressedByFile.get(file) ?? compressedByFile.get(file)!,
+            ),
+          ] as const,
+      ),
     )
 
     return new Map(entries)
   }
 
-  private async primeChunkPayloadHandles(
+  private async loadFromRanges(
     files: readonly RouterFileEntry[],
-    chunks: ReadonlyMap<string, ChunkEntry>,
-  ): Promise<void> {
-    const chunkIds = new Set<string>()
+    ranges: readonly RouterChunkRange[],
+    mode: RouterReadMode,
+    concurrency: number,
+  ): Promise<Map<RouterFileEntry, Uint8Array>> {
+    const compressedByFile = new Map<RouterFileEntry, Uint8Array>()
+    const directCompressedByFile = new Map<RouterFileEntry, Uint8Array>()
 
-    for (const file of files) {
-      for (const segment of file.segments) {
-        const chunk = chunks.get(segment.chunkId)
+    await mapWithConcurrency(ranges, concurrency, async range => {
+      const bytes = await this.rangeBytes(range.chunk, range.offset, range.length, mode)
 
-        if (!chunk) {
-          throw new Error(`router file references missing chunk: ${segment.chunkId}`)
-        }
-        if (segmentCoversChunkPayload(chunk, segment)) continue
-        chunkIds.add(segment.chunkId)
+      for (const item of range.segments) {
+        const localOffset = item.segment.offset - range.offset
+        const segmentBytes = bytes.subarray(localOffset, localOffset + item.segment.length)
+
+        this.addCompressedSegment(
+          item.file,
+          item.segment,
+          segmentBytes,
+          compressedByFile,
+          directCompressedByFile,
+        )
       }
+    })
+
+    const entries = await Promise.all(
+      files.map(
+        async file =>
+          [
+            file,
+            await this.decompressFile(
+              file,
+              directCompressedByFile.get(file) ?? compressedByFile.get(file)!,
+            ),
+          ] as const,
+      ),
+    )
+
+    return new Map(entries)
+  }
+
+  private addCompressedSegment(
+    file: RouterFileEntry,
+    segment: RouterFileSegment,
+    bytes: Uint8Array,
+    compressedByFile: Map<RouterFileEntry, Uint8Array>,
+    directCompressedByFile: Map<RouterFileEntry, Uint8Array>,
+  ): void {
+    if (this.isCompleteCompressedFileSegment(file, segment, bytes)) {
+      directCompressedByFile.set(file, bytes)
+
+      return
     }
 
-    await Promise.all(
-      [...chunkIds].map(async chunkId => {
-        const chunk = chunks.get(chunkId)!
+    directCompressedByFile.delete(file)
+    let compressed = compressedByFile.get(file)
 
-        await this.chunkPayloadHandle(chunk)
-      }),
+    if (!compressed) {
+      compressed = new Uint8Array(this.compressedLength(file))
+      compressedByFile.set(file, compressed)
+    }
+    compressed.set(bytes, segment.fileOffset ?? 0)
+  }
+
+  private isCompleteCompressedFileSegment(
+    file: RouterFileEntry,
+    segment: RouterFileSegment,
+    bytes: Uint8Array,
+  ): boolean {
+    return (
+      (segment.fileOffset ?? 0) === 0 &&
+      segment.length === this.compressedLength(file) &&
+      bytes.byteLength === segment.length
     )
+  }
+
+  private compressedLength(file: RouterFileEntry): number {
+    return file.compressedByteLength ?? file.byteLength
+  }
+
+  private async decompressFile(file: RouterFileEntry, compressed: Uint8Array): Promise<Uint8Array> {
+    if (!file.compressor) return compressed
+
+    const startMs = now()
+    const bytes = await decompressRaw(compressed, file.compressor, {
+      level: file.level ?? 0,
+      uncompressedLength: file.byteLength,
+    })
+
+    this.emitDebug({
+      type: 'decompress',
+      path: file.path,
+      compressor: file.compressor,
+      level: file.level,
+      startMs,
+      durationMs: now() - startMs,
+      compressedBytes: compressed.byteLength,
+      rawBytes: bytes.byteLength,
+    })
+
+    return bytes
   }
 
   private chunkBytes(chunk: ChunkEntry, mode: RouterReadMode): Promise<Uint8Array> {
     const cacheKey = `${mode}:${chunk.id}`
     let cached = this.chunkBytesCache.get(cacheKey)
+    const startMs = now()
+    const cacheState: 'miss' | 'pending' | 'hit' = !cached
+      ? 'miss'
+      : this.chunkBytesSettled.has(cacheKey)
+        ? 'hit'
+        : 'pending'
 
     if (!cached) {
-      cached = this.decodeChunkBytes(chunk, mode)
+      const promise = this.decodeChunkBytes(chunk, mode)
+
+      cached = promise
+        .then(bytes => {
+          this.chunkBytesSettled.add(cacheKey)
+          this.emitDebug({
+            type: 'chunk',
+            chunkId: chunk.id,
+            url: chunk.url,
+            mode,
+            cacheState,
+            startMs,
+            durationMs: now() - startMs,
+            pngBytes: chunk.byteLength,
+            payloadBytes: bytes.byteLength,
+          })
+
+          return bytes
+        })
+        .catch(error => {
+          if (this.chunkBytesCache.get(cacheKey) === cached) {
+            this.chunkBytesCache.delete(cacheKey)
+            this.chunkBytesSettled.delete(cacheKey)
+          }
+
+          throw error
+        })
       this.chunkBytesCache.set(cacheKey, cached)
+    } else {
+      cached.then(
+        bytes => {
+          this.emitDebug({
+            type: 'chunk',
+            chunkId: chunk.id,
+            url: chunk.url,
+            mode,
+            cacheState,
+            startMs,
+            durationMs: now() - startMs,
+            pngBytes: chunk.byteLength,
+            payloadBytes: bytes.byteLength,
+          })
+        },
+        () => undefined,
+      )
     }
 
     return cached
@@ -594,26 +1222,171 @@ export class RouterToken {
       const handle = await this.chunkPayloadHandle(chunk)
 
       if (mode === 'stream') {
-        return readStreamBytes(
-          await fetchPixelRangePayloadStream(handle, segment.offset, segment.length),
+        return this.fetchRangeBytes(chunk, segment.offset, segment.length, mode, async () =>
+          readStreamBytes(
+            await fetchPixelRangePayloadStream(handle, segment.offset, segment.length),
+          ),
         )
       }
 
-      return fetchPixelRangePayloadBytes(handle, segment.offset, segment.length)
+      return this.fetchRangeBytes(chunk, segment.offset, segment.length, mode, () =>
+        fetchPixelRangePayloadBytes(handle, segment.offset, segment.length),
+      )
     } catch {
       const chunkBytes = await this.chunkBytes(chunk, mode)
 
-      return chunkBytes.subarray(segment.offset, segment.offset + segment.length)
+      const bytes = chunkBytes.subarray(segment.offset, segment.offset + segment.length)
+
+      this.emitDebug({
+        type: 'range',
+        chunkId: chunk.id,
+        url: chunk.url,
+        mode,
+        startMs: now(),
+        durationMs: 0,
+        offset: segment.offset,
+        length: segment.length,
+        bytes: bytes.byteLength,
+        fallback: true,
+      })
+
+      return bytes
     }
   }
 
+  private async rangeBytes(
+    chunk: ChunkEntry,
+    offset: number,
+    length: number,
+    mode: RouterReadMode,
+  ): Promise<Uint8Array> {
+    try {
+      const handle = await this.chunkPayloadHandle(chunk)
+
+      if (mode === 'stream') {
+        return this.fetchRangeBytes(chunk, offset, length, mode, async () =>
+          readStreamBytes(await fetchPixelRangePayloadStream(handle, offset, length)),
+        )
+      }
+
+      return this.fetchRangeBytes(chunk, offset, length, mode, () =>
+        fetchPixelRangePayloadBytes(handle, offset, length),
+      )
+    } catch {
+      const chunkBytes = await this.chunkBytes(chunk, mode)
+
+      const bytes = chunkBytes.subarray(offset, offset + length)
+
+      this.emitDebug({
+        type: 'range',
+        chunkId: chunk.id,
+        url: chunk.url,
+        mode,
+        startMs: now(),
+        durationMs: 0,
+        offset,
+        length,
+        bytes: bytes.byteLength,
+        fallback: true,
+      })
+
+      return bytes
+    }
+  }
+
+  private async fetchRangeBytes(
+    chunk: ChunkEntry,
+    offset: number,
+    length: number,
+    mode: RouterReadMode,
+    read: () => Promise<Uint8Array>,
+  ): Promise<Uint8Array> {
+    const startMs = now()
+    const bytes = await read()
+
+    this.emitDebug({
+      type: 'range',
+      chunkId: chunk.id,
+      url: chunk.url,
+      mode,
+      startMs,
+      durationMs: now() - startMs,
+      offset,
+      length,
+      bytes: bytes.byteLength,
+      fallback: false,
+    })
+
+    return bytes
+  }
+
   private chunkPayloadHandle(chunk: ChunkEntry): Promise<PixelRangePayloadHandle> {
+    if (typeof chunk.payloadOffset === 'number') {
+      const startMs = now()
+
+      this.emitDebug({
+        type: 'payload-handle',
+        chunkId: chunk.id,
+        url: chunk.url,
+        cacheState: 'hit',
+        startMs,
+        durationMs: 0,
+        payloadOffset: chunk.payloadOffset,
+        payloadBytes: chunk.byteLength ?? 0,
+        prefetchedBytes: 0,
+      })
+
+      return Promise.resolve({
+        url: chunk.url,
+        prefetchedBytes: new Uint8Array(0),
+        payloadAbsOffset: chunk.payloadOffset,
+        payloadByteLength: chunk.byteLength ?? 0,
+      })
+    }
+
     const initialBytes = CHUNK_PAYLOAD_HEADER_BYTES
     const cached = this.chunkPayloadHandleCache.get(chunk.id)
 
-    if (cached && cached.initialBytes >= initialBytes) return cached.promise
+    if (cached && cached.initialBytes >= initialBytes) {
+      const startMs = now()
+      const cacheState: 'pending' | 'hit' = this.chunkPayloadHandleSettled.has(chunk.id)
+        ? 'hit'
+        : 'pending'
 
-    const promise = fetchPixelRangePayloadHandle(chunk.url, initialBytes)
+      return cached.promise.then(handle => {
+        this.emitDebug({
+          type: 'payload-handle',
+          chunkId: chunk.id,
+          url: chunk.url,
+          cacheState,
+          startMs,
+          durationMs: now() - startMs,
+          payloadOffset: handle.payloadAbsOffset,
+          payloadBytes: handle.payloadByteLength,
+          prefetchedBytes: handle.prefetchedBytes.byteLength,
+        })
+
+        return handle
+      })
+    }
+
+    const startMs = now()
+    const promise = fetchPixelRangePayloadHandle(chunk.url, initialBytes).then(handle => {
+      this.chunkPayloadHandleSettled.add(chunk.id)
+      this.emitDebug({
+        type: 'payload-handle',
+        chunkId: chunk.id,
+        url: chunk.url,
+        cacheState: 'miss',
+        startMs,
+        durationMs: now() - startMs,
+        payloadOffset: handle.payloadAbsOffset,
+        payloadBytes: handle.payloadByteLength,
+        prefetchedBytes: handle.prefetchedBytes.byteLength,
+      })
+
+      return handle
+    })
 
     this.chunkPayloadHandleCache.set(chunk.id, { initialBytes, promise })
 
@@ -634,14 +1407,10 @@ export class RouterToken {
 
     return bytes
   }
-}
 
-function segmentCoversChunkPayload(chunk: ChunkEntry, segment: RouterFileSegment): boolean {
-  return (
-    typeof chunk.byteLength === 'number' &&
-    segment.offset === 0 &&
-    segment.length === chunk.byteLength
-  )
+  private emitDebug(event: RouterDebugEvent): void {
+    this.options.debug?.(event)
+  }
 }
 
 async function readStreamBytes(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
@@ -657,6 +1426,61 @@ async function readStreamBytes(stream: ReadableStream<Uint8Array>): Promise<Uint
   }
 
   return concatBytes(chunks)
+}
+
+function createDeferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve
+    reject = promiseReject
+  })
+
+  return { promise, resolve, reject }
+}
+
+function uniqueFiles(files: readonly RouterFileEntry[]): RouterFileEntry[] {
+  const seen = new Set<string>()
+  const unique: RouterFileEntry[] = []
+
+  for (const file of files) {
+    if (seen.has(file.url)) continue
+    seen.add(file.url)
+    unique.push(file)
+  }
+
+  return unique
+}
+
+function routerDebugPlanFiles(files: readonly RouterFileEntry[]): RouterDebugPlanFile[] {
+  return files.map(file => ({
+    path: file.path,
+    url: file.url,
+    chunkIds: [...new Set(file.segments.map(segment => segment.chunkId))],
+    segmentCount: file.segments.length,
+    rawBytes: file.byteLength,
+    compressedBytes: file.compressedByteLength ?? file.byteLength,
+  }))
+}
+
+function rejectPending(
+  states: ReadonlyMap<RouterFileEntry, ProgressiveFileState>,
+  error: unknown,
+): void {
+  for (const state of states.values()) {
+    if (state.pendingSegments > 0) state.deferred.reject(error)
+  }
+}
+
+function chunkIdsForPlan(plan: RouterLoadPlan): string[] {
+  if (plan.kind === 'whole-chunks') return plan.chunks.map(chunk => chunk.id)
+
+  const ids =
+    plan.kind === 'parallel-segments'
+      ? plan.segments.map(item => item.chunk.id)
+      : plan.ranges.map(range => range.chunk.id)
+
+  return [...new Set(ids)]
 }
 
 export class RouterTokenStreamApi {
@@ -708,19 +1532,7 @@ export class RouterTokenStreamApi {
         ? [path]
         : (await this.router.list()).map(file => file.url)
     const files = await Promise.all(paths.map(item => this.router.resolveFile(item)))
-    const loaded = await this.router.loadMany(files, 'stream')
-    const materialized = files.map(file => {
-      const bytes = loaded.get(file)!
-      const decodeStart = now()
-      const text = textDecoder.decode(bytes)
-      const decodeMs = now() - decodeStart
-      const kind = materializedKind(file, 'auto')
-      const executeStart = now()
-      const element = executeMaterialized(kind, text, undefined)
-      const executeMs = now() - executeStart
-
-      return { entry: file, bytes, text, kind, element, timing: { decodeMs, executeMs } }
-    })
+    const materialized = await this.router.materializeEntries(files, {}, 'stream')
 
     return Array.isArray(path) || path === undefined ? materialized : materialized[0]!
   }
@@ -812,7 +1624,6 @@ function materializeBytes(
   bytes: Uint8Array,
   headers: Readonly<Record<string, string>>,
 ): MaterializedFile {
-  const text = textDecoder.decode(bytes)
   const entry: RouterFileEntry = {
     url: path,
     path,
@@ -822,6 +1633,7 @@ function materializeBytes(
     segments: [],
   }
   const kind = materializedKind(entry, 'auto')
+  const text = kind === 'bytes' ? '' : textDecoder.decode(bytes)
   const executeStart = now()
   const element = executeMaterialized(kind, text, undefined)
   const executeMs = now() - executeStart
@@ -907,6 +1719,28 @@ function concatBytes(chunks: Uint8Array[]): Uint8Array {
   }
 
   return out
+}
+
+async function mapWithConcurrency<T>(
+  values: readonly T[],
+  concurrency: number,
+  fn: (value: T) => Promise<void>,
+): Promise<void> {
+  let next = 0
+  const workers = Array.from(
+    { length: Math.min(Math.max(1, concurrency), Math.max(1, values.length)) },
+    async () => {
+      for (;;) {
+        const index = next
+
+        next += 1
+        if (index >= values.length) return
+        await fn(values[index]!)
+      }
+    },
+  )
+
+  await Promise.all(workers)
 }
 
 function now(): number {

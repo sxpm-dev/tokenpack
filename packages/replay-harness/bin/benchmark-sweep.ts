@@ -26,6 +26,13 @@ const SWEEP_3: SweepRun[] = [
   { label: 'bundle20', script: 'benchmark:sw:bundle20:3' },
 ]
 
+const ROUTER_SWEEP_3: SweepRun[] = [
+  { label: 'router-sw-isolate', script: 'benchmark:router:sw:isolate:3' },
+  { label: 'router-sw-remote', script: 'benchmark:router:sw:remote:3' },
+  { label: 'router-cdp-isolate', script: 'benchmark:router:cdp:isolate:3' },
+  { label: 'router-cdp-remote', script: 'benchmark:router:cdp:remote:3' },
+]
+
 const sweepName = process.argv[2] ?? 'sw:sweep:3'
 const runs = resolveRuns(sweepName)
 const results: SweepResult[] = []
@@ -45,6 +52,7 @@ printSummary(results)
 
 function resolveRuns(name: string): SweepRun[] {
   if (name === 'sw:sweep:3') return SWEEP_3
+  if (name === 'router:sweep:3') return ROUTER_SWEEP_3
 
   throw new Error(`Unknown benchmark sweep: ${name}`)
 }

@@ -6,14 +6,22 @@ import path from 'node:path'
 // preset-algorithm registration tries to look up the png surface.
 // `TokenPack` is re-exported from @tokenpack/node for this reason.
 import {
-  type EncodedTokenArtifact,
   encode as encodeToken,
+  type EncodedTokenArtifact,
+  type EncodeResult as EncodedToken,
+  PackBuilder,
   ROUTER_TOKEN_FILE,
   ROUTER_TOKEN_ID,
   TokenPack,
 } from '@tokenpack/node'
 
-import { DEFAULT_REPLAY_TOKEN_VARIANTS, type ReplayTokenVariant } from '../config/token-variants.js'
+import {
+  DEFAULT_REPLAY_TOKEN_VARIANTS,
+  isRouterReplayTokenVariant,
+  LEGACY_DEFAULT_REPLAY_TOKEN_VARIANT,
+  type ReplayTokenVariant,
+  variantsWithTokenRouter,
+} from '../config/token-variants.js'
 import type { CapturedAsset, PackManifest } from '../config/types.js'
 import { fmtBytes, fmtRatio } from '../format.js'
 import { logger } from '../log/logger.js'
@@ -46,6 +54,7 @@ export interface EncodeOptions {
   forcePackId?: string
   forcePackCount?: number
   allowPackSplit?: boolean
+  tokenRouter?: boolean
 }
 
 async function artifactBuffer(artifact: EncodedTokenArtifact): Promise<Buffer> {
@@ -53,13 +62,6 @@ async function artifactBuffer(artifact: EncodedTokenArtifact): Promise<Buffer> {
 }
 
 const DEFAULT_MIN_GROUP_SIZE_BYTES = 500 * 1024
-const LEGACY_DEFAULT_VARIANT: ReplayTokenVariant = {
-  id: 'linear-stream-deflate-c4',
-  algo: 'linear-stream-deflate',
-  channels: 4,
-  loadMode: 'stream',
-  packCompressor: 'deflate-9',
-}
 
 interface SkippedGroup {
   packId: string
@@ -268,7 +270,7 @@ export async function encode(
   options: EncodeOptions = {},
 ): Promise<EncodeResult> {
   const minGroupSizeBytes = options.minGroupSizeBytes ?? DEFAULT_MIN_GROUP_SIZE_BYTES
-  const variant = options.variant ?? LEGACY_DEFAULT_VARIANT
+  const variant = options.variant ?? LEGACY_DEFAULT_REPLAY_TOKEN_VARIANT
   const allowPackSplit = options.allowPackSplit ?? true
   const initialManifest = buildManifest(assets, {
     forcePackId: options.forcePackId,
@@ -330,26 +332,120 @@ export async function encode(
 
   await mkdir(outDir, { recursive: true })
 
+  return isRouterReplayTokenVariant(variant)
+    ? encodeRouterVariant({
+        outDir,
+        variant,
+        initialManifest,
+        groupAssets,
+        assets,
+        skippedGroups,
+        minGroupSizeBytes,
+        allowPackSplit,
+      })
+    : encodePackVariant({
+        outDir,
+        variant,
+        initialManifest,
+        groupAssets,
+        assets,
+        skippedGroups,
+        minGroupSizeBytes,
+      })
+}
+
+interface EncodeVariantInternalOptions {
+  outDir: string
+  variant: ReplayTokenVariant
+  initialManifest: PackManifest
+  groupAssets: Map<string, EncodeItem[]>
+  assets: ReadonlyArray<CapturedAsset>
+  skippedGroups: ReadonlyArray<SkippedGroup>
+  minGroupSizeBytes: number
+  allowPackSplit?: boolean
+}
+
+async function encodePackVariant({
+  outDir,
+  variant,
+  initialManifest,
+  groupAssets,
+  assets,
+  skippedGroups,
+  minGroupSizeBytes,
+}: EncodeVariantInternalOptions): Promise<EncodeResult> {
+  const encodedPacks: EncodedPack[] = []
+  const finalAssignments = new Map<string, string>()
+
+  for (const [packId, items] of groupAssets) {
+    const builder = new PackBuilder()
+
+    for (const item of items) {
+      builder.withBuffer(item.internalPath, item.bytes)
+      finalAssignments.set(item.url, packId)
+    }
+
+    const token = (await encodeToken(builder, {
+      algo: variant.algo,
+      compressor: variant.packCompressor,
+      algoOptions: { surface: { channels: variant.channels } },
+    })) as EncodedToken
+    const packPath = path.join(outDir, `${packId}.png`)
+
+    await writeFile(packPath, Buffer.from(token.bytes))
+    encodedPacks.push({
+      packId,
+      packPath,
+      byteSize: token.byteLength,
+      assetCount: items.length,
+    })
+  }
+
+  encodedPacks.sort((a, b) => a.packId.localeCompare(b.packId))
+
+  const finalAssets = initialManifest.assets
+    .filter(a => finalAssignments.has(a.url))
+    .map(a => ({ ...a, packId: finalAssignments.get(a.url)! }))
+  const manifest = buildPackManifest(variant, encodedPacks, finalAssets)
+
+  return writeEncodedResult({
+    outDir,
+    manifest,
+    assets,
+    encodedPacks,
+    skippedGroups,
+    minGroupSizeBytes,
+  })
+}
+
+async function encodeRouterVariant({
+  outDir,
+  variant,
+  initialManifest,
+  groupAssets,
+  assets,
+  skippedGroups,
+  minGroupSizeBytes,
+  allowPackSplit,
+}: EncodeVariantInternalOptions): Promise<EncodeResult> {
   if (!allowPackSplit) {
     logger.info(
       'allowPackSplit is ignored for router encode; chunking is explicit via TokenPack.router()',
     )
   }
 
-  const chunkPlans = [...groupAssets].map(([packId, items]) => ({
-    id: packId,
-    href: `${packId}.png`,
-    files: items.map(item => ({
+  const routerFiles = [...groupAssets.values()].flatMap(items =>
+    items.map(item => ({
       url: item.url,
       path: item.internalPath,
       bytes: item.bytes,
       status: item.status,
       headers: item.headers,
     })),
-  }))
+  )
   const artifacts = await encodeToken(
     new TokenPack().router({
-      chunks: chunkPlans,
+      files: routerFiles,
       variant: {
         id: variant.id,
         algo: variant.algo,
@@ -375,32 +471,46 @@ export async function encode(
     artifactBytes.set(artifact.filename, bytes)
   }
 
-  const encodedPacks: EncodedPack[] = chunkPlans.map(chunk => {
-    const href = chunk.href ?? `${chunk.id}.png`
-    const bytes = artifactBytes.get(href)
-
-    if (!bytes) throw new Error(`missing encoded router chunk artifact: ${href}`)
-
-    return {
-      packId: chunk.id,
-      packPath: path.join(outDir, href),
+  const encodedPacks: EncodedPack[] = [...artifactBytes]
+    .filter(([filename]) => filename !== ROUTER_TOKEN_FILE)
+    .map(([filename, bytes]) => ({
+      packId: filename.replace(/\.png$/, ''),
+      packPath: path.join(outDir, filename),
       byteSize: bytes.byteLength,
-      assetCount: chunk.files.length,
-    }
-  })
+      assetCount: 0,
+    }))
   const finalAssignments = new Map<string, string>()
 
-  for (const plan of chunkPlans) {
-    for (const file of plan.files) finalAssignments.set(file.url, plan.id)
-  }
+  for (const file of routerFiles) finalAssignments.set(file.url, ROUTER_TOKEN_ID)
   encodedPacks.sort((a, b) => a.packId.localeCompare(b.packId))
 
-  // Drop assets that were skipped for being too small; all remaining assets
-  // keep their explicit router chunk assignment.
   const finalAssets = initialManifest.assets
     .filter(a => finalAssignments.has(a.url))
     .map(a => ({ ...a, packId: finalAssignments.get(a.url)! }))
-  const manifest: PackManifest = {
+  const routerBytes = artifactBytes.get(ROUTER_TOKEN_FILE)
+
+  if (!routerBytes) throw new Error(`missing encoded router artifact: ${ROUTER_TOKEN_FILE}`)
+
+  return writeEncodedResult({
+    outDir,
+    manifest: {
+      ...buildPackManifest(variant, encodedPacks, finalAssets),
+      router: { id: ROUTER_TOKEN_ID, localPath: ROUTER_TOKEN_FILE },
+    },
+    assets,
+    encodedPacks,
+    skippedGroups,
+    minGroupSizeBytes,
+    logExtra: { routerBytes: routerBytes.byteLength },
+  })
+}
+
+function buildPackManifest(
+  variant: ReplayTokenVariant,
+  encodedPacks: ReadonlyArray<EncodedPack>,
+  assets: PackManifest['assets'],
+): PackManifest {
+  return {
     version: 1,
     variant: {
       id: variant.id,
@@ -409,11 +519,28 @@ export async function encode(
       loadMode: variant.loadMode,
       packCompressor: variant.packCompressor,
     },
-    router: { id: ROUTER_TOKEN_ID, localPath: ROUTER_TOKEN_FILE },
     packs: encodedPacks.map(p => ({ id: p.packId })),
-    assets: finalAssets,
+    assets,
   }
+}
 
+async function writeEncodedResult({
+  outDir,
+  manifest,
+  assets,
+  encodedPacks,
+  skippedGroups,
+  minGroupSizeBytes,
+  logExtra = {},
+}: {
+  outDir: string
+  manifest: PackManifest
+  assets: ReadonlyArray<CapturedAsset>
+  encodedPacks: EncodedPack[]
+  skippedGroups: ReadonlyArray<SkippedGroup>
+  minGroupSizeBytes: number
+  logExtra?: Record<string, unknown>
+}): Promise<EncodeResult> {
   const manifestPath = `${outDir}/manifest.json`
   const statsPath = `${outDir}/stats.json`
   const statsMarkdownPath = `${outDir}/stats.md`
@@ -421,9 +548,6 @@ export async function encode(
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2), 'utf8')
 
   const stats = buildStats(manifest, assets, encodedPacks, skippedGroups, minGroupSizeBytes)
-  const routerBytes = artifactBytes.get(ROUTER_TOKEN_FILE)
-
-  if (!routerBytes) throw new Error(`missing encoded router artifact: ${ROUTER_TOKEN_FILE}`)
 
   await writeFile(statsPath, JSON.stringify(stats, null, 2), 'utf8')
   await writeFile(statsMarkdownPath, buildStatsMarkdown(stats), 'utf8')
@@ -435,7 +559,7 @@ export async function encode(
       totalRawBytes: stats.totals.rawBytes,
       totalWireBytes: stats.totals.wireBytes,
       packToWire: stats.ratios.packToWire,
-      routerBytes: routerBytes.byteLength,
+      ...logExtra,
       manifestPath,
       statsPath,
       statsMarkdownPath,
@@ -458,7 +582,9 @@ export async function encodeReplayVariants(
     variants?: readonly ReplayTokenVariant[]
   } = {},
 ): Promise<EncodeVariantsResult> {
-  const variants = options.variants ?? DEFAULT_REPLAY_TOKEN_VARIANTS
+  const variants =
+    options.variants ??
+    (options.tokenRouter ? variantsWithTokenRouter() : DEFAULT_REPLAY_TOKEN_VARIANTS)
   const results: EncodeVariantsResult['variants'] = []
 
   for (const variant of variants) {

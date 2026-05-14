@@ -22,6 +22,8 @@ node_modules
 # Local experimental codec scratch (not part of the build)
 archived-codecs/
 
+.playwright-cli/
+
 # Personal scratch notes
 TODO.md
 IDEAS.md
@@ -36,6 +38,7 @@ packages/app/runtime-bench-fixtures/
 
 # encode-times.json is an intermediate (consumed only by run-extended.ts, not the dashboard)
 packages/app/benchmark-results/encode-times.json
+packages/replay-harness/results
 
 # results.json, results-extended.json, archive-times.json under
 # packages/app/benchmark-results/ ARE committed so they ship to Vercel.

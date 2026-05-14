@@ -5,6 +5,7 @@ import type { PackManifest, TargetConfig, ThrottleConfig } from '../config/types
 import { logger } from '../log/logger.js'
 import type { RecordedAssetStore } from '../record/asset-store.js'
 import { runJourney } from '../record/journey.js'
+import { summarizeRouterDebug } from '../report/router-debug.js'
 import type { AssetMarker, PhaseRecord } from '../report/types.js'
 import { CHROMIUM_LAUNCH_ARGS, NAV_TIMEOUT_MS, POST_LOAD_GRACE_MS } from './constants.js'
 import { installIsolatedAssetRouter } from './isolated-assets.js'
@@ -41,15 +42,6 @@ export interface TokenpackSwOptions {
   sanity?: PhaseSanityOptions
 }
 
-interface PackFileResult {
-  text: string
-  packFetchMs: number
-  packInitMs: number
-  fileFetchMs: number
-  extractMs: number
-  cacheState: 'miss' | 'pending' | 'hit'
-}
-
 interface PhaseAccumulator {
   startMs: number
   loadEventMs: number | null
@@ -74,6 +66,7 @@ export async function runTokenpackSw(
   options: TokenpackSwOptions,
 ): Promise<TokenpackSwResult> {
   const manifest = options.prebuiltManifest ?? (await loadManifest(options.manifestPath))
+  const manifestUrls = manifest.assets.map(a => a.url)
   const bootstrap =
     options.prebuiltBootstrap ?? (await bundleBootstrap(options.strategy ?? DEFAULT_STRATEGY))
   const browser = await chromium.launch({
@@ -158,8 +151,10 @@ export async function runTokenpackSw(
           served: servedMarkers.length,
           fellThrough: fallThroughMarkers.length,
           totalBytes,
+          manifestUrls,
           sanity: await capturePhaseSanity(page, options.sanity, kind, active.diagnostics),
           assetMarkers: options.tokenDebug ? markers : undefined,
+          routerDebug: options.tokenDebug ? summarizeRouterDebug(markers) : undefined,
         }
 
         logger.info(
@@ -189,10 +184,12 @@ export async function runTokenpackSw(
           served: servedMarkers.length,
           fellThrough: fallThroughMarkers.length,
           totalBytes: servedMarkers.reduce((sum, m) => sum + (m.bytes ?? 0), 0),
+          manifestUrls,
           sanity: active
             ? await capturePhaseSanity(page, options.sanity, kind, active.diagnostics)
             : undefined,
           assetMarkers: options.tokenDebug ? markers : undefined,
+          routerDebug: options.tokenDebug ? summarizeRouterDebug(markers) : undefined,
         }
 
         logger.warn(
@@ -429,6 +426,7 @@ async function __tpHandleAsset(event, entry) {
       cacheState: result.cacheState,
       totalMs: fulfilledMs - observedMs,
       bytes,
+      routerDebugEvents: result.routerDebugEvents,
     }));
 
     return new Response(result.text, {

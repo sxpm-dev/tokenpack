@@ -13,7 +13,7 @@ import type { Pack } from 'tokenpack/pack/types'
 import type { SurfaceStreamHandle } from 'tokenpack/surfaces/types'
 
 import { nodeAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
-import type { DecodeOptions } from './decode'
+import type { DecodeOptions, DecodeSource } from './decode'
 import { decodeSourceToPayload, payloadToPack } from './decode-core'
 import { maybeRouterToken } from './router-token'
 import { loadSource } from './source-loader'
@@ -35,8 +35,8 @@ export async function decodeStream(
   const { bytes, algorithm } = await decodeStreamPayload(source, options)
   const pack = payloadToPack(bytes, algorithm)
 
-  if (typeof originalSource === 'string' || originalSource instanceof URL) {
-    return maybeRouterToken(pack, originalSource, options)
+  if (typeof originalSource === 'string' || originalSource instanceof URL || options.baseUrl) {
+    return maybeRouterToken(pack, originalSource as DecodeSource, options)
   }
 
   return pack

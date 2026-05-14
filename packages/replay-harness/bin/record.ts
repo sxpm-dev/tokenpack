@@ -1,7 +1,7 @@
 // Record + encode: capture a page's GET responses, build packs on disk.
 //
 // Usage:
-//   yarn ... run record <url-or-targetId> [--min-group-size=<KB>] [--capture-grace-ms=<MS>] [--bundle-chunks=<N>]
+//   yarn ... run record <url-or-targetId> [--min-group-size=<KB>] [--capture-grace-ms=<MS>] [--bundle-chunks=<N>] [--token-router]
 //
 // Examples:
 //   yarn ... run record public-demo
@@ -18,6 +18,9 @@
 // the same recording, forcing all captured assets into N sequence-ordered packs.
 // A single-bundle fixture is also written to fixtures/<target>-bundle so all
 // benchmark shapes are ready after one record run.
+// `--token-router` adds a separate router-token fixture/manifest in addition
+// to regular algorithm fixtures. Regular algorithms stay plain pack-format
+// tokens; only the router fixture uses TokenPack.router().
 
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { resolve as resolvePath } from 'node:path'
@@ -34,6 +37,7 @@ const positional = args.filter(a => !a.startsWith('--'))
 const flags = args.filter(a => a.startsWith('--'))
 
 const arg = positional[0] ?? 'public-demo'
+const tokenRouter = flags.includes('--token-router')
 
 const minGroupSizeFlag = flags.find(f => f.startsWith('--min-group-size='))
 const minGroupSizeKb = minGroupSizeFlag
@@ -67,14 +71,8 @@ const bundleChunks = bundleChunksFlag
   ? Number(bundleChunksFlag.slice(bundleChunksFlag.indexOf('=') + 1))
   : null
 
-if (
-  bundleChunks !== null &&
-  (!Number.isInteger(bundleChunks) || bundleChunks < 1)
-) {
-  logger.error(
-    { flag: bundleChunksFlag },
-    'invalid --bundle-chunks (expected positive integer)',
-  )
+if (bundleChunks !== null && (!Number.isInteger(bundleChunks) || bundleChunks < 1)) {
+  logger.error({ flag: bundleChunksFlag }, 'invalid --bundle-chunks (expected positive integer)')
   process.exit(1)
 }
 
@@ -95,6 +93,7 @@ logger.info(
     storageStatePath: target.storageStatePath,
     minGroupSizeKb,
     bundleChunks,
+    tokenRouter,
     recordRunDir,
     logPath,
     consoleJsonPath,
@@ -122,6 +121,7 @@ try {
 
   const out = await encodeReplayVariants(result.assets, fixtureDir, {
     minGroupSizeBytes,
+    tokenRouter,
   })
 
   logger.info(
@@ -162,6 +162,7 @@ try {
       forcePackId: 'all-recorded-assets',
       forcePackCount,
       allowPackSplit: false,
+      tokenRouter,
     })
 
     logger.info(

@@ -298,7 +298,7 @@ export default function RuntimeBenchmarkPage() {
     const lines: string[] = []
 
     lines.push(
-      'group,variant,iterations,median_total_ms,p95_total_ms,median_decode_ms,median_execute_ms,wire_bytes,requests,decoded_hash,decoded_bytes,per_run_total_ms',
+      'group,variant,iterations,median_total_ms,p95_total_ms,median_decode_ms,median_execute_ms,wire_bytes,requests,router_plan_kind,router_plan_mode,router_plan_reason,router_plan_requests,router_plan_fetched_bytes,router_plan_selected_bytes,router_plan_chunks,router_plan_segments,router_plan_concurrency,decoded_hash,decoded_bytes,per_run_total_ms',
     )
     for (const s of textStatuses.values()) {
       if (s.state === 'done') lines.push(csvRow('text', s.row))
@@ -659,6 +659,7 @@ function filterGeneratedVariants(
     if (
       v.loadMode === 'range-pack-fetch' ||
       v.loadMode === 'range-pack-stream' ||
+      v.loadMode === 'range-pack-exact-fetch' ||
       v.loadMode === 'range-pack-exact-stream'
     ) {
       return hasRangePackCases
@@ -881,10 +882,23 @@ function csvRow(group: 'text' | 'exact' | 'script', r: AggregatedRow): string {
     r.median.executeMs ?? '',
     r.median.wireBytes,
     r.median.requestCount,
+    r.routerPlan?.kind ?? '',
+    r.routerPlan?.mode ?? '',
+    csvCell(r.routerPlan?.reason ?? ''),
+    r.routerPlan?.requestCount ?? '',
+    r.routerPlan?.fetchedBytes ?? '',
+    r.routerPlan?.selectedBytes ?? '',
+    r.routerPlan?.chunkCount ?? '',
+    r.routerPlan?.segmentCount ?? '',
+    r.routerPlan?.concurrency ?? '',
     r.fingerprint?.hash ?? '',
     r.fingerprint?.bytes ?? '',
-    `"${r.perRunTotal.join(';')}"`,
+    csvCell(r.perRunTotal.join(';')),
   ].join(',')
+}
+
+function csvCell(value: string): string {
+  return `"${value.replaceAll('"', '""')}"`
 }
 
 // Re-export for the page-export helper.
@@ -940,7 +954,7 @@ function ResultsTable({
     [statuses, variants],
   )
 
-  const colCount = withExecute ? 12 : 11
+  const colCount = withExecute ? 13 : 12
 
   if (visibleRows.length === 0) {
     return (
@@ -954,21 +968,37 @@ function ResultsTable({
 
   return (
     <Surface className="rounded-2xl p-3.5 overflow-x-auto">
-      <table className="w-full text-xs">
+      <table className="w-full min-w-[96rem] table-fixed text-xs">
+        <colgroup>
+          <col className="w-10" />
+          <col className="w-[19rem]" />
+          <col className="w-[5.25rem]" />
+          <col className="w-[6rem]" />
+          <col className="w-[5.75rem]" />
+          {withExecute && <col className="w-[5.75rem]" />}
+          <col className="w-[5.5rem]" />
+          <col className="w-[7rem]" />
+          <col className="w-[5.25rem]" />
+          <col className="w-[5.75rem]" />
+          <col className="w-[3.75rem]" />
+          <col className="w-[19rem]" />
+          <col className="w-[19rem]" />
+        </colgroup>
         <thead>
           <tr className="border-b border-white/10 text-white/40 uppercase tracking-widest text-[10px]">
             <th className="w-8 py-2 px-2 font-normal" />
-            <th className="text-left py-2 px-2 font-normal">Variant</th>
-            <th className="text-right py-2 px-2 font-normal">TTFB</th>
-            <th className="text-right py-2 px-2 font-normal">Transfer</th>
-            <th className="text-right py-2 px-2 font-normal">Decode</th>
-            {withExecute && <th className="text-right py-2 px-2 font-normal">Execute</th>}
-            <th className="text-right py-2 px-2 font-normal">Total</th>
-            <th className="text-right py-2 px-2 font-normal">vs Base</th>
-            <th className="text-right py-2 px-2 font-normal">p95</th>
-            <th className="text-right py-2 px-2 font-normal">Wire</th>
-            <th className="text-right py-2 px-2 font-normal">Req</th>
-            <th className="text-left py-2 px-2 font-normal">Verify</th>
+            <th className="px-2 py-2 text-left font-normal">Variant</th>
+            <th className="px-2 py-2 text-right font-normal">TTFB</th>
+            <th className="px-2 py-2 text-right font-normal">Transfer</th>
+            <th className="px-2 py-2 text-right font-normal">Decode</th>
+            {withExecute && <th className="px-2 py-2 text-right font-normal">Execute</th>}
+            <th className="px-2 py-2 text-right font-normal">Total</th>
+            <th className="px-2 py-2 text-right font-normal">vs Base</th>
+            <th className="px-2 py-2 text-right font-normal">p95</th>
+            <th className="px-2 py-2 text-right font-normal">Wire</th>
+            <th className="px-2 py-2 text-right font-normal">Req</th>
+            <th className="px-2 py-2 text-left font-normal">Plan</th>
+            <th className="px-2 py-2 text-left font-normal">Verify</th>
           </tr>
         </thead>
         <tbody>
@@ -1022,6 +1052,7 @@ function variantSectionTitle(variant: Variant): string {
   if (
     variant.loadMode === 'range-pack-fetch' ||
     variant.loadMode === 'range-pack-stream' ||
+    variant.loadMode === 'range-pack-exact-fetch' ||
     variant.loadMode === 'range-pack-exact-stream'
   ) {
     return 'Pixel-range partial file ranges'
@@ -1068,7 +1099,7 @@ function ResultRow({
     </td>
   )
   const variantCell = (
-    <td className="py-1.5 px-2">
+    <td className="px-2 py-1.5">
       <span
         className={
           status.state === 'done' && status.row.median.totalMs === bestTotal
@@ -1078,22 +1109,17 @@ function ResultRow({
               : 'text-white/85'
         }
       >
-        <span className="font-mono">{variant.label}</span>
-        {variant.isToken && (
-          <span className="ml-1.5 text-[9px] uppercase tracking-widest px-1 py-0.5 rounded bg-blue-500/15 text-blue-300">
-            tk
-          </span>
-        )}
-        {variant.isStreamable && (
-          <span className="ml-1 text-[9px] uppercase tracking-widest px-1 py-0.5 rounded bg-purple-500/15 text-purple-300">
-            stream
-          </span>
-        )}
-        {status.state === 'done' && status.row.median.totalMs === bestTotal && (
-          <span className="ml-1.5 text-[9px] uppercase tracking-widest px-1 py-0.5 rounded bg-green-500/15 text-green-300">
-            best
-          </span>
-        )}
+        <span className="inline-flex max-w-full flex-wrap items-center gap-1.5">
+          <span className="font-mono">{variant.label}</span>
+          {variantChips(variant, status).map(chip => (
+            <VariantChip key={chip.label} title={chip.title} tone={chip.tone}>
+              {chip.label}
+            </VariantChip>
+          ))}
+          {status.state === 'done' && status.row.median.totalMs === bestTotal && (
+            <VariantChip tone="best">best</VariantChip>
+          )}
+        </span>
       </span>
     </td>
   )
@@ -1170,43 +1196,223 @@ function ResultRow({
     <tr className={`border-b border-white/5 ${streamingClass} ${selected ? '' : 'opacity-30'}`}>
       {checkboxCell}
       {variantCell}
-      <td className="py-1.5 px-2 text-right tabular-nums text-white/60">
+      <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-white/60">
         {formatMs(r.median.ttfbMs)}
       </td>
-      <td className="py-1.5 px-2 text-right tabular-nums text-white/70">
+      <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-white/70">
         {formatMs(r.median.transferMs)}
       </td>
-      <td className="py-1.5 px-2 text-right tabular-nums text-white/60">
+      <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-white/60">
         {formatMs(r.median.decodeMs)}
       </td>
       {withExecute && (
-        <td className="py-1.5 px-2 text-right tabular-nums text-white/60">
+        <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-white/60">
           {r.median.executeMs !== null ? formatMs(r.median.executeMs) : '—'}
         </td>
       )}
       <td
-        className={`py-1.5 px-2 text-right tabular-nums font-medium ${
+        className={`whitespace-nowrap px-2 py-1.5 text-right tabular-nums font-medium ${
           isBest ? 'text-green-400' : 'text-white/85'
         }`}
       >
         {formatMs(r.median.totalMs)}
       </td>
-      <td className="py-1.5 px-2 text-right tabular-nums">
+      <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums">
         <BaselineDeltaCell baseline={baselineRow} row={r} />
       </td>
-      <td className="py-1.5 px-2 text-right tabular-nums text-white/45">
+      <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-white/45">
         {formatMs(r.p95.totalMs)}
       </td>
-      <td className="py-1.5 px-2 text-right tabular-nums text-white/55">
+      <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-white/55">
         <WireCell row={r} variant={variant} />
       </td>
-      <td className="py-1.5 px-2 text-right tabular-nums text-white/45">
+      <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-white/45">
         {formatCount(r.median.requestCount)}
       </td>
-      <td className="py-1.5 px-2">
+      <td className="px-2 py-1.5">
+        <PlanCell row={r} variant={variant} />
+      </td>
+      <td className="px-2 py-1.5">
         <VerifyCell canonical={canonical} row={r} variant={variant} />
       </td>
     </tr>
+  )
+}
+
+type VariantChipTone =
+  | 'http'
+  | 'token'
+  | 'router'
+  | 'range'
+  | 'fetch'
+  | 'stream'
+  | 'script'
+  | 'best'
+
+interface VariantChipInfo {
+  label: string
+  tone: VariantChipTone
+  title?: string
+}
+
+function variantChips(variant: Variant, status: VariantStatus): VariantChipInfo[] {
+  const chips: VariantChipInfo[] = []
+
+  if (
+    variant.loadMode === 'router-text' ||
+    variant.loadMode === 'router-exact-text' ||
+    variant.loadMode === 'router-materialize'
+  ) {
+    chips.push({ label: 'router', tone: 'router', title: 'Router token bundle' })
+  } else if (
+    variant.loadMode === 'range-pack-fetch' ||
+    variant.loadMode === 'range-pack-stream' ||
+    variant.loadMode === 'range-pack-exact-fetch' ||
+    variant.loadMode === 'range-pack-exact-stream'
+  ) {
+    chips.push({ label: 'range', tone: 'range', title: 'HTTP Range over packed file regions' })
+  } else if (variant.isToken) {
+    chips.push({ label: 'tk', tone: 'token', title: 'Whole TokenPack image' })
+  } else {
+    chips.push({ label: 'http', tone: 'http', title: 'Native HTTP payload' })
+  }
+
+  const loadChip = variantLoadChip(variant, status)
+
+  chips.push(loadChip)
+
+  if (
+    variant.loadMode === 'native-exact' ||
+    variant.loadMode === 'range-pack-exact-fetch' ||
+    variant.loadMode === 'range-pack-exact-stream'
+  ) {
+    chips.push({ label: 'exact', tone: 'fetch', title: 'Selected files only' })
+  }
+
+  if (variant.routerStrategy && variant.routerStrategy !== 'auto') {
+    chips.push({
+      label: variant.routerStrategy === 'full' ? 'full' : variant.routerStrategy,
+      tone: variant.routerStrategy.includes('stream') ? 'stream' : 'fetch',
+      title: `Router planner override: ${variant.routerStrategy}`,
+    })
+  }
+
+  return chips
+}
+
+function variantLoadChip(variant: Variant, status: VariantStatus): VariantChipInfo {
+  if (variant.loadMode === 'script-tag') {
+    return { label: 'script', tone: 'script', title: 'Native <script src> load' }
+  }
+
+  if (
+    status.state === 'done' &&
+    status.row.routerPlan &&
+    (variant.loadMode === 'router-text' ||
+      variant.loadMode === 'router-exact-text' ||
+      variant.loadMode === 'router-materialize')
+  ) {
+    return status.row.routerPlan.mode === 'stream'
+      ? { label: 'stream', tone: 'stream', title: 'Router planner used streaming chunk reads' }
+      : { label: 'fetch', tone: 'fetch', title: 'Router planner used buffered chunk/range reads' }
+  }
+
+  if (
+    variant.loadMode === 'range-pack-stream' ||
+    variant.loadMode === 'range-pack-exact-stream' ||
+    variant.routerStrategy === 'range-stream' ||
+    variant.routerStrategy === 'range-stream-all' ||
+    (!variant.routerStrategy &&
+      (variant.loadMode === 'router-text' ||
+        variant.loadMode === 'router-exact-text' ||
+        variant.loadMode === 'router-materialize')) ||
+    variant.isStreamable
+  ) {
+    return { label: 'stream', tone: 'stream', title: 'Streaming decode/load path' }
+  }
+
+  return { label: 'fetch', tone: 'fetch', title: 'Buffered fetch/load path' }
+}
+
+function VariantChip({
+  tone,
+  title,
+  children,
+}: {
+  tone: VariantChipTone
+  title?: string
+  children: React.ReactNode
+}) {
+  const toneClass =
+    tone === 'best'
+      ? 'bg-green-500/15 text-green-300'
+      : tone === 'stream'
+        ? 'bg-purple-500/15 text-purple-300'
+        : tone === 'fetch'
+          ? 'bg-cyan-500/15 text-cyan-300'
+          : tone === 'router'
+            ? 'bg-emerald-500/15 text-emerald-300'
+            : tone === 'range'
+              ? 'bg-amber-500/15 text-amber-300'
+              : tone === 'script'
+                ? 'bg-orange-500/15 text-orange-300'
+                : tone === 'http'
+                  ? 'bg-slate-500/20 text-slate-300'
+                  : 'bg-blue-500/15 text-blue-300'
+
+  return (
+    <span
+      className={`inline-flex items-center rounded px-1 py-0.5 text-[9px] uppercase tracking-widest ${toneClass}`}
+      title={title}
+    >
+      {children}
+    </span>
+  )
+}
+
+function PlanCell({ row, variant }: { row: AggregatedRow; variant: Variant }) {
+  const plan = row.routerPlan
+
+  if (!plan) {
+    if (
+      variant.loadMode === 'router-text' ||
+      variant.loadMode === 'router-exact-text' ||
+      variant.loadMode === 'router-materialize'
+    ) {
+      return <span className="text-white/25">missing</span>
+    }
+
+    return <span className="text-white/25">—</span>
+  }
+
+  const detailLines = [
+    `kind: ${plan.kind}`,
+    `mode: ${plan.mode}`,
+    `reason: ${plan.reason}`,
+    `requests: ${plan.requestCount}`,
+    `fetched: ${formatBytes(plan.fetchedBytes)}`,
+    `selected: ${formatBytes(plan.selectedBytes)}`,
+    `chunks: ${plan.chunkCount}`,
+    `segments: ${plan.segmentCount}`,
+    `concurrency: ${plan.concurrency}`,
+    plan.ranges.length
+      ? `ranges: ${plan.ranges
+          .map(range => `${range.chunkId}@${range.offset}+${range.length}`)
+          .join('; ')}`
+      : '',
+    plan.chunks.length ? `chunk ids: ${plan.chunks.map(chunk => chunk.id).join(', ')}` : '',
+  ].filter(Boolean)
+
+  return (
+    <div className="max-w-full text-[10.5px] leading-4" title={detailLines.join('\n')}>
+      <div className="font-mono text-white/70 truncate">
+        {plan.kind}
+        <span className="text-white/35"> · {plan.mode}</span>
+      </div>
+      <div className="text-white/35 truncate">
+        {plan.reason} · {plan.requestCount} req · {formatBytes(plan.fetchedBytes)}
+      </div>
+    </div>
   )
 }
 
@@ -1243,7 +1449,10 @@ function BaselineDeltaCell({
   const sign = delta > 0 ? '+' : ''
 
   return (
-    <span className={cls} title={`baseline: ${formatMs(baseline.median.totalMs)}`}>
+    <span
+      className={`inline-block whitespace-nowrap ${cls}`}
+      title={`baseline: ${formatMs(baseline.median.totalMs)}`}
+    >
       {sign}
       {formatMs(Math.abs(delta))} · {sign}
       {pct.toFixed(1)}%

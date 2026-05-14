@@ -14,8 +14,10 @@ export type {
 } from './pack/types'
 export { type BuilderIntent, PackBuilder } from './pack-builder'
 export {
+  DEFAULT_ROUTER_CHUNK_LAYOUT,
   DEFAULT_ROUTER_MAX_SEGMENTS_PER_FILE,
   DEFAULT_ROUTER_TARGET_CHUNK_BYTES,
+  DEFAULT_ROUTER_TINY_FILE_BYTES,
   planRouterBundle,
 } from './router/plan'
 export {

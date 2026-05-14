@@ -21,6 +21,7 @@ export interface RouterChunkManifestEntry {
   id: string
   href: string
   byteLength?: number
+  payloadOffset?: number
 }
 
 export interface RouterFileManifestEntry {
@@ -57,10 +58,26 @@ export interface RouterChunkPlan {
 }
 
 export interface RouterBuildOptions {
+  files?: ReadonlyArray<RouterSourceFile>
   chunks?: ReadonlyArray<RouterChunkPlan>
   variant?: RouterTokenManifest['variant']
   targetChunkBytes?: number
   maxSegmentsPerFile?: number
+  /**
+   * Router chunk byte layout. `tiny-files-clustered` preserves manifest file
+   * order but writes small files contiguously in chunk payloads so runtime range
+   * coalescing can fetch small-file bursts with fewer requests.
+   */
+  chunkLayout?: 'source-order' | 'tiny-files-clustered'
+  /** Compressed file size considered tiny for router chunk layout. */
+  tinyFileBytes?: number
+  /**
+   * A compressed file is split only when it is larger than
+   * `targetChunkBytes * minSplitRatio`. Raising this favors fewer chunk PNGs;
+   * lowering it favors finer-grained parallel range/chunk fetches.
+   */
+  minSplitRatio?: number
+  fileCompressor?: string
 }
 
 export interface RouterTokenPack {

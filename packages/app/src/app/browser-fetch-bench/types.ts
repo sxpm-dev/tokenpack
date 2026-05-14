@@ -4,6 +4,14 @@ export type BenchTab = 'source' | 'exact' | 'script'
 
 export type Throttle = 'local' | 'fast-cdn' | 'average' | 'slow' | 'slow-parallel'
 
+export type RouterBenchStrategy =
+  | 'auto'
+  | 'full'
+  | 'range-fetch'
+  | 'range-stream'
+  | 'range-fetch-all'
+  | 'range-stream-all'
+
 export interface Variant {
   /** Group identifier for the table grouping. */
   group: Group
@@ -23,10 +31,13 @@ export interface Variant {
     | 'native-exact'
     | 'range-pack-fetch'
     | 'range-pack-stream'
+    | 'range-pack-exact-fetch'
     | 'range-pack-exact-stream'
     | 'router-text'
     | 'router-exact-text'
     | 'router-materialize'
+  /** Router-token-only fetch planner override for comparison rows. */
+  routerStrategy?: RouterBenchStrategy
   /**
    * True for token variants whose algorithm declares `capabilities.streamable`.
    * The runner pipes such variants through `decodeStream(response.body)`.
@@ -60,11 +71,40 @@ export interface Sample {
   wireBytes: number
   /** Number of network resources observed for the timed variant sample. */
   requestCount: number
+  /** Router-token planner decision for this sample, when applicable. */
+  routerPlan?: RouterPlanSummary | null
 }
 
 export interface RouterFixtureStats {
   wireBytes: number
   requestCount: number
+}
+
+export interface RouterPlanRangeSummary {
+  chunkId: string
+  offset: number
+  length: number
+  segmentCount: number
+}
+
+export interface RouterPlanChunkSummary {
+  id: string
+  href: string
+  byteLength: number | null
+}
+
+export interface RouterPlanSummary {
+  kind: string
+  mode: string
+  reason: string
+  requestCount: number
+  selectedBytes: number
+  fetchedBytes: number
+  chunkCount: number
+  segmentCount: number
+  concurrency: number
+  chunks: RouterPlanChunkSummary[]
+  ranges: RouterPlanRangeSummary[]
 }
 
 export interface DecodeFingerprint {
@@ -84,6 +124,7 @@ export interface AggregatedRow {
   min: Sample
   max: Sample
   perRunTotal: number[]
+  routerPlan: RouterPlanSummary | null
   /**
    * Fingerprint of the decoded payload from the FIRST iteration. Computed
    * AFTER all timing samples are recorded so it cannot affect any metric.

@@ -22,11 +22,13 @@ async function uploadManifest(
   keyPrefix: string,
 ): Promise<void> {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as PackManifest
-  const routerUrl = await uploadPack(
-    config,
-    `${packDir}/${ROUTER_TOKEN_FILE}`,
-    `${target.id}/${ts}-${keyPrefix}-${ROUTER_TOKEN_FILE}`,
-  )
+  const routerUrl = manifest.router
+    ? await uploadPack(
+        config,
+        `${packDir}/${ROUTER_TOKEN_FILE}`,
+        `${target.id}/${ts}-${keyPrefix}-${ROUTER_TOKEN_FILE}`,
+      )
+    : undefined
   const uploadedPacks = await Promise.all(
     manifest.packs.map(async pack => {
       const packPath = `${packDir}/${pack.id}.png`
@@ -39,7 +41,7 @@ async function uploadManifest(
 
   const updated: PackManifest = {
     ...manifest,
-    router: { ...(manifest.router ?? { id: '__router' }), url: routerUrl },
+    ...(manifest.router ? { router: { ...manifest.router, url: routerUrl } } : {}),
     packs: uploadedPacks,
   }
 

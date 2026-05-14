@@ -32,18 +32,27 @@ const BROWSER_FETCH_PAGE_EXCLUDE_VARIANTS: readonly string[] = [
 const ENABLE_FULL_BROWSER_FETCH_BENCH = false
 const FOCUSED_TEXT_VARIANT_IDS = new Set([
   'http-brotli',
+  'linear-upng-deflate-c3',
+  'pixel-range-range-fetch-all',
   'pixel-range-range-stream-all',
   'router-token-text-all',
+  'router-token-text-fetch-all',
 ])
 const FOCUSED_SCRIPT_VARIANT_IDS = new Set([
   'http-brotli',
+  'linear-upng-deflate-c3',
+  'pixel-range-range-fetch-all',
   'pixel-range-range-stream-all',
   'router-token-materialize-all',
+  'router-token-materialize-fetch-all',
 ])
 const FOCUSED_EXACT_VARIANT_IDS = new Set([
   'http-brotli-exact',
+  'pixel-range-range-fetch-exact',
   'pixel-range-range-stream-exact',
   'router-token-text-exact',
+  'router-token-text-fetch-exact',
+  'router-token-text-full-exact',
 ])
 
 function browserFetchAlgoInfos(): AlgorithmInfo[] {
@@ -189,7 +198,7 @@ const ALL_TEXT_VARIANTS: Variant[] = [
   {
     group: 'text',
     id: 'pixel-range-range-fetch-all',
-    label: 'pixel-range-none range fetch all',
+    label: 'pixel-range-none',
     isToken: true,
     loadMode: 'range-pack-fetch',
     url: ({ source }) => `/api/runtime-benchmark/range-pack?tab=content&source=${source}`,
@@ -200,7 +209,7 @@ const ALL_TEXT_VARIANTS: Variant[] = [
   {
     group: 'text',
     id: 'pixel-range-range-stream-all',
-    label: 'pixel-range-none range stream all',
+    label: 'pixel-range-none',
     isToken: true,
     isStreamable: true,
     loadMode: 'range-pack-stream',
@@ -212,13 +221,25 @@ const ALL_TEXT_VARIANTS: Variant[] = [
   {
     group: 'text',
     id: 'router-token-text-all',
-    label: 'router token text all',
+    label: 'router token text',
     isToken: true,
     loadMode: 'router-text',
     url: ({ source }) => `/api/runtime-benchmark/router/content/${source}/router.png`,
     compat: 'full',
     compatNote:
-      'Router token entrypoint: decode router.png, then bulk extract all routed file bytes through pack.stream.extractAll().',
+      'Router token entrypoint: decode router.png, then bulk extract all routed file bytes through the auto planner.',
+  },
+  {
+    group: 'text',
+    id: 'router-token-text-fetch-all',
+    label: 'router token text',
+    isToken: true,
+    loadMode: 'router-text',
+    routerStrategy: 'full',
+    url: ({ source }) => `/api/runtime-benchmark/router/content/${source}/router.png`,
+    compat: 'full',
+    compatNote:
+      'Router token entrypoint: decode router.png, then bulk extract all routed file bytes through the buffered full-chunk planner.',
   },
   ...buildTokenVariants('text', /* sourceful */ true),
 ]
@@ -246,7 +267,7 @@ const ALL_SCRIPT_VARIANTS: Variant[] = [
   {
     group: 'script',
     id: 'pixel-range-range-fetch-all',
-    label: 'pixel-range-none range fetch all',
+    label: 'pixel-range-none',
     isToken: true,
     loadMode: 'range-pack-fetch',
     url: ({ source }) => `/api/runtime-benchmark/range-pack?tab=script&source=${source}`,
@@ -257,7 +278,7 @@ const ALL_SCRIPT_VARIANTS: Variant[] = [
   {
     group: 'script',
     id: 'pixel-range-range-stream-all',
-    label: 'pixel-range-none range stream all',
+    label: 'pixel-range-none',
     isToken: true,
     isStreamable: true,
     loadMode: 'range-pack-stream',
@@ -269,13 +290,25 @@ const ALL_SCRIPT_VARIANTS: Variant[] = [
   {
     group: 'script',
     id: 'router-token-materialize-all',
-    label: 'router token materialize all',
+    label: 'router token materialize',
     isToken: true,
     loadMode: 'router-materialize',
     url: ({ source }) => `/api/runtime-benchmark/router/script/${source}/router.png`,
     compat: 'full',
     compatNote:
-      'Router token entrypoint: decode router.png, let pack.stream.materialize() load routed JS chunks and execute them.',
+      'Router token entrypoint: decode router.png, let the auto planner load routed JS chunks and execute them.',
+  },
+  {
+    group: 'script',
+    id: 'router-token-materialize-fetch-all',
+    label: 'router token materialize',
+    isToken: true,
+    loadMode: 'router-materialize',
+    routerStrategy: 'full',
+    url: ({ source }) => `/api/runtime-benchmark/router/script/${source}/router.png`,
+    compat: 'full',
+    compatNote:
+      'Router token entrypoint: decode router.png, then materialize routed JS chunks with the buffered full-chunk planner.',
   },
   ...buildTokenVariants('script', /* sourceful */ true),
 ]
@@ -284,7 +317,7 @@ const ALL_EXACT_VARIANTS: Variant[] = [
   {
     group: 'text',
     id: 'http-brotli-exact',
-    label: 'http-brotli exact files',
+    label: 'http-brotli',
     isToken: false,
     loadMode: 'native-exact',
     url: ({ source }) => `/api/runtime-benchmark/text?source=${source}&encoding=brotli`,
@@ -294,8 +327,19 @@ const ALL_EXACT_VARIANTS: Variant[] = [
   },
   {
     group: 'text',
+    id: 'pixel-range-range-fetch-exact',
+    label: 'pixel-range-none',
+    isToken: true,
+    loadMode: 'range-pack-exact-fetch',
+    url: ({ source }) => `/api/runtime-benchmark/range-pack?tab=content&source=${source}`,
+    compat: 'full',
+    compatNote:
+      'Exact remote pack access: fetch selected compressed file regions with HTTP Range, then decode in JS.',
+  },
+  {
+    group: 'text',
     id: 'pixel-range-range-stream-exact',
-    label: 'pixel-range-none range stream exact files',
+    label: 'pixel-range-none',
     isToken: true,
     isStreamable: true,
     loadMode: 'range-pack-exact-stream',
@@ -307,13 +351,37 @@ const ALL_EXACT_VARIANTS: Variant[] = [
   {
     group: 'text',
     id: 'router-token-text-exact',
-    label: 'router token text exact files',
+    label: 'router token text',
     isToken: true,
     loadMode: 'router-exact-text',
     url: ({ source }) => `/api/runtime-benchmark/router/content/${source}/router.png`,
     compat: 'full',
     compatNote:
-      'Router token exact-file mode: decode router.png, then pack.stream.text(paths) loads only selected routed files.',
+      'Router token exact-file mode: decode router.png, then the auto planner loads only selected routed files.',
+  },
+  {
+    group: 'text',
+    id: 'router-token-text-fetch-exact',
+    label: 'router token text',
+    isToken: true,
+    loadMode: 'router-exact-text',
+    routerStrategy: 'range-fetch',
+    url: ({ source }) => `/api/runtime-benchmark/router/content/${source}/router.png`,
+    compat: 'full',
+    compatNote:
+      'Router token exact-file mode: decode router.png, then fetch selected routed file segments with HTTP Range.',
+  },
+  {
+    group: 'text',
+    id: 'router-token-text-full-exact',
+    label: 'router token text',
+    isToken: true,
+    loadMode: 'router-exact-text',
+    routerStrategy: 'full',
+    url: ({ source }) => `/api/runtime-benchmark/router/content/${source}/router.png`,
+    compat: 'full',
+    compatNote:
+      'Router token exact-file control: decode router.png, then fetch whole selected chunk tokens.',
   },
 ]
 

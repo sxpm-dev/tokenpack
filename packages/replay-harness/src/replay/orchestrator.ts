@@ -171,6 +171,8 @@ export async function runBenchmark(
     logger.info({ iter: warmup }, 'warmup baseline')
     await runBaseline(sharedTarget, {
       throttle: config.throttle,
+      storageStatePath: sharedTarget.storageStatePath,
+      extraHeaders: sharedTarget.extraHeaders,
       withReload,
       assetStore: options.assetStore,
       serveEntryDocument: options.serveEntryDocument,
@@ -178,6 +180,8 @@ export async function runBenchmark(
     logger.info({ iter: warmup }, 'warmup baseline-cdp')
     await runBaselineCdp(sharedTarget, {
       throttle: config.throttle,
+      storageStatePath: sharedTarget.storageStatePath,
+      extraHeaders: sharedTarget.extraHeaders,
       withReload,
       manifestPath,
       prebuiltManifest: primaryManifest,
@@ -193,6 +197,8 @@ export async function runBenchmark(
         throttle: config.throttle,
         manifestPath,
         packUrls: packUrlsByVariant[variant.id]!,
+        storageStatePath: sharedTarget.storageStatePath,
+        extraHeaders: sharedTarget.extraHeaders,
         strategy: variantStrategy,
         withReload,
         prebuiltBootstrap: bootstraps.get(variantStrategy)!,

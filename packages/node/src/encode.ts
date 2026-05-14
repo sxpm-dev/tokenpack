@@ -110,7 +110,7 @@ async function encodeRouter(
   options: EncodeNodeOptions,
 ): Promise<EncodedTokenArtifact[]> {
   const bundle = await planRouterBundle(input)
-  const artifacts: EncodedTokenArtifact[] = []
+  const chunkArtifacts: EncodedTokenArtifact[] = []
 
   for (const chunk of bundle.chunks) {
     const token = await encodeOne(Buffer.from(chunk.bytes), {
@@ -118,7 +118,10 @@ async function encodeRouter(
       out: undefined,
     })
 
-    artifacts.push(artifactFromToken(chunk.href, token))
+    const manifestChunk = bundle.manifest.chunks.find(item => item.id === chunk.id)
+
+    if (manifestChunk) manifestChunk.payloadOffset = pixelRangePayloadOffset(token)
+    chunkArtifacts.push(artifactFromToken(chunk.href, token))
   }
 
   const routerToken = await encodeOne(Buffer.from(JSON.stringify(bundle.manifest), 'utf8'), {
@@ -127,7 +130,49 @@ async function encodeRouter(
     name: ROUTER_MANIFEST_PATH,
   })
 
-  return [artifactFromToken(ROUTER_TOKEN_FILE, routerToken), ...artifacts]
+  return [artifactFromToken(ROUTER_TOKEN_FILE, routerToken), ...chunkArtifacts]
+}
+
+function pixelRangePayloadOffset(token: Buffer): number | undefined {
+  const pngSig = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+
+  for (let i = 0; i < pngSig.length; i += 1) {
+    if (token[i] !== pngSig[i]) return undefined
+  }
+
+  let pos = 8
+
+  while (pos + 8 <= token.byteLength) {
+    const length =
+      token[pos]! * 0x1000000 + (token[pos + 1]! << 16) + (token[pos + 2]! << 8) + token[pos + 3]!
+    const type = String.fromCharCode(
+      token[pos + 4]!,
+      token[pos + 5]!,
+      token[pos + 6]!,
+      token[pos + 7]!,
+    )
+    const dataOffset = pos + 8
+
+    if (type === 'tpAK') {
+      return tpakPayloadOffset(token, dataOffset, length)
+    }
+    if (type === 'IEND') return undefined
+    pos += 8 + length + 4
+  }
+
+  return undefined
+}
+
+function tpakPayloadOffset(token: Buffer, dataOffset: number, dataLength: number): number {
+  const magic = [0x54, 0x50, 0x4b, 0x31]
+
+  if (dataOffset + 11 > token.byteLength) return dataOffset
+  for (let i = 0; i < magic.length; i += 1) {
+    if (token[dataOffset + i] !== magic[i]) return dataOffset
+  }
+  if (dataLength < 11) return dataOffset
+
+  return dataOffset + 11
 }
 
 function routerManifestEncodeOptions(options: EncodeNodeOptions): EncodeNodeOptions {

@@ -10,6 +10,8 @@ export type DecodeSource = string | Blob | ArrayBuffer | Uint8Array | HTMLImageE
 
 export interface DecodeOptions {
   key?: string
+  /** Required when decoding a router entry from a non-URL source. */
+  baseUrl?: string
   decompress?: DecompressFn
   /** Called when a streaming decoder emits its first decoded payload chunk. */
   onFirstDecodedChunk?: (chunk: Uint8Array) => void

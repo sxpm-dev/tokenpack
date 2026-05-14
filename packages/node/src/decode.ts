@@ -16,6 +16,8 @@ export type DecodeSource = string | URL | Buffer | Uint8Array
 export interface DecodeOptions {
   /** Decryption key (required if the token was encrypted). */
   key?: string
+  /** Required when decoding a router entry from a non-path/non-URL source. */
+  baseUrl?: string | URL
   /** Called when a streaming decoder emits its first decoded payload chunk. */
   onFirstDecodedChunk?: (chunk: Uint8Array) => void
 }

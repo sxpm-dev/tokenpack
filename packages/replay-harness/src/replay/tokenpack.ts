@@ -1,3 +1,4 @@
+import type { RouterDebugEvent } from '@tokenpack/browser'
 import { chromium, type Page } from 'playwright'
 
 import { bundleBootstrap, DEFAULT_STRATEGY, type StrategyName } from '../browser/build-bootstrap.js'
@@ -5,6 +6,7 @@ import type { PackManifest, TargetConfig, ThrottleConfig } from '../config/types
 import { logger } from '../log/logger.js'
 import type { RecordedAssetStore } from '../record/asset-store.js'
 import { runJourney } from '../record/journey.js'
+import { summarizeRouterDebug } from '../report/router-debug.js'
 import type { AssetMarker, PhaseRecord } from '../report/types.js'
 import { installStrategy } from './bridge.js'
 import { installCdpFetchRouter } from './cdp-fetch-router.js'
@@ -60,6 +62,7 @@ interface PackFileResult {
   fileFetchMs: number
   extractMs: number
   cacheState: 'miss' | 'pending' | 'hit'
+  routerDebugEvents?: RouterDebugEvent[]
 }
 
 interface PhaseAccumulator {
@@ -196,6 +199,7 @@ export async function runTokenpack(
             totalMs: fulfilledMs - observedMs,
             bytes: bodyBytes,
             cacheState: result.cacheState,
+            routerDebugEvents: result.routerDebugEvents,
           })
         }
       } catch (err: unknown) {
@@ -234,8 +238,10 @@ export async function runTokenpack(
           served: snap.served,
           fellThrough: snap.fellThrough,
           totalBytes: snap.totalBytes,
+          manifestUrls,
           sanity: await capturePhaseSanity(page, options.sanity, kind, snap.diagnostics),
           assetMarkers: options.tokenDebug ? snap.assetMarkers : undefined,
+          routerDebug: options.tokenDebug ? summarizeRouterDebug(snap.assetMarkers) : undefined,
         }
 
         logger.info(
@@ -263,10 +269,12 @@ export async function runTokenpack(
           served: snap?.served ?? 0,
           fellThrough: snap?.fellThrough ?? 0,
           totalBytes: snap?.totalBytes ?? 0,
+          manifestUrls,
           sanity: snap
             ? await capturePhaseSanity(page, options.sanity, kind, snap.diagnostics)
             : undefined,
           assetMarkers: options.tokenDebug ? snap?.assetMarkers : undefined,
+          routerDebug: options.tokenDebug ? summarizeRouterDebug(snap?.assetMarkers) : undefined,
         }
 
         logger.warn(
