@@ -28,7 +28,8 @@ Deep links use exported directories with `index.html`, not a catch-all SPA fallb
 - Documentation and all workflow guides, including downloads and browser verification.
 - Browser encode/decode, router planner, file build/explore/diff with supported codecs.
 - Saved server fetch and encode/decode tables.
-- Saved configurations and complete JSON results for server-dependent playground runs.
+- Interactive Browser Fetch and application delivery playgrounds, using exported static fixtures.
+- Saved configurations and complete JSON results for the remaining server-dependent playground runs.
 
 Server codecs and decompression fallbacks are disabled on Pages. Use a supported
 browser codec or run `yarn app` locally for server functionality. The server-dependent
@@ -58,3 +59,21 @@ The initial GitHub import removed historical `dashboard/node_modules/` and
 Current source files were unchanged by this cleanup. Original-to-imported commit IDs
 are recorded in [history-import-map.txt](history-import-map.txt), so commit IDs in older
 benchmark provenance can be resolved. A complete pre-import Git bundle was retained locally.
+
+## Interactive static benchmarks
+
+Browser Fetch retains source, exact-file and generated-script runs, including range
+reads and router paths. Native HTTP rows are labeled **HTTP (host encoding)**: Pages
+chooses response compression, so these rows do not claim forced Brotli or deflate.
+The only network setting is **Current connection**; custom throttling remains local.
+
+Application delivery retains all five loaders, size/scope/cache controls, timing tables
+and the live 3D preview. The build copies its fixtures and prefixes exported asset URLs.
+Cold mode bypasses browser caches; it cannot reset the hosting CDN.
+
+New measurements and comparison baselines are keyed by the exported fixture version
+and stored in the current browser, not sent
+to a server. Archived local-machine runs remain separately labeled; they are not
+automatically mixed with current-host timings. Runtime fixtures are generated in CI
+before export. `pages:verify` executes all three browser-fetch tabs and all five app
+loaders and opens their previews, instead of accepting a saved-results replacement.

@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 
 import { BenchAppClient } from '@/components/BenchApp/BenchAppClient'
 import { LandingNav } from '@/components/LandingNav/LandingNav'
+import { SavedBenchmarks } from '@/components/SavedBenchmarks/SavedBenchmarks'
 import { BENCH_SIZES, getBenchFixtureStatus } from '@/lib/benchAppFiles'
+import { isStaticSite } from '@/lib/site-path'
 
 export const metadata: Metadata = {
   title: 'Bench app',
@@ -38,7 +40,20 @@ export default async function BenchmarksAppPage() {
 
         <section className="border-b border-tp-border">
           <div className="mx-auto max-w-6xl px-6 py-10 lg:py-12">
+            {isStaticSite && (
+              <p className="mb-5 text-sm text-tp-muted">
+                Live application preview and measurements run in your browser on this host. The host
+                controls HTTP compression. Cold mode bypasses the browser cache; it does not reset
+                the CDN. Saved local-machine results are available separately below.
+              </p>
+            )}
             <BenchAppClient fixtures={fixtures} />
+            {isStaticSite && (
+              <details className="mt-8">
+                <summary>Archived local baseline results</summary>
+                <SavedBenchmarks scopes={['bench-app']} title="Archived application measurements" />
+              </details>
+            )}
           </div>
         </section>
       </main>

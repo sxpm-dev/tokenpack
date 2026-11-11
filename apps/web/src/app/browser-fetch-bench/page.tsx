@@ -13,6 +13,9 @@ import {
 } from '@phosphor-icons/react'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 
+import { SavedBenchmarks } from '@/components/SavedBenchmarks/SavedBenchmarks'
+import { isStaticSite, sitePath } from '@/lib/site-path'
+import { setStaticRuntimeFiles } from '@/lib/static-runtime'
 import { useSavedBenchRun } from '@/lib/use-saved-bench-run'
 
 import { formatBytes, formatMs, runVariant } from './runner'
@@ -33,6 +36,7 @@ const THROTTLE_OPTIONS: readonly ThrottleOption[] = [
 ] as const
 
 interface Manifest {
+  staticFiles?: Record<string, string>
   sources: RuntimeCase[]
   rangePackCases: RuntimeRangePackCase[]
   routerCases: RuntimeRouterCase[]
@@ -166,9 +170,15 @@ export default function RuntimeBenchmarkPage() {
   )
 
   useEffect(() => {
-    fetch('/api/runtime-benchmark/manifest', { cache: 'no-store' })
+    fetch(
+      isStaticSite
+        ? sitePath('/runtime-fixtures/manifest.json')
+        : '/api/runtime-benchmark/manifest',
+      { cache: 'no-store' },
+    )
       .then(r => r.json())
       .then((m: Manifest) => {
+        if (m.staticFiles) setStaticRuntimeFiles(m.staticFiles)
         setManifest(m)
         const first = contentCasesFor(m)[0] ?? scriptCasesFor(m)[0]
 
@@ -180,6 +190,28 @@ export default function RuntimeBenchmarkPage() {
   useEffect(() => {
     if (!source) return
 
+    if (isStaticSite) {
+      let active = true
+
+      Promise.resolve()
+        .then(() =>
+          JSON.parse(
+            localStorage.getItem(
+              `tokenpack:baseline:${process.env.NEXT_PUBLIC_FIXTURE_VERSION ?? 'local'}:${activeTab}:${source}:${iterations}`,
+            ) ?? 'null',
+          ),
+        )
+        .then(value => {
+          if (active) setBaseline(value)
+        })
+        .catch(() => {
+          if (active) setBaseline(null)
+        })
+
+      return () => {
+        active = false
+      }
+    }
     const controller = new AbortController()
     const params = new URLSearchParams({
       iterations: String(iterations),
@@ -354,6 +386,25 @@ export default function RuntimeBenchmarkPage() {
     setBaselineMessage('')
 
     try {
+      if (isStaticSite) {
+        const saved = {
+          tab: activeTab,
+          source,
+          throttle,
+          iterations,
+          rows,
+          createdAt: new Date().toISOString(),
+        }
+
+        localStorage.setItem(
+          `tokenpack:baseline:${process.env.NEXT_PUBLIC_FIXTURE_VERSION ?? 'local'}:${activeTab}:${source}:${iterations}`,
+          JSON.stringify(saved),
+        )
+        setBaseline(saved)
+        setBaselineMessage('Baseline saved in this browser · current host/network only')
+
+        return
+      }
       const res = await fetch('/api/runtime-benchmark/baseline', {
         body: JSON.stringify({
           tab: activeTab,
@@ -518,7 +569,11 @@ export default function RuntimeBenchmarkPage() {
 
           <label
             className="flex items-center gap-2"
-            title="Server-side latency + bandwidth simulation. Matches /server-fetch-bench conditions."
+            title={
+              isStaticSite
+                ? 'Uses your current connection to the static host.'
+                : 'Server-side latency + bandwidth simulation. Matches /server-fetch-bench conditions.'
+            }
           >
             <span className="text-tp-muted">Network:</span>
             <select
@@ -530,7 +585,10 @@ export default function RuntimeBenchmarkPage() {
                 setThrottle(e.target.value as Throttle)
               }}
             >
-              {THROTTLE_OPTIONS.map(t => (
+              {(isStaticSite
+                ? [{ id: 'local' as const, label: 'Current connection' }]
+                : THROTTLE_OPTIONS
+              ).map(t => (
                 <option key={t.id} value={t.id}>
                   {t.label}
                 </option>
@@ -582,10 +640,14 @@ export default function RuntimeBenchmarkPage() {
         {baselineMessage && <div className="text-[11px] text-green-300/80">{baselineMessage}</div>}
 
         <div className="rounded border border-yellow-500/20 bg-yellow-500/5 px-3 py-2 text-[11px] leading-4 text-yellow-200">
-          <strong>Real-network mode.</strong> Disable Service Workers, close other tabs, and avoid
-          running with devtools&apos; <em>Network throttling</em> active unless that&apos;s
-          intentional. Every request appends a unique{' '}
-          <code className="text-yellow-100">?nonce</code>, sets{' '}
+          <strong>
+            Real-network mode.{' '}
+            {isStaticSite &&
+              'Static host controls HTTP compression. Server throttling is unavailable. New runs and baselines stay in this browser. '}
+          </strong>{' '}
+          Disable Service Workers, close other tabs, and avoid running with devtools&apos;{' '}
+          <em>Network throttling</em> active unless that&apos;s intentional. Every request appends a
+          unique <code className="text-yellow-100">?nonce</code>, sets{' '}
           <code className="text-yellow-100">Cache-Control: no-store</code>, and uses{' '}
           <code className="text-yellow-100">
             fetch({'{'} cache: &apos;no-store&apos; {'}'})
@@ -605,7 +667,8 @@ export default function RuntimeBenchmarkPage() {
       {activeTab === 'source' ? (
         <>
           <SectionTitle>
-            Source content · {throttle} · <code>{source}</code>
+            Source content · {isStaticSite ? 'current connection' : throttle} ·{' '}
+            <code>{source}</code>
           </SectionTitle>
           <ResultsTable
             baseline={currentBaseline}
@@ -621,7 +684,7 @@ export default function RuntimeBenchmarkPage() {
       ) : activeTab === 'exact' ? (
         <>
           <SectionTitle>
-            Exact files · {throttle} · <code>{source}</code>
+            Exact files · {isStaticSite ? 'current connection' : throttle} · <code>{source}</code>
           </SectionTitle>
           <ResultsTable
             baseline={currentBaseline}
@@ -637,7 +700,7 @@ export default function RuntimeBenchmarkPage() {
       ) : (
         <>
           <SectionTitle>
-            Generated script · {throttle} ·{' '}
+            Generated script · {isStaticSite ? 'current connection' : throttle} ·{' '}
             <code>{activeCase ? caseLabel(activeCase, 'script', activeCaseIndex) : source}</code>
           </SectionTitle>
           <ResultsTable
@@ -651,6 +714,12 @@ export default function RuntimeBenchmarkPage() {
           />
           <RuntimeLegend withExecute />
         </>
+      )}
+      {isStaticSite && (
+        <details className="mt-8">
+          <summary>Archived local baseline results</summary>
+          <SavedBenchmarks scopes={['browser-fetch']} title="Archived browser-fetch measurements" />
+        </details>
       )}
     </div>
   )

@@ -21,6 +21,8 @@ import { browserAlgorithmCatalog as algorithmCatalog } from '@tokenpack/browser/
 import { type AlgorithmInfo, listAlgorithmInfos } from 'tokenpack/algorithms/catalog-info'
 import type { AlgorithmCtor } from 'tokenpack/algorithms/types'
 
+import { isStaticSite } from '@/lib/site-path'
+
 import type { Variant } from './types'
 
 const BROWSER_FETCH_PAGE_EXCLUDE_ALGOS: readonly string[] = []
@@ -399,3 +401,14 @@ export const SCRIPT_VARIANTS: Variant[] = ENABLE_FULL_BROWSER_FETCH_BENCH
 export const EXACT_VARIANTS: Variant[] = ENABLE_FULL_BROWSER_FETCH_BENCH
   ? ALL_EXACT_VARIANTS
   : ALL_EXACT_VARIANTS.filter(variant => FOCUSED_EXACT_VARIANT_IDS.has(variant.id))
+
+// Pages controls neither Content-Encoding nor server throttling. Use the host response honestly.
+if (isStaticSite)
+  for (const variants of [TEXT_VARIANTS, SCRIPT_VARIANTS, EXACT_VARIANTS]) {
+    for (const variant of variants)
+      if (!variant.isToken) {
+        variant.id = variant.id.replace('brotli', 'host')
+        variant.label = 'HTTP (host encoding)'
+        variant.compatNote = 'Static host chooses Content-Encoding; no forced Brotli comparison.'
+      }
+  }

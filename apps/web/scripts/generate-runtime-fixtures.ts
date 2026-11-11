@@ -646,7 +646,7 @@ function largeJsAssetCase(): RuntimeAssetCase {
 function lessCompressibleLargeJsAssetCase(): RuntimeAssetCase {
   const id = 'less-compressible-large-js'
   const payload = deterministicBase64Payload(15 * 1024 * 1024)
-  const bytes = makeSingleChunkBenchmarkScript(id, payload)
+  const bytes = makeSingleChunkBenchmarkScript(`${id}__chunks-1`, payload)
 
   return {
     id,

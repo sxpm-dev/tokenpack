@@ -1,5 +1,6 @@
 /** Build a disposable static edition without modifying the local server application. */
 import { cp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -27,17 +28,27 @@ for (const file of [
 await mkdir(path.join(stage, 'public'), { recursive: true })
 await cp(path.join(web, 'public'), path.join(stage, 'public'), {
   recursive: true,
-  filter: source => !source.startsWith(path.join(web, 'public/bench-app')),
 })
+const fixtureExport = spawnSync(process.execPath, [path.join(root, 'node_modules/tsx/dist/cli.mjs'), path.join(web, 'scripts/export-runtime-static.ts'), path.join(stage, 'public/runtime-fixtures')], { cwd: web, stdio: 'inherit' })
+if (fixtureExport.status !== 0) process.exit(fixtureExport.status ?? 1)
+// Built fixture applications contain absolute asset paths. Rewrite only the exported copy.
+async function prefixAppAssets(dir) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const file = path.join(dir, entry.name)
+    if (entry.isDirectory()) await prefixAppAssets(file)
+    else if (/\.(html|js|css|json)$/.test(entry.name)) {
+      const source = await readFile(file, 'utf8')
+      await writeFile(file, source.replaceAll('/bench-app/', `${basePath}/bench-app/`))
+    }
+  }
+}
+await prefixAppAssets(path.join(stage, 'public/bench-app'))
 await rm(path.join(stage, 'src/app/api'), { recursive: true, force: true })
 await rm(path.join(stage, 'src/app/scenarios/[scenarioId]'), { recursive: true, force: true })
 const pages = {
-  'browser-fetch-bench': ['Browser fetch — saved runs', ['browser-fetch']],
   'json-playground': ['JSON paths — saved runs', ['json']],
   'apply-diff-bench': ['Apply diff — saved runs', ['apply-diff']],
   'partial-fetch': ['Partial fetch — saved runs', ['partial-fetch']],
-  'benchmarks/app': ['Application delivery — saved runs', ['bench-app']],
-  'bench-app': ['Application delivery — saved runs', ['bench-app']],
   'scenarios/diff-versioning': ['Diff matrix — saved runs', ['diff-matrix']],
   'scenarios/component-bundle': ['Component bundle — saved runs', ['scenario']],
   'scenarios/ssr-streaming': ['SSR streaming — saved runs', ['scenario']],
@@ -103,6 +114,7 @@ const result = spawnSync(
     env: {
       ...process.env,
       NEXT_PUBLIC_STATIC_SITE: 'true',
+      NEXT_PUBLIC_FIXTURE_VERSION: createHash('sha256').update(await readFile(path.join(stage, 'public/runtime-fixtures/manifest.json'))).digest('hex'),
       NEXT_PUBLIC_BASE_PATH: basePath,
       NEXT_TELEMETRY_DISABLED: '1',
     },

@@ -28,7 +28,14 @@ const server = createServer(async (request, response) => {
     if (file !== root && !file.startsWith(root + path.sep)) throw new Error('Outside static root')
     if ((await stat(file)).isDirectory()) file = path.join(file, 'index.html')
     response.setHeader('Content-Type', types[path.extname(file)] ?? 'application/octet-stream')
-    response.end(await readFile(file))
+    const bytes = await readFile(file)
+    const range = request.headers.range?.match(/^bytes=(\d+)-(\d*)$/)
+    if (range) {
+      const start = Number(range[1]), end = Math.min(range[2] ? Number(range[2]) : bytes.length - 1, bytes.length - 1)
+      if (start > end) { response.writeHead(416).end(); return }
+      response.writeHead(206, { 'Content-Range': `bytes ${start}-${end}/${bytes.length}`, 'Content-Length': end - start + 1, 'Accept-Ranges': 'bytes' })
+      response.end(bytes.subarray(start, end + 1))
+    } else { response.setHeader('Content-Length', bytes.length); response.end(bytes) }
   } catch {
     response.writeHead(404).end('Not found')
   }
@@ -37,8 +44,9 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
 const base = process.env.PAGES_URL || `http://127.0.0.1:${server.address().port}${prefix}`
 const browser = await chromium.launch({ headless: true })
 const errors = []
+let page
 try {
-  const page = await browser.newPage()
+  page = await browser.newPage()
   page.on('pageerror', error => errors.push(error.message))
   page.on('response', response => {
     if (response.status() >= 400 && !response.url().includes('favicon'))
@@ -60,10 +68,8 @@ try {
   }
   for (const route of [
     '/json-playground/',
-    '/browser-fetch-bench/',
     '/apply-diff-bench/',
     '/scenarios/diff-versioning/',
-    '/benchmarks/app/',
   ]) {
     await page.goto(base + route)
     await page.getByRole('link', { name: 'Download complete run JSON' }).waitFor()
@@ -71,6 +77,34 @@ try {
     await page.getByText('Complete recorded result', { exact: true }).click()
     assert((await page.locator('details pre').innerText()).length > 100)
     console.log(`PASS ${route} saved results`)
+  }
+  await page.goto(base + '/browser-fetch-bench/')
+  await page.locator('select').first().locator('option').first().waitFor({ state: 'attached' })
+  await page.locator('input[type=number]').fill('1')
+  for (const [tab, run] of [['Source content', /Run source/], ['Exact files', /Run exact/], ['Generated script', /Run script/]]) {
+    await page.getByRole('button', { name: new RegExp(tab, 'i') }).first().click()
+    const button = page.getByRole('button', { name: run })
+    await button.click()
+    await page.waitForFunction(() => !document.querySelector('button svg.animate-spin') && [...document.querySelectorAll('button')].some(b => /^Run (source|exact|script)/i.test((b.textContent ?? '').trim()) && !b.disabled), null, { timeout: 90000 })
+    await page.getByRole('button', { name: 'Save as baseline' }).waitFor()
+    assert.equal(await page.locator('tbody .text-red-300').count(), 0, await page.locator('tbody').innerText())
+    await page.getByRole('button', { name: 'Save as baseline' }).click()
+    await page.getByText(/Baseline saved in this browser/).waitFor()
+    console.log(`PASS browser fetch ${tab}`)
+  }
+  await page.goto(base + '/benchmarks/app/')
+  await page.getByRole('button', { name: /^Small/ }).click()
+  await page.getByRole('button', { name: /^1×/ }).click()
+  for (const label of ['Router materialize', 'Manifest chunks', 'Manifest bundle', 'Native chunks', 'Native single']) {
+    await page.getByRole('button', { name: new RegExp('^' + label) }).click()
+    await page.getByRole('button', { name: /^(Re-run|Run) bench$/i }).click()
+    await page.getByRole('button', { name: 'Re-run bench', exact: true }).waitFor({ timeout: 90000 })
+    const frame = page.frameLocator('iframe')
+    await frame.locator('#root .bench-module').first().waitFor()
+    await frame.getByRole('button', { name: /preview/i }).click()
+    await frame.locator('#lazy-dialog').waitFor()
+    await frame.locator('#lazy-dialog canvas').waitFor({ timeout: 30000 })
+    console.log(`PASS application ${label} and preview`)
   }
   const guides = JSON.parse(
     await readFile(new URL('../../../docs/guides/index.json', import.meta.url), 'utf8'),
@@ -108,6 +142,9 @@ try {
   console.log(
     'PASS 10 guide verifiers, browser round trip, router planner, file build/explore, mobile layout and no missing assets',
   )
+} catch (error) {
+  console.error('Failed on', page?.url(), (await page?.locator('body').innerText())?.slice(-5000))
+  throw error
 } finally {
   await browser.close()
   server.close()

@@ -4,6 +4,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+import { isStaticSite } from './site-path'
+
 /** Persist completed runs and restore only runs matching the current fixtures and controls. */
 export function useSavedBenchRun<T>(
   scope: string,
@@ -31,7 +33,7 @@ export function useSavedBenchRun<T>(
     restoreRef.current(initialResult.current)
     const epoch = runEpoch.current
 
-    fetch(`/api/bench-runs?scope=${scope}&config=${encodeURIComponent(config)}`, {
+    savedRunRequest(`/api/bench-runs?scope=${scope}&config=${encodeURIComponent(config)}`, {
       signal: controller.signal,
     })
       .then(response => {
@@ -75,7 +77,7 @@ export function useSavedBenchRun<T>(
     let active = true
 
     setMessage('Saving measurements…')
-    fetch('/api/bench-runs', {
+    savedRunRequest('/api/bench-runs', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ scope, config, result: resultRef.current }),
@@ -99,4 +101,31 @@ export function useSavedBenchRun<T>(
   }, [scope, config, running])
 
   return message
+}
+
+async function savedRunRequest(url: string, init?: RequestInit): Promise<Response> {
+  if (!isStaticSite) return fetch(url, init)
+  try {
+    const params = new URL(url, location.origin).searchParams
+    const body = init?.method === 'POST' ? JSON.parse(String(init.body)) : null
+    const scope = body?.scope ?? params.get('scope')
+    const config = body?.config ?? params.get('config')
+    const key = `tokenpack:live-run:${process.env.NEXT_PUBLIC_FIXTURE_VERSION ?? 'local'}:${scope}:${config}`
+
+    if (body) {
+      const saved = {
+        ...body,
+        createdAt: new Date().toISOString(),
+        mode: 'this browser / current host',
+      }
+
+      localStorage.setItem(key, JSON.stringify(saved))
+
+      return Response.json(saved)
+    }
+
+    return Response.json(JSON.parse(localStorage.getItem(key) ?? 'null'))
+  } catch {
+    return Response.json({ error: 'Browser storage unavailable' }, { status: 503 })
+  }
 }

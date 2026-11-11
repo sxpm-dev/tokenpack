@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import type { BenchFixtureStatus, BenchSize } from '@/lib/benchAppFiles'
+import { sitePath } from '@/lib/site-path'
 import { useSavedBenchRun } from '@/lib/use-saved-bench-run'
 
 import {
@@ -83,7 +84,7 @@ export function BenchAppClient({ fixtures }: BenchAppClientProps) {
       : active.id === 'native-chunks' && scope === 'random'
         ? '/native-chunks-random.html'
         : active.frame
-  const src = `/bench-app/${size}${activeFrame}?${active.query}&size=${size}&scope=${scope}&cache=${cacheMode}&run=${runKey}`
+  const src = `${sitePath(`/bench-app/${size}${activeFrame}`)}?${active.query}&size=${size}&scope=${scope}&cache=${cacheMode}&run=${runKey}`
   const activeSummary = summaries[`${size}:${scope}:${cacheMode}:${activeId}` as RunKey]
   const isRunning = runPhase !== 'idle'
 

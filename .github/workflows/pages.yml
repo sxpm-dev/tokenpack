@@ -19,6 +19,7 @@ jobs:
       - run: corepack enable
       - run: yarn install --immutable
       - run: yarn test
+      - run: yarn workspace tokenpack-web benchmark:runtime
       - run: yarn pages:build
       - run: yarn workspace tokenpack-web exec playwright install --with-deps chromium
       - run: yarn pages:verify

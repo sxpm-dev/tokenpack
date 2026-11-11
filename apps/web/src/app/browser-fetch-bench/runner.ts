@@ -1,6 +1,5 @@
 // Runtime benchmark runner — executes one variant N iterations and produces
 // per-iteration Sample[].
-
 import {
   decode,
   decodeStream,
@@ -18,6 +17,8 @@ import {
 } from '@tokenpack/browser/fetch-pack'
 import { Bench } from 'tinybench'
 import { decompressRaw } from 'tokenpack/compressors'
+
+import { runtimeFixtureUrl } from '@/lib/static-runtime'
 
 import type {
   AggregatedRow,
@@ -1100,7 +1101,7 @@ function withQuery(url: string, query: Record<string, string>): string {
   const sep = url.includes('?') ? '&' : '?'
   const params = new URLSearchParams(query)
 
-  return url + sep + params.toString()
+  return runtimeFixtureUrl(url + sep + params.toString())
 }
 
 function concatBytes(chunks: Uint8Array[]): Uint8Array {
