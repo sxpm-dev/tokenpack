@@ -1,7 +1,6 @@
 // Class-based FEC registry. Same shape as compressorRegistry.
 
 import type { OptionsSchema } from '../components/options'
-
 import { NoneFec } from './none-fec'
 import { ReedSolomonFec } from './reed-solomon-fec'
 import { AbstractFec, type FecMode } from './types'

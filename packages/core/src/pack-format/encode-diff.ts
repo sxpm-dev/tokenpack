@@ -188,6 +188,7 @@ function computeBytePatch(prev: Uint8Array, next: Uint8Array): BytePatch {
   while (prefix < min && prev[prefix] === next[prefix]) prefix += 1
 
   let suffix = 0
+
   while (
     suffix < min - prefix &&
     prev[prev.length - 1 - suffix] === next[next.length - 1 - suffix]

@@ -8,20 +8,39 @@
     "node": ">=18.18"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "lint": "yarn workspaces foreach -A --exclude codeart-monorepo run lint",
     "lint:fix": "yarn workspaces foreach -A --exclude codeart-monorepo run lint:fix",
     "format": "yarn workspaces foreach -A --exclude codeart-monorepo run format",
-    "test": "yarn workspace tokenpack test",
+    "test": "yarn workspace tokenpack test && yarn workspace @tokenpack/node test && yarn workspace @tokenpack/browser test",
     "test:watch": "yarn workspace tokenpack test:watch",
     "tokenpack": "yarn workspace tokenpack-cli tokenpack",
     "tokenpack-skill": "yarn workspace tokenpack-claude-skill exec tsx src/cli.ts",
-    "benchmark": "yarn workspace tokenpack-app benchmark",
+    "benchmark": "yarn workspace tokenpack-web benchmark",
     "build:lib": "yarn workspace tokenpack build && yarn workspace @tokenpack/node build && yarn workspace @tokenpack/browser build",
-    "app": "yarn workspace tokenpack-app dev",
-    "app:build": "yarn workspace tokenpack-app build",
-    "start": "yarn workspace tokenpack-app start"
+    "app": "yarn workspace tokenpack-web dev",
+    "app:build": "yarn workspace tokenpack-web build",
+    "app:start": "yarn workspace tokenpack-web start",
+    "web": "yarn workspace tokenpack-web dev",
+    "web:build": "yarn workspace tokenpack-web build",
+    "web:start": "yarn workspace tokenpack-web start",
+    "web:dev": "yarn workspace tokenpack-web dev",
+    "bench:llm-token:fixture": "tsx scripts/generate-llm-token-fixture.ts",
+    "bench:llm-token": "tsx scripts/llm-token-benchmark.ts",
+    "bench:llm-tpak": "tsx scripts/llm-tpak-decode-benchmark.ts",
+    "bench:pixel-matrix": "tsx scripts/test-pixel-matrix.ts",
+    "bench:pixel-matrix:direct": "tsx scripts/test-pixel-matrix-direct.ts",
+    "bench:unit": "tsx scripts/benchmark-units.ts"
+  },
+  "devDependencies": {
+    "@ai-sdk/anthropic": "^2.0.0",
+    "@ai-sdk/openai": "^2.0.0",
+    "@anthropic-ai/sdk": "^0.40.0",
+    "ai": "^5.0.0",
+    "openai": "^4.80.0",
+    "tsx": "^4.21.0"
   }
 }

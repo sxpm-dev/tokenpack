@@ -8,7 +8,6 @@ import { NoneCompressor } from 'tokenpack/compressors'
 import { DenseDrawer } from 'tokenpack/drawers'
 
 import { PngSurface } from '../surfaces/png'
-
 import { extractTpakChunk, insertTpakChunk } from './pixel-range-png-base'
 
 export class PixelRangePngNone extends PixelRangeAlgorithm {

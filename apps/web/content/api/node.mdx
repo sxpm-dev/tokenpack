@@ -1,0 +1,172 @@
+# `@tokenpack/node`
+
+Node.js adapter for TokenPack. Adds fs / sharp / pngjs bindings on top of
+the env-neutral core, plus a CLI binary.
+
+```bash
+yarn add @tokenpack/node
+```
+
+## Top-level exports
+
+| Symbol                              | Notes                                                                                               |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `encode(content \| builder, opts?)` | `string` (= fs path) / `Buffer` / `Uint8Array` / `PackBuilder`                                      |
+| `decode(source, opts?)`             | `string` (= fs path or http/https/file URL) / `Buffer` / `Uint8Array` / `URL`                       |
+| `decodeStream(source)`              | Node `Duplex` streaming decoder (PNG only)                                                          |
+| `decodeRouter(source, opts?)`       | Explicit router-token entry point; throws if not router                                             |
+| `PackBuilder`                       | Re-exported from core; collects files for pack tokens                                               |
+| `NodePackBuilder`                   | Adds `withFileSystem(path, opts?)` + `withGlob(pattern, opts?)`                                     |
+| `TokenPack`                         | Re-exported from core; extends `PackBuilder` with `.router(opts?)` for router tokens                |
+| `isRouterTokenPack(value)`          | Type guard for the value produced by `TokenPack#router()`                                           |
+| Pack types                          | `Pack`, `FilePack`, `DirPack`, `DiffPack`, `RouterPack`, `DiffEntry`, `DiffOpKind`, `PackEntryInfo` |
+| Diff helpers (heatmap)              | `diff(a, b).text() / .token(out)`                                                                   |
+
+## `encode()` options
+
+```ts
+interface EncodeNodeOptions {
+  algo?: string // catalog algorithm name; default 'linear'
+  out?: string // also write to disk
+  algoOptions?: {
+    compressor?: { level?: number }
+    surface?: { channels?: 1 | 2 | 3 | 4 }
+  }
+  key?: string // AES-256-GCM passphrase
+
+  // Pack-format only (when input is PackBuilder):
+  compressor?: string // per-file compressor; default 'brotli-11'
+
+  // File-format only:
+  name?: string // wraps payload so decode surfaces this name
+}
+```
+
+## `decode()` options
+
+```ts
+interface DecodeOptions {
+  key?: string // decryption key for encrypted tokens
+  compressor?: string // used when produced pack later calls diffTo()
+}
+```
+
+## Examples
+
+### Encode one file
+
+```ts
+import { encode, decode } from '@tokenpack/node'
+
+const r = await encode(Buffer.from('hello world'))
+const pack = await decode(r.bytes)
+console.log(await pack.text())
+```
+
+### Encode a directory
+
+```ts
+const r = await encode('./src') // string = fs path; reads + packs as CART
+await fs.promises.writeFile('./src.png', r)
+```
+
+### Encode with the builder
+
+```ts
+import { encode, NodePackBuilder } from '@tokenpack/node'
+
+const r = await encode(
+  new NodePackBuilder()
+    .withFile('readme.md', '# my pack')
+    .withFileSystem('./src', { exclude: ['*.test.ts'] })
+    .withGlob('docs/**/*.md'),
+)
+```
+
+### Decode anything
+
+```ts
+await decode('./tokens/snapshot.png')
+await decode('https://example.com/asset.png')
+await decode(new URL('file:///abs/path/x.png'))
+await decode(Buffer.from(/* …token bytes… */))
+```
+
+### Diff round-trip
+
+```ts
+import { encode, decode, PackBuilder } from '@tokenpack/node'
+
+const v1 = await encode(new PackBuilder().withFile('a.js', 'aa').withFile('b.js', 'bb'))
+const v2 = await encode(new PackBuilder().withFile('a.js', 'AA').withFile('c.js', 'cc'))
+
+const prev = await decode(v1.bytes)
+const next = await decode(v2.bytes)
+
+const diffResult = await prev.diffTo(next)
+const diffPack = await decode(diffResult.bytes)
+const reconstructed = await prev.apply(diffPack)
+```
+
+### Encrypted packs
+
+```ts
+const r = await encode(new PackBuilder().withFile('secret.txt', 'classified'), {
+  key: 'super-secret-passphrase',
+})
+const pack = await decode(r.bytes, { key: 'super-secret-passphrase' })
+```
+
+### Streaming decode
+
+```ts
+import { decodeStream } from '@tokenpack/node'
+import { createReadStream } from 'node:fs'
+
+const stream = createReadStream('./snapshot.png').pipe(decodeStream())
+stream.on('data', chunk => {
+  /* ... */
+})
+```
+
+### Router tokens
+
+Encode side — `TokenPack` is `PackBuilder` plus `.router(opts?)`:
+
+```ts
+import { encode } from '@tokenpack/node'
+import { TokenPack } from 'tokenpack'
+
+const artifacts = await encode(
+  new TokenPack()
+    .withFile('readme.md', '# my app')
+    .withBuffer('app.js', appBytes)
+    .withBuffer('styles.css', cssBytes)
+    .router({
+      targetChunkBytes: 1_000_000, // 1 MB per chunk
+      tinyFileBytes: 32_768, // < 32 KB clusters together
+      bootFiles: ['app.js', 'styles.css'],
+    }),
+)
+// → Array<{ filename: string; mimetype: string; blob: Blob }>
+//   [ { filename: 'router.png', ... },
+//     { filename: 'chunk-0.png', ... },
+//     { filename: 'chunk-1.png', ... }, ... ]
+```
+
+See [Router Token](/router-tokens#encode-planning) for
+the full options table.
+
+Decode side — three entry points:
+
+```ts
+import { decode, decodeStream, decodeRouter } from '@tokenpack/node'
+
+const pack = await decode('/bundle/router.png')
+const streamed = await decodeStream('/bundle/router.png')
+const router = await decodeRouter('/bundle/router.png')
+```
+
+Use `decodeRouter()` when you know the token is a router — it gives you the
+typed `RouterPack` directly and resolves chunk hrefs relative to the source
+URL. `decode()` accepts router tokens too, but the typed surface is narrower.

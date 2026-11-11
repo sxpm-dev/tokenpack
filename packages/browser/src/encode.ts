@@ -1,11 +1,12 @@
 // Browser encode — thin proxy: normalize input → look up algorithm → delegate.
 
 import { PackBuilder } from 'tokenpack'
-import { browserAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
 import type { AlgorithmOptions } from 'tokenpack/algorithms/types'
 import { compressRaw } from 'tokenpack/compressors'
 import { wrapFileWithName } from 'tokenpack/pack-format/encode-file'
 import { encodePack } from 'tokenpack/pack-format/encode-pack'
+
+import { browserAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
 
 export interface EncodeResult {
   blobs: Blob[]

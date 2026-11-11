@@ -8,7 +8,6 @@ import { DenseDrawer } from 'tokenpack/drawers'
 
 import { BrotliCompressor } from '../compressors/brotli-compressor'
 import { StreamingPngSurface } from '../surfaces/streaming-png'
-
 import { extractTpakChunk, insertTpakChunk } from './pixel-range-png-base'
 
 export class PixelRangeStreamPngBrotli extends PixelRangeAlgorithm {

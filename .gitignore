@@ -29,17 +29,22 @@ TODO.md
 IDEAS.md
 
 # Benchmark fixtures (re-generatable via `yarn benchmark`)
-packages/app/benchmark-fixtures/
+apps/web/benchmark-fixtures/
 
 # Legacy generated fixture locations
 benchmark/tokens/
-packages/app/runtime-fixtures/
-packages/app/runtime-bench-fixtures/
+apps/web/runtime-fixtures/
+apps/web/runtime-bench-fixtures/
 
 # encode-times.json is an intermediate (consumed only by run-extended.ts, not the dashboard)
-packages/app/benchmark-results/encode-times.json
+apps/web/benchmark-results/encode-times.json
 packages/replay-harness/results
 
 # results.json, results-extended.json, archive-times.json under
-# packages/app/benchmark-results/ ARE committed so they ship to Vercel.
+# apps/web/benchmark-results/ ARE committed so they ship to Vercel.
 # To reset: delete and re-run `yarn benchmark:run`.
+
+# Local credentials
+.env
+.env.*
+!.env.example

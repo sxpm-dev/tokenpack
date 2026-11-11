@@ -9,7 +9,6 @@
 // available in that runtime.
 
 import { isCompactToken, readCompactHeader, readHeader } from '../header'
-
 import type { AbstractAlgorithm, AlgorithmCtor } from './types'
 
 export class AlgorithmCatalog {

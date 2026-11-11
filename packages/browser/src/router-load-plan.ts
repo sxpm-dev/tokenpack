@@ -22,39 +22,36 @@ export interface RouterFileRef extends RouterFileManifestEntry {
   segments: RouterFileSegment[]
 }
 
+export interface RouterLoadPlanCommon {
+  mode: RouterReadMode
+  concurrency: number
+  reason: string
+  estimate: RouterLoadPlanEstimate
+  /** Network profile and concurrency caps active at plan time. */
+  profile: NetworkProfile
+  /** Resolved planner constants (defaults merged with caller overrides). */
+  tuning: PlannerTuningSnapshot
+}
+
 export type RouterLoadPlan =
-  | {
-      kind: 'whole-chunks'
-      mode: RouterReadMode
-      chunks: RouterChunkRef[]
-      concurrency: number
-      reason: string
-      estimate: RouterLoadPlanEstimate
-    }
-  | {
-      kind: 'parallel-segments'
-      mode: RouterReadMode
-      segments: RouterPlannedSegment[]
-      concurrency: number
-      reason: string
-      estimate: RouterLoadPlanEstimate
-    }
-  | {
-      kind: 'merged-ranges'
-      mode: RouterReadMode
-      ranges: RouterChunkRange[]
-      concurrency: number
-      reason: string
-      estimate: RouterLoadPlanEstimate
-    }
-  | {
-      kind: 'single-merged'
-      mode: RouterReadMode
-      ranges: RouterChunkRange[]
-      concurrency: 1
-      reason: string
-      estimate: RouterLoadPlanEstimate
-    }
+  | (RouterLoadPlanCommon & { kind: 'whole-chunks'; chunks: RouterChunkRef[] })
+  | (RouterLoadPlanCommon & { kind: 'parallel-segments'; segments: RouterPlannedSegment[] })
+  | (RouterLoadPlanCommon & { kind: 'merged-ranges'; ranges: RouterChunkRange[] })
+  | (RouterLoadPlanCommon & { kind: 'single-merged'; ranges: RouterChunkRange[]; concurrency: 1 })
+
+export interface PlannerTuningSnapshot {
+  rangeRequestPenaltyBytes: number
+  mergeRangeGapBytes: number
+  maxRangesPerChunk: number
+  tinyFileBytes: number
+  tinyFileBurstFileCount: number
+  tinyFileRequestPenaltyBytes: number
+  tinyFileMaxRangesPerChunk: number
+  largeFileWholeChunkBytes: number
+  largeFileWholeChunkMaxWasteRatio: number
+  maxParallelChunkRequests: number
+  maxParallelSegmentRequests: number
+}
 
 export interface RouterPlannedSegment {
   file: RouterFileRef
@@ -123,20 +120,139 @@ const TINY_FILE_REQUEST_PENALTY_BYTES = 768 * 1024
 const TINY_FILE_MAX_RANGES_PER_CHUNK = 4
 const LARGE_FILE_WHOLE_CHUNK_BYTES = 512 * 1024
 const LARGE_FILE_WHOLE_CHUNK_MAX_WASTE_RATIO = 1.6
-const MAX_PARALLEL_CHUNK_REQUESTS = 4
-const MAX_PARALLEL_SEGMENT_REQUESTS = 6
+
+export type NetworkProfileName =
+  | 'unknown'
+  | 'save-data'
+  | 'slow-2g'
+  | '2g'
+  | '3g'
+  | '4g-slow'
+  | '4g-fast'
+
+export interface NetworkProfile {
+  name: NetworkProfileName
+  effectiveType?: string
+  downlinkMbps?: number
+  rttMs?: number
+  saveData?: boolean
+  maxParallelChunkRequests: number
+  maxParallelSegmentRequests: number
+}
+
+interface NetworkInformationLike {
+  effectiveType?: string
+  downlink?: number
+  rtt?: number
+  saveData?: boolean
+}
+
+// Defaults calibrated against real-CDN behavior (CloudFront over HTTP/2 to
+// a Wix-scale captured-app workload, May 2026 measurements). HTTP/2 multiplexes
+// streams on a single TCP connection, so per-stream throughput is bandwidth-
+// shared rather than connection-independent. But the sweep across {3, 6, 9, 12}
+// showed:
+//   - Calm-iter cold median is flat across concurrencies (bandwidth-bound).
+//   - Tail latency improves with higher concurrency — slow chunks no longer
+//     block subsequent waves. Worst-case cold dropped from 12s @ conc=6 to
+//     8.2s @ conc=12 on the Wix workload.
+// So we lift 4g-fast to 12/16; the median doesn't change but the tail tightens
+// and router cold lands at parity with range-stream. Slower profiles stay
+// conservative — we haven't sweep-validated them yet, and a 12-stream fanout
+// on a 2g link would genuinely starve every stream.
+const NETWORK_PROFILE_DEFAULTS: Record<
+  NetworkProfileName,
+  { maxParallelChunkRequests: number; maxParallelSegmentRequests: number }
+> = {
+  // Mobile data-saver mode — minimize fanout so we don't burn the user's quota.
+  'save-data': { maxParallelChunkRequests: 2, maxParallelSegmentRequests: 4 },
+  'slow-2g': { maxParallelChunkRequests: 2, maxParallelSegmentRequests: 4 },
+  '2g': { maxParallelChunkRequests: 3, maxParallelSegmentRequests: 6 },
+  '3g': { maxParallelChunkRequests: 4, maxParallelSegmentRequests: 8 },
+  // Most desktops + good mobile sit here; the Network Information API caps
+  // effectiveType at '4g' even on gigabit links, so we lean on downlink for
+  // the boundary between '4g-slow' and '4g-fast'.
+  '4g-slow': { maxParallelChunkRequests: 5, maxParallelSegmentRequests: 8 },
+  '4g-fast': { maxParallelChunkRequests: 12, maxParallelSegmentRequests: 16 },
+  // Safari/Firefox don't expose Network Information API. Pick the same shape
+  // as 4g-slow — a safe middle ground that doesn't bandwidth-starve streams.
+  unknown: { maxParallelChunkRequests: 5, maxParallelSegmentRequests: 8 },
+}
+
+function readNetworkInformation(): NetworkInformationLike | undefined {
+  if (typeof navigator === 'undefined') return undefined
+  const candidate = (navigator as Navigator & { connection?: NetworkInformationLike }).connection
+
+  return candidate && typeof candidate === 'object' ? candidate : undefined
+}
+
+export function resolveNetworkProfile(): NetworkProfile {
+  const info = readNetworkInformation()
+  const effectiveType = info?.effectiveType
+  const downlink = typeof info?.downlink === 'number' ? info.downlink : undefined
+  const rtt = typeof info?.rtt === 'number' ? info.rtt : undefined
+  const saveData = info?.saveData === true ? true : info?.saveData === false ? false : undefined
+  const name = classifyNetwork(effectiveType, downlink, saveData)
+  const defaults = NETWORK_PROFILE_DEFAULTS[name]
+
+  return {
+    name,
+    effectiveType,
+    downlinkMbps: downlink,
+    rttMs: rtt,
+    saveData,
+    maxParallelChunkRequests: defaults.maxParallelChunkRequests,
+    maxParallelSegmentRequests: defaults.maxParallelSegmentRequests,
+  }
+}
+
+function classifyNetwork(
+  effectiveType: string | undefined,
+  downlink: number | undefined,
+  saveData: boolean | undefined,
+): NetworkProfileName {
+  if (saveData === true) return 'save-data'
+  if (effectiveType === 'slow-2g') return 'slow-2g'
+  if (effectiveType === '2g') return '2g'
+  if (effectiveType === '3g') return '3g'
+  if (effectiveType === '4g') {
+    // downlink is a coarse estimate; the spec caps reported values around
+    // 10 Mbps even on gigabit connections, so >=5 is the practical "fast" line.
+    return downlink !== undefined && downlink < 5 ? '4g-slow' : '4g-fast'
+  }
+  if (!effectiveType && downlink !== undefined) {
+    return downlink >= 5 ? '4g-fast' : downlink >= 1 ? '4g-slow' : '3g'
+  }
+
+  return 'unknown'
+}
+
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never
+type RouterLoadPlanCore = DistributiveOmit<RouterLoadPlan, 'profile' | 'tuning'>
 
 export function planRouterLoad(
   files: readonly RouterFileRef[],
   chunks: ReadonlyMap<string, RouterChunkRef>,
   options: RouterLoadPlannerOptions,
 ): RouterLoadPlan {
+  const profile = resolveNetworkProfile()
+  const tuning = plannerTuning(options, profile)
+  const core = planRouterLoadCore(files, chunks, options, tuning)
+
+  return { ...core, profile, tuning } as RouterLoadPlan
+}
+
+function planRouterLoadCore(
+  files: readonly RouterFileRef[],
+  chunks: ReadonlyMap<string, RouterChunkRef>,
+  options: RouterLoadPlannerOptions,
+  baseTuning: PlannerTuning,
+): RouterLoadPlanCore {
   const mode = resolveMode(options.strategy, options.mode)
   const planned = collectPlannedSegments(files, chunks)
   const selectedBytes = planned.reduce((sum, item) => sum + item.segment.length, 0)
   const selectedChunks = uniqueChunks(planned)
   const selectedChunkBytes = selectedChunks.reduce((sum, chunk) => sum + (chunk.byteLength ?? 0), 0)
-  const baseTuning = plannerTuning(options)
 
   if (shouldForceWholeChunks(options.strategy)) {
     return wholeChunks(
@@ -168,12 +284,11 @@ export function planRouterLoad(
   }
 
   const rangeMode = selectedBytes <= SMALL_SELECTED_BYTES ? 'buffered' : mode
-  const rangeReason =
-    tinyBurst
-      ? 'tiny-file-burst-range-fetch'
-      : selectedBytes <= SMALL_SELECTED_BYTES
-        ? 'small-selection-range-fetch'
-        : 'range-segments'
+  const rangeReason = tinyBurst
+    ? 'tiny-file-burst-range-fetch'
+    : selectedBytes <= SMALL_SELECTED_BYTES
+      ? 'small-selection-range-fetch'
+      : 'range-segments'
   const bestRange = bestRangePlan(
     planned,
     rangeMode,
@@ -217,21 +332,9 @@ export function planRouterLoad(
   return bestRange
 }
 
-interface PlannerTuning {
-  rangeRequestPenaltyBytes: number
-  mergeRangeGapBytes: number
-  maxRangesPerChunk: number
-  tinyFileBytes: number
-  tinyFileBurstFileCount: number
-  tinyFileRequestPenaltyBytes: number
-  tinyFileMaxRangesPerChunk: number
-  largeFileWholeChunkBytes: number
-  largeFileWholeChunkMaxWasteRatio: number
-  maxParallelChunkRequests: number
-  maxParallelSegmentRequests: number
-}
+type PlannerTuning = PlannerTuningSnapshot
 
-function plannerTuning(options: RouterLoadPlannerOptions): PlannerTuning {
+function plannerTuning(options: RouterLoadPlannerOptions, profile: NetworkProfile): PlannerTuning {
   return {
     rangeRequestPenaltyBytes: positiveFinite(
       options.rangeRequestPenaltyBytes,
@@ -240,10 +343,7 @@ function plannerTuning(options: RouterLoadPlannerOptions): PlannerTuning {
     mergeRangeGapBytes: positiveFinite(options.mergeRangeGapBytes, MERGE_RANGE_GAP_BYTES),
     maxRangesPerChunk: positiveInt(options.maxRangesPerChunk, MAX_RANGES_PER_CHUNK),
     tinyFileBytes: positiveFinite(options.tinyFileBytes, TINY_FILE_BYTES),
-    tinyFileBurstFileCount: positiveInt(
-      options.tinyFileBurstFileCount,
-      TINY_FILE_BURST_FILE_COUNT,
-    ),
+    tinyFileBurstFileCount: positiveInt(options.tinyFileBurstFileCount, TINY_FILE_BURST_FILE_COUNT),
     tinyFileRequestPenaltyBytes: positiveFinite(
       options.tinyFileRequestPenaltyBytes,
       TINY_FILE_REQUEST_PENALTY_BYTES,
@@ -260,13 +360,16 @@ function plannerTuning(options: RouterLoadPlannerOptions): PlannerTuning {
       options.largeFileWholeChunkMaxWasteRatio,
       LARGE_FILE_WHOLE_CHUNK_MAX_WASTE_RATIO,
     ),
+    // Concurrency caps are network-shape-driven by default; callers can still
+    // pin specific values via the planner options (the sweep harness uses this
+    // to compare profiles head-to-head against the auto-detected defaults).
     maxParallelChunkRequests: positiveInt(
       options.maxParallelChunkRequests,
-      MAX_PARALLEL_CHUNK_REQUESTS,
+      profile.maxParallelChunkRequests,
     ),
     maxParallelSegmentRequests: positiveInt(
       options.maxParallelSegmentRequests,
-      MAX_PARALLEL_SEGMENT_REQUESTS,
+      profile.maxParallelSegmentRequests,
     ),
   }
 }
@@ -298,7 +401,8 @@ function isTinyFileBurst(
   if (files.length < tuning.tinyFileBurstFileCount || segments.length === 0) return false
 
   const largestSegment = segments.reduce((max, item) => Math.max(max, item.segment.length), 0)
-  const averageSegment = segments.reduce((sum, item) => sum + item.segment.length, 0) / segments.length
+  const averageSegment =
+    segments.reduce((sum, item) => sum + item.segment.length, 0) / segments.length
 
   return largestSegment <= tuning.tinyFileBytes && averageSegment <= tuning.tinyFileBytes
 }
@@ -372,7 +476,7 @@ function wholeChunks(
   mode: RouterReadMode,
   reason: string,
   maxParallelChunkRequests: number,
-): RouterLoadPlan {
+): RouterLoadPlanCore {
   const fetchedBytes = chunks.reduce((sum, chunk) => sum + (chunk.byteLength ?? 0), 0)
 
   return {
@@ -396,7 +500,7 @@ function parallelSegments(
   mode: RouterReadMode,
   reason: string,
   tuning: PlannerTuning,
-): RouterLoadPlan {
+): RouterLoadPlanCore {
   const selectedBytes = segments.reduce((sum, item) => sum + item.segment.length, 0)
   const rangeEstimate = estimateRangeAccess(
     segments.map(item => ({
@@ -430,7 +534,7 @@ function rangePlan(
   tuning: PlannerTuning,
   mergeRangeGapBytes = tuning.mergeRangeGapBytes,
   options: RangePlanOptions = {},
-): RouterLoadPlan {
+): RouterLoadPlanCore {
   const ranges = mergeRanges(segments, mergeRangeGapBytes, options, tuning)
 
   if (ranges.length === segments.length) return parallelSegments(segments, mode, reason, tuning)
@@ -473,14 +577,14 @@ function bestRangePlan(
   tuning: PlannerTuning,
   coalesceHotChunks = true,
   coalescedReason = 'hot-chunk-range-coalesced',
-): RouterLoadPlan {
+): RouterLoadPlanCore {
   const gaps = [
     0,
     tuning.mergeRangeGapBytes,
     Math.max(tuning.mergeRangeGapBytes, 64 * 1024),
     Math.max(tuning.mergeRangeGapBytes, 256 * 1024),
   ]
-  let best: RouterLoadPlan | null = null
+  let best: RouterLoadPlanCore | null = null
 
   for (const gap of new Set(gaps)) {
     const candidate = rangePlan(segments, mode, reason, tuning, gap)
@@ -627,7 +731,7 @@ function coalesceRangeFanout(
   return out
 }
 
-function planCost(plan: RouterLoadPlan, tuning: PlannerTuning): number {
+function planCost(plan: RouterLoadPlanCore, tuning: PlannerTuning): number {
   return plan.estimate.fetchedBytes + plan.estimate.requestCount * tuning.rangeRequestPenaltyBytes
 }
 
@@ -666,6 +770,17 @@ function estimateRangeAccess(ranges: readonly RouterChunkRange[]): {
 
   for (const chunkRanges of byChunk.values()) {
     const firstRange = chunkRanges[0]
+
+    // concat-deflate chunks can't be range-fetched — the runtime has to
+    // download and inflate the full payload to slice any segment from it.
+    // Bill the planner for the full chunk byteLength so whole-chunks plans
+    // outcompete range plans on cost whenever a concat-deflate chunk is in
+    // the selection.
+    if (firstRange?.chunk.kind === 'concat-deflate') {
+      requestCount += 1
+      fetchedBytes += firstRange.chunk.byteLength ?? 0
+      continue
+    }
 
     if (firstRange && typeof firstRange.chunk.payloadOffset === 'number') {
       requestCount += chunkRanges.length

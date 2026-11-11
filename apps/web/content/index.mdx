@@ -1,0 +1,51 @@
+# Introduction
+
+**TokenPack** is a container format. Arbitrary bytes are compressed (brotli or
+deflate) then written into the pixel data of an Image Token. The
+image is a normal image — viewable, downloadable, shareable through any pipe
+that handles images. The _payload_ is your data.
+
+```
+encode(files) → image
+decode(image) → files
+```
+
+What you can put in: source files, repo snapshots, JSON datasets, agent skill
+bundles, eval suites, screenshots with attached transcripts, encrypted blobs.
+
+What you cannot put in: anything that requires the LLM itself to read raw
+file bytes from an image attachment — vision encoders see pixels, not bytes.
+You'll always need a host runtime that does the decode and feeds text to the
+model. See [Use cases](/use-cases) for what's a real win and what isn't.
+
+## What this is not
+
+A faster compression algorithm. The compression is brotli/deflate — the image is
+the _carrier_. The advantage is _where_ that carrier works:
+
+- Channels that pass images but not arbitrary blobs (chat threads, CDNs, image
+  hosts, postMessage, IndexedDB).
+- Pipelines where streaming overlap with transfer matters and the destination
+  can't decode brotli natively (Service Workers, data URIs).
+- Bundles where range-fetch beats whole-file download (large agent skills,
+  multi-file context packs).
+
+## How the codebase ships it
+
+| Package              | Role                                                       |
+| -------------------- | ---------------------------------------------------------- |
+| `tokenpack` (core)   | env-neutral encode / decode / stream / diff primitives     |
+| `@tokenpack/node`    | fs / sharp / pngjs / CLI bindings for server-side use      |
+| `@tokenpack/browser` | Canvas / `<img>` / Service Worker bindings for the browser |
+
+For day-to-day use you reach for one of the env packages. The core package is
+only relevant if you're building a third adapter or composing custom codecs.
+
+## Where to go next
+
+- **[Quickstart](/docs/quickstart)** — `yarn add @tokenpack/node` and encode something in five lines.
+- **[Linear Token](/linear-token)** — payload bytes stored directly in image pixels.
+- **[Pixel Range Token](/pixel-range-token)** — `tpAK` side-channel payloads and byte parsing.
+- **[Router tokens](/router-tokens)** — manifest + chunks + range-fetch for larger bundles.
+- **[Use cases](/use-cases)** — agent skills, codebase context, eval suites, agent-to-agent handoff.
+- **[API](/docs/api)** — full reference for `@tokenpack/node` and `@tokenpack/browser`.

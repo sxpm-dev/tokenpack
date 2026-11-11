@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+	    <meta charset="utf-8" />
+	    <meta name="viewport" content="width=device-width,initial-scale=1" />
+	    <title>bench-app · native-single</title>
+	    <script>
+globalThis.__BENCH_START = performance.now();
+// Default 250-entry buffer drops resource-timing entries on the large
+// fixture, silently under-counting wire bytes. Raise before assets load.
+performance.setResourceTimingBufferSize(20000);
+globalThis.__benchAssetUrl = function (rawUrl) {
+  var params = new URLSearchParams(location.search);
+  if (params.get('cache') !== 'cold') return rawUrl;
+  var url = new URL(rawUrl, location.href);
+  url.searchParams.set('benchRun', params.get('run') || String(Date.now()));
+  return url.href;
+};
+	    </script>
+	    <script>document.write('<link data-bench-eager-css rel="stylesheet" href="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/bundle.css") + '" />')</script>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        background: #080b0b;
+        color: #e8e8e8;
+      }
+      header {
+        position: sticky; top: 0; z-index: 10;
+        display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content; gap: 14px; align-items: center;
+        padding: 12px 16px; background: rgba(14,14,16,.96); border-bottom: 1px solid #24272a;
+      }
+      header strong { display: block; font-size: 13px; letter-spacing: .02em; white-space: nowrap; }
+      #status {
+        display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        color: #9b9da3;
+      }
+      #open-dialog {
+        min-width: 156px; padding: 8px 12px; background: #9ee559; color: #10120f;
+        border: 1px solid #b9f37d; border-radius: 6px; font: inherit; cursor: pointer;
+        white-space: nowrap;
+      }
+      #open-dialog:hover:not(:disabled) { filter: brightness(1.04); }
+      #open-dialog:disabled { background: #17191b; border-color: #2a2d30; color: #666; cursor: not-allowed; }
+      #root {
+        padding: 14px 16px 10px; display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px;
+      }
+      .bench-module {
+        min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        padding: 6px 7px; border: 1px solid hsl(var(--h) 52% 38% / .75);
+        border-left-width: 3px; border-radius: 6px; background: hsl(var(--h) 32% 18% / .72);
+        color: #f5f5f5; font-size: 10.5px; line-height: 1;
+      }
+      .bench-module-lazy { background: hsl(var(--h) 40% 20% / .85); border-style: dashed; }
+      #images {
+        padding: 12px 16px 24px; display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px;
+      }
+      #images img {
+        width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;
+        border-radius: 6px; border: 1px solid #25282b; background: #111416;
+      }
+      #lazy-dialog {
+        position: fixed; top: 10%; left: 10%; right: 10%; bottom: 10%;
+        background: #111315; border: 1px solid #2a2d30; border-radius: 8px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.6); z-index: 20;
+        display: flex; flex-direction: column; overflow: hidden;
+      }
+      #lazy-dialog .bar {
+        padding: 10px 12px; background: #181b1d; border-bottom: 1px solid #2a2d30;
+      }
+      #lazy-dialog #lazy-status { color: #9ad; }
+      #lazy-dialog .scene { flex: 1 1 auto; min-height: 320px; background: #080b0b; }
+      #lazy-dialog .scene canvas { width: 100%; height: 100%; display: block; }
+      #lazy-dialog .tags {
+        max-height: 28%; overflow: auto; padding: 10px;
+        border-top: 1px solid #2a2d30; display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>bench-app</strong>
+      <span id="status">booting…</span>
+      <button id="open-dialog" type="button" disabled>Open 3D preview</button>
+    </header>
+    <div id="root"></div>
+    <div id="images">
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-large-0101.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0081.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0082.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0083.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0085.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0090.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0091.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0092.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0093.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0094.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0095.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0096.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0098.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-medium-0100.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0001.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0009.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0012.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0013.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0022.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0023.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0024.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0025.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0026.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0027.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0028.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0029.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0030.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0031.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0032.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0033.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0034.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0035.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0038.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0039.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0042.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0043.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0044.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0045.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0048.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0049.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0050.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0051.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0053.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0059.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0064.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0065.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0066.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0070.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0071.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0076.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/img-small-0078.png") + '" alt="" />')</script>
+    </div>
+    <script>document.write('<script src="' + globalThis.__benchAssetUrl("/bench-app/medium/assets/entry-all.js") + '"><\/script>')</script>
+  </body>
+</html>

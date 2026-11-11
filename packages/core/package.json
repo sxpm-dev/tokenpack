@@ -35,7 +35,6 @@
     "./codecs": "./src/codecs/index.ts",
     "./codecs/linear": "./src/codecs/linear/index.ts",
     "./codecs/types": "./src/codecs/types.ts",
-    "./codecs/zstdpix-metadata": "./src/codecs/zstdpix-metadata.ts",
     "./compressors": "./src/compressors/index.ts",
     "./compressors/types": "./src/compressors/types.ts",
     "./compressors/registry": "./src/compressors/registry.ts",
@@ -45,7 +44,8 @@
     "./surfaces/types": "./src/surfaces/types.ts",
     "./surfaces/registry": "./src/surfaces/registry.ts",
     "./surfaces/channels": "./src/surfaces/channels.ts",
-    "./surfaces/streaming-png-decoder": "./src/surfaces/streaming-png-decoder.ts"
+    "./surfaces/streaming-png-decoder": "./src/surfaces/streaming-png-decoder.ts",
+    "./archive-buffers": "./src/archive-buffers.ts"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm --platform node --target es2022 --out-dir dist --dts",

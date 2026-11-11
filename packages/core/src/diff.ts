@@ -48,10 +48,8 @@ export async function computeTextDiff(packA: Pack, packB: Pack): Promise<FileDif
     return out
   }
 
-  const textA =
-    !packA.isPack() && !packA.isDiff() ? await packA.text().catch(() => null) : null
-  const textB =
-    !packB.isPack() && !packB.isDiff() ? await packB.text().catch(() => null) : null
+  const textA = !packA.isPack() && !packA.isDiff() ? await packA.text().catch(() => null) : null
+  const textB = !packB.isPack() && !packB.isDiff() ? await packB.text().catch(() => null) : null
 
   return [lineDiff('(file)', textA, textB)].filter(fd => fd.hunks.length > 0)
 }

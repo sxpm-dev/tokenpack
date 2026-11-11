@@ -1,23 +1,15 @@
-// Browser PNG surface — canvas-based read/write.
+// Browser PNG surface — byte-preserving write and channel-aware read.
 //
-// `writeBuffer(image)` puts the pixel buffer onto a canvas, converts to a PNG
-// Blob via `canvas.toBlob` (or `convertToBlob` for OffscreenCanvas), and returns
-// the bytes. `readBuffer(buf)` does the inverse: wrap bytes in a Blob, decode
-// via `createImageBitmap`, draw onto a canvas, read back ImageData, and strip
-// the canvas-inserted alpha row if the source was 3-channel.
-//
-// `premultiplyAlpha: 'none'` and `colorSpaceConversion: 'none'` are both
-// critical: 4-channel tokens use alpha for codec data, and the default browser
-// behavior of pre-multiplying RGB by alpha (and applying gamma) silently
-// corrupts every pixel.
+// RGB reads use canvas; RGBA reads use the byte-preserving PNG decoder.
+// Writes serialize scanlines directly so canvas cannot insert or premultiply alpha.
 
 import { enumOption, type OptionsSchema } from 'tokenpack/components/options'
 import { ImageSurface } from 'tokenpack/surfaces'
 import { decodeStreamingPng } from 'tokenpack/surfaces/streaming-png-decoder'
-import type {
-  SurfacePixels,
-  SurfaceStreamHandle,
-} from 'tokenpack/surfaces/types'
+import type { SurfacePixels, SurfaceStreamHandle } from 'tokenpack/surfaces/types'
+import UPNG from 'upng-js'
+
+import { createPngChunk } from '../algorithms/pixel-range-png-base'
 
 const CHANNELS_SCHEMA: OptionsSchema = {
   channels: enumOption([3, 4], 3, { label: 'Channels per pixel' }),
@@ -54,19 +46,6 @@ function get2dContext(
   if (!ctx) throw new Error('2D canvas context unavailable')
 
   return ctx
-}
-
-function expandRgbToRgba(rgb: Uint8Array, width: number, height: number): Uint8Array {
-  const out = new Uint8Array(width * height * 4)
-
-  for (let i = 0, j = 0; i < rgb.length; i += 3, j += 4) {
-    out[j] = rgb[i]
-    out[j + 1] = rgb[i + 1]
-    out[j + 2] = rgb[i + 2]
-    out[j + 3] = 255
-  }
-
-  return out
 }
 
 /** Sniff bytes-per-pixel of the original PNG/WebP/AVIF artifact. */
@@ -160,41 +139,61 @@ export class BrowserPngSurface extends ImageSurface {
   async readBuffer(buffer: Buffer): Promise<SurfacePixels> {
     const blob = new Blob([buffer as unknown as BlobPart])
     const fileChannels = await detectChannelsFromBlob(blob)
+
+    if (fileChannels === 4) {
+      // Canvas premultiplies alpha; data stored in RGBA pixels must stay exact.
+      const image = UPNG.decode(
+        buffer.buffer.slice(
+          buffer.byteOffset,
+          buffer.byteOffset + buffer.byteLength,
+        ) as ArrayBuffer,
+      )
+
+      return {
+        pixels: new Uint8Array(UPNG.toRGBA8(image)[0]),
+        width: image.width,
+        height: image.height,
+        fileChannels: 4,
+      }
+    }
     const bitmap = await createImageBitmap(blob, BITMAP_OPTS)
 
-    return bitmapToPixels(bitmap, fileChannels)
+    try {
+      return bitmapToPixels(bitmap, fileChannels)
+    } finally {
+      bitmap.close()
+    }
   }
 
   async writeBuffer(image: SurfacePixels): Promise<Buffer> {
     const { pixels, width, height, fileChannels } = image
-    const canvas = makeCanvas(width, height)
-    const ctx = get2dContext(canvas)
-    const rgba = fileChannels === 4 ? pixels : expandRgbToRgba(pixels, width, height)
-    const clamped = new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, rgba.byteLength)
-    const imageData = new ImageData(clamped as never, width, height)
+    const stride = width * fileChannels
 
-    ;(ctx as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D).putImageData(
-      imageData,
-      0,
-      0,
+    if (pixels.byteLength !== stride * height) throw new Error('PNG pixel buffer size mismatch')
+    // PNG filter 0 preserves all channels. Canvas always exports RGBA and can
+    // alter alpha-bearing data, so serialize scanlines directly instead.
+    const scanlines = new Uint8Array((stride + 1) * height)
+
+    for (let y = 0; y < height; y++)
+      scanlines.set(pixels.subarray(y * stride, (y + 1) * stride), y * (stride + 1) + 1)
+    const compressed = new Uint8Array(
+      await new Response(
+        new Blob([scanlines]).stream().pipeThrough(new CompressionStream('deflate')),
+      ).arrayBuffer(),
     )
+    const ihdr = Buffer.alloc(13)
 
-    let blob: Blob
+    ihdr.writeUInt32BE(width, 0)
+    ihdr.writeUInt32BE(height, 4)
+    ihdr[8] = 8
+    ihdr[9] = fileChannels === 4 ? 6 : 2
 
-    if ('convertToBlob' in canvas) {
-      blob = await (canvas as OffscreenCanvas).convertToBlob({ type: 'image/png' })
-    } else {
-      blob = await new Promise<Blob>((resolve, reject) => {
-        ;(canvas as HTMLCanvasElement).toBlob(b => {
-          if (b) resolve(b)
-          else reject(new Error('canvas.toBlob returned null'))
-        }, 'image/png')
-      })
-    }
-
-    const ab = await blob.arrayBuffer()
-
-    return Buffer.from(ab)
+    return Buffer.concat([
+      Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      createPngChunk('IHDR', ihdr),
+      createPngChunk('IDAT', compressed),
+      createPngChunk('IEND', new Uint8Array()),
+    ])
   }
 }
 
@@ -234,8 +233,7 @@ export class BrowserStreamingPngSurface extends ImageSurface {
 
   /**
    * "Streaming" PNG only matters on the decode-from-network side. For encode
-   * we produce the same canvas-PNG bytes as the regular surface — the
-   * resulting file is a valid PNG with whatever IDAT framing canvas emits.
+   * we use the same lossless scanline writer as the regular surface.
    */
   async writeBuffer(image: SurfacePixels): Promise<Buffer> {
     return new BrowserPngSurface().writeBuffer(image)

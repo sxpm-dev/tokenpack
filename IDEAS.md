@@ -9,6 +9,8 @@ TokenPack started as a "fun" way to encode arbitrary data into images. The bench
 
 The reframing: **TokenPack is a Context Pack format for the AI-agent era — portable, diffable, image-shaped containers for any payload — with a perf-tool side angle for browser apps.**
 
+> **2026-06-11 update:** a from-scratch rethink of where the format genuinely wins lives in [docs/use-cases-first-principles.md](./docs/use-cases-first-principles.md) — ranked use cases (screenshot-with-payload, preview-is-the-file, vision-legible attachments), anti-use-cases, and the "the image must be a real image of the thing inside it" north star. Intended to drive the next landing-page featured-use-cases revision.
+
 ---
 
 ## Why this exists (the problem TokenPack solves)

@@ -6,10 +6,10 @@
 // algorithms don't carry a pixel header, so only the algorithm binding is
 // returned for those.
 
-import { browserAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
 import type { AlgorithmCtor } from 'tokenpack/algorithms/types'
 import { decodeEcByte, isCompactToken, readCompactHeader, readHeader } from 'tokenpack/header'
 
+import { browserAlgorithmCatalog as algorithmCatalog } from './algorithms/catalog'
 import type { DecodeSource } from './decode'
 
 export interface InspectAlgorithm {
@@ -120,13 +120,17 @@ function describeBinding(Ctor: AlgorithmCtor): InspectAlgorithm {
   }
 }
 
-async function tryReadHeader(buffer: Buffer, Ctor: AlgorithmCtor): Promise<InspectHeader | undefined> {
+async function tryReadHeader(
+  buffer: Buffer,
+  Ctor: AlgorithmCtor,
+): Promise<InspectHeader | undefined> {
   try {
     const surface = new Ctor().surface
     const image = await surface.readBuffer(buffer)
 
     if (isCompactToken(image.pixels)) {
       const h = readCompactHeader(image.pixels)
+
       // Compact header has no FEC/cellSize/encryption byte — flags byte (h.flags)
       // encodes only the bpp bits and 2 reserved low bits.
       return {

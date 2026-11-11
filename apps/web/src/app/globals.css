@@ -1,0 +1,441 @@
+@import 'tailwindcss';
+@import '@heroui/styles';
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* The whole UI runs in JetBrains Mono. Italic Instrument Serif handles emphasis. */
+  --font-sans:
+    var(--font-jetbrains), ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono:
+    var(--font-jetbrains), ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  --font-handwrite: var(--font-caveat), ui-rounded, cursive;
+
+  --color-tp-bg: var(--bg);
+  --color-tp-elev: var(--elev);
+  --color-tp-elev2: var(--elev2);
+  --color-tp-fg: var(--fg);
+  --color-tp-muted: var(--muted);
+  --color-tp-soft: var(--soft);
+  --color-tp-border: var(--border);
+  --color-tp-accent: var(--accent);
+  --color-tp-accent-fg: var(--accent-fg);
+  --color-tp-mark: var(--mark);
+}
+
+/* Light theme (default) */
+:root {
+  --bg: oklch(0.985 0.004 90);
+  --elev: oklch(1 0 0);
+  --elev2: oklch(0.96 0.004 90);
+  --fg: oklch(0.17 0.004 270);
+  --muted: oklch(0.52 0.006 270);
+  --soft: oklch(0.78 0.005 270);
+  --border: oklch(0.91 0.005 90);
+  --accent: oklch(0.55 0.16 138);
+  --accent-fg: oklch(0.99 0 0);
+  --mark: oklch(0.92 0.13 138);
+
+  --grid: oklch(0.88 0.005 90);
+  --grid-2: oklch(0.94 0.005 90);
+  --scan: oklch(0.96 0.004 90);
+
+  /* File-region outline palette — used by PixelToken overlays. */
+  --file-a: oklch(0.55 0.18 200);
+  --file-b: oklch(0.55 0.2 290);
+  --file-c: oklch(0.6 0.17 60);
+  --file-d: oklch(0.55 0.18 350);
+  --file-e: oklch(0.5 0.17 130);
+  --file-f: oklch(0.6 0.16 100);
+}
+
+.dark {
+  --bg: oklch(0.155 0.005 260);
+  --elev: oklch(0.195 0.005 260);
+  --elev2: oklch(0.235 0.005 260);
+  --fg: oklch(0.965 0.003 90);
+  --muted: oklch(0.66 0.006 270);
+  --soft: oklch(0.42 0.006 270);
+  --border: oklch(0.28 0.006 260);
+  --accent: oklch(0.83 0.17 130);
+  --accent-fg: oklch(0.16 0.005 260);
+  --mark: oklch(0.45 0.13 138);
+
+  --grid: oklch(0.26 0.005 260);
+  --grid-2: oklch(0.22 0.005 260);
+  --scan: oklch(0.2 0.005 260);
+
+  --file-a: oklch(0.78 0.18 200);
+  --file-b: oklch(0.76 0.2 290);
+  --file-c: oklch(0.82 0.17 60);
+  --file-d: oklch(0.78 0.18 350);
+  --file-e: oklch(0.85 0.17 130);
+  --file-f: oklch(0.85 0.16 100);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    background: var(--bg);
+    color: var(--fg);
+    /* JetBrains Mono is wider than a proportional sans — pull the base down */
+    font-size: 15px;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-feature-settings:
+      'calt' on,
+      'liga' 0,
+      'ss20' on;
+    font-variant-ligatures: none;
+  }
+  ::selection {
+    background: var(--mark);
+    color: var(--fg);
+  }
+  /* Headings stay mono but get tighter tracking */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Decorative grid background — referenced from sections that want texture */
+.tp-grid {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+}
+
+.tp-grid-fade {
+  position: relative;
+}
+.tp-grid-fade::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: -1px -1px;
+  -webkit-mask-image: radial-gradient(ellipse at top, black 0%, transparent 70%);
+  mask-image: radial-gradient(ellipse at top, black 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.tp-grid-fade > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Scanline texture for hero panels */
+.tp-scan {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--scan),
+    var(--scan) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* Monospace ASCII blocks */
+.ascii {
+  font-family: var(--font-mono);
+  white-space: pre;
+  line-height: 1.4;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+}
+
+/* The signature italic accent for hero callouts */
+.italic-display {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* Sketch-diagram labels — keep the typographic system uniform (mono everywhere). */
+.handwrite {
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+  font-feature-settings: 'liga' 0;
+}
+
+/* ---- Prose styling for MDX docs ---- */
+.prose {
+  color: var(--fg);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+.prose > * + * {
+  margin-top: 1rem;
+}
+.prose h1 {
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  line-height: 1.05;
+}
+.prose h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.015em;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.prose h2:first-child,
+.prose > h2:nth-child(2) {
+  border-top: none;
+  padding-top: 0;
+}
+.prose h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+.prose h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.4rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.prose p {
+  margin: 0.9rem 0;
+  color: var(--fg);
+}
+.prose strong {
+  font-weight: 600;
+  color: var(--fg);
+}
+.prose em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--fg);
+}
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--elev2);
+  color: var(--fg);
+  padding: 0.12em 0.4em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.prose pre {
+  background: var(--elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  font-family: var(--font-mono);
+}
+.prose pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: var(--fg);
+}
+.prose ul,
+.prose ol {
+  margin: 1rem 0;
+  padding-left: 1.4rem;
+}
+.prose ul {
+  list-style: none;
+}
+.prose ul > li {
+  position: relative;
+  padding-left: 0.5rem;
+}
+.prose ul > li::before {
+  content: '▸';
+  position: absolute;
+  left: -1rem;
+  color: var(--accent);
+  font-size: 0.8em;
+  top: 0.35em;
+}
+.prose ol {
+  list-style: decimal;
+  font-variant-numeric: tabular-nums;
+}
+.prose li {
+  margin: 0.35rem 0;
+}
+.prose li > p {
+  margin: 0.3rem 0;
+}
+.prose a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.prose a:hover {
+  color: var(--accent);
+}
+.prose table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  font-feature-settings: 'tnum' on;
+}
+.prose th,
+.prose td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+.prose th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  background: transparent;
+  border-bottom: 1px solid var(--fg);
+}
+.prose tbody tr:hover td {
+  background: var(--elev2);
+}
+.prose blockquote {
+  margin: 1.5rem 0;
+  padding: 0.4rem 0 0.4rem 1.25rem;
+  border-left: 2px solid var(--accent);
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  line-height: 1.55;
+}
+.prose blockquote p {
+  margin: 0;
+}
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+.prose img {
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+/* Force HeroUI primitives to inherit our theme tokens cleanly */
+[data-theme] {
+  color: inherit;
+}
+
+/* ---- Shiki syntax highlighting (Nextra v4 emits dual-theme CSS vars) ---- */
+html {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+/* In light mode, use --shiki-light values; in dark mode, swap to --shiki-dark */
+.prose pre,
+.prose pre code,
+.prose pre .line,
+.prose pre span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+.dark .prose pre,
+.dark .prose pre code,
+.dark .prose pre .line,
+.dark .prose pre span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+/* Apply background only to the outer <pre>, not the inner spans */
+.prose pre span,
+.prose pre code,
+.dark .prose pre span,
+.dark .prose pre code {
+  background-color: transparent;
+}
+
+/* Standalone Shiki blocks (e.g. inside playground panels) */
+.shiki,
+.shiki code,
+.shiki .line,
+.shiki span {
+  color: var(--shiki-light);
+}
+.shiki {
+  background-color: var(--shiki-light-bg);
+}
+.dark .shiki,
+.dark .shiki code,
+.dark .shiki .line,
+.dark .shiki span {
+  color: var(--shiki-dark);
+}
+.dark .shiki {
+  background-color: var(--shiki-dark-bg);
+}
+/* Inner spans transparent — only the outer container shows bg */
+.shiki span,
+.shiki code,
+.dark .shiki span,
+.dark .shiki code {
+  background-color: transparent;
+}
+
+/* Custom CodeBlock panel — override Shiki's <pre> defaults so it fits our card style */
+.codeblock {
+  overflow-x: auto;
+}
+.codeblock pre,
+.codeblock .shiki {
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  background-color: transparent !important;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+.codeblock code {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.no-code-scroll .codeblock {
+  overflow-x: visible;
+}
+
+.no-code-scroll .codeblock pre,
+.no-code-scroll .codeblock .shiki {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

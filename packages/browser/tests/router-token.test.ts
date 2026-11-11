@@ -114,6 +114,77 @@ describe('router token', () => {
     expect(await pack.text('assets/app.css')).toBe(source)
   })
 
+  it('clusters tiny files into a concat-deflate chunk with one shared frame', async () => {
+    const { decodeRouter } = await import('../src/router-token')
+    const { encode, TokenPack } = await import('@tokenpack/node')
+    const a = 'globalThis.__concatFirst = 1;'
+    const b = 'globalThis.__concatSecond = 2;'
+    const c = 'body { color: rgb(9, 9, 9); }'
+    const bundle = await encode(
+      new TokenPack().router({
+        // Default chunkLayout = 'tiny-files-clustered' → these three small
+        // files share a single deflate frame at the chunk level.
+        files: [
+          {
+            url: 'https://example.test/a.js',
+            path: 'a.js',
+            bytes: new TextEncoder().encode(a),
+            status: 200,
+            headers: { 'content-type': 'application/javascript' },
+          },
+          {
+            url: 'https://example.test/b.js',
+            path: 'b.js',
+            bytes: new TextEncoder().encode(b),
+            status: 200,
+            headers: { 'content-type': 'application/javascript' },
+          },
+          {
+            url: 'https://example.test/c.css',
+            path: 'c.css',
+            bytes: new TextEncoder().encode(c),
+            status: 200,
+            headers: { 'content-type': 'text/css' },
+          },
+        ],
+      }),
+    )
+    const routerBytes = await artifactBytes(findArtifact(bundle, 'router.png'))
+    const chunkArtifact = bundle.find(artifact => artifact.filename !== 'router.png')
+
+    if (!chunkArtifact) throw new Error('expected a chunk artifact alongside router.png')
+    const requests: Array<{ path: string; range: string | undefined }> = []
+    const baseUrl = await serveTokens(
+      {
+        '/router.png': routerBytes,
+        [`/${chunkArtifact.filename}`]: await artifactBytes(chunkArtifact),
+      },
+      requests,
+    )
+    const pack = await decodeRouter(`${baseUrl}/router.png`)
+
+    if (!pack.isRouter()) throw new Error('expected decoded router pack')
+
+    const manifest = await pack.manifest()
+    const chunk = manifest.chunks[0]
+
+    expect(manifest.chunks).toHaveLength(1)
+    expect(chunk?.kind).toBe('concat-deflate')
+    expect(chunk?.uncompressedByteLength).toBe(a.length + b.length + c.length)
+    expect(manifest.files.every(file => file.compressor === undefined)).toBe(true)
+
+    expect(await pack.text('a.js')).toBe(a)
+    expect(await pack.text('b.js')).toBe(b)
+    expect(await pack.text('c.css')).toBe(c)
+
+    const chunkRequests = requests.filter(request =>
+      request.path.includes(`/${chunkArtifact.filename}`),
+    )
+
+    expect(chunkRequests.length).toBeGreaterThan(0)
+    expect(chunkRequests.every(request => request.range === undefined)).toBe(true)
+  })
+
   it('keeps overlapping file paths addressable by URL', async () => {
     const { decodeRouter } = await import('../src/router-token')
     const { encode, TokenPack } = await import('@tokenpack/node')
@@ -343,6 +414,11 @@ describe('router token', () => {
     const third = new Uint8Array(randomBytes(2 * 1024))
     const bundle = await encode(
       new TokenPack().router({
+        // Force per-file-deflate so the planner has a real cost choice between
+        // a multi-range fetch and a whole-chunks fetch. Concat-deflate chunks
+        // (the default for tiny clusters) can't be range-fetched and would
+        // short-circuit the planner to whole-chunks unconditionally.
+        chunkLayout: 'source-order',
         chunks: [
           {
             id: 'shared',
@@ -412,6 +488,11 @@ describe('router token', () => {
     const second = new Uint8Array(randomBytes(1024))
     const bundle = await encode(
       new TokenPack().router({
+        // This test verifies the per-file HTTP range pathway specifically.
+        // Concat-deflate (default for tiny clusters) fetches whole chunks and
+        // slices in memory, which intentionally bypasses byte-range fetches —
+        // see Phase 2 of the router perf work.
+        chunkLayout: 'source-order',
         chunks: [
           {
             id: 'shared',

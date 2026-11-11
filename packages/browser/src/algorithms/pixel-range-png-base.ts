@@ -4,7 +4,6 @@
 // browser bundle.
 
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
-const TPAK_TYPE = 'tpAK'
 
 const CRC_TABLE = (() => {
   const table = new Uint32Array(256)
@@ -27,19 +26,44 @@ function crc32(bytes: Buffer): number {
   return (c ^ 0xffffffff) >>> 0
 }
 
-export function insertTpakChunk(imageBytes: Buffer, packBytes: Uint8Array): Buffer {
-  const ihdrEnd = 8 + 25
-  const dataBuf = Buffer.from(packBytes.buffer, packBytes.byteOffset, packBytes.byteLength)
-  const length = Buffer.alloc(4)
+/** Build a standard PNG chunk, including its CRC, without pixel conversion. */
+export function createPngChunk(type: string, data: Uint8Array): Buffer {
+  const chunk = Buffer.allocUnsafe(data.byteLength + 12)
 
-  length.writeUInt32BE(dataBuf.length, 0)
-  const type = Buffer.from(TPAK_TYPE, 'ascii')
-  const crc = Buffer.alloc(4)
+  chunk.writeUInt32BE(data.byteLength, 0)
+  chunk.write(type, 4, 4, 'ascii')
+  chunk.set(data, 8)
+  chunk.writeUInt32BE(crc32(chunk.subarray(4, 8 + data.byteLength)), 8 + data.byteLength)
 
-  crc.writeUInt32BE(crc32(Buffer.concat([type, dataBuf])), 0)
-  const chunk = Buffer.concat([length, type, dataBuf, crc])
+  return chunk
+}
 
-  return Buffer.concat([imageBytes.subarray(0, ihdrEnd), chunk, imageBytes.subarray(ihdrEnd)])
+/** Insert a tpAK chunk after IHDR using one output allocation. */
+export function insertTpakChunk(imageBytes: Buffer, data: Uint8Array): Buffer {
+  const ihdrEnd = 33
+
+  if (
+    imageBytes.length < ihdrEnd ||
+    !imageBytes.subarray(0, 8).equals(PNG_SIGNATURE) ||
+    imageBytes.readUInt32BE(8) !== 13 ||
+    imageBytes.toString('ascii', 12, 16) !== 'IHDR'
+  ) {
+    throw new Error('not a PNG (missing IHDR)')
+  }
+  const chunkLength = data.byteLength + 12
+  const output = Buffer.allocUnsafe(imageBytes.length + chunkLength)
+
+  imageBytes.copy(output, 0, 0, ihdrEnd)
+  output.writeUInt32BE(data.byteLength, ihdrEnd)
+  output.write('tpAK', ihdrEnd + 4, 'ascii')
+  output.set(data, ihdrEnd + 8)
+  output.writeUInt32BE(
+    crc32(output.subarray(ihdrEnd + 4, ihdrEnd + 8 + data.byteLength)),
+    ihdrEnd + 8 + data.byteLength,
+  )
+  imageBytes.copy(output, ihdrEnd + chunkLength, ihdrEnd)
+
+  return output
 }
 
 export function extractTpakChunk(artifactBytes: Buffer): Uint8Array {
@@ -52,6 +76,7 @@ export function extractTpakChunk(artifactBytes: Buffer): Uint8Array {
     const length = artifactBytes.readUInt32BE(pos)
     const type = artifactBytes.subarray(pos + 4, pos + 8).toString('ascii')
 
+    if (pos + 12 + length > artifactBytes.length) throw new Error('truncated PNG chunk')
     if (type === 'tpAK') {
       const data = artifactBytes.subarray(pos + 8, pos + 8 + length)
 

@@ -1,0 +1,19 @@
+# API
+
+TokenPack ships separate runtime adapters for Node.js, browsers, and the CLI.
+The high-level shape is the same across environments: encode bytes or file
+packs into image tokens, then decode them back into file-like APIs.
+
+## Packages
+
+| Package                                   | Use it for                                                                  |
+| ----------------------------------------- | --------------------------------------------------------------------------- |
+| [`@tokenpack/node`](/docs/api/node)       | Server-side files, buffers, paths, sharp/pngjs bindings, and scripts.       |
+| [`@tokenpack/browser`](/docs/api/browser) | Browser URLs, Blobs, Canvas/ImageBitmap decode, workers, and React helpers. |
+| [`CLI`](/docs/api/cli)                    | Shell workflows for packing, opening, diffing, and applying token images.   |
+
+## Usage path
+
+Start with [Quickstart](/docs/quickstart) if you want the shortest working
+example. Use the package pages here when you need exact options, source types,
+decode types, or router-token entry points.

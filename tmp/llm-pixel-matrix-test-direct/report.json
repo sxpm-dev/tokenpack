@@ -1,0 +1,187 @@
+{
+  "args": {
+    "size": 4,
+    "out": "/Users/valerii/Develop/codeart/tmp/llm-pixel-matrix-test-direct",
+    "models": [
+      {
+        "provider": "openai",
+        "modelId": "gpt-4o"
+      },
+      {
+        "provider": "anthropic",
+        "modelId": "claude-sonnet-4-5-20250929"
+      }
+    ],
+    "providers": [
+      "openai",
+      "anthropic"
+    ],
+    "maxOutput": 6000,
+    "detail": "high",
+    "codeInterpreter": true,
+    "inlineImage": true
+  },
+  "truth": [
+    [
+      {
+        "r": 41,
+        "g": 33,
+        "b": 37,
+        "a": 255
+      },
+      {
+        "r": 74,
+        "g": 65,
+        "b": 41,
+        "a": 255
+      },
+      {
+        "r": 107,
+        "g": 97,
+        "b": 45,
+        "a": 255
+      },
+      {
+        "r": 140,
+        "g": 129,
+        "b": 49,
+        "a": 255
+      }
+    ],
+    [
+      {
+        "r": 14,
+        "g": 90,
+        "b": 186,
+        "a": 255
+      },
+      {
+        "r": 109,
+        "g": 58,
+        "b": 182,
+        "a": 255
+      },
+      {
+        "r": 76,
+        "g": 26,
+        "b": 178,
+        "a": 255
+      },
+      {
+        "r": 171,
+        "g": 250,
+        "b": 174,
+        "a": 255
+      }
+    ],
+    [
+      {
+        "r": 36,
+        "g": 211,
+        "b": 159,
+        "a": 255
+      },
+      {
+        "r": 71,
+        "g": 179,
+        "b": 147,
+        "a": 255
+      },
+      {
+        "r": 102,
+        "g": 147,
+        "b": 151,
+        "a": 255
+      },
+      {
+        "r": 129,
+        "g": 115,
+        "b": 139,
+        "a": 255
+      }
+    ],
+    [
+      {
+        "r": 221,
+        "g": 68,
+        "b": 125,
+        "a": 255
+      },
+      {
+        "r": 190,
+        "g": 36,
+        "b": 113,
+        "a": 255
+      },
+      {
+        "r": 159,
+        "g": 4,
+        "b": 117,
+        "a": 255
+      },
+      {
+        "r": 120,
+        "g": 228,
+        "b": 105,
+        "a": 255
+      }
+    ]
+  ],
+  "summary": [
+    {
+      "provider": "openai",
+      "modelId": "gpt-4o",
+      "score": {
+        "exact": 16,
+        "within5": 16,
+        "within20": 16,
+        "within50": 16,
+        "total": 16,
+        "meanError": 0,
+        "maxError": 0
+      },
+      "elapsedMs": 8976,
+      "usage": {
+        "input_tokens": 1040,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 471,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1511
+      }
+    },
+    {
+      "provider": "anthropic",
+      "modelId": "claude-sonnet-4-5-20250929",
+      "score": {
+        "exact": 12,
+        "within5": 12,
+        "within20": 12,
+        "within50": 12,
+        "total": 16,
+        "meanError": 30.96,
+        "maxError": 151
+      },
+      "elapsedMs": 35273,
+      "usage": {
+        "input_tokens": 16498,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 2072,
+        "service_tier": "standard",
+        "inference_geo": "not_available",
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        }
+      }
+    }
+  ]
+}

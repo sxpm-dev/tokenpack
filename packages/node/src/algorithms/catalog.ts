@@ -9,4 +9,3 @@ for (const Ctor of ALL_NODE_ALGORITHMS) {
 }
 
 export const algorithmCatalog = nodeAlgorithmCatalog
-

@@ -5,24 +5,11 @@
 // the catalog stores the Ctors.
 
 import { definePixelAlgorithm } from 'tokenpack/algorithms/pixel-algorithm'
-import {
-  BitplaneCodec,
-  BitshuffleCodec,
-  DeltaChainCodec,
-  DeltaCodec,
-  InterleavedCodec,
-  LinearCodec,
-  PredictCodec,
-  RleCodec,
-  XorCodec,
-} from 'tokenpack/codecs'
-import { NoneCompressor } from 'tokenpack/compressors'
+import { LinearCodec } from 'tokenpack/codecs'
 import { DenseDrawer } from 'tokenpack/drawers'
 
-import { ZstdpixCodec } from '../codecs/zstdpix'
 import { BrotliCompressor } from '../compressors/brotli-compressor'
 import { DeflateCompressor } from '../compressors/deflate-compressor'
-import { AvifSurface } from '../surfaces/avif'
 import { PngSurface } from '../surfaces/png'
 import { PngUpngSurface } from '../surfaces/png-upng'
 import { StreamingPngSurface } from '../surfaces/streaming-png'
@@ -50,96 +37,6 @@ export const LinearPngBrotli = definePixelAlgorithm({
   Codec: LinearCodec,
   Surface: PngSurface,
   Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const InterleavedPngBrotli = definePixelAlgorithm({
-  id: 1,
-  name: 'interleaved',
-  title: 'Interleaved · PNG · Brotli',
-  Codec: InterleavedCodec,
-  Surface: PngSurface,
-  Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const BitplanePngBrotli = definePixelAlgorithm({
-  id: 2,
-  name: 'bitplane',
-  title: 'Bitplane · PNG · Brotli',
-  Codec: BitplaneCodec,
-  Surface: PngSurface,
-  Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const DeltaPngBrotli = definePixelAlgorithm({
-  id: 3,
-  name: 'delta',
-  title: 'Delta · PNG · Brotli',
-  Codec: DeltaCodec,
-  Surface: PngSurface,
-  Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const XorPngBrotli = definePixelAlgorithm({
-  id: 4,
-  name: 'xor',
-  title: 'XOR · PNG · Brotli',
-  Codec: XorCodec,
-  Surface: PngSurface,
-  Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const DeltaChainPngBrotli = definePixelAlgorithm({
-  id: 5,
-  name: 'delta-chain',
-  title: 'Delta-Chain · PNG · Brotli',
-  Codec: DeltaChainCodec,
-  Surface: PngSurface,
-  Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const RlePngBrotli = definePixelAlgorithm({
-  id: 6,
-  name: 'rle',
-  title: 'RLE · PNG · Brotli',
-  Codec: RleCodec,
-  Surface: PngSurface,
-  Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const PredictPngBrotli = definePixelAlgorithm({
-  id: 7,
-  name: 'predict',
-  title: 'Predict · PNG · Brotli',
-  Codec: PredictCodec,
-  Surface: PngSurface,
-  Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const BitshufflePngBrotli = definePixelAlgorithm({
-  id: 8,
-  name: 'bitshuffle',
-  title: 'Bitshuffle · PNG · Brotli',
-  Codec: BitshuffleCodec,
-  Surface: PngSurface,
-  Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const ZstdpixPngStream = definePixelAlgorithm({
-  id: 9,
-  name: 'zstdpix',
-  title: 'Zstdpix · PNG · Stream',
-  Codec: ZstdpixCodec,
-  Surface: StreamingPngSurface,
-  Compressor: NoneCompressor,
   Drawer: DenseDrawer,
 })
 
@@ -179,18 +76,6 @@ export const LinearStreamingPngBrotli = definePixelAlgorithm({
   Drawer: DenseDrawer,
 })
 
-// No-compression variant — useful for wrapping pre-compressed payloads
-// (PackBuilder regions, diff bytes) so the pixel layer doesn't re-compress.
-export const LinearPngNone = definePixelAlgorithm({
-  id: 16,
-  name: 'linear-none',
-  title: 'Linear · PNG · None',
-  Codec: LinearCodec,
-  Surface: PngSurface,
-  Compressor: NoneCompressor,
-  Drawer: DenseDrawer,
-})
-
 // WebP / AVIF variants — different surfaces, same codec/compressor/drawer.
 export const LinearWebpBrotli = definePixelAlgorithm({
   id: 13,
@@ -198,16 +83,6 @@ export const LinearWebpBrotli = definePixelAlgorithm({
   title: 'Linear · WebP · Brotli',
   Codec: LinearCodec,
   Surface: WebpSurface,
-  Compressor: BrotliCompressor,
-  Drawer: DenseDrawer,
-})
-
-export const LinearAvifBrotli = definePixelAlgorithm({
-  id: 14,
-  name: 'linear-avif',
-  title: 'Linear · AVIF · Brotli',
-  Codec: LinearCodec,
-  Surface: AvifSurface,
   Compressor: BrotliCompressor,
   Drawer: DenseDrawer,
 })

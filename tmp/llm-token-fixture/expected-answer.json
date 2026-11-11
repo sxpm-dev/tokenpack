@@ -1,0 +1,12 @@
+{
+  "filter": {
+    "region": "APAC",
+    "product": "Token Pack",
+    "tier": "enterprise"
+  },
+  "matchingRecords": 1,
+  "totalRevenue": 14907.03,
+  "totalRefunds": 92.42,
+  "netRevenue": 14814.61,
+  "totalMonthlyActiveUsers": 554
+}

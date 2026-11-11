@@ -7,7 +7,6 @@ import { DenseDrawer } from 'tokenpack/drawers'
 
 import { DeflateCompressor } from '../compressors/deflate-compressor'
 import { PngSurface } from '../surfaces/png'
-
 import { extractTpakChunk, insertTpakChunk } from './pixel-range-png-base'
 
 export class PixelRangePngDeflate extends PixelRangeAlgorithm {

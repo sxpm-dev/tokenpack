@@ -32,12 +32,7 @@ program
 
         console.log(JSON.stringify(result, null, 2))
       } catch (e: unknown) {
-        if (
-          !key
-          && process.stdin.isTTY
-          && e instanceof Error
-          && /encrypted/i.test(e.message)
-        ) {
+        if (!key && process.stdin.isTTY && e instanceof Error && /encrypted/i.test(e.message)) {
           key = await readPasswordFromTTY('decryption key: ')
           const result = await packCache.open(png, key)
 
@@ -211,7 +206,9 @@ program
           evicted.push(s.id)
         }
       }
-      console.log(JSON.stringify({ evicted, remaining: summaries.length - evicted.length }, null, 2))
+      console.log(
+        JSON.stringify({ evicted, remaining: summaries.length - evicted.length }, null, 2),
+      )
 
       return
     }

@@ -6,12 +6,11 @@
 //     blobs/<sha256>   raw bytes (content-addressed; dedup across packs)
 //     meta.json        { source, openedAt, lastDiffId, keyRequired }
 
+import { decode, encode } from '@tokenpack/node'
 import { createHash, randomUUID } from 'crypto'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-
-import { decode, encode } from '@tokenpack/node'
 import { packBuffers } from 'tokenpack/archive'
 import { applyDiff, readDiffMeta } from 'tokenpack/diff-pack'
 
@@ -40,10 +39,42 @@ export interface OpenResult {
 }
 
 const TEXT_EXT = new Set([
-  '.txt', '.md', '.json', '.js', '.ts', '.tsx', '.jsx', '.mjs', '.cjs',
-  '.html', '.css', '.scss', '.yml', '.yaml', '.toml', '.xml', '.svg',
-  '.py', '.rs', '.go', '.rb', '.php', '.java', '.kt', '.swift', '.c', '.h',
-  '.cpp', '.hpp', '.sh', '.bash', '.zsh', '.fish', '.csv', '.tsv', '.log',
+  '.txt',
+  '.md',
+  '.json',
+  '.js',
+  '.ts',
+  '.tsx',
+  '.jsx',
+  '.mjs',
+  '.cjs',
+  '.html',
+  '.css',
+  '.scss',
+  '.yml',
+  '.yaml',
+  '.toml',
+  '.xml',
+  '.svg',
+  '.py',
+  '.rs',
+  '.go',
+  '.rb',
+  '.php',
+  '.java',
+  '.kt',
+  '.swift',
+  '.c',
+  '.h',
+  '.cpp',
+  '.hpp',
+  '.sh',
+  '.bash',
+  '.zsh',
+  '.fish',
+  '.csv',
+  '.tsv',
+  '.log',
 ])
 
 function detectType(filePath: string, bytes: Uint8Array): 'text' | 'binary' {
@@ -74,7 +105,8 @@ export function exists(id: string): boolean {
 export function readManifest(id: string): ManifestEntry[] {
   const p = path.join(cacheDir(id), 'manifest.json')
 
-  if (!fs.existsSync(p)) throw new Error(`pack ${id} not open. Run \`tokenpack-skill open <png>\` first.`)
+  if (!fs.existsSync(p))
+    throw new Error(`pack ${id} not open. Run \`tokenpack-skill open <png>\` first.`)
 
   return JSON.parse(fs.readFileSync(p, 'utf-8')) as ManifestEntry[]
 }
@@ -313,7 +345,8 @@ export async function produceDiffToken(
   // Encode the diff archive as a token PNG. Default to linear-deflate at level 6
   // for FE-friendly streaming decode.
   const algo = options.algo ?? 'linear-deflate'
-  const algoOptions = options.level !== undefined ? { compressor: { level: options.level } } : undefined
+  const algoOptions =
+    options.level !== undefined ? { compressor: { level: options.level } } : undefined
 
   await encode(Buffer.from(result.diff), {
     out: diffOutPath,

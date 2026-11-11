@@ -1,0 +1,1 @@
+In the provided dataset, filter records where region is APAC, product is Token Pack, and tier is enterprise. Return the matching record count, total revenue, total refunds, net revenue, and total monthly active users. Group the answer under the key apacEnterpriseTokenPackNetRevenue.

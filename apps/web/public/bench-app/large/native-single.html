@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+  <head>
+	    <meta charset="utf-8" />
+	    <meta name="viewport" content="width=device-width,initial-scale=1" />
+	    <title>bench-app · native-single</title>
+	    <script>
+globalThis.__BENCH_START = performance.now();
+// Default 250-entry buffer drops resource-timing entries on the large
+// fixture, silently under-counting wire bytes. Raise before assets load.
+performance.setResourceTimingBufferSize(20000);
+globalThis.__benchAssetUrl = function (rawUrl) {
+  var params = new URLSearchParams(location.search);
+  if (params.get('cache') !== 'cold') return rawUrl;
+  var url = new URL(rawUrl, location.href);
+  url.searchParams.set('benchRun', params.get('run') || String(Date.now()));
+  return url.href;
+};
+	    </script>
+	    <script>document.write('<link data-bench-eager-css rel="stylesheet" href="' + globalThis.__benchAssetUrl("/bench-app/large/assets/bundle.css") + '" />')</script>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        background: #080b0b;
+        color: #e8e8e8;
+      }
+      header {
+        position: sticky; top: 0; z-index: 10;
+        display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content; gap: 14px; align-items: center;
+        padding: 12px 16px; background: rgba(14,14,16,.96); border-bottom: 1px solid #24272a;
+      }
+      header strong { display: block; font-size: 13px; letter-spacing: .02em; white-space: nowrap; }
+      #status {
+        display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        color: #9b9da3;
+      }
+      #open-dialog {
+        min-width: 156px; padding: 8px 12px; background: #9ee559; color: #10120f;
+        border: 1px solid #b9f37d; border-radius: 6px; font: inherit; cursor: pointer;
+        white-space: nowrap;
+      }
+      #open-dialog:hover:not(:disabled) { filter: brightness(1.04); }
+      #open-dialog:disabled { background: #17191b; border-color: #2a2d30; color: #666; cursor: not-allowed; }
+      #root {
+        padding: 14px 16px 10px; display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px;
+      }
+      .bench-module {
+        min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        padding: 6px 7px; border: 1px solid hsl(var(--h) 52% 38% / .75);
+        border-left-width: 3px; border-radius: 6px; background: hsl(var(--h) 32% 18% / .72);
+        color: #f5f5f5; font-size: 10.5px; line-height: 1;
+      }
+      .bench-module-lazy { background: hsl(var(--h) 40% 20% / .85); border-style: dashed; }
+      #images {
+        padding: 12px 16px 24px; display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px;
+      }
+      #images img {
+        width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;
+        border-radius: 6px; border: 1px solid #25282b; background: #111416;
+      }
+      #lazy-dialog {
+        position: fixed; top: 10%; left: 10%; right: 10%; bottom: 10%;
+        background: #111315; border: 1px solid #2a2d30; border-radius: 8px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.6); z-index: 20;
+        display: flex; flex-direction: column; overflow: hidden;
+      }
+      #lazy-dialog .bar {
+        padding: 10px 12px; background: #181b1d; border-bottom: 1px solid #2a2d30;
+      }
+      #lazy-dialog #lazy-status { color: #9ad; }
+      #lazy-dialog .scene { flex: 1 1 auto; min-height: 320px; background: #080b0b; }
+      #lazy-dialog .scene canvas { width: 100%; height: 100%; display: block; }
+      #lazy-dialog .tags {
+        max-height: 28%; overflow: auto; padding: 10px;
+        border-top: 1px solid #2a2d30; display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>bench-app</strong>
+      <span id="status">booting…</span>
+      <button id="open-dialog" type="button" disabled>Open 3D preview</button>
+    </header>
+    <div id="root"></div>
+    <div id="images">
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0001.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0002.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0003.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0004.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0005.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0006.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0007.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0008.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0009.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0010.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0011.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0012.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0013.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0014.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0015.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0016.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0017.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0018.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0019.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0020.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0021.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0022.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0023.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0024.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0025.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0026.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0027.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0028.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0029.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0030.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0031.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0032.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0033.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0034.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0035.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0036.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0037.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0038.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0039.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0040.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0041.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0042.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0043.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0044.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0045.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0046.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0047.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0048.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0049.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0050.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0051.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0052.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0053.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0054.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0055.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0056.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0057.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0058.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0059.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0060.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0061.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0062.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0063.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0064.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0065.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0066.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0067.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0068.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0069.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0070.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0071.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0072.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0073.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0074.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0075.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0076.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0077.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0078.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0079.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0080.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0081.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0082.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0083.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0084.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0085.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0086.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0087.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0088.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0089.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0090.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0091.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0092.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0093.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0094.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0095.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0096.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0097.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0098.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0099.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0100.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0101.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0102.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0103.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0104.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0105.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0106.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0107.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0108.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0109.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0110.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0111.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0112.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0113.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0114.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0115.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0116.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0117.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0118.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0119.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0120.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0121.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0122.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0123.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0124.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0125.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0126.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0127.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0128.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0129.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0130.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0131.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0132.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0133.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0134.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0135.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0136.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0137.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0138.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0139.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0140.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0141.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0142.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0143.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0144.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0145.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0146.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0147.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0148.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0149.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0150.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0151.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0152.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0153.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0154.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0155.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0156.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0157.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0158.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0159.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0160.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0161.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0162.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0163.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0164.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0165.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0166.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0167.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0168.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0169.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0170.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0171.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0172.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0173.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0174.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0175.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0176.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0177.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0178.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0179.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0180.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0181.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0182.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0183.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0184.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0185.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0186.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0187.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0188.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0189.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0190.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0191.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0192.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0193.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0194.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0195.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0196.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0197.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0198.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0199.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-small-0200.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0201.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0202.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0203.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0204.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0205.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0206.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0207.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0208.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0209.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0210.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0211.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0212.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0213.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0214.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0215.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0216.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0217.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0218.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0219.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0220.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0221.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0222.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0223.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0224.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0225.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0226.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0227.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0228.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0229.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0230.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0231.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0232.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0233.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0234.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0235.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0236.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0237.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0238.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0239.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0240.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0241.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0242.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0243.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0244.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0245.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0246.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0247.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0248.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0249.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-medium-0250.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0251.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0252.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0253.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0254.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0255.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0256.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0257.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0258.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0259.png") + '" alt="" />')</script>
+    <script>document.write('<img class="eager-img" src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/img-large-0260.png") + '" alt="" />')</script>
+    </div>
+    <script>document.write('<script src="' + globalThis.__benchAssetUrl("/bench-app/large/assets/entry-all.js") + '"><\/script>')</script>
+  </body>
+</html>

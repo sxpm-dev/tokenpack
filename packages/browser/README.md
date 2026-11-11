@@ -1,9 +1,11 @@
 # @tokenpack/browser
 
-Browser/DOM/React adapter for [TokenPack](../core/README.md). Decodes via
-Canvas + `createImageBitmap`, encodes via `OffscreenCanvas.convertToBlob` (or
-`canvas.toBlob` fallback), and uses native `CompressionStream`/`DecompressionStream`
-for inner brotli/deflate.
+Browser/DOM/React adapter for [TokenPack](../core/README.md). PNG encoding writes
+lossless scanlines directly, preserving RGB/RGBA channels without canvas alpha
+conversion. RGB decoding uses Canvas + `createImageBitmap`; RGBA decoding uses
+UPNG to preserve alpha-bearing data. Deflate uses native compression streams.
+Brotli encoding requires the server, and browser Brotli decoding requires
+`DecompressionStream('br')` support.
 
 ```bash
 yarn add @tokenpack/browser   # workspace pkg, installs from local sources

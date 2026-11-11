@@ -1,0 +1,231 @@
+{
+  "args": {
+    "size": 4,
+    "out": "/Users/valerii/Develop/codeart/tmp/llm-pixel-matrix-test",
+    "providers": [
+      "openai",
+      "anthropic"
+    ],
+    "models": [
+      {
+        "provider": "openai",
+        "modelId": "gpt-4o"
+      },
+      {
+        "provider": "openai",
+        "modelId": "gpt-5-mini"
+      },
+      {
+        "provider": "anthropic",
+        "modelId": "claude-opus-4-5-20250929"
+      },
+      {
+        "provider": "anthropic",
+        "modelId": "claude-sonnet-4-5-20250929"
+      },
+      {
+        "provider": "anthropic",
+        "modelId": "claude-haiku-4-5-20251001"
+      }
+    ],
+    "maxOutput": 6000,
+    "reasoningEffort": "medium",
+    "thinkingBudgetTokens": 0
+  },
+  "truth": [
+    [
+      {
+        "r": 41,
+        "g": 33,
+        "b": 37,
+        "a": 255
+      },
+      {
+        "r": 74,
+        "g": 65,
+        "b": 41,
+        "a": 255
+      },
+      {
+        "r": 107,
+        "g": 97,
+        "b": 45,
+        "a": 255
+      },
+      {
+        "r": 140,
+        "g": 129,
+        "b": 49,
+        "a": 255
+      }
+    ],
+    [
+      {
+        "r": 14,
+        "g": 90,
+        "b": 186,
+        "a": 255
+      },
+      {
+        "r": 109,
+        "g": 58,
+        "b": 182,
+        "a": 255
+      },
+      {
+        "r": 76,
+        "g": 26,
+        "b": 178,
+        "a": 255
+      },
+      {
+        "r": 171,
+        "g": 250,
+        "b": 174,
+        "a": 255
+      }
+    ],
+    [
+      {
+        "r": 36,
+        "g": 211,
+        "b": 159,
+        "a": 255
+      },
+      {
+        "r": 71,
+        "g": 179,
+        "b": 147,
+        "a": 255
+      },
+      {
+        "r": 102,
+        "g": 147,
+        "b": 151,
+        "a": 255
+      },
+      {
+        "r": 129,
+        "g": 115,
+        "b": 139,
+        "a": 255
+      }
+    ],
+    [
+      {
+        "r": 221,
+        "g": 68,
+        "b": 125,
+        "a": 255
+      },
+      {
+        "r": 190,
+        "g": 36,
+        "b": 113,
+        "a": 255
+      },
+      {
+        "r": 159,
+        "g": 4,
+        "b": 117,
+        "a": 255
+      },
+      {
+        "r": 120,
+        "g": 228,
+        "b": 105,
+        "a": 255
+      }
+    ]
+  ],
+  "summary": [
+    {
+      "provider": "openai",
+      "modelId": "gpt-4o",
+      "score": {
+        "exact": 0,
+        "within5": 0,
+        "within20": 0,
+        "within50": 1,
+        "total": 16,
+        "meanError": 93.33,
+        "maxError": 141
+      },
+      "elapsedMs": 5952,
+      "usage": {
+        "inputTokens": 458,
+        "outputTokens": 201,
+        "totalTokens": 659,
+        "reasoningTokens": 0,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "provider": "openai",
+      "modelId": "gpt-5-mini",
+      "score": {
+        "exact": 0,
+        "within5": 0,
+        "within20": 0,
+        "within50": 2,
+        "total": 16,
+        "meanError": 74.1,
+        "maxError": 130
+      },
+      "elapsedMs": 8278,
+      "usage": {
+        "inputTokens": 204,
+        "outputTokens": 708,
+        "totalTokens": 912,
+        "reasoningTokens": 448,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "provider": "anthropic",
+      "modelId": "claude-opus-4-5-20250929",
+      "elapsedMs": 435,
+      "error": "model: claude-opus-4-5-20250929"
+    },
+    {
+      "provider": "anthropic",
+      "modelId": "claude-sonnet-4-5-20250929",
+      "score": {
+        "exact": 0,
+        "within5": 0,
+        "within20": 0,
+        "within50": 0,
+        "total": 16,
+        "meanError": 73.87,
+        "maxError": 131.67
+      },
+      "elapsedMs": 3836,
+      "usage": {
+        "inputTokens": 238,
+        "outputTokens": 220,
+        "totalTokens": 458,
+        "cachedInputTokens": 0
+      }
+    },
+    {
+      "provider": "anthropic",
+      "modelId": "claude-haiku-4-5-20251001",
+      "score": {
+        "exact": 0,
+        "within5": 0,
+        "within20": 0,
+        "within50": 0,
+        "total": 16,
+        "meanError": 73.63,
+        "maxError": 130.33
+      },
+      "elapsedMs": 1561,
+      "usage": {
+        "inputTokens": 238,
+        "outputTokens": 216,
+        "totalTokens": 454,
+        "cachedInputTokens": 0
+      }
+    }
+  ]
+}

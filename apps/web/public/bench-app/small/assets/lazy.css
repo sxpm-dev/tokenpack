@@ -1,0 +1,2169 @@
+/* lazy.css -- lazy stylesheets */
+
+/* style-lazy-0001 */
+.lazy-0001-0 {
+  color: hsl(37 60% 40%);
+  background: hsl(127 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0001-1 {
+  color: hsl(351 60% 40%);
+  background: hsl(81 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0001-2 {
+  color: hsl(168 60% 40%);
+  background: hsl(258 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0001-3 {
+  color: hsl(167 60% 40%);
+  background: hsl(257 50% 25%);
+  padding: 4px;
+  border-radius: 4px;
+}
+.lazy-0001-4 {
+  color: hsl(332 60% 40%);
+  background: hsl(62 50% 25%);
+  padding: 7px;
+  border-radius: 1px;
+}
+.lazy-0001-5 {
+  color: hsl(24 60% 40%);
+  background: hsl(114 50% 25%);
+  padding: 1px;
+  border-radius: 5px;
+}
+.lazy-0001-6 {
+  color: hsl(318 60% 40%);
+  background: hsl(48 50% 25%);
+  padding: 7px;
+  border-radius: 4px;
+}
+.lazy-0001-7 {
+  color: hsl(77 60% 40%);
+  background: hsl(167 50% 25%);
+  padding: 8px;
+  border-radius: 3px;
+}
+.lazy-0001-8 {
+  color: hsl(205 60% 40%);
+  background: hsl(295 50% 25%);
+  padding: 8px;
+  border-radius: 6px;
+}
+.lazy-0001-9 {
+  color: hsl(285 60% 40%);
+  background: hsl(15 50% 25%);
+  padding: 5px;
+  border-radius: 1px;
+}
+.lazy-0001-10 {
+  color: hsl(357 60% 40%);
+  background: hsl(87 50% 25%);
+  padding: 8px;
+  border-radius: 2px;
+}
+.lazy-0001-11 {
+  color: hsl(293 60% 40%);
+  background: hsl(23 50% 25%);
+  padding: 7px;
+  border-radius: 5px;
+}
+.lazy-0001-12 {
+  color: hsl(122 60% 40%);
+  background: hsl(212 50% 25%);
+  padding: 7px;
+  border-radius: 1px;
+}
+.lazy-0001-13 {
+  color: hsl(25 60% 40%);
+  background: hsl(115 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0001-14 {
+  color: hsl(0 60% 40%);
+  background: hsl(90 50% 25%);
+  padding: 8px;
+  border-radius: 2px;
+}
+.lazy-0001-15 {
+  color: hsl(332 60% 40%);
+  background: hsl(62 50% 25%);
+  padding: 3px;
+  border-radius: 5px;
+}
+.lazy-0001-16 {
+  color: hsl(103 60% 40%);
+  background: hsl(193 50% 25%);
+  padding: 2px;
+  border-radius: 3px;
+}
+.lazy-0001-17 {
+  color: hsl(109 60% 40%);
+  background: hsl(199 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0001-18 {
+  color: hsl(309 60% 40%);
+  background: hsl(39 50% 25%);
+  padding: 7px;
+  border-radius: 3px;
+}
+.lazy-0001-19 {
+  color: hsl(327 60% 40%);
+  background: hsl(57 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0001-20 {
+  color: hsl(158 60% 40%);
+  background: hsl(248 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0001-21 {
+  color: hsl(290 60% 40%);
+  background: hsl(20 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0001-22 {
+  color: hsl(158 60% 40%);
+  background: hsl(248 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0001-23 {
+  color: hsl(145 60% 40%);
+  background: hsl(235 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0001-24 {
+  color: hsl(225 60% 40%);
+  background: hsl(315 50% 25%);
+  padding: 2px;
+  border-radius: 4px;
+}
+.lazy-0001-25 {
+  color: hsl(40 60% 40%);
+  background: hsl(130 50% 25%);
+  padding: 6px;
+  border-radius: 1px;
+}
+.lazy-0001-26 {
+  color: hsl(235 60% 40%);
+  background: hsl(325 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0001-27 {
+  color: hsl(245 60% 40%);
+  background: hsl(335 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0001-28 {
+  color: hsl(280 60% 40%);
+  background: hsl(10 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0001-29 {
+  color: hsl(235 60% 40%);
+  background: hsl(325 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0001-30 {
+  color: hsl(86 60% 40%);
+  background: hsl(176 50% 25%);
+  padding: 2px;
+  border-radius: 3px;
+}
+.lazy-0001-31 {
+  color: hsl(148 60% 40%);
+  background: hsl(238 50% 25%);
+  padding: 4px;
+  border-radius: 3px;
+}
+.lazy-0001-32 {
+  color: hsl(212 60% 40%);
+  background: hsl(302 50% 25%);
+  padding: 7px;
+  border-radius: 3px;
+}
+.lazy-0001-33 {
+  color: hsl(110 60% 40%);
+  background: hsl(200 50% 25%);
+  padding: 2px;
+  border-radius: 6px;
+}
+.lazy-0001-34 {
+  color: hsl(58 60% 40%);
+  background: hsl(148 50% 25%);
+  padding: 6px;
+  border-radius: 5px;
+}
+.lazy-0001-35 {
+  color: hsl(90 60% 40%);
+  background: hsl(180 50% 25%);
+  padding: 4px;
+  border-radius: 5px;
+}
+.lazy-0001-36 {
+  color: hsl(257 60% 40%);
+  background: hsl(347 50% 25%);
+  padding: 2px;
+  border-radius: 2px;
+}
+.lazy-0001-37 {
+  color: hsl(226 60% 40%);
+  background: hsl(316 50% 25%);
+  padding: 2px;
+  border-radius: 6px;
+}
+.lazy-0001-38 {
+  color: hsl(170 60% 40%);
+  background: hsl(260 50% 25%);
+  padding: 6px;
+  border-radius: 3px;
+}
+.lazy-0001-39 {
+  color: hsl(21 60% 40%);
+  background: hsl(111 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0001-40 {
+  color: hsl(354 60% 40%);
+  background: hsl(84 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0001-41 {
+  color: hsl(282 60% 40%);
+  background: hsl(12 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0001-42 {
+  color: hsl(18 60% 40%);
+  background: hsl(108 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0001-43 {
+  color: hsl(331 60% 40%);
+  background: hsl(61 50% 25%);
+  padding: 1px;
+  border-radius: 1px;
+}
+.lazy-0001-44 {
+  color: hsl(314 60% 40%);
+  background: hsl(44 50% 25%);
+  padding: 4px;
+  border-radius: 6px;
+}
+.lazy-0001-45 {
+  color: hsl(156 60% 40%);
+  background: hsl(246 50% 25%);
+  padding: 6px;
+  border-radius: 6px;
+}
+.lazy-0001-46 {
+  color: hsl(176 60% 40%);
+  background: hsl(266 50% 25%);
+  padding: 5px;
+  border-radius: 4px;
+}
+.lazy-0001-47 {
+  color: hsl(17 60% 40%);
+  background: hsl(107 50% 25%);
+  padding: 3px;
+  border-radius: 5px;
+}
+.lazy-0001-48 {
+  color: hsl(229 60% 40%);
+  background: hsl(319 50% 25%);
+  padding: 6px;
+  border-radius: 6px;
+}
+.lazy-0001-49 {
+  color: hsl(327 60% 40%);
+  background: hsl(57 50% 25%);
+  padding: 5px;
+  border-radius: 4px;
+}
+.lazy-0001-50 {
+  color: hsl(200 60% 40%);
+  background: hsl(290 50% 25%);
+  padding: 6px;
+  border-radius: 1px;
+}
+.lazy-0001-51 {
+  color: hsl(337 60% 40%);
+  background: hsl(67 50% 25%);
+  padding: 2px;
+  border-radius: 5px;
+}
+.lazy-0001-52 {
+  color: hsl(155 60% 40%);
+  background: hsl(245 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0001-53 {
+  color: hsl(102 60% 40%);
+  background: hsl(192 50% 25%);
+  padding: 4px;
+  border-radius: 5px;
+}
+.lazy-0001-54 {
+  color: hsl(138 60% 40%);
+  background: hsl(228 50% 25%);
+  padding: 6px;
+  border-radius: 2px;
+}
+.lazy-0001-55 {
+  color: hsl(339 60% 40%);
+  background: hsl(69 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0001-56 {
+  color: hsl(323 60% 40%);
+  background: hsl(53 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0001-57 {
+  color: hsl(316 60% 40%);
+  background: hsl(46 50% 25%);
+  padding: 1px;
+  border-radius: 1px;
+}
+.lazy-0001-58 {
+  color: hsl(169 60% 40%);
+  background: hsl(259 50% 25%);
+  padding: 1px;
+  border-radius: 6px;
+}
+.lazy-0001-59 {
+  color: hsl(282 60% 40%);
+  background: hsl(12 50% 25%);
+  padding: 6px;
+  border-radius: 6px;
+}
+.lazy-0001-60 {
+  color: hsl(84 60% 40%);
+  background: hsl(174 50% 25%);
+  padding: 6px;
+  border-radius: 3px;
+}
+.lazy-0001-61 {
+  color: hsl(9 60% 40%);
+  background: hsl(99 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0001-62 {
+  color: hsl(118 60% 40%);
+  background: hsl(208 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0001-63 {
+  color: hsl(297 60% 40%);
+  background: hsl(27 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0001-64 {
+  color: hsl(330 60% 40%);
+  background: hsl(60 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0001-65 {
+  color: hsl(64 60% 40%);
+  background: hsl(154 50% 25%);
+  padding: 4px;
+  border-radius: 6px;
+}
+.lazy-0001-66 {
+  color: hsl(269 60% 40%);
+  background: hsl(359 50% 25%);
+  padding: 3px;
+  border-radius: 5px;
+}
+.lazy-0001-67 {
+  color: hsl(105 60% 40%);
+  background: hsl(195 50% 25%);
+  padding: 2px;
+  border-radius: 4px;
+}
+.lazy-0001-68 {
+  color: hsl(37 60% 40%);
+  background: hsl(127 50% 25%);
+  padding: 6px;
+  border-radius: 5px;
+}
+.lazy-0001-69 {
+  color: hsl(178 60% 40%);
+  background: hsl(268 50% 25%);
+  padding: 2px;
+  border-radius: 2px;
+}
+.lazy-0001-70 {
+  color: hsl(296 60% 40%);
+  background: hsl(26 50% 25%);
+  padding: 1px;
+  border-radius: 5px;
+}
+.lazy-0001-71 {
+  color: hsl(295 60% 40%);
+  background: hsl(25 50% 25%);
+  padding: 6px;
+  border-radius: 6px;
+}
+.lazy-0001-72 {
+  color: hsl(119 60% 40%);
+  background: hsl(209 50% 25%);
+  padding: 8px;
+  border-radius: 2px;
+}
+.lazy-0001-73 {
+  color: hsl(179 60% 40%);
+  background: hsl(269 50% 25%);
+  padding: 3px;
+  border-radius: 3px;
+}
+.lazy-0001-74 {
+  color: hsl(80 60% 40%);
+  background: hsl(170 50% 25%);
+  padding: 6px;
+  border-radius: 2px;
+}
+.lazy-0001-75 {
+  color: hsl(168 60% 40%);
+  background: hsl(258 50% 25%);
+  padding: 6px;
+  border-radius: 2px;
+}
+.lazy-0001-76 {
+  color: hsl(3 60% 40%);
+  background: hsl(93 50% 25%);
+  padding: 6px;
+  border-radius: 6px;
+}
+.lazy-0001-77 {
+  color: hsl(44 60% 40%);
+  background: hsl(134 50% 25%);
+  padding: 6px;
+  border-radius: 1px;
+}
+.lazy-0001-78 {
+  color: hsl(344 60% 40%);
+  background: hsl(74 50% 25%);
+  padding: 7px;
+  border-radius: 4px;
+}
+.lazy-0001-79 {
+  color: hsl(156 60% 40%);
+  background: hsl(246 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0001-80 {
+  color: hsl(6 60% 40%);
+  background: hsl(96 50% 25%);
+  padding: 4px;
+  border-radius: 4px;
+}
+.lazy-0001-81 {
+  color: hsl(239 60% 40%);
+  background: hsl(329 50% 25%);
+  padding: 3px;
+  border-radius: 6px;
+}
+.lazy-0001-82 {
+  color: hsl(124 60% 40%);
+  background: hsl(214 50% 25%);
+  padding: 6px;
+  border-radius: 2px;
+}
+.lazy-0001-83 {
+  color: hsl(192 60% 40%);
+  background: hsl(282 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0001-84 {
+  color: hsl(31 60% 40%);
+  background: hsl(121 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0001-85 {
+  color: hsl(134 60% 40%);
+  background: hsl(224 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0001-86 {
+  color: hsl(3 60% 40%);
+  background: hsl(93 50% 25%);
+  padding: 7px;
+  border-radius: 1px;
+}
+.lazy-0001-87 {
+  color: hsl(204 60% 40%);
+  background: hsl(294 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0001-88 {
+  color: hsl(19 60% 40%);
+  background: hsl(109 50% 25%);
+  padding: 4px;
+  border-radius: 6px;
+}
+.lazy-0001-89 {
+  color: hsl(284 60% 40%);
+  background: hsl(14 50% 25%);
+  padding: 7px;
+  border-radius: 3px;
+}
+
+/* style-lazy-0002 */
+.lazy-0002-0 {
+  color: hsl(161 60% 40%);
+  background: hsl(251 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0002-1 {
+  color: hsl(254 60% 40%);
+  background: hsl(344 50% 25%);
+  padding: 7px;
+  border-radius: 1px;
+}
+.lazy-0002-2 {
+  color: hsl(19 60% 40%);
+  background: hsl(109 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0002-3 {
+  color: hsl(114 60% 40%);
+  background: hsl(204 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0002-4 {
+  color: hsl(211 60% 40%);
+  background: hsl(301 50% 25%);
+  padding: 3px;
+  border-radius: 6px;
+}
+.lazy-0002-5 {
+  color: hsl(283 60% 40%);
+  background: hsl(13 50% 25%);
+  padding: 2px;
+  border-radius: 3px;
+}
+.lazy-0002-6 {
+  color: hsl(328 60% 40%);
+  background: hsl(58 50% 25%);
+  padding: 4px;
+  border-radius: 4px;
+}
+.lazy-0002-7 {
+  color: hsl(239 60% 40%);
+  background: hsl(329 50% 25%);
+  padding: 2px;
+  border-radius: 6px;
+}
+.lazy-0002-8 {
+  color: hsl(18 60% 40%);
+  background: hsl(108 50% 25%);
+  padding: 2px;
+  border-radius: 5px;
+}
+.lazy-0002-9 {
+  color: hsl(80 60% 40%);
+  background: hsl(170 50% 25%);
+  padding: 2px;
+  border-radius: 6px;
+}
+.lazy-0002-10 {
+  color: hsl(279 60% 40%);
+  background: hsl(9 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0002-11 {
+  color: hsl(77 60% 40%);
+  background: hsl(167 50% 25%);
+  padding: 2px;
+  border-radius: 2px;
+}
+.lazy-0002-12 {
+  color: hsl(130 60% 40%);
+  background: hsl(220 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0002-13 {
+  color: hsl(32 60% 40%);
+  background: hsl(122 50% 25%);
+  padding: 8px;
+  border-radius: 6px;
+}
+.lazy-0002-14 {
+  color: hsl(92 60% 40%);
+  background: hsl(182 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0002-15 {
+  color: hsl(233 60% 40%);
+  background: hsl(323 50% 25%);
+  padding: 2px;
+  border-radius: 3px;
+}
+.lazy-0002-16 {
+  color: hsl(233 60% 40%);
+  background: hsl(323 50% 25%);
+  padding: 1px;
+  border-radius: 6px;
+}
+.lazy-0002-17 {
+  color: hsl(228 60% 40%);
+  background: hsl(318 50% 25%);
+  padding: 2px;
+  border-radius: 5px;
+}
+.lazy-0002-18 {
+  color: hsl(153 60% 40%);
+  background: hsl(243 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0002-19 {
+  color: hsl(241 60% 40%);
+  background: hsl(331 50% 25%);
+  padding: 3px;
+  border-radius: 1px;
+}
+.lazy-0002-20 {
+  color: hsl(117 60% 40%);
+  background: hsl(207 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0002-21 {
+  color: hsl(304 60% 40%);
+  background: hsl(34 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0002-22 {
+  color: hsl(318 60% 40%);
+  background: hsl(48 50% 25%);
+  padding: 3px;
+  border-radius: 6px;
+}
+.lazy-0002-23 {
+  color: hsl(22 60% 40%);
+  background: hsl(112 50% 25%);
+  padding: 3px;
+  border-radius: 3px;
+}
+.lazy-0002-24 {
+  color: hsl(294 60% 40%);
+  background: hsl(24 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0002-25 {
+  color: hsl(226 60% 40%);
+  background: hsl(316 50% 25%);
+  padding: 7px;
+  border-radius: 2px;
+}
+.lazy-0002-26 {
+  color: hsl(149 60% 40%);
+  background: hsl(239 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0002-27 {
+  color: hsl(241 60% 40%);
+  background: hsl(331 50% 25%);
+  padding: 2px;
+  border-radius: 1px;
+}
+.lazy-0002-28 {
+  color: hsl(28 60% 40%);
+  background: hsl(118 50% 25%);
+  padding: 1px;
+  border-radius: 6px;
+}
+.lazy-0002-29 {
+  color: hsl(137 60% 40%);
+  background: hsl(227 50% 25%);
+  padding: 3px;
+  border-radius: 1px;
+}
+.lazy-0002-30 {
+  color: hsl(102 60% 40%);
+  background: hsl(192 50% 25%);
+  padding: 1px;
+  border-radius: 1px;
+}
+.lazy-0002-31 {
+  color: hsl(303 60% 40%);
+  background: hsl(33 50% 25%);
+  padding: 4px;
+  border-radius: 3px;
+}
+.lazy-0002-32 {
+  color: hsl(302 60% 40%);
+  background: hsl(32 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0002-33 {
+  color: hsl(128 60% 40%);
+  background: hsl(218 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0002-34 {
+  color: hsl(99 60% 40%);
+  background: hsl(189 50% 25%);
+  padding: 7px;
+  border-radius: 4px;
+}
+.lazy-0002-35 {
+  color: hsl(85 60% 40%);
+  background: hsl(175 50% 25%);
+  padding: 4px;
+  border-radius: 5px;
+}
+.lazy-0002-36 {
+  color: hsl(21 60% 40%);
+  background: hsl(111 50% 25%);
+  padding: 4px;
+  border-radius: 6px;
+}
+.lazy-0002-37 {
+  color: hsl(101 60% 40%);
+  background: hsl(191 50% 25%);
+  padding: 3px;
+  border-radius: 3px;
+}
+.lazy-0002-38 {
+  color: hsl(297 60% 40%);
+  background: hsl(27 50% 25%);
+  padding: 6px;
+  border-radius: 3px;
+}
+.lazy-0002-39 {
+  color: hsl(84 60% 40%);
+  background: hsl(174 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0002-40 {
+  color: hsl(78 60% 40%);
+  background: hsl(168 50% 25%);
+  padding: 7px;
+  border-radius: 2px;
+}
+.lazy-0002-41 {
+  color: hsl(261 60% 40%);
+  background: hsl(351 50% 25%);
+  padding: 3px;
+  border-radius: 6px;
+}
+.lazy-0002-42 {
+  color: hsl(101 60% 40%);
+  background: hsl(191 50% 25%);
+  padding: 8px;
+  border-radius: 3px;
+}
+.lazy-0002-43 {
+  color: hsl(289 60% 40%);
+  background: hsl(19 50% 25%);
+  padding: 5px;
+  border-radius: 1px;
+}
+.lazy-0002-44 {
+  color: hsl(228 60% 40%);
+  background: hsl(318 50% 25%);
+  padding: 6px;
+  border-radius: 1px;
+}
+.lazy-0002-45 {
+  color: hsl(90 60% 40%);
+  background: hsl(180 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0002-46 {
+  color: hsl(96 60% 40%);
+  background: hsl(186 50% 25%);
+  padding: 7px;
+  border-radius: 3px;
+}
+.lazy-0002-47 {
+  color: hsl(146 60% 40%);
+  background: hsl(236 50% 25%);
+  padding: 6px;
+  border-radius: 5px;
+}
+.lazy-0002-48 {
+  color: hsl(208 60% 40%);
+  background: hsl(298 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0002-49 {
+  color: hsl(59 60% 40%);
+  background: hsl(149 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0002-50 {
+  color: hsl(202 60% 40%);
+  background: hsl(292 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0002-51 {
+  color: hsl(146 60% 40%);
+  background: hsl(236 50% 25%);
+  padding: 2px;
+  border-radius: 4px;
+}
+.lazy-0002-52 {
+  color: hsl(296 60% 40%);
+  background: hsl(26 50% 25%);
+  padding: 2px;
+  border-radius: 3px;
+}
+.lazy-0002-53 {
+  color: hsl(151 60% 40%);
+  background: hsl(241 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0002-54 {
+  color: hsl(199 60% 40%);
+  background: hsl(289 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0002-55 {
+  color: hsl(216 60% 40%);
+  background: hsl(306 50% 25%);
+  padding: 3px;
+  border-radius: 5px;
+}
+.lazy-0002-56 {
+  color: hsl(110 60% 40%);
+  background: hsl(200 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0002-57 {
+  color: hsl(338 60% 40%);
+  background: hsl(68 50% 25%);
+  padding: 6px;
+  border-radius: 4px;
+}
+.lazy-0002-58 {
+  color: hsl(93 60% 40%);
+  background: hsl(183 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0002-59 {
+  color: hsl(310 60% 40%);
+  background: hsl(40 50% 25%);
+  padding: 2px;
+  border-radius: 5px;
+}
+.lazy-0002-60 {
+  color: hsl(53 60% 40%);
+  background: hsl(143 50% 25%);
+  padding: 1px;
+  border-radius: 2px;
+}
+.lazy-0002-61 {
+  color: hsl(308 60% 40%);
+  background: hsl(38 50% 25%);
+  padding: 6px;
+  border-radius: 4px;
+}
+.lazy-0002-62 {
+  color: hsl(224 60% 40%);
+  background: hsl(314 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0002-63 {
+  color: hsl(135 60% 40%);
+  background: hsl(225 50% 25%);
+  padding: 2px;
+  border-radius: 6px;
+}
+.lazy-0002-64 {
+  color: hsl(53 60% 40%);
+  background: hsl(143 50% 25%);
+  padding: 4px;
+  border-radius: 3px;
+}
+.lazy-0002-65 {
+  color: hsl(243 60% 40%);
+  background: hsl(333 50% 25%);
+  padding: 6px;
+  border-radius: 2px;
+}
+.lazy-0002-66 {
+  color: hsl(126 60% 40%);
+  background: hsl(216 50% 25%);
+  padding: 2px;
+  border-radius: 1px;
+}
+.lazy-0002-67 {
+  color: hsl(38 60% 40%);
+  background: hsl(128 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0002-68 {
+  color: hsl(333 60% 40%);
+  background: hsl(63 50% 25%);
+  padding: 8px;
+  border-radius: 3px;
+}
+.lazy-0002-69 {
+  color: hsl(331 60% 40%);
+  background: hsl(61 50% 25%);
+  padding: 4px;
+  border-radius: 3px;
+}
+.lazy-0002-70 {
+  color: hsl(21 60% 40%);
+  background: hsl(111 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0002-71 {
+  color: hsl(16 60% 40%);
+  background: hsl(106 50% 25%);
+  padding: 6px;
+  border-radius: 2px;
+}
+.lazy-0002-72 {
+  color: hsl(207 60% 40%);
+  background: hsl(297 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0002-73 {
+  color: hsl(290 60% 40%);
+  background: hsl(20 50% 25%);
+  padding: 6px;
+  border-radius: 1px;
+}
+.lazy-0002-74 {
+  color: hsl(277 60% 40%);
+  background: hsl(7 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0002-75 {
+  color: hsl(243 60% 40%);
+  background: hsl(333 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0002-76 {
+  color: hsl(207 60% 40%);
+  background: hsl(297 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0002-77 {
+  color: hsl(311 60% 40%);
+  background: hsl(41 50% 25%);
+  padding: 6px;
+  border-radius: 3px;
+}
+.lazy-0002-78 {
+  color: hsl(251 60% 40%);
+  background: hsl(341 50% 25%);
+  padding: 6px;
+  border-radius: 4px;
+}
+.lazy-0002-79 {
+  color: hsl(165 60% 40%);
+  background: hsl(255 50% 25%);
+  padding: 7px;
+  border-radius: 2px;
+}
+.lazy-0002-80 {
+  color: hsl(95 60% 40%);
+  background: hsl(185 50% 25%);
+  padding: 3px;
+  border-radius: 5px;
+}
+.lazy-0002-81 {
+  color: hsl(166 60% 40%);
+  background: hsl(256 50% 25%);
+  padding: 3px;
+  border-radius: 3px;
+}
+.lazy-0002-82 {
+  color: hsl(331 60% 40%);
+  background: hsl(61 50% 25%);
+  padding: 8px;
+  border-radius: 6px;
+}
+.lazy-0002-83 {
+  color: hsl(237 60% 40%);
+  background: hsl(327 50% 25%);
+  padding: 8px;
+  border-radius: 2px;
+}
+.lazy-0002-84 {
+  color: hsl(223 60% 40%);
+  background: hsl(313 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0002-85 {
+  color: hsl(144 60% 40%);
+  background: hsl(234 50% 25%);
+  padding: 8px;
+  border-radius: 3px;
+}
+.lazy-0002-86 {
+  color: hsl(280 60% 40%);
+  background: hsl(10 50% 25%);
+  padding: 6px;
+  border-radius: 3px;
+}
+.lazy-0002-87 {
+  color: hsl(77 60% 40%);
+  background: hsl(167 50% 25%);
+  padding: 6px;
+  border-radius: 1px;
+}
+.lazy-0002-88 {
+  color: hsl(195 60% 40%);
+  background: hsl(285 50% 25%);
+  padding: 3px;
+  border-radius: 6px;
+}
+.lazy-0002-89 {
+  color: hsl(287 60% 40%);
+  background: hsl(17 50% 25%);
+  padding: 1px;
+  border-radius: 6px;
+}
+
+/* style-lazy-0003 */
+.lazy-0003-0 {
+  color: hsl(87 60% 40%);
+  background: hsl(177 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0003-1 {
+  color: hsl(137 60% 40%);
+  background: hsl(227 50% 25%);
+  padding: 6px;
+  border-radius: 5px;
+}
+.lazy-0003-2 {
+  color: hsl(39 60% 40%);
+  background: hsl(129 50% 25%);
+  padding: 7px;
+  border-radius: 2px;
+}
+.lazy-0003-3 {
+  color: hsl(295 60% 40%);
+  background: hsl(25 50% 25%);
+  padding: 4px;
+  border-radius: 1px;
+}
+.lazy-0003-4 {
+  color: hsl(284 60% 40%);
+  background: hsl(14 50% 25%);
+  padding: 6px;
+  border-radius: 2px;
+}
+.lazy-0003-5 {
+  color: hsl(164 60% 40%);
+  background: hsl(254 50% 25%);
+  padding: 4px;
+  border-radius: 1px;
+}
+.lazy-0003-6 {
+  color: hsl(79 60% 40%);
+  background: hsl(169 50% 25%);
+  padding: 5px;
+  border-radius: 3px;
+}
+.lazy-0003-7 {
+  color: hsl(61 60% 40%);
+  background: hsl(151 50% 25%);
+  padding: 2px;
+  border-radius: 2px;
+}
+.lazy-0003-8 {
+  color: hsl(7 60% 40%);
+  background: hsl(97 50% 25%);
+  padding: 8px;
+  border-radius: 4px;
+}
+.lazy-0003-9 {
+  color: hsl(260 60% 40%);
+  background: hsl(350 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0003-10 {
+  color: hsl(39 60% 40%);
+  background: hsl(129 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0003-11 {
+  color: hsl(341 60% 40%);
+  background: hsl(71 50% 25%);
+  padding: 4px;
+  border-radius: 3px;
+}
+.lazy-0003-12 {
+  color: hsl(55 60% 40%);
+  background: hsl(145 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0003-13 {
+  color: hsl(54 60% 40%);
+  background: hsl(144 50% 25%);
+  padding: 8px;
+  border-radius: 4px;
+}
+.lazy-0003-14 {
+  color: hsl(32 60% 40%);
+  background: hsl(122 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0003-15 {
+  color: hsl(50 60% 40%);
+  background: hsl(140 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0003-16 {
+  color: hsl(201 60% 40%);
+  background: hsl(291 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0003-17 {
+  color: hsl(140 60% 40%);
+  background: hsl(230 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0003-18 {
+  color: hsl(300 60% 40%);
+  background: hsl(30 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0003-19 {
+  color: hsl(60 60% 40%);
+  background: hsl(150 50% 25%);
+  padding: 8px;
+  border-radius: 4px;
+}
+.lazy-0003-20 {
+  color: hsl(314 60% 40%);
+  background: hsl(44 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0003-21 {
+  color: hsl(307 60% 40%);
+  background: hsl(37 50% 25%);
+  padding: 2px;
+  border-radius: 3px;
+}
+.lazy-0003-22 {
+  color: hsl(301 60% 40%);
+  background: hsl(31 50% 25%);
+  padding: 7px;
+  border-radius: 3px;
+}
+.lazy-0003-23 {
+  color: hsl(213 60% 40%);
+  background: hsl(303 50% 25%);
+  padding: 1px;
+  border-radius: 5px;
+}
+.lazy-0003-24 {
+  color: hsl(307 60% 40%);
+  background: hsl(37 50% 25%);
+  padding: 6px;
+  border-radius: 3px;
+}
+.lazy-0003-25 {
+  color: hsl(268 60% 40%);
+  background: hsl(358 50% 25%);
+  padding: 7px;
+  border-radius: 5px;
+}
+.lazy-0003-26 {
+  color: hsl(245 60% 40%);
+  background: hsl(335 50% 25%);
+  padding: 2px;
+  border-radius: 4px;
+}
+.lazy-0003-27 {
+  color: hsl(140 60% 40%);
+  background: hsl(230 50% 25%);
+  padding: 6px;
+  border-radius: 4px;
+}
+.lazy-0003-28 {
+  color: hsl(281 60% 40%);
+  background: hsl(11 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0003-29 {
+  color: hsl(145 60% 40%);
+  background: hsl(235 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0003-30 {
+  color: hsl(83 60% 40%);
+  background: hsl(173 50% 25%);
+  padding: 4px;
+  border-radius: 3px;
+}
+.lazy-0003-31 {
+  color: hsl(353 60% 40%);
+  background: hsl(83 50% 25%);
+  padding: 7px;
+  border-radius: 1px;
+}
+.lazy-0003-32 {
+  color: hsl(214 60% 40%);
+  background: hsl(304 50% 25%);
+  padding: 6px;
+  border-radius: 6px;
+}
+.lazy-0003-33 {
+  color: hsl(297 60% 40%);
+  background: hsl(27 50% 25%);
+  padding: 4px;
+  border-radius: 1px;
+}
+.lazy-0003-34 {
+  color: hsl(233 60% 40%);
+  background: hsl(323 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0003-35 {
+  color: hsl(344 60% 40%);
+  background: hsl(74 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0003-36 {
+  color: hsl(345 60% 40%);
+  background: hsl(75 50% 25%);
+  padding: 3px;
+  border-radius: 6px;
+}
+.lazy-0003-37 {
+  color: hsl(209 60% 40%);
+  background: hsl(299 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0003-38 {
+  color: hsl(190 60% 40%);
+  background: hsl(280 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0003-39 {
+  color: hsl(210 60% 40%);
+  background: hsl(300 50% 25%);
+  padding: 1px;
+  border-radius: 5px;
+}
+.lazy-0003-40 {
+  color: hsl(340 60% 40%);
+  background: hsl(70 50% 25%);
+  padding: 8px;
+  border-radius: 6px;
+}
+.lazy-0003-41 {
+  color: hsl(155 60% 40%);
+  background: hsl(245 50% 25%);
+  padding: 2px;
+  border-radius: 2px;
+}
+.lazy-0003-42 {
+  color: hsl(111 60% 40%);
+  background: hsl(201 50% 25%);
+  padding: 5px;
+  border-radius: 1px;
+}
+.lazy-0003-43 {
+  color: hsl(333 60% 40%);
+  background: hsl(63 50% 25%);
+  padding: 2px;
+  border-radius: 4px;
+}
+.lazy-0003-44 {
+  color: hsl(57 60% 40%);
+  background: hsl(147 50% 25%);
+  padding: 3px;
+  border-radius: 5px;
+}
+.lazy-0003-45 {
+  color: hsl(137 60% 40%);
+  background: hsl(227 50% 25%);
+  padding: 5px;
+  border-radius: 3px;
+}
+.lazy-0003-46 {
+  color: hsl(185 60% 40%);
+  background: hsl(275 50% 25%);
+  padding: 6px;
+  border-radius: 3px;
+}
+.lazy-0003-47 {
+  color: hsl(18 60% 40%);
+  background: hsl(108 50% 25%);
+  padding: 8px;
+  border-radius: 3px;
+}
+.lazy-0003-48 {
+  color: hsl(81 60% 40%);
+  background: hsl(171 50% 25%);
+  padding: 6px;
+  border-radius: 5px;
+}
+.lazy-0003-49 {
+  color: hsl(210 60% 40%);
+  background: hsl(300 50% 25%);
+  padding: 8px;
+  border-radius: 3px;
+}
+.lazy-0003-50 {
+  color: hsl(333 60% 40%);
+  background: hsl(63 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0003-51 {
+  color: hsl(255 60% 40%);
+  background: hsl(345 50% 25%);
+  padding: 8px;
+  border-radius: 4px;
+}
+.lazy-0003-52 {
+  color: hsl(109 60% 40%);
+  background: hsl(199 50% 25%);
+  padding: 6px;
+  border-radius: 3px;
+}
+.lazy-0003-53 {
+  color: hsl(326 60% 40%);
+  background: hsl(56 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0003-54 {
+  color: hsl(126 60% 40%);
+  background: hsl(216 50% 25%);
+  padding: 2px;
+  border-radius: 2px;
+}
+.lazy-0003-55 {
+  color: hsl(132 60% 40%);
+  background: hsl(222 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0003-56 {
+  color: hsl(339 60% 40%);
+  background: hsl(69 50% 25%);
+  padding: 7px;
+  border-radius: 3px;
+}
+.lazy-0003-57 {
+  color: hsl(74 60% 40%);
+  background: hsl(164 50% 25%);
+  padding: 4px;
+  border-radius: 6px;
+}
+.lazy-0003-58 {
+  color: hsl(180 60% 40%);
+  background: hsl(270 50% 25%);
+  padding: 1px;
+  border-radius: 2px;
+}
+.lazy-0003-59 {
+  color: hsl(72 60% 40%);
+  background: hsl(162 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0003-60 {
+  color: hsl(319 60% 40%);
+  background: hsl(49 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0003-61 {
+  color: hsl(240 60% 40%);
+  background: hsl(330 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0003-62 {
+  color: hsl(138 60% 40%);
+  background: hsl(228 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0003-63 {
+  color: hsl(187 60% 40%);
+  background: hsl(277 50% 25%);
+  padding: 8px;
+  border-radius: 2px;
+}
+.lazy-0003-64 {
+  color: hsl(1 60% 40%);
+  background: hsl(91 50% 25%);
+  padding: 1px;
+  border-radius: 3px;
+}
+.lazy-0003-65 {
+  color: hsl(170 60% 40%);
+  background: hsl(260 50% 25%);
+  padding: 1px;
+  border-radius: 2px;
+}
+.lazy-0003-66 {
+  color: hsl(132 60% 40%);
+  background: hsl(222 50% 25%);
+  padding: 2px;
+  border-radius: 3px;
+}
+.lazy-0003-67 {
+  color: hsl(210 60% 40%);
+  background: hsl(300 50% 25%);
+  padding: 4px;
+  border-radius: 5px;
+}
+.lazy-0003-68 {
+  color: hsl(307 60% 40%);
+  background: hsl(37 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0003-69 {
+  color: hsl(191 60% 40%);
+  background: hsl(281 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0003-70 {
+  color: hsl(343 60% 40%);
+  background: hsl(73 50% 25%);
+  padding: 2px;
+  border-radius: 1px;
+}
+.lazy-0003-71 {
+  color: hsl(68 60% 40%);
+  background: hsl(158 50% 25%);
+  padding: 1px;
+  border-radius: 2px;
+}
+.lazy-0003-72 {
+  color: hsl(145 60% 40%);
+  background: hsl(235 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0003-73 {
+  color: hsl(72 60% 40%);
+  background: hsl(162 50% 25%);
+  padding: 6px;
+  border-radius: 2px;
+}
+.lazy-0003-74 {
+  color: hsl(290 60% 40%);
+  background: hsl(20 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0003-75 {
+  color: hsl(133 60% 40%);
+  background: hsl(223 50% 25%);
+  padding: 5px;
+  border-radius: 3px;
+}
+.lazy-0003-76 {
+  color: hsl(10 60% 40%);
+  background: hsl(100 50% 25%);
+  padding: 5px;
+  border-radius: 1px;
+}
+.lazy-0003-77 {
+  color: hsl(197 60% 40%);
+  background: hsl(287 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0003-78 {
+  color: hsl(269 60% 40%);
+  background: hsl(359 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0003-79 {
+  color: hsl(253 60% 40%);
+  background: hsl(343 50% 25%);
+  padding: 4px;
+  border-radius: 4px;
+}
+.lazy-0003-80 {
+  color: hsl(211 60% 40%);
+  background: hsl(301 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0003-81 {
+  color: hsl(321 60% 40%);
+  background: hsl(51 50% 25%);
+  padding: 2px;
+  border-radius: 1px;
+}
+.lazy-0003-82 {
+  color: hsl(166 60% 40%);
+  background: hsl(256 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0003-83 {
+  color: hsl(62 60% 40%);
+  background: hsl(152 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0003-84 {
+  color: hsl(25 60% 40%);
+  background: hsl(115 50% 25%);
+  padding: 4px;
+  border-radius: 5px;
+}
+.lazy-0003-85 {
+  color: hsl(333 60% 40%);
+  background: hsl(63 50% 25%);
+  padding: 3px;
+  border-radius: 1px;
+}
+.lazy-0003-86 {
+  color: hsl(87 60% 40%);
+  background: hsl(177 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0003-87 {
+  color: hsl(165 60% 40%);
+  background: hsl(255 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0003-88 {
+  color: hsl(310 60% 40%);
+  background: hsl(40 50% 25%);
+  padding: 1px;
+  border-radius: 6px;
+}
+.lazy-0003-89 {
+  color: hsl(145 60% 40%);
+  background: hsl(235 50% 25%);
+  padding: 6px;
+  border-radius: 4px;
+}
+
+/* style-lazy-0004 */
+.lazy-0004-0 {
+  color: hsl(150 60% 40%);
+  background: hsl(240 50% 25%);
+  padding: 4px;
+  border-radius: 5px;
+}
+.lazy-0004-1 {
+  color: hsl(38 60% 40%);
+  background: hsl(128 50% 25%);
+  padding: 7px;
+  border-radius: 5px;
+}
+.lazy-0004-2 {
+  color: hsl(228 60% 40%);
+  background: hsl(318 50% 25%);
+  padding: 7px;
+  border-radius: 1px;
+}
+.lazy-0004-3 {
+  color: hsl(83 60% 40%);
+  background: hsl(173 50% 25%);
+  padding: 2px;
+  border-radius: 5px;
+}
+.lazy-0004-4 {
+  color: hsl(178 60% 40%);
+  background: hsl(268 50% 25%);
+  padding: 7px;
+  border-radius: 3px;
+}
+.lazy-0004-5 {
+  color: hsl(208 60% 40%);
+  background: hsl(298 50% 25%);
+  padding: 2px;
+  border-radius: 1px;
+}
+.lazy-0004-6 {
+  color: hsl(10 60% 40%);
+  background: hsl(100 50% 25%);
+  padding: 7px;
+  border-radius: 5px;
+}
+.lazy-0004-7 {
+  color: hsl(110 60% 40%);
+  background: hsl(200 50% 25%);
+  padding: 6px;
+  border-radius: 6px;
+}
+.lazy-0004-8 {
+  color: hsl(258 60% 40%);
+  background: hsl(348 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0004-9 {
+  color: hsl(324 60% 40%);
+  background: hsl(54 50% 25%);
+  padding: 3px;
+  border-radius: 3px;
+}
+.lazy-0004-10 {
+  color: hsl(2 60% 40%);
+  background: hsl(92 50% 25%);
+  padding: 2px;
+  border-radius: 4px;
+}
+.lazy-0004-11 {
+  color: hsl(134 60% 40%);
+  background: hsl(224 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0004-12 {
+  color: hsl(64 60% 40%);
+  background: hsl(154 50% 25%);
+  padding: 5px;
+  border-radius: 3px;
+}
+.lazy-0004-13 {
+  color: hsl(347 60% 40%);
+  background: hsl(77 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0004-14 {
+  color: hsl(235 60% 40%);
+  background: hsl(325 50% 25%);
+  padding: 2px;
+  border-radius: 6px;
+}
+.lazy-0004-15 {
+  color: hsl(162 60% 40%);
+  background: hsl(252 50% 25%);
+  padding: 2px;
+  border-radius: 1px;
+}
+.lazy-0004-16 {
+  color: hsl(350 60% 40%);
+  background: hsl(80 50% 25%);
+  padding: 3px;
+  border-radius: 3px;
+}
+.lazy-0004-17 {
+  color: hsl(285 60% 40%);
+  background: hsl(15 50% 25%);
+  padding: 1px;
+  border-radius: 5px;
+}
+.lazy-0004-18 {
+  color: hsl(63 60% 40%);
+  background: hsl(153 50% 25%);
+  padding: 3px;
+  border-radius: 2px;
+}
+.lazy-0004-19 {
+  color: hsl(246 60% 40%);
+  background: hsl(336 50% 25%);
+  padding: 6px;
+  border-radius: 5px;
+}
+.lazy-0004-20 {
+  color: hsl(116 60% 40%);
+  background: hsl(206 50% 25%);
+  padding: 2px;
+  border-radius: 3px;
+}
+.lazy-0004-21 {
+  color: hsl(199 60% 40%);
+  background: hsl(289 50% 25%);
+  padding: 7px;
+  border-radius: 4px;
+}
+.lazy-0004-22 {
+  color: hsl(36 60% 40%);
+  background: hsl(126 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0004-23 {
+  color: hsl(301 60% 40%);
+  background: hsl(31 50% 25%);
+  padding: 1px;
+  border-radius: 6px;
+}
+.lazy-0004-24 {
+  color: hsl(269 60% 40%);
+  background: hsl(359 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0004-25 {
+  color: hsl(206 60% 40%);
+  background: hsl(296 50% 25%);
+  padding: 6px;
+  border-radius: 5px;
+}
+.lazy-0004-26 {
+  color: hsl(297 60% 40%);
+  background: hsl(27 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0004-27 {
+  color: hsl(301 60% 40%);
+  background: hsl(31 50% 25%);
+  padding: 6px;
+  border-radius: 5px;
+}
+.lazy-0004-28 {
+  color: hsl(78 60% 40%);
+  background: hsl(168 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0004-29 {
+  color: hsl(354 60% 40%);
+  background: hsl(84 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0004-30 {
+  color: hsl(200 60% 40%);
+  background: hsl(290 50% 25%);
+  padding: 3px;
+  border-radius: 3px;
+}
+.lazy-0004-31 {
+  color: hsl(276 60% 40%);
+  background: hsl(6 50% 25%);
+  padding: 2px;
+  border-radius: 5px;
+}
+.lazy-0004-32 {
+  color: hsl(57 60% 40%);
+  background: hsl(147 50% 25%);
+  padding: 2px;
+  border-radius: 5px;
+}
+.lazy-0004-33 {
+  color: hsl(165 60% 40%);
+  background: hsl(255 50% 25%);
+  padding: 6px;
+  border-radius: 6px;
+}
+.lazy-0004-34 {
+  color: hsl(157 60% 40%);
+  background: hsl(247 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0004-35 {
+  color: hsl(301 60% 40%);
+  background: hsl(31 50% 25%);
+  padding: 7px;
+  border-radius: 5px;
+}
+.lazy-0004-36 {
+  color: hsl(322 60% 40%);
+  background: hsl(52 50% 25%);
+  padding: 8px;
+  border-radius: 4px;
+}
+.lazy-0004-37 {
+  color: hsl(312 60% 40%);
+  background: hsl(42 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0004-38 {
+  color: hsl(122 60% 40%);
+  background: hsl(212 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0004-39 {
+  color: hsl(49 60% 40%);
+  background: hsl(139 50% 25%);
+  padding: 4px;
+  border-radius: 1px;
+}
+.lazy-0004-40 {
+  color: hsl(11 60% 40%);
+  background: hsl(101 50% 25%);
+  padding: 2px;
+  border-radius: 4px;
+}
+.lazy-0004-41 {
+  color: hsl(171 60% 40%);
+  background: hsl(261 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0004-42 {
+  color: hsl(179 60% 40%);
+  background: hsl(269 50% 25%);
+  padding: 7px;
+  border-radius: 4px;
+}
+.lazy-0004-43 {
+  color: hsl(212 60% 40%);
+  background: hsl(302 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0004-44 {
+  color: hsl(96 60% 40%);
+  background: hsl(186 50% 25%);
+  padding: 8px;
+  border-radius: 4px;
+}
+.lazy-0004-45 {
+  color: hsl(301 60% 40%);
+  background: hsl(31 50% 25%);
+  padding: 6px;
+  border-radius: 4px;
+}
+.lazy-0004-46 {
+  color: hsl(102 60% 40%);
+  background: hsl(192 50% 25%);
+  padding: 1px;
+  border-radius: 2px;
+}
+.lazy-0004-47 {
+  color: hsl(150 60% 40%);
+  background: hsl(240 50% 25%);
+  padding: 8px;
+  border-radius: 4px;
+}
+.lazy-0004-48 {
+  color: hsl(323 60% 40%);
+  background: hsl(53 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0004-49 {
+  color: hsl(58 60% 40%);
+  background: hsl(148 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0004-50 {
+  color: hsl(133 60% 40%);
+  background: hsl(223 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0004-51 {
+  color: hsl(99 60% 40%);
+  background: hsl(189 50% 25%);
+  padding: 3px;
+  border-radius: 3px;
+}
+.lazy-0004-52 {
+  color: hsl(343 60% 40%);
+  background: hsl(73 50% 25%);
+  padding: 7px;
+  border-radius: 2px;
+}
+.lazy-0004-53 {
+  color: hsl(334 60% 40%);
+  background: hsl(64 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0004-54 {
+  color: hsl(169 60% 40%);
+  background: hsl(259 50% 25%);
+  padding: 4px;
+  border-radius: 6px;
+}
+.lazy-0004-55 {
+  color: hsl(160 60% 40%);
+  background: hsl(250 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0004-56 {
+  color: hsl(298 60% 40%);
+  background: hsl(28 50% 25%);
+  padding: 7px;
+  border-radius: 5px;
+}
+.lazy-0004-57 {
+  color: hsl(155 60% 40%);
+  background: hsl(245 50% 25%);
+  padding: 5px;
+  border-radius: 3px;
+}
+.lazy-0004-58 {
+  color: hsl(211 60% 40%);
+  background: hsl(301 50% 25%);
+  padding: 5px;
+  border-radius: 2px;
+}
+.lazy-0004-59 {
+  color: hsl(21 60% 40%);
+  background: hsl(111 50% 25%);
+  padding: 7px;
+  border-radius: 6px;
+}
+.lazy-0004-60 {
+  color: hsl(286 60% 40%);
+  background: hsl(16 50% 25%);
+  padding: 3px;
+  border-radius: 1px;
+}
+.lazy-0004-61 {
+  color: hsl(141 60% 40%);
+  background: hsl(231 50% 25%);
+  padding: 3px;
+  border-radius: 4px;
+}
+.lazy-0004-62 {
+  color: hsl(227 60% 40%);
+  background: hsl(317 50% 25%);
+  padding: 8px;
+  border-radius: 3px;
+}
+.lazy-0004-63 {
+  color: hsl(41 60% 40%);
+  background: hsl(131 50% 25%);
+  padding: 2px;
+  border-radius: 4px;
+}
+.lazy-0004-64 {
+  color: hsl(51 60% 40%);
+  background: hsl(141 50% 25%);
+  padding: 5px;
+  border-radius: 3px;
+}
+.lazy-0004-65 {
+  color: hsl(25 60% 40%);
+  background: hsl(115 50% 25%);
+  padding: 5px;
+  border-radius: 5px;
+}
+.lazy-0004-66 {
+  color: hsl(142 60% 40%);
+  background: hsl(232 50% 25%);
+  padding: 6px;
+  border-radius: 5px;
+}
+.lazy-0004-67 {
+  color: hsl(208 60% 40%);
+  background: hsl(298 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0004-68 {
+  color: hsl(238 60% 40%);
+  background: hsl(328 50% 25%);
+  padding: 4px;
+  border-radius: 6px;
+}
+.lazy-0004-69 {
+  color: hsl(353 60% 40%);
+  background: hsl(83 50% 25%);
+  padding: 1px;
+  border-radius: 6px;
+}
+.lazy-0004-70 {
+  color: hsl(141 60% 40%);
+  background: hsl(231 50% 25%);
+  padding: 4px;
+  border-radius: 2px;
+}
+.lazy-0004-71 {
+  color: hsl(120 60% 40%);
+  background: hsl(210 50% 25%);
+  padding: 1px;
+  border-radius: 5px;
+}
+.lazy-0004-72 {
+  color: hsl(37 60% 40%);
+  background: hsl(127 50% 25%);
+  padding: 5px;
+  border-radius: 4px;
+}
+.lazy-0004-73 {
+  color: hsl(58 60% 40%);
+  background: hsl(148 50% 25%);
+  padding: 2px;
+  border-radius: 6px;
+}
+.lazy-0004-74 {
+  color: hsl(219 60% 40%);
+  background: hsl(309 50% 25%);
+  padding: 4px;
+  border-radius: 6px;
+}
+.lazy-0004-75 {
+  color: hsl(104 60% 40%);
+  background: hsl(194 50% 25%);
+  padding: 6px;
+  border-radius: 4px;
+}
+.lazy-0004-76 {
+  color: hsl(78 60% 40%);
+  background: hsl(168 50% 25%);
+  padding: 8px;
+  border-radius: 2px;
+}
+.lazy-0004-77 {
+  color: hsl(62 60% 40%);
+  background: hsl(152 50% 25%);
+  padding: 1px;
+  border-radius: 4px;
+}
+.lazy-0004-78 {
+  color: hsl(349 60% 40%);
+  background: hsl(79 50% 25%);
+  padding: 7px;
+  border-radius: 5px;
+}
+.lazy-0004-79 {
+  color: hsl(333 60% 40%);
+  background: hsl(63 50% 25%);
+  padding: 3px;
+  border-radius: 5px;
+}
+.lazy-0004-80 {
+  color: hsl(132 60% 40%);
+  background: hsl(222 50% 25%);
+  padding: 6px;
+  border-radius: 3px;
+}
+.lazy-0004-81 {
+  color: hsl(311 60% 40%);
+  background: hsl(41 50% 25%);
+  padding: 5px;
+  border-radius: 1px;
+}
+.lazy-0004-82 {
+  color: hsl(238 60% 40%);
+  background: hsl(328 50% 25%);
+  padding: 1px;
+  border-radius: 2px;
+}
+.lazy-0004-83 {
+  color: hsl(106 60% 40%);
+  background: hsl(196 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0004-84 {
+  color: hsl(330 60% 40%);
+  background: hsl(60 50% 25%);
+  padding: 8px;
+  border-radius: 5px;
+}
+.lazy-0004-85 {
+  color: hsl(332 60% 40%);
+  background: hsl(62 50% 25%);
+  padding: 4px;
+  border-radius: 6px;
+}
+.lazy-0004-86 {
+  color: hsl(332 60% 40%);
+  background: hsl(62 50% 25%);
+  padding: 5px;
+  border-radius: 6px;
+}
+.lazy-0004-87 {
+  color: hsl(101 60% 40%);
+  background: hsl(191 50% 25%);
+  padding: 4px;
+  border-radius: 3px;
+}
+.lazy-0004-88 {
+  color: hsl(175 60% 40%);
+  background: hsl(265 50% 25%);
+  padding: 8px;
+  border-radius: 1px;
+}
+.lazy-0004-89 {
+  color: hsl(198 60% 40%);
+  background: hsl(288 50% 25%);
+  padding: 2px;
+  border-radius: 5px;
+}

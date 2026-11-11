@@ -4,7 +4,7 @@
 //   encode: compress → encrypt → fec.encode → drawer.write → surface.writeBuffer
 //   decode: surface.readBuffer → drawer.read → finalizeChunks
 //
-// Concrete algorithm classes (LinearPngBrotli, BitshufflePngBrotli, etc.)
+// Concrete algorithm classes (LinearPngBrotli, LinearPngDeflate, etc.)
 // extend PixelAlgorithm and just declare their static Codec/Surface/Compressor/
 // Drawer bindings. The pipeline body is shared.
 //

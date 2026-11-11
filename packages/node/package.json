@@ -14,8 +14,7 @@
     "./algorithms/catalog": "./src/algorithms/catalog.ts",
     "./extract": "./src/extract.ts",
     "./node-pack-builder": "./src/node-pack-builder.ts",
-    "./surfaces/png": "./src/surfaces/png.ts",
-    "./codecs/zstdpix": "./src/codecs/zstdpix.ts"
+    "./surfaces/png": "./src/surfaces/png.ts"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm --platform node --target es2022 --out-dir dist --dts --external sharp --external upng-js --external tokenpack",

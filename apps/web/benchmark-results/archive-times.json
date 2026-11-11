@@ -1,0 +1,172 @@
+[
+  {
+    "source": "client-spec-map__chunks-1__chunk-00",
+    "sourceId": "client-spec-map",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "zip",
+    "encodeMs": 143,
+    "decodeMs": 42,
+    "bytes": 105396,
+    "originalBytes": 1422167
+  },
+  {
+    "source": "client-spec-map__chunks-1__chunk-00",
+    "sourceId": "client-spec-map",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "gzip",
+    "encodeMs": 67.6,
+    "decodeMs": 7,
+    "bytes": 105246,
+    "originalBytes": 1422167
+  },
+  {
+    "source": "client-spec-map__chunks-1__chunk-00",
+    "sourceId": "client-spec-map",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "deflate",
+    "encodeMs": 38.6,
+    "decodeMs": 2.3,
+    "bytes": 104347,
+    "originalBytes": 1422167
+  },
+  {
+    "source": "client-spec-map__chunks-1__chunk-00",
+    "sourceId": "client-spec-map",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "brotli-11",
+    "encodeMs": 6849.8,
+    "decodeMs": 9,
+    "bytes": 58590,
+    "originalBytes": 1422167
+  },
+  {
+    "source": "client-spec-map__chunks-1__chunk-00",
+    "sourceId": "client-spec-map",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "brotli-6",
+    "encodeMs": 48.6,
+    "decodeMs": 4.5,
+    "bytes": 66826,
+    "originalBytes": 1422167
+  },
+  {
+    "source": "react-dom-client-production__chunks-1__chunk-00",
+    "sourceId": "react-dom-client-production",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "zip",
+    "encodeMs": 12.2,
+    "decodeMs": 2.6,
+    "bytes": 95573,
+    "originalBytes": 532912,
+    "fileName": "zip__react-dom-client-production__chunks-1__chunk-00.zip"
+  },
+  {
+    "source": "react-dom-client-production__chunks-1__chunk-00",
+    "sourceId": "react-dom-client-production",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "gzip",
+    "encodeMs": 7.9,
+    "decodeMs": 0.8,
+    "bytes": 95399,
+    "originalBytes": 532912,
+    "fileName": "targz__react-dom-client-production__chunks-1__chunk-00.gzip"
+  },
+  {
+    "source": "react-dom-client-production__chunks-1__chunk-00",
+    "sourceId": "react-dom-client-production",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "deflate",
+    "encodeMs": 7.9,
+    "decodeMs": 0.8,
+    "bytes": 95387,
+    "originalBytes": 532912,
+    "fileName": "deflate__react-dom-client-production__chunks-1__chunk-00.deflate"
+  },
+  {
+    "source": "react-dom-client-production__chunks-1__chunk-00",
+    "sourceId": "react-dom-client-production",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "brotli-11",
+    "encodeMs": 587,
+    "decodeMs": 1.1,
+    "bytes": 77216,
+    "originalBytes": 532912,
+    "fileName": "br11__react-dom-client-production__chunks-1__chunk-00.br"
+  },
+  {
+    "source": "react-dom-client-production__chunks-1__chunk-00",
+    "sourceId": "react-dom-client-production",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "brotli-6",
+    "encodeMs": 7.3,
+    "decodeMs": 0.8,
+    "bytes": 88358,
+    "originalBytes": 532912,
+    "fileName": "br6__react-dom-client-production__chunks-1__chunk-00.br"
+  },
+  {
+    "source": "chunk-5mb__chunks-1__chunk-00",
+    "sourceId": "chunk-5mb",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "zip",
+    "encodeMs": 957.6,
+    "decodeMs": 180.4,
+    "bytes": 1322795,
+    "originalBytes": 4917882
+  },
+  {
+    "source": "chunk-5mb__chunks-1__chunk-00",
+    "sourceId": "chunk-5mb",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "gzip",
+    "encodeMs": 579.1,
+    "decodeMs": 76.5,
+    "bytes": 1322657,
+    "originalBytes": 4917882
+  },
+  {
+    "source": "chunk-5mb__chunks-1__chunk-00",
+    "sourceId": "chunk-5mb",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "deflate",
+    "encodeMs": 352.5,
+    "decodeMs": 39,
+    "bytes": 1325341,
+    "originalBytes": 4917882
+  },
+  {
+    "source": "chunk-5mb__chunks-1__chunk-00",
+    "sourceId": "chunk-5mb",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "brotli-11",
+    "encodeMs": 19256,
+    "decodeMs": 30.5,
+    "bytes": 998831,
+    "originalBytes": 4917882
+  },
+  {
+    "source": "chunk-5mb__chunks-1__chunk-00",
+    "sourceId": "chunk-5mb",
+    "chunkCount": 1,
+    "chunkIndex": 0,
+    "format": "brotli-6",
+    "encodeMs": 514.7,
+    "decodeMs": 27.3,
+    "bytes": 1125999,
+    "originalBytes": 4917882
+  }
+]

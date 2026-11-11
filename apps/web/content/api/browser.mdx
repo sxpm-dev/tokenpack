@@ -1,0 +1,174 @@
+# `@tokenpack/browser`
+
+Browser/DOM/React adapter for TokenPack. Decodes via Canvas +
+`createImageBitmap`; encodes via `OffscreenCanvas.convertToBlob` (or
+`canvas.toBlob` fallback). Uses native `CompressionStream` /
+`DecompressionStream` for inner brotli/deflate.
+
+```bash
+yarn add @tokenpack/browser
+```
+
+The package is bundle-clean: zero `node:*` imports, safe to ship to any browser
+or worker target without polyfills.
+
+## Top-level exports
+
+| Symbol                              | Notes                                                                                               |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `encode(content \| builder, opts?)` | `string` / `Uint8Array` / `ArrayBuffer` / `Blob` / `PackBuilder`                                    |
+| `decode(source, opts?)`             | URL string / `Blob` / `Uint8Array` / `ArrayBuffer` / `HTMLImageElement` / `ImageBitmap`             |
+| `decodeStream(source, opts?)`       | `ReadableStream` / `Blob` / URL string                                                              |
+| `decodeRouter(source, opts?)`       | Explicit router-token entry; needs base URL when source is a Blob/buffer/image                      |
+| `inspect(source, opts?)`            | Returns the algorithm binding + (optional) pixel-header info for a token                            |
+| `PackBuilder`                       | Re-exported from core; collects files for pack tokens                                               |
+| `TokenPack`                         | Re-exported from core; extends `PackBuilder` with `.router(opts?)` for router tokens                |
+| `isRouterTokenPack(value)`          | Type guard for the value produced by `TokenPack#router()`                                           |
+| Pack types                          | `Pack`, `FilePack`, `DirPack`, `DiffPack`, `RouterPack`, `DiffEntry`, `DiffOpKind`, `PackEntryInfo` |
+
+### Subpath imports
+
+| Subpath                         | Exports                      |
+| ------------------------------- | ---------------------------- |
+| `@tokenpack/browser/components` | `TokenImage`, `TokenAsImage` |
+| `@tokenpack/browser/hooks`      | `useTokenPack`               |
+
+## `encode()` options
+
+```ts
+interface EncodeBrowserOptions {
+  algo?: string // catalog algorithm name; default 'linear'
+  compressor?: string // per-file compressor for PackBuilder; default 'deflate-9'
+  algoOptions?: {
+    compressor?: { level?: number }
+    surface?: { channels?: 1 | 2 | 3 | 4 }
+  }
+  key?: string // AES-256-GCM passphrase
+  name?: string // file-format only — wraps payload with name
+}
+```
+
+Note the default compressor: `deflate-9` here, vs. `brotli-11` in `@tokenpack/node`.
+Reason: browsers ship DEFLATE universally; brotli is wire-only on HTTP.
+
+## Examples
+
+### Encode + decode
+
+```ts
+import { encode, decode } from '@tokenpack/browser'
+
+const r = await encode('hello world') // string → UTF-8
+const pack = await decode(r.blobs[0])
+console.log(await pack.text())
+
+// `r` exposes multiple consumer-friendly forms:
+//   r.blobs       — Blob[] (one per chunk; usually one)
+//   r.bytes       — Uint8Array view of blobs[0]
+//   r.objectURL   — URL.createObjectURL(blobs[0])
+//   r.dataURL     — base64 data:image/png URL
+//   r.image       — detached HTMLImageElement; drop into the DOM
+```
+
+### Decode any source
+
+```ts
+await decode('/api/snapshot.png') // URL → fetch + decode
+await decode(blob) // Blob (e.g. <input type="file">)
+await decode(uint8Array)
+await decode(arrayBuffer)
+await decode(htmlImageElement) // already-rendered <img>
+await decode(imageBitmap)
+```
+
+### Streaming image decode
+
+```ts
+import { decodeStream } from '@tokenpack/browser'
+
+const response = await fetch('/big-pack.png')
+const pack = await decodeStream(response.body!) // pulls bytes as they arrive
+```
+
+For non-PNG surfaces (WebP/AVIF), the helper transparently falls back to
+the buffered `decode()` path.
+
+### React: `TokenImage` component
+
+```tsx
+import { TokenImage } from '@tokenpack/browser/components'
+;<TokenImage
+  src="/data.png"
+  fallback={<Spinner />}
+  onDecoded={async pack => {
+    const config = await pack.json('config.json')
+  }}
+/>
+```
+
+### React: `TokenAsImage` (payload that is itself an image)
+
+```tsx
+import { TokenAsImage } from '@tokenpack/browser/components'
+;<TokenAsImage src="/encoded-screenshot.png" alt="screenshot" />
+```
+
+### React hook
+
+```tsx
+import { useTokenPack } from '@tokenpack/browser/hooks'
+
+function Profile({ src }: { src: string }) {
+  const { state, data, error } = useTokenPack(src)
+  if (state === 'loading') return <Spinner />
+  if (state === 'error') return <ErrorView error={error!} />
+  if (!data) return null
+  return <PackView pack={data} />
+}
+```
+
+### Router tokens
+
+Encode side — `TokenPack` is `PackBuilder` plus `.router(opts?)`:
+
+```ts
+import { encode } from '@tokenpack/browser'
+import { TokenPack } from 'tokenpack'
+
+const artifacts = await encode(
+  new TokenPack()
+    .withFile('readme.md', '# my app')
+    .withBuffer('app.js', appBytes)
+    .withBuffer('styles.css', cssBytes)
+    .router({
+      targetChunkBytes: 1_000_000,
+      bootFiles: ['app.js', 'styles.css'],
+    }),
+)
+// → Array<{ filename: string; mimetype: string; blob: Blob }>
+```
+
+See [Router Token](/router-tokens#encode-planning) for
+the full options table.
+
+Decode side:
+
+```ts
+import { decodeRouter } from '@tokenpack/browser'
+
+const router = await decodeRouter('/bundle/router.png')
+
+await router.list() // file paths
+await router.text('/app.js')
+await router.blob('/styles.css')
+await router.extractAll()
+await router.materialize() // inserts CSS, executes JS
+await router.stream.text('/big.js') // streaming chunk fetch
+await router.stream.extractAll()
+await router.stream.materialize(['/app.js', '/styles.css'])
+```
+
+`decodeRouter()` is explicit: it fetches/processes the router entry, throws
+if it isn't a router, and resolves chunk hrefs relative to the router URL.
+Blob/buffer/image router sources need an explicit base URL when relative
+chunks are present.

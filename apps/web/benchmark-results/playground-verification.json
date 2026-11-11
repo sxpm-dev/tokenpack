@@ -1,0 +1,345 @@
+{
+  "createdAt": "2026-11-11T04:40:23.484Z",
+  "browser": "147.0.7727.15",
+  "base": "http://localhost:3003",
+  "status": "passed",
+  "failure": null,
+  "report": [
+    {
+      "route": "/server-fetch-bench",
+      "loaded": true
+    },
+    {
+      "route": "/encode-decode-bench",
+      "loaded": true
+    },
+    {
+      "route": "/experiments",
+      "loaded": true
+    },
+    {
+      "route": "/playground",
+      "loaded": true
+    },
+    {
+      "route": "/playground/router",
+      "loaded": true
+    },
+    {
+      "route": "/playground/files",
+      "loaded": true
+    },
+    {
+      "route": "/json-playground",
+      "config": {
+        "recordId": "component:c8c0eb6d-0179-4b8c-8a50-5e15bcd4124c",
+        "iterations": 3,
+        "packMode": "lazy",
+        "throttle": "local"
+      },
+      "createdAt": "2026-11-11T04:38:21.089Z",
+      "resultCount": 10
+    },
+    {
+      "route": "/json-playground",
+      "config": {
+        "recordId": "collection:2517",
+        "iterations": 3,
+        "packMode": "lazy",
+        "throttle": "local"
+      },
+      "createdAt": "2026-11-11T04:38:22.170Z",
+      "resultCount": 10
+    },
+    {
+      "route": "/browser-fetch-bench",
+      "config": {
+        "source": "client-spec-map__chunks-1",
+        "activeTab": "source",
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false,
+        "deselectedText": [],
+        "deselectedExact": [],
+        "deselectedScript": []
+      },
+      "createdAt": "2026-11-11T04:38:23.289Z",
+      "resultCount": 3
+    },
+    {
+      "route": "/browser-fetch-bench",
+      "config": {
+        "source": "client-spec-map__chunks-1",
+        "activeTab": "exact",
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false,
+        "deselectedText": [],
+        "deselectedExact": [],
+        "deselectedScript": []
+      },
+      "createdAt": "2026-11-11T04:38:24.452Z",
+      "resultCount": 3
+    },
+    {
+      "route": "/browser-fetch-bench",
+      "config": {
+        "source": "client-spec-map__chunks-1",
+        "activeTab": "script",
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false,
+        "deselectedText": [],
+        "deselectedExact": [],
+        "deselectedScript": []
+      },
+      "createdAt": "2026-11-11T04:38:25.881Z",
+      "resultCount": 3
+    },
+    {
+      "route": "/browser-fetch-bench",
+      "config": {
+        "source": "app-bundle__chunks-5",
+        "activeTab": "source",
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false,
+        "deselectedText": [],
+        "deselectedExact": [],
+        "deselectedScript": []
+      },
+      "createdAt": "2026-11-11T04:38:27.701Z",
+      "resultCount": 3
+    },
+    {
+      "route": "/apply-diff-bench",
+      "config": {
+        "caseId": "single-bundle__size-100kb__change-1pct",
+        "iterations": 5,
+        "throttle": "local"
+      },
+      "createdAt": "2026-11-11T04:38:29.217Z",
+      "resultCount": 25
+    },
+    {
+      "route": "/apply-diff-bench",
+      "config": {
+        "caseId": "five-bundles__size-5000kb__updated-1of5",
+        "iterations": 5,
+        "throttle": "local"
+      },
+      "createdAt": "2026-11-11T04:38:31.656Z",
+      "resultCount": 25
+    },
+    {
+      "route": "/scenarios/diff-versioning",
+      "config": {
+        "iterations": 3,
+        "throttle": "local"
+      },
+      "createdAt": "2026-11-11T04:38:44.359Z",
+      "resultCount": 30
+    },
+    {
+      "route": "/scenarios/inline-data-uri",
+      "config": {
+        "scenario": "inline-data-uri",
+        "size": 10,
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false
+      },
+      "createdAt": "2026-11-11T04:38:45.287Z",
+      "resultCount": 6
+    },
+    {
+      "route": "/scenarios/stream-boot",
+      "config": {
+        "scenario": "stream-boot",
+        "size": 10,
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false
+      },
+      "createdAt": "2026-11-11T04:38:46.097Z",
+      "resultCount": 5
+    },
+    {
+      "route": "/scenarios/sw-cache",
+      "config": {
+        "scenario": "sw-cache",
+        "size": 10,
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false
+      },
+      "createdAt": "2026-11-11T04:38:46.874Z",
+      "resultCount": 5
+    },
+    {
+      "route": "/scenarios/ssr-streaming",
+      "config": {
+        "scenario": "ssr-streaming",
+        "iterations": 5
+      },
+      "createdAt": "2026-11-11T04:38:47.602Z",
+      "resultCount": 2
+    },
+    {
+      "route": "/scenarios/inline-data-uri",
+      "config": {
+        "scenario": "inline-data-uri",
+        "size": 10,
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false
+      },
+      "createdAt": "2026-11-11T04:40:04.541Z",
+      "resultCount": 6
+    },
+    {
+      "route": "/scenarios/stream-boot",
+      "config": {
+        "scenario": "stream-boot",
+        "size": 10,
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false
+      },
+      "createdAt": "2026-11-11T04:40:05.343Z",
+      "resultCount": 5
+    },
+    {
+      "route": "/scenarios/sw-cache",
+      "config": {
+        "scenario": "sw-cache",
+        "size": 10,
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false
+      },
+      "createdAt": "2026-11-11T04:40:06.114Z",
+      "resultCount": 5
+    },
+    {
+      "route": "/scenarios/inline-data-uri",
+      "config": {
+        "scenario": "inline-data-uri",
+        "size": 1000,
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false
+      },
+      "createdAt": "2026-11-11T04:40:06.968Z",
+      "resultCount": 6
+    },
+    {
+      "route": "/scenarios/stream-boot",
+      "config": {
+        "scenario": "stream-boot",
+        "size": 1000,
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false
+      },
+      "createdAt": "2026-11-11T04:40:07.831Z",
+      "resultCount": 5
+    },
+    {
+      "route": "/scenarios/sw-cache",
+      "config": {
+        "scenario": "sw-cache",
+        "size": 1000,
+        "iterations": 5,
+        "throttle": "local",
+        "runSkipped": false
+      },
+      "createdAt": "2026-11-11T04:40:08.703Z",
+      "resultCount": 5
+    },
+    {
+      "route": "/scenarios/component-bundle",
+      "config": {
+        "scenario": "component-bundle",
+        "iterations": 5,
+        "throttle": "local"
+      },
+      "createdAt": "2026-11-11T04:40:12.849Z",
+      "resultCount": 32
+    },
+    {
+      "route": "/partial-fetch",
+      "config": {
+        "mode": "text-fetch",
+        "target": "module-03.js"
+      },
+      "createdAt": "2026-11-11T04:40:13.577Z",
+      "resultCount": 4
+    },
+    {
+      "route": "/partial-fetch",
+      "config": {
+        "mode": "js-fetch",
+        "target": "module-03.js"
+      },
+      "createdAt": "2026-11-11T04:40:14.235Z",
+      "resultCount": 4
+    },
+    {
+      "route": "/benchmarks/app",
+      "config": {
+        "size": "large",
+        "scope": "full",
+        "cacheMode": "cold",
+        "repeats": 3
+      },
+      "createdAt": "2026-11-11T04:40:15.874Z",
+      "resultCount": 1
+    },
+    {
+      "route": "/benchmarks/app",
+      "config": {
+        "size": "large",
+        "scope": "full",
+        "cacheMode": "cold",
+        "repeats": 3
+      },
+      "createdAt": "2026-11-11T04:40:17.732Z",
+      "resultCount": 2
+    },
+    {
+      "route": "/benchmarks/app",
+      "config": {
+        "size": "large",
+        "scope": "full",
+        "cacheMode": "cold",
+        "repeats": 3
+      },
+      "createdAt": "2026-11-11T04:40:19.331Z",
+      "resultCount": 3
+    },
+    {
+      "route": "/benchmarks/app",
+      "config": {
+        "size": "large",
+        "scope": "full",
+        "cacheMode": "cold",
+        "repeats": 3
+      },
+      "createdAt": "2026-11-11T04:40:21.510Z",
+      "resultCount": 4
+    },
+    {
+      "route": "/benchmarks/app",
+      "config": {
+        "size": "large",
+        "scope": "full",
+        "cacheMode": "cold",
+        "repeats": 3
+      },
+      "createdAt": "2026-11-11T04:40:23.412Z",
+      "resultCount": 5
+    }
+  ],
+  "errors": []
+}

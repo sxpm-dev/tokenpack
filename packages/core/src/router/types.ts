@@ -22,6 +22,29 @@ export interface RouterChunkManifestEntry {
   href: string
   byteLength?: number
   payloadOffset?: number
+  /**
+   * Chunk encoding format. Absent = legacy per-file deflate frames stored
+   * back-to-back in the chunk payload; each file carries its own `compressor`
+   * and decompresses independently from its segment bytes. 'concat-deflate' =
+   * the chunk payload is a single deflate stream that inflates to the
+   * concatenation of all file bytes inside this chunk; file segments point at
+   * offsets in the inflated buffer and have no per-file compressor.
+   */
+  kind?: 'concat-deflate'
+  /** Inflated payload length for concat-deflate chunks; absent otherwise. */
+  uncompressedByteLength?: number
+  /** Compressor used for concat-deflate chunks; absent otherwise. */
+  compressor?: string
+  /** Compressor level for concat-deflate chunks; absent otherwise. */
+  level?: number
+  /**
+   * Speculative prefetch ordering hint. Lower = fetch earlier. Set by the
+   * encoder when `bootFiles` is passed to RouterBuildOptions — derived from
+   * the position of this chunk's earliest-listed file in that URL list.
+   * Chunks containing none of the boot files don't get a priority and are
+   * skipped by priority-ordered prefetch.
+   */
+  priority?: number
 }
 
 export interface RouterFileManifestEntry {
@@ -78,6 +101,18 @@ export interface RouterBuildOptions {
    */
   minSplitRatio?: number
   fileCompressor?: string
+  /**
+   * URLs of files the consumer wants prioritized for cold-path delivery, in
+   * priority order (most-important first). The encoder doesn't reorder
+   * chunks based on this — it just stamps a `priority` number on each chunk
+   * equal to the lowest position any of its files holds in the list. The
+   * runtime can then prefetch chunks in ascending priority for cold start.
+   *
+   * Generic — the encoder doesn't care HOW the consumer derived the order
+   * (e.g., from a prior benchmark report's cold-path access trace, or from
+   * a curated boot-critical list in their build pipeline).
+   */
+  bootFiles?: readonly string[]
 }
 
 export interface RouterTokenPack {
@@ -90,6 +125,11 @@ export interface PlannedRouterChunk {
   id: string
   href: string
   bytes: Uint8Array
+  kind?: 'concat-deflate'
+  uncompressedByteLength?: number
+  compressor?: string
+  level?: number
+  priority?: number
 }
 
 export interface PlannedRouterBundle {

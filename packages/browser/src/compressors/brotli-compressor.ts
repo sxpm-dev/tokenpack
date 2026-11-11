@@ -63,6 +63,7 @@ export class BrowserBrotliCompressor extends AbstractCompressor {
 
   static fromOptions(opts: { level?: number } = {}): BrowserBrotliCompressor {
     const level = opts.level ?? 11
+
     return new BrowserBrotliCompressor(`brotli-${level}` as BrotliMode)
   }
 
@@ -113,7 +114,7 @@ export class BrowserBrotliCompressor extends AbstractCompressor {
         `DecompressionStream is unavailable. Brotli streaming requires Chrome 118+ / Firefox 113+ / Safari 17.4+.`,
       )
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const Decompress = DecompressionStream as any
 
     return input.pipeThrough(new Decompress('br') as any) as ReadableStream<Uint8Array>

@@ -231,6 +231,11 @@ describe('node encode + decode round-trip', () => {
     const dir = await mkdtemp(join(tmpdir(), 'tokenpack-router-compressor-test-'))
     const artifacts = await encode(
       new TokenPack().withFile('assets/app.js', 'console.log("hello router")').router({
+        // This test verifies the per-file `fileCompressor` pathway. The default
+        // tiny-files-clustered layout would route a 28-byte file through the
+        // concat-deflate path, where the compressor lives on the chunk entry
+        // instead of per-file. source-order preserves the per-file pathway.
+        chunkLayout: 'source-order',
         fileCompressor: 'deflate-6',
       }),
     )
@@ -310,6 +315,9 @@ describe('node encode + decode round-trip', () => {
         'pkg/b.js',
         'pkg/a.js',
       ])
+      // All three files fit one chunk's byte budget — and since the large
+      // file isn't tiny, the box stays per-file-deflate. Tinies and the large
+      // file share segment offsets in compressed-bytes space.
       expect(manifest.files[2]!.segments[0]).toMatchObject({ offset: 0, length: tinyA.length })
       expect(manifest.files[1]!.segments[0]).toMatchObject({
         offset: tinyA.length,

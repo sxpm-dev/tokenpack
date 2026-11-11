@@ -1,0 +1,6998 @@
+// bundle.js -- eager modules
+
+// mod-0001 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[1] = {
+    id: 1,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0001';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '190');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  sync keep pair zip reducer buffer merge reject context group invalidate state 
+  //  tuple compose effect reduce handler effect callback pure buffer pair reject 
+  //  transform context tuple sync state zip debounce pipeline either gate option 
+  //  async reduce fold callback reject drop lazy ref render transform debounce 
+  //  tuple memo eager hook reduce debounce pending ref filter ref drop 
+  //  gate pending fulfilled queue stream state publish pure invalidate props scan 
+  //  sentinel memoize reducer scan project async eager render invalidate reduce compose 
+  //  guard context pending ref merge pipeline sync hook render filter queue 
+  //  state state subscribe keep drop filter gate props group sort props 
+  //  await effect lazy eager option reduce filter pipeline pair subscribe option 
+  //  publish eager render fulfilled fulfilled gate transform result context scan publish 
+  //  project state async buffer render compose sort map map buffer merge 
+  //  select map queue tuple throttle component tuple group drop subscribe option 
+  //  invalidate group props effect hook sync async cache resolve reducer transform 
+  //  result zip tuple sentinel fold throttle partition transform stream dispatcher effect 
+  //  pair render pipeline component merge render tuple eager dispatcher compose project 
+  //  ref map context invalidate select context dispatcher pipeline queue lazy throttle 
+  //  fulfilled reduce pipeline queue async select ref sentinel render resolve pure 
+  //  hook throttle callback fold sync memoize stream drop zip observer filter 
+  //  pipeline component handler cache reduce invalidate buffer pipeline merge pair fulfilled 
+  //  resolve eager gate component pair pure buffer hook buffer dispatcher pure 
+  //  buffer invalidate transform effect scan debounce tuple reduce memo reject handler 
+  //  pure publish scan drop await gate context effect event filter scan 
+  //  gate memoize reducer map partition hook tuple sort sync reduce pipeline 
+  //  publish partition transform fold debounce drop dispatcher project zip result sort 
+  //  component pure filter reduce debounce keep group result group result either 
+  //  project reject buffer transform buffer handler project memoize reduce map async 
+  //  invalidate pair group state context map tuple sync resolve throttle publish 
+  //  compose zip debounce compose await dispatcher filter ref pure reduce fulfilled 
+  //  observer pending pure context group async either merge hook select ref 
+  //  invalidate queue handler lazy filter option gate state transform debounce publish 
+  //  props merge sync zip observer filter zip reject sentinel eager transform 
+  //  sentinel subscribe fulfilled partition props throttle memo hook zip either dispatcher 
+  //  map project either select eager sort keep resolve merge memoize state 
+  //  fold compose callback resolve debounce async transform render eager map sync 
+  //  render queue transform pure gate throttle stream reject event dispatcher sort 
+  //  pending project ref gate guard component sort publish zip cache sort 
+  //  invalidate pure state either hook group zip sentinel debounce either props 
+  //  stream publish project pending partition cache eager drop filter compose project 
+  //  component async publish state dispatcher option handler publish eager keep group 
+  //  ref memo resolve state memoize sort reducer select lazy effect pure 
+  //  cache drop state sentinel hook hook option partition option result ref 
+  //  sentinel keep cache transform context map keep merge memoize async select 
+  //  async reducer fulfilled zip throttle subscribe resolve pure memo pending invalidate 
+  //  scan partition props fold props subscribe gate result publish context drop 
+  //  buffer stream subscribe select result pipeline sync keep stream sentinel dispatcher 
+  //  cache group drop compose event sentinel fold resolve props observer pipeline 
+  //  ref async guard pair state context props project hook partition render 
+  //  callback eager pipeline memo memo scan option reject dispatcher reducer debounce 
+  //  drop reducer compose invalidate cache debounce props fold sentinel throttle sync 
+  //  effect zip subscribe tuple pair pipeline buffer select sync reducer partition 
+  //  pure render pending event reduce filter guard result sync pending state 
+  //  lazy ref merge partition guard select select keep tuple queue memo 
+  //  project zip lazy hook resolve state handler dispatcher debounce sync memoize 
+  //  keep context component pure keep drop queue pending sentinel filter filter 
+  //  state either subscribe render reduce cache result scan handler scan await 
+  //  select throttle map select throttle merge handler lazy cache props eager 
+  //  group sync callback queue group reducer event gate either component merge 
+  //  dispatcher select zip lazy lazy fold transform sentinel context option props 
+  //  render either reject pending pending observer callback sentinel context throttle event 
+  //  queue effect await state async partition dispatcher pending filter keep sync 
+  //  debounce pending component either render select result gate callback option pipeline 
+  //  drop project compose gate debounce pipeline option select hook await gate 
+  //  compose debounce keep lazy ref map merge merge filter observer merge 
+  //  memoize buffer option fulfilled invalidate drop drop pending ref compose pending 
+  //  pending effect invalidate effect context select callback async guard either pipeline 
+  //  invalidate callback pure sentinel option hook compose sentinel handler lazy buffer 
+  //  hook effect props pipeline resolve callback handler invalidate select tuple observer 
+  //  select buffer gate invalidate subscribe async lazy invalidate cache throttle guard 
+  //  sentinel gate either map hook tuple throttle zip partition memoize transform 
+  //  tuple handler transform fulfilled scan buffer effect lazy partition async sentinel 
+  //  keep invalidate compose sort eager filter project tuple pending memo subscribe 
+  //  project filter eager publish filter render guard select fold pure memo 
+  //  throttle fold pure partition pure context tuple either pending buffer async 
+  //  reducer publish sentinel buffer render drop publish dispatcher hook props pure 
+  //  fold reducer buffer group sentinel resolve queue eager throttle publish group 
+  //  event hook state component scan keep reducer option fold scan group 
+  //  subscribe pending project debounce pending fulfilled drop await sort hook guard 
+  //  observer pure map pair option sort map compose project event select 
+  //  ref lazy queue subscribe memo keep component hook tuple keep merge 
+  //  ref async either pair pipeline cache either eager pure buffer throttle 
+  //  dispatcher project keep memoize invalidate transform select option partition props throttle 
+  //  await pipeline tuple dispatcher either memoize memo scan subscribe ref map 
+  //  result memo pending callback pending guard hook reduce option select gate 
+  //  props scan callback fold effect memo reject gate fold guard gate 
+  //  render pending result pair pending buffer either result handler either pipeline 
+  //  guard invalidate subscribe resolve cache either pending hook memoize resolve component 
+  //  invalidate state hook filter fold gate throttle either pair observer project 
+  //  event memoize either debounce memo invalidate resolve scan option group queue 
+  //  sentinel either partition component gate state handler callback state pipeline effect 
+  //  guard zip buffer debounce props cache gate component component gate debounce 
+  //  memoize group reducer throttle pipeline project filter debounce callback lazy dispatcher 
+  //  subscribe filter state filter hook state memo queue compose dispatcher reducer 
+  //  compose render async keep buffer tuple pair partition props drop pipeline 
+  //  partition handler effect lazy subscribe option keep keep pair pending memo 
+  //  fold partition effect merge zip hook gate await filter ref buffer 
+  //  publish lazy context queue async callback callback guard pipeline either lazy 
+  //  select map async project callback observer resolve dispatcher resolve group guard 
+  //  memoize subscribe scan event throttle debounce pure result pipeline resolve hook 
+  //  pure handler pair handler fulfilled component scan either reject map fold 
+  //  tuple dispatcher option throttle guard reject buffer reduce async buffer pure 
+  //  guard publish memo callback sync result pending eager scan props sentinel 
+  //  publish context memo zip group select fulfilled guard sort filter subscribe 
+  //  gate either handler drop compose sort component reject resolve dispatcher keep 
+  //  buffer pure event map pending dispatcher resolve sync gate option pending 
+  //  partition state option context partition compose throttle transform context queue effect 
+  //  partition buffer pending pure handler partition await debounce merge dispatcher resolve 
+  //  cache observer throttle transform render resolve pair dispatcher zip gate gate 
+  //  queue select either queue map drop invalidate reduce fold scan observer 
+  //  debounce select lazy pending reduce hook sentinel tuple tuple context reduce 
+  //  sort eager debounce group tuple gate state either cache debounce pair 
+  //  context zip either option sentinel fulfilled gate hook reduce dispatcher hook 
+  //  event lazy props filter buffer stream resolve memoize cache sort memoize 
+  //  select ref sentinel debounce lazy compose pending state handler pending select 
+  //  subscribe lazy pending zip state dispatcher effect drop context cache dispatcher 
+  //  queue merge reject fulfilled state result invalidate fulfilled scan fold debounce 
+  //  event reducer select option component async context component select scan pending 
+  //  queue eager guard effect reduce debounce buffer cache sync compose resolve 
+  //  ref state event eager reduce reject zip lazy partition resolve await 
+  //  map sort drop await stream render gate merge tuple props eager 
+  //  resolve memoize publish throttle keep event throttle callback props reduce map 
+  //  component pending result effect select queue memo sentinel resolve resolve async 
+  //  compose sort debounce guard either render zip merge cache subscribe reduce 
+  //  tuple subscribe filter memo group transform eager lazy option compose keep 
+  //  sentinel event scan resolve resolve publish render render render partition buffer 
+  //  pair gate keep compose pipeline map sort tuple transform async subscribe 
+  //  state project fold transform option pending handler select transform buffer map 
+  //  either event tuple effect pair buffer cache memoize tuple callback map 
+  //  component map pipeline pipeline buffer component transform dispatcher guard sentinel cache 
+  //  sort memoize sentinel cache fulfilled queue callback ref context either project 
+  //  ref tuple throttle project callback reducer transform memo sentinel render pure 
+  //  ref render props select event memoize await hook sync context sentinel 
+  //  effect observer cache either reducer pure render project compose throttle pipeline 
+  //  dispatcher hook subscribe pure buffer observer drop option observer queue publish 
+  //  observer state compose option select handler keep buffer cache drop lazy 
+  //  debounce await map pending compose pair transform sort guard handler throttle 
+  //  pure drop guard props pending sync state hook handler memoize fulfilled 
+  //  throttle guard lazy event eager transform throttle merge invalidate resolve zip 
+  //  filter sort zip dispatcher context merge hook compose gate reject merge 
+  //  pure pending publish group tuple async map map scan observer pipeline 
+  //  reducer option sort option stream merge debounce callback subscribe handler render 
+  //  ref event throttle subscribe effect resolve project dispatcher stream resolve memoize 
+  //  pending async debounce zip gate transform subscribe fold callback cache compose 
+  //  partition partition ref reduce memo state event reduce merge observer lazy 
+  //  map group pure scan cache filter handler await dispatcher pending guard 
+  //  sync tuple callback dispatcher reduce select tuple state memoize ref option 
+  //  result group throttle stream group compose map keep publish await hook 
+  //  async async state partition effect project cache fold effect effect debounce 
+  //  pure pipeline pending cache pure buffer render guard gate resolve pipeline 
+  //  merge subscribe callback pure props dispatcher project throttle either compose scan 
+  //  throttle sort buffer fold buffer event tuple keep reduce select drop 
+  //  result state ref props fold async async select callback props await 
+  //  guard pair pure publish tuple zip lazy map subscribe debounce effect 
+  //  merge select guard ref component props resolve component invalidate cache sort 
+  //  project event event resolve resolve invalidate partition partition hook render sentinel 
+  //  props
+  */
+})();
+
+// mod-0002 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[2] = {
+    id: 2,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0002';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '140');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  group sentinel group reducer merge result compose dispatcher either handler lazy either 
+  //  guard async handler state guard memoize props handler event debounce reduce 
+  //  reduce keep subscribe fulfilled sentinel reducer either lazy pending filter queue 
+  //  scan keep sort drop ref pair option event reject lazy component 
+  //  scan filter dispatcher lazy buffer subscribe subscribe throttle pair option sort 
+  //  reducer state partition component await reject debounce sync gate throttle zip 
+  //  dispatcher lazy reject compose sentinel memoize guard pending map component render 
+  //  subscribe reduce debounce map tuple context hook pure gate scan stream 
+  //  compose debounce hook result async callback compose invalidate either component transform 
+  //  throttle select event fulfilled effect hook component async resolve subscribe ref 
+  //  fold compose compose event sort keep transform memo lazy hook pure 
+  //  hook guard tuple sort zip subscribe effect event scan lazy compose 
+  //  resolve reduce throttle handler memoize option fulfilled memoize project either async 
+  //  callback result state ref publish map invalidate state handler reject await 
+  //  pending throttle keep buffer event merge fulfilled either throttle merge fulfilled 
+  //  pure option cache resolve merge pipeline fulfilled render scan render publish 
+  //  cache callback invalidate either render pure queue pure filter drop render 
+  //  memoize invalidate invalidate pipeline resolve state compose observer await render observer 
+  //  stream pending state await eager sort scan fold sync compose reject 
+  //  hook hook ref group sort tuple transform guard pipeline transform pure 
+  //  async callback event tuple reduce either lazy invalidate guard option pure 
+  //  pure props partition transform memo await project resolve merge fulfilled lazy 
+  //  await transform filter context stream effect queue pending throttle context group 
+  //  memo hook handler eager map reducer dispatcher publish dispatcher map pure 
+  //  throttle invalidate map memo reducer reject observer sync sort debounce publish 
+  //  fold hook resolve tuple gate lazy pair pending publish handler context 
+  //  ref publish merge buffer pipeline pipeline callback component subscribe await compose 
+  //  pipeline gate invalidate async memo compose either option zip compose memoize 
+  //  cache guard partition tuple fold publish fold keep compose result pair 
+  //  map hook context scan effect sentinel memo resolve option sync group 
+  //  pending group context drop reject sort project memoize memoize queue memo 
+  //  either group pipeline merge filter debounce select group pipeline sync fulfilled 
+  //  render async lazy reject dispatcher lazy lazy reject fulfilled either cache 
+  //  map throttle guard result sentinel callback callback reducer pair ref select 
+  //  tuple subscribe state resolve effect lazy zip event result pipeline context 
+  //  either props select observer pair project await hook resolve group fold 
+  //  fulfilled compose event zip pair throttle sync lazy context map reduce 
+  //  result cache context result subscribe hook compose fold subscribe partition await 
+  //  reduce pair eager pair stream handler ref await filter debounce reject 
+  //  reduce async event callback gate option memoize transform ref guard buffer 
+  //  queue invalidate eager group guard select memo hook drop pure either 
+  //  zip props pending sync pair throttle reduce pending queue state stream 
+  //  compose effect reject gate publish await drop drop option throttle async 
+  //  project context hook async event fold effect fulfilled component queue reducer 
+  //  pair ref stream memoize pair reject reduce tuple memoize dispatcher lazy 
+  //  eager scan props merge lazy project callback tuple lazy memoize reducer 
+  //  component pure handler select merge props pure tuple pure component drop 
+  //  result observer group pending compose fulfilled group queue callback keep lazy 
+  //  map await buffer subscribe pipeline result async async effect event subscribe 
+  //  pending debounce observer cache stream pending partition option sentinel memo eager 
+  //  pipeline keep either option transform transform sort ref tuple subscribe await 
+  //  map project sort pure resolve gate buffer handler reduce guard reducer 
+  //  throttle queue reject debounce zip throttle filter reject either sentinel hook 
+  //  reject invalidate pending memoize fold pending gate pure subscribe fulfilled cache 
+  //  props project memoize cache pipeline memoize queue sentinel sort result subscribe 
+  //  debounce result throttle publish invalidate pending sync effect buffer ref observer 
+  //  keep tuple await ref transform sort sentinel gate cache stream hook 
+  //  observer sort await project drop dispatcher pipeline await reject drop lazy 
+  //  component queue observer memo option merge observer pure queue cache publish 
+  //  props group effect state invalidate async result fold observer hook sync 
+  //  compose map sentinel partition compose context fold pipeline pending event callback 
+  //  select await eager observer fold drop reducer either state select pair 
+  //  fulfilled props compose guard subscribe keep memoize cache keep props render 
+  //  props async cache zip queue pair partition group filter ref buffer 
+  //  throttle invalidate fulfilled effect zip subscribe reducer observer hook render state 
+  //  stream hook component buffer pure throttle scan cache reducer keep pipeline 
+  //  buffer sentinel async option select reduce handler project publish partition fulfilled 
+  //  fold debounce sort debounce stream callback partition compose dispatcher pair queue 
+  //  pure ref reducer sort keep cache partition map result pure buffer 
+  //  context partition state debounce result throttle result props option guard sentinel 
+  //  guard memoize cache invalidate memoize tuple resolve scan group fold pair 
+  //  partition observer project subscribe effect event filter drop keep props scan 
+  //  sync result cache props group pending partition sync lazy buffer event 
+  //  select group pending reduce pending guard publish buffer pair group observer 
+  //  sentinel hook reduce transform async cache dispatcher transform select pure select 
+  //  tuple debounce callback pure merge render debounce project group props partition 
+  //  context await queue pair ref state callback tuple await sync effect 
+  //  compose option debounce hook pair memoize pipeline await guard invalidate publish 
+  //  state observer debounce guard observer select fulfilled async ref reduce props 
+  //  zip lazy component memoize invalidate ref fulfilled queue cache dispatcher render 
+  //  state cache context render component sort fulfilled select tuple reducer reduce 
+  //  sync pipeline handler hook render fulfilled compose cache reducer reducer filter 
+  //  component debounce event context partition memoize reject effect pure observer fulfilled 
+  //  subscribe throttle filter callback pure fulfilled zip observer sort pair context 
+  //  props reduce pair group compose gate effect transform component dispatcher props 
+  //  cache merge keep transform transform reduce reduce handler state throttle pipeline 
+  //  callback project lazy project callback async sort memoize cache hook transform 
+  //  drop pending keep await component buffer handler memoize drop project compose 
+  //  memoize props sort subscribe memoize buffer props reduce ref keep stream 
+  //  merge memoize reduce select subscribe observer fold observer ref keep pure 
+  //  debounce merge state debounce pair lazy sentinel handler transform state state 
+  //  group reducer state eager compose cache pending zip publish reject transform 
+  //  props fulfilled pure throttle debounce await group option hook tuple props 
+  //  pending event drop scan throttle pair eager publish sort stream pair 
+  //  callback fold throttle sentinel tuple select resolve await reduce ref pair 
+  //  sentinel queue dispatcher subscribe fulfilled event render stream effect lazy observer 
+  //  dispatcher scan observer ref sort eager sentinel throttle group buffer transform 
+  //  drop drop state compose render pending either observer tuple project reduce 
+  //  lazy reduce buffer callback state filter reducer debounce observer select cache 
+  //  project component tuple reject guard fold event props component throttle effect 
+  //  group context state buffer publish pending render sync reject async pure 
+  //  throttle publish buffer hook option drop resolve handler select state fold 
+  //  cache gate pending map hook merge observer guard sentinel throttle resolve 
+  //  filter fulfilled option guard queue transform invalidate zip hook sync subscribe 
+  //  event dispatcher drop await debounce component callback effect context map stream 
+  //  transform fulfilled event effect sync compose compose pending reducer guard filter 
+  //  observer drop guard await invalidate reduce project memoize ref option await 
+  //  handler props partition memo invalidate drop result subscribe group drop pair 
+  //  guard partition select throttle keep invalidate reduce sentinel pure reject zip 
+  //  scan merge either async gate async reject fold compose option either 
+  //  either partition ref partition pair reject buffer map buffer buffer keep 
+  //  observer dispatcher compose context cache await gate either effect memo event 
+  //  buffer reducer map throttle invalidate fulfilled context map queue event filter 
+  //  option filter guard render option dispatcher async map callback throttle event 
+  //  partition filter publish sentinel filter result drop pipeline reduce option queue 
+  //  buffer context resolve lazy invalidate reducer filter buffer pipeline props drop 
+  //  throttle fold eager callback reducer queue sort debounce either option scan 
+  //  reducer memoize memoize group sync debounce context merge partition reject cache 
+  //  props map event reduce hook event pending observer eager select invalidate 
+  //  option sync sort render merge async guard buffer queue drop lazy 
+  //  stream keep props cache props stream fulfilled sync debounce pending sort 
+  //  cache project pending group handler pending pipeline fold pipeline throttle merge 
+  //  ref guard pair await event queue buffer lazy resolve cache handler 
+  //  stream zip project publish memoize fold filter resolve resolve invalidate tuple 
+  //  sort map select sentinel ref effect reject tuple async sentinel keep 
+  //  zip lazy reducer observer reject handler debounce resolve effect zip lazy 
+  //  memo reducer pure project sentinel compose merge handler effect fulfilled fulfilled 
+  //  subscribe map result gate pipeline map filter state ref queue sort 
+  //  pipeline reject subscribe invalidate fulfilled resolve render scan queue map fulfilled 
+  //  memo context pair sort fulfilled pending guard keep gate pair event 
+  //  tuple project reducer guard observer gate subscribe subscribe component drop dispatcher 
+  //  hook lazy fulfilled pending component option either queue fulfilled cache filter 
+  //  event debounce pending buffer transform tuple subscribe memoize buffer pair pipeline 
+  //  reject pending fold scan publish memo sync sentinel render reduce merge 
+  //  buffer gate sentinel select pending partition buffer option compose dispatcher scan 
+  //  sentinel sort filter select publish memo guard callback project handler group 
+  //  group dispatcher gate group pair scan debounce tuple handler gate buffer 
+  //  ref group publish pipeline partition result observer handler sort guard zip 
+  //  sync dispatcher effect props pending sync invalidate guard pair partition map 
+  //  memo sort async memoize resolve callback reduce reject invalidate eager resolve 
+  //  select project pipeline cache ref partition ref pair props event render 
+  //  pipeline hook compose reject zip project memo sort filter render queue 
+  //  throttle effect async memo dispatcher await compose stream state either filter 
+  //  handler eager fulfilled pending callback pure observer sentinel handler observer invalidate 
+  //  tuple scan sentinel buffer eager keep fold project async fold memo 
+  //  throttle buffer group resolve dispatcher lazy keep render publish gate reject 
+  //  render option filter effect debounce throttle sentinel transform guard event keep 
+  //  invalidate handler scan handler scan throttle fulfilled project merge merge render 
+  //  component throttle await subscribe either dispatcher eager memo gate sentinel map 
+  //  compose cache stream resolve memo dispatcher keep option lazy props cache 
+  //  option callback sync memoize option async group cache pure group publish 
+  //  resolve compose state callback async pending await await sync compose subscribe 
+  //  state state memo await state pending throttle project reducer filter ref 
+  //  debounce async handler queue queue option either dispatcher eager either await 
+  //  merge either transform sort
+  */
+})();
+
+// mod-0003 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[3] = {
+    id: 3,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0003';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '74');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  cache render sentinel pipeline render tuple pending hook transform guard memo select 
+  //  props handler sync tuple drop transform either select filter eager handler 
+  //  effect filter compose publish scan queue drop debounce publish render props 
+  //  pure event merge throttle memoize sentinel queue effect resolve option await 
+  //  context map filter either invalidate scan scan resolve sort cache transform 
+  //  option dispatcher render pair reducer stream sentinel scan map gate guard 
+  //  zip compose queue reduce either sort ref fold filter sentinel pure 
+  //  reduce reduce async memoize drop callback queue either result reject option 
+  //  pipeline ref guard handler pure keep reduce memo reduce merge project 
+  //  event pipeline debounce throttle keep drop render eager pure sentinel pending 
+  //  group publish state eager resolve zip publish subscribe async context reject 
+  //  publish props ref map hook subscribe invalidate transform component resolve reducer 
+  //  select partition eager render context invalidate component buffer reduce props pair 
+  //  result reduce await await state partition debounce lazy buffer either option 
+  //  sort context pending render fulfilled props stream callback fold reject throttle 
+  //  drop zip merge props memoize memoize partition buffer buffer observer project 
+  //  component memo stream transform debounce cache await compose props tuple queue 
+  //  either stream transform resolve await filter publish fold callback reduce sync 
+  //  group memoize publish filter result context component group drop fold cache 
+  //  reducer transform await throttle guard pure either hook sort sort observer 
+  //  fulfilled debounce memoize group render context callback resolve partition debounce map 
+  //  merge reducer project either sort context sentinel either zip props zip 
+  //  partition buffer eager either effect sentinel buffer render subscribe reducer debounce 
+  //  component group pure guard select either filter queue invalidate queue await 
+  //  group sentinel reject guard group transform invalidate cache render sentinel subscribe 
+  //  event props observer eager async invalidate group fold sentinel throttle callback 
+  //  subscribe transform component ref ref stream reject project lazy option pure 
+  //  guard callback async ref sort keep zip select memoize publish async 
+  //  group map fold lazy merge group cache compose buffer group invalidate 
+  //  partition group render fold render effect render reducer memoize callback select 
+  //  reduce async option observer transform context reduce fulfilled project buffer project 
+  //  fulfilled pair callback keep compose memoize throttle buffer observer props zip 
+  //  transform gate fulfilled subscribe cache dispatcher map memo memo fold group 
+  //  reduce drop guard memo guard scan fulfilled invalidate state observer context 
+  //  invalidate invalidate gate transform fold invalidate zip fulfilled reject zip await 
+  //  scan zip memo select memo keep context project group scan fold 
+  //  hook group debounce observer memo event ref callback reducer partition filter 
+  //  map reducer props context reducer component pure reduce memoize dispatcher drop 
+  //  pure memo props tuple stream event partition effect await observer effect 
+  //  sync event await project sentinel transform render state guard resolve memo 
+  //  select pure keep reduce subscribe reducer merge group reduce pipeline filter 
+  //  eager fold partition fulfilled tuple scan fold event option pair lazy 
+  //  merge observer sync lazy context partition subscribe either state select pending 
+  //  debounce dispatcher effect publish fold sort subscribe dispatcher transform callback sentinel 
+  //  state stream scan lazy stream filter group tuple callback scan fulfilled 
+  //  map sort fulfilled transform drop state map project eager cache memo 
+  //  partition group filter filter keep compose group async context dispatcher observer 
+  //  project debounce guard gate sync cache reducer merge select resolve sentinel 
+  //  select memo component props async hook reducer transform group scan option 
+  //  either either resolve pending filter pipeline scan buffer drop context zip 
+  //  fulfilled result keep dispatcher callback context ref tuple transform pending await 
+  //  pipeline sentinel result callback option callback publish sync lazy component option 
+  //  debounce partition select callback zip project sort dispatcher merge props tuple 
+  //  publish reduce merge reducer fold render pure result callback scan merge 
+  //  either effect result sync option pair observer fulfilled hook debounce sentinel 
+  //  event component callback result hook project scan stream pure memoize tuple 
+  //  context gate keep scan memoize buffer sentinel merge keep sentinel observer 
+  //  memoize compose fold scan dispatcher filter merge keep debounce invalidate state 
+  //  group invalidate dispatcher scan project project filter render tuple drop keep 
+  //  lazy component filter compose drop memo lazy stream props fold state 
+  //  sync ref map stream fulfilled pipeline async hook reduce eager select 
+  //  props subscribe cache memo reject eager ref transform callback scan fold 
+  //  sync subscribe subscribe invalidate fold fold memoize effect compose tuple keep 
+  //  pair invalidate ref compose publish pending sentinel pair buffer option event 
+  //  props callback gate scan observer transform callback debounce debounce debounce context 
+  //  cache effect reduce option stream callback async pending dispatcher compose sentinel 
+  //  eager filter throttle cache option reducer select observer sort invalidate gate 
+  //  guard transform sync reject either fold buffer fold tuple partition project 
+  //  ref memo option group transform compose reducer gate select scan handler 
+  //  props await reduce pair eager pure component sync pipeline ref effect 
+  //  handler compose throttle reducer render memo partition transform fold subscribe result 
+  //  handler subscribe result buffer resolve stream dispatcher reduce scan pipeline buffer 
+  //  component buffer map group transform await cache stream tuple render pending 
+  //  subscribe props option ref await filter resolve reject pure cache pipeline 
+  //  handler callback effect debounce eager scan async state result zip hook 
+  //  result select transform either sort compose reject publish component project filter 
+  //  dispatcher fold reducer gate publish state hook merge hook merge props 
+  //  scan pair cache result invalidate transform memo state memo option state 
+  //  zip guard await publish ref throttle reject dispatcher stream keep map 
+  //  event state resolve compose cache hook publish pending context zip pure 
+  //  invalidate invalidate pending buffer tuple throttle sync compose context reduce dispatcher 
+  //  fold pipeline project pair map pending render memoize pending merge merge 
+  //  tuple memo dispatcher reject buffer queue sentinel publish option reducer result 
+  //  keep pipeline observer pending zip drop keep result partition cache either 
+  //  debounce partition effect fold await eager component effect debounce merge context 
+  //  pending select guard map subscribe component option await scan async queue 
+  //  project dispatcher await pipeline partition guard memo sort reducer guard queue 
+  //  scan memoize scan pair gate guard reducer observer memo reducer guard 
+  //  observer context zip invalidate hook reduce state option pending pending reject 
+  //  lazy await sync memoize pure either fold scan hook compose stream 
+  //  guard drop state compose component reject option either eager partition result 
+  //  filter await sort partition group compose fulfilled gate subscribe zip effect 
+  //  callback await reduce pipeline cache fold hook map state fold context 
+  //  tuple reduce render zip subscribe tuple publish sentinel debounce lazy map 
+  //  dispatcher transform async compose hook component scan callback resolve callback render 
+  //  event sentinel props scan throttle memo fulfilled zip pure sync observer 
+  //  buffer pure select guard gate cache option lazy fold option project 
+  //  effect select pair reject async reducer props eager sentinel memoize resolve 
+  //  callback fulfilled result debounce stream pair memo either pipeline lazy async 
+  //  buffer publish resolve eager memoize memoize effect select callback async either 
+  //  state props async project props tuple transform fulfilled effect context buffer 
+  //  guard subscribe state keep throttle pending fold group effect memo memoize 
+  //  observer render handler state reject sentinel queue reject merge component render 
+  //  subscribe resolve subscribe memo pending zip invalidate resolve buffer option fold 
+  //  stream sync transform group eager result context resolve memo merge scan 
+  //  queue reject pipeline effect memo buffer reducer queue either subscribe state 
+  //  debounce map merge zip queue ref lazy option keep either scan 
+  //  context queue merge effect filter select cache scan result resolve project 
+  //  reduce tuple keep ref event ref zip option guard keep ref 
+  //  pair cache throttle observer publish stream cache keep sort pure hook 
+  //  fold debounce callback observer map callback guard sort pipeline state pending 
+  //  sentinel buffer state observer sentinel reduce component buffer props hook reject 
+  //  group tuple memo hook event pending zip hook merge memo throttle 
+  //  queue cache queue project filter cache reducer partition memo state await 
+  //  pure project map merge context gate event await effect pair handler 
+  //  guard partition either stream handler cache debounce memo project stream filter 
+  //  subscribe select lazy sentinel sync await drop pending pair pure scan 
+  //  option pending resolve await pair debounce either transform sentinel component pair 
+  //  ref either component callback option resolve dispatcher sentinel filter callback await 
+  //  invalidate zip await pure dispatcher await reduce zip stream compose handler 
+  //  drop compose event result resolve await pure buffer publish buffer publish 
+  //  subscribe filter callback option memoize component select component await reduce observer 
+  //  state stream gate group reduce project memo pipeline select either group 
+  //  queue memoize scan partition context map state cache observer props select 
+  //  sentinel hook sort throttle either lazy render zip memoize guard either 
+  //  sentinel debounce merge reduce sort component props pair eager ref pipeline 
+  //  reducer render project effect pure merge callback reject resolve callback group 
+  //  await sentinel reduce map subscribe gate stream select dispatcher eager dispatcher 
+  //  reduce project transform select pipeline publish context pure partition compose result 
+  //  pure buffer scan zip pure memo sync pipeline reduce queue drop 
+  //  handler group ref dispatcher zip scan merge pipeline eager pure fold 
+  //  select publish project tuple filter sync debounce await handler keep ref 
+  //  subscribe ref gate result effect reduce hook throttle map resolve ref 
+  //  component fulfilled pair filter queue filter fold sync partition fulfilled state 
+  //  drop keep map sort project hook tuple buffer pure partition pair 
+  //  group props event async merge memo map sentinel reject props sort 
+  //  lazy handler state drop sync reducer pipeline gate memo invalidate await 
+  //  handler context context fulfilled context group reduce keep eager context reducer 
+  //  callback component sort sync eager pipeline pure select scan async pipeline 
+  //  partition callback async sort async merge ref pending drop map reduce 
+  //  async keep result pair pipeline transform ref map either buffer keep 
+  //  handler group option group event pipeline hook sentinel reject cache sort 
+  //  invalidate pipeline resolve await eager throttle component resolve queue memoize group 
+  //  pure subscribe render buffer handler partition reduce dispatcher group fold drop 
+  //  project effect callback select render fulfilled compose buffer group dispatcher sync 
+  //  component group merge result ref stream throttle sync queue fold event 
+  //  state either reject buffer async fold transform subscribe subscribe gate handler 
+  //  fulfilled stream pair invalidate hook lazy sort pipeline fold props stream 
+  //  debounce handler props props buffer hook reduce subscribe subscribe eager partition 
+  //  dispatcher ref dispatcher hook partition tuple fold dispatcher transform tuple publish 
+  //  callback memo reduce debounce throttle component component debounce guard guard buffer 
+  //  pair sentinel invalidate pipeline ref gate hook stream subscribe buffer reducer 
+  //  await pure zip component pair pure map sort event render context 
+  //  either await await option effect debounce component partition select debounce reduce 
+  //  dispatcher fulfilled ref pair sentinel subscribe invalidate observer drop
+  */
+})();
+
+// mod-0004 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[4] = {
+    id: 4,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0004';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '172');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  throttle reduce project tuple partition sentinel either throttle reducer memo select component 
+  //  stream pure memoize scan memo render buffer await cache drop event 
+  //  reject observer partition debounce drop reduce stream tuple group sentinel stream 
+  //  stream buffer option hook effect throttle stream option component pending callback 
+  //  state zip observer pair observer state select reduce result pending sort 
+  //  stream cache fulfilled invalidate pure pair sentinel transform compose pipeline async 
+  //  tuple group event reducer pair props context map memoize render reject 
+  //  resolve filter tuple transform scan partition project callback publish stream select 
+  //  throttle cache resolve transform memo memo gate memo group effect keep 
+  //  fulfilled result buffer context event sort memo eager project transform eager 
+  //  handler either merge keep partition component either state pending merge tuple 
+  //  callback event option transform pipeline result pure guard map guard cache 
+  //  tuple keep tuple dispatcher lazy select partition tuple callback group merge 
+  //  buffer project await map project throttle filter publish event lazy invalidate 
+  //  memoize await debounce either state memoize handler resolve state throttle tuple 
+  //  queue debounce effect effect option resolve context render select eager keep 
+  //  throttle drop subscribe sort component memoize ref gate cache lazy memoize 
+  //  handler effect invalidate queue resolve ref memoize async sync reject result 
+  //  effect component component merge scan memo reducer invalidate gate scan buffer 
+  //  reducer await pipeline async pair select keep publish event render pipeline 
+  //  pipeline drop event context memo observer partition pending invalidate render group 
+  //  merge queue handler callback scan drop hook render effect lazy queue 
+  //  result reject observer queue throttle merge state fold guard component dispatcher 
+  //  pair sync drop select context invalidate buffer project pending stream memo 
+  //  await project memoize props async transform select hook publish stream dispatcher 
+  //  state group memoize either memo sync state subscribe throttle guard observer 
+  //  merge resolve keep project hook sync hook subscribe subscribe throttle fulfilled 
+  //  transform context subscribe event gate lazy drop pure fulfilled tuple map 
+  //  pending transform event pipeline subscribe pending reducer effect keep component lazy 
+  //  pipeline filter pure ref pure pending pure lazy keep component props 
+  //  scan option render sentinel lazy tuple pure stream drop pair state 
+  //  await props buffer handler hook publish async either pending pair sync 
+  //  pair filter context sort invalidate buffer throttle debounce memo ref reducer 
+  //  context tuple pure eager pipeline result component pure select stream pipeline 
+  //  callback queue either memo compose handler context result scan render guard 
+  //  context map select fulfilled either stream memoize callback context event group 
+  //  fold select eager sort fold reduce pending reduce drop filter partition 
+  //  group state debounce queue ref map sentinel memo handler compose transform 
+  //  component state map keep option resolve queue ref tuple render result 
+  //  sync scan filter filter memo hook map subscribe reject props pair 
+  //  reduce stream event zip pure either pair tuple result hook invalidate 
+  //  props transform reject drop pipeline ref context sync pure pending group 
+  //  gate partition context reject tuple option drop option hook observer scan 
+  //  eager observer fulfilled component throttle cache reduce effect tuple reject reducer 
+  //  merge project throttle group scan hook pair fold sentinel fulfilled filter 
+  //  publish pending transform hook ref resolve throttle buffer resolve scan await 
+  //  select stream state debounce throttle effect sort dispatcher pipeline eager async 
+  //  sync map scan sort map result component hook props throttle guard 
+  //  lazy pure fold memo pending partition cache partition ref project reject 
+  //  result eager publish pair dispatcher guard result subscribe memo render memo 
+  //  pending async debounce scan observer component scan group component fulfilled buffer 
+  //  component compose await cache option throttle reduce map gate gate eager 
+  //  render tuple state option fold cache resolve handler component pure keep 
+  //  pair pure drop merge partition hook stream dispatcher gate component guard 
+  //  callback either memo dispatcher reduce pair component stream effect eager compose 
+  //  drop context ref sentinel lazy hook reduce compose dispatcher drop compose 
+  //  pair result either pure pipeline memo dispatcher drop transform compose partition 
+  //  callback observer event keep zip map transform compose props handler context 
+  //  memoize eager await fulfilled resolve fulfilled eager resolve scan merge gate 
+  //  callback option memoize memoize scan buffer debounce resolve drop resolve select 
+  //  publish await ref pure render effect compose reduce dispatcher tuple event 
+  //  pure cache guard eager await hook event stream option scan stream 
+  //  subscribe filter subscribe lazy dispatcher props render event context publish filter 
+  //  group props compose project handler compose component sort handler map cache 
+  //  filter cache sentinel lazy reject observer either observer sentinel context async 
+  //  filter gate dispatcher invalidate props fold select pending debounce cache merge 
+  //  lazy dispatcher queue map debounce cache props render publish await sort 
+  //  props reject debounce sort props effect reject stream await publish transform 
+  //  partition dispatcher partition resolve callback dispatcher ref context cache scan pending 
+  //  await render hook context guard zip stream fulfilled queue keep callback 
+  //  sort drop cache async scan result sentinel reducer result subscribe component 
+  //  dispatcher state buffer lazy select subscribe guard sort invalidate map keep 
+  //  eager sync group group memo queue ref reject filter observer fold 
+  //  handler throttle await pipeline group keep sort ref group reject buffer 
+  //  sync hook state state fulfilled callback either pipeline event either debounce 
+  //  memo reduce memoize await pending zip zip props either compose debounce 
+  //  callback async pipeline hook transform reject cache project debounce subscribe project 
+  //  debounce keep guard map reduce group fulfilled stream dispatcher reducer sync 
+  //  cache cache either pending invalidate publish compose pure resolve pipeline memo 
+  //  hook pending sync render zip scan pending subscribe memoize map fold 
+  //  component fulfilled guard group stream result props stream event zip result 
+  //  effect buffer filter option memo reject component reduce queue sort merge 
+  //  event handler drop either lazy compose tuple group pipeline transform memoize 
+  //  reducer eager result transform state handler sync observer option component gate 
+  //  buffer stream filter await eager sort ref reducer debounce fulfilled component 
+  //  partition fold buffer option sentinel sort project handler gate scan callback 
+  //  pipeline queue select hook sync pair publish memoize option await pair 
+  //  hook option pure merge fold await state tuple context guard scan 
+  //  reduce effect fulfilled handler render render publish fulfilled reduce zip props 
+  //  result filter memoize partition publish either reject guard scan gate tuple 
+  //  resolve component compose async option component observer partition pure map sync 
+  //  component tuple tuple throttle fulfilled pending scan group stream async scan 
+  //  invalidate publish map throttle pair keep lazy filter publish memo throttle 
+  //  scan observer fold fulfilled cache throttle subscribe invalidate merge publish async 
+  //  publish pending state zip callback eager async result fold dispatcher keep 
+  //  event transform merge component subscribe sort memoize scan subscribe either scan 
+  //  sync pair map publish async stream merge result state eager pipeline 
+  //  reduce state memo scan memoize scan render drop scan ref subscribe 
+  //  render event handler transform transform filter observer sort memo hook tuple 
+  //  stream stream sort effect component event stream reducer tuple option debounce 
+  //  callback memo throttle sync filter merge component context merge event pair 
+  //  async group subscribe sync effect tuple queue cache publish compose render 
+  //  project dispatcher observer await fulfilled hook effect ref sort sync context 
+  //  subscribe subscribe transform zip pipeline map invalidate gate reject scan keep 
+  //  eager group memoize throttle queue fold publish map render callback result 
+  //  render handler throttle subscribe queue reduce event async render either compose 
+  //  scan callback throttle sentinel render publish either await stream buffer component 
+  //  sentinel keep event pending either reduce zip state zip subscribe project 
+  //  eager select effect sort fulfilled reject buffer option hook pipeline pipeline 
+  //  hook render render effect keep eager invalidate throttle keep render ref 
+  //  handler sync publish publish event throttle pure sentinel observer sentinel fulfilled 
+  //  reduce select buffer result option scan buffer pending scan map pair 
+  //  callback debounce subscribe event ref filter fold sort option project gate 
+  //  buffer stream pure map await sentinel pure option pure reject render 
+  //  tuple await pipeline sync gate select sentinel option select eager fulfilled 
+  //  pipeline reduce render drop context resolve fulfilled reject memo resolve either 
+  //  eager invalidate stream component queue map drop async await filter state 
+  //  callback gate filter callback map sentinel publish sort await guard event 
+  //  component scan reducer keep publish tuple sync select throttle ref either 
+  //  fulfilled throttle option result reducer async pipeline scan scan pair await 
+  //  scan hook sync eager filter pending result observer select context guard 
+  //  effect lazy buffer memo reject eager buffer resolve compose lazy pending 
+  //  reject async context transform map scan compose pending merge drop pair 
+  //  queue resolve map effect debounce cache throttle buffer observer effect select 
+  //  merge throttle resolve reject dispatcher zip event filter render eager tuple 
+  //  callback await observer project scan effect buffer zip observer memo result 
+  //  drop debounce zip context gate stream cache reduce throttle fulfilled await 
+  //  result merge subscribe context partition cache render resolve fulfilled resolve merge 
+  //  pipeline gate props invalidate callback scan memo memo pair project handler 
+  //  merge context debounce group eager merge render hook cache reduce map 
+  //  project memoize drop await dispatcher pure await publish guard map observer 
+  //  pure hook result scan select pair hook stream reject cache publish 
+  //  pending sentinel render await debounce merge pipeline handler reduce dispatcher eager 
+  //  context keep queue event pending memoize reject fold partition transform cache 
+  //  queue hook context fold drop zip eager dispatcher keep pending sync 
+  //  pending callback pending eager project component sort option drop debounce project 
+  //  option stream buffer pure option sort queue group fold stream drop 
+  //  map drop map compose map group partition handler drop subscribe throttle 
+  //  pair drop effect queue transform group render invalidate sync fold guard 
+  //  props pipeline hook scan lazy select subscribe group compose map dispatcher 
+  //  compose pipeline drop scan drop tuple dispatcher event pair map resolve 
+  //  ref callback component reduce fulfilled debounce filter render transform async keep 
+  //  callback buffer pair pending sentinel reducer debounce reducer tuple reduce component 
+  //  hook callback eager sentinel callback sort transform stream guard dispatcher hook 
+  //  fulfilled transform transform buffer guard pipeline lazy group fold dispatcher cache 
+  //  handler sentinel await project debounce debounce zip resolve publish guard props 
+  //  ref reducer ref hook ref props lazy group context eager sync 
+  //  reducer eager option async queue pure reducer project project reducer map 
+  //  map memoize group tuple debounce group render buffer hook merge resolve 
+  //  filter dispatcher callback filter lazy async memo memo group resolve render 
+  //  drop group project memo memo option zip ref partition fulfilled memo 
+  //  ref publish dispatcher transform await either component either project buffer pair 
+  //  invalidate filter either select reducer queue sentinel tuple result observer result 
+  //  sync pipeline debounce eager sync partition result hook sync queue scan 
+  //  publish memoize buffer compose map map either keep eager effect scan 
+  //  queue publish guard invalidate pipeline eager async transform reducer
+  */
+})();
+
+// mod-0005 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[5] = {
+    id: 5,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0005';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '243');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  event fold sync stream map subscribe project project render fold stream partition 
+  //  effect drop sync reduce sync select map filter filter result observer 
+  //  project props render effect publish select either cache hook partition sync 
+  //  memoize map handler reject pure reduce keep pipeline transform ref project 
+  //  callback filter pair debounce sort memo callback guard hook reducer filter 
+  //  buffer memoize pipeline drop tuple drop guard project guard memoize pure 
+  //  tuple handler reducer memoize publish pipeline sort queue zip map lazy 
+  //  keep async fulfilled guard reduce observer ref keep zip partition eager 
+  //  ref reducer sentinel dispatcher pending subscribe throttle await dispatcher keep debounce 
+  //  filter sync memoize buffer group gate event throttle sort observer dispatcher 
+  //  gate component handler dispatcher reducer publish sentinel reducer throttle async sync 
+  //  invalidate pair reject queue select render sentinel component result memoize gate 
+  //  context scan drop transform dispatcher throttle group state merge gate component 
+  //  stream reducer fulfilled sentinel state ref transform async fold stream pure 
+  //  component reducer either gate render callback fulfilled event queue hook sort 
+  //  sentinel invalidate result handler reduce observer lazy debounce stream group cache 
+  //  debounce sync ref merge ref merge keep context state keep fulfilled 
+  //  publish sentinel observer filter reject merge dispatcher throttle lazy memo eager 
+  //  pending compose reducer tuple tuple await sentinel gate event await observer 
+  //  pipeline resolve queue select transform context event component dispatcher throttle memoize 
+  //  result await compose fulfilled queue resolve throttle project ref pair await 
+  //  effect async debounce keep reducer throttle reject render hook tuple queue 
+  //  handler ref resolve hook state result async lazy drop either cache 
+  //  observer ref memoize group either publish pure reject sync reducer fulfilled 
+  //  reducer effect stream await lazy fold lazy pure reject tuple reduce 
+  //  reducer stream state sync ref observer lazy group project buffer fulfilled 
+  //  partition tuple sort select zip sentinel pair dispatcher component callback debounce 
+  //  context event option sync queue ref lazy dispatcher pair ref zip 
+  //  publish context merge cache group gate publish select fold scan drop 
+  //  compose eager group render stream publish result state compose gate dispatcher 
+  //  cache sync eager callback debounce scan dispatcher component hook sentinel result 
+  //  result merge either ref debounce compose component select memo props dispatcher 
+  //  hook memo await debounce effect keep partition partition zip partition subscribe 
+  //  sync handler keep eager pipeline pure project project merge fulfilled handler 
+  //  memoize fold throttle reject keep reducer queue context async guard observer 
+  //  component merge sentinel reduce compose pending zip component map buffer handler 
+  //  filter reject state invalidate guard invalidate fulfilled tuple memo observer sort 
+  //  sync publish map eager guard dispatcher invalidate render invalidate sync event 
+  //  subscribe sync lazy fold pair pending project select reducer dispatcher select 
+  //  project debounce callback props handler gate component render map handler compose 
+  //  reduce either result pipeline either props observer resolve pure keep guard 
+  //  context option fulfilled memo gate event fulfilled dispatcher props reject tuple 
+  //  pipeline eager queue buffer pipeline buffer queue fold guard dispatcher compose 
+  //  pure event pending pair subscribe gate compose invalidate pending throttle effect 
+  //  result queue state keep resolve select hook fold result tuple map 
+  //  lazy map cache queue callback option resolve resolve await resolve dispatcher 
+  //  event ref keep handler partition async stream merge handler memo pure 
+  //  ref drop async ref effect drop debounce map component observer guard 
+  //  reject scan lazy buffer gate pending map partition project async tuple 
+  //  invalidate pending gate reducer fold stream reduce guard project fold memoize 
+  //  sort event publish publish event eager sync context group group ref 
+  //  merge pipeline tuple observer sentinel filter invalidate option event props throttle 
+  //  handler partition gate project tuple compose select effect pure zip gate 
+  //  state stream eager props reject state guard reject dispatcher keep partition 
+  //  sentinel fulfilled handler render merge sort filter cache memo state sort 
+  //  sync subscribe fulfilled component throttle pure select pure reject sync sentinel 
+  //  keep eager partition observer render zip option transform subscribe filter handler 
+  //  state fulfilled ref guard eager gate callback async gate buffer callback 
+  //  event buffer fulfilled props merge guard pair state subscribe hook result 
+  //  either lazy await render group either either filter handler merge state 
+  //  render option group await event fulfilled scan drop reducer map subscribe 
+  //  fulfilled dispatcher invalidate reduce sync sort dispatcher fold fulfilled merge transform 
+  //  hook await option sync reduce map project render group debounce async 
+  //  resolve group partition option merge pure eager handler project component map 
+  //  gate invalidate ref partition event project hook hook context memo ref 
+  //  invalidate props event fold fold resolve ref subscribe dispatcher group callback 
+  //  ref pipeline hook effect memoize group transform memo context transform publish 
+  //  dispatcher ref subscribe group component stream sort fulfilled fulfilled drop callback 
+  //  state reject either callback component keep callback pair buffer filter callback 
+  //  event context group state lazy stream pipeline either subscribe zip ref 
+  //  sync buffer debounce compose memo option map compose effect scan hook 
+  //  ref debounce sentinel map select fulfilled select tuple eager throttle queue 
+  //  event lazy compose ref context fulfilled stream reject debounce fold reject 
+  //  sort observer await buffer option partition result sort compose render guard 
+  //  context merge context gate result fulfilled guard event debounce component ref 
+  //  invalidate map fulfilled lazy context compose tuple drop debounce observer sentinel 
+  //  either context queue publish option reducer effect pending reducer option callback 
+  //  drop ref pair pipeline pair fulfilled dispatcher sync gate observer props 
+  //  reject hook throttle either pure buffer memo scan render zip handler 
+  //  memo invalidate zip props context context guard sort group filter handler 
+  //  pair group context reject stream result filter callback sync reducer result 
+  //  await component pure option project reject reducer scan guard map hook 
+  //  resolve drop pending select result callback await lazy queue fold throttle 
+  //  subscribe lazy props throttle queue callback state filter pending memoize filter 
+  //  reducer buffer pending map async effect filter context gate async observer 
+  //  project stream cache ref event render merge memoize group component render 
+  //  filter callback group result props props select ref buffer scan pipeline 
+  //  merge fulfilled select buffer either pipeline tuple eager transform resolve select 
+  //  partition await pending state stream invalidate sync reducer result gate subscribe 
+  //  observer sort fulfilled state tuple fold observer pair stream drop observer 
+  //  queue pure debounce filter hook result callback invalidate sentinel props async 
+  //  component throttle queue event resolve zip sync either hook dispatcher drop 
+  //  project memo reducer scan render sync async pending transform handler tuple 
+  //  reject stream event subscribe either project sort handler zip state compose 
+  //  context compose observer pure resolve keep props keep component props render 
+  //  gate sort zip pending pair sort stream project fold transform callback 
+  //  gate queue lazy pair await project reducer keep reject props pair 
+  //  component stream effect tuple memoize resolve project ref eager publish props 
+  //  memo stream tuple group event buffer context buffer cache option publish 
+  //  transform gate component map queue dispatcher group invalidate invalidate pipeline handler 
+  //  compose handler map debounce compose component project component map fold observer 
+  //  project cache pipeline keep await props gate throttle debounce transform map 
+  //  memo drop transform project filter tuple debounce project cache throttle ref 
+  //  partition pure reduce props memoize pair project effect pipeline effect group 
+  //  handler memoize debounce pending subscribe option state guard project dispatcher hook 
+  //  render filter pure reducer throttle props filter sync sort cache option 
+  //  render observer render render sentinel transform resolve either drop context either 
+  //  pipeline eager invalidate handler partition zip async lazy handler sync merge 
+  //  await buffer stream pipeline callback async guard keep reduce context invalidate 
+  //  drop event sync await publish buffer pipeline tuple transform scan component 
+  //  lazy pending invalidate lazy result gate option option scan event await 
+  //  select await props stream eager merge handler group either callback context 
+  //  keep memoize observer event zip transform partition stream map option keep 
+  //  debounce publish sync fulfilled debounce pair publish select effect state context 
+  //  reduce context cache merge resolve props dispatcher gate publish sort tuple 
+  //  either reduce pending zip memoize ref pipeline handler sort dispatcher merge 
+  //  queue sentinel keep render fold tuple scan reducer tuple render hook 
+  //  context stream option state callback buffer partition queue pipeline render transform 
+  //  either guard ref async drop props reduce memo reduce fulfilled pure 
+  //  lazy fold transform callback queue component drop reject option reduce queue 
+  //  map reducer debounce sort either event invalidate guard gate cache project 
+  //  context context effect filter handler select handler filter reducer state keep 
+  //  keep reducer component group compose sync lazy callback stream tuple lazy 
+  //  pure render either subscribe sync lazy filter eager fold project select 
+  //  fold observer scan sort handler reject render filter callback eager lazy 
+  //  lazy lazy sync option guard pipeline state select merge effect reducer 
+  //  debounce either group option event either memoize state hook merge effect 
+  //  render handler either hook option lazy effect either reducer partition partition 
+  //  gate gate merge hook callback keep component pipeline fulfilled gate tuple 
+  //  cache debounce lazy transform partition partition gate guard fold scan merge 
+  //  drop sentinel async transform context lazy zip filter reducer either group 
+  //  context debounce pure invalidate either props scan eager lazy throttle cache 
+  //  ref drop result state fold lazy fold scan handler filter drop 
+  //  component context map scan lazy sentinel gate sync keep dispatcher buffer 
+  //  project pending dispatcher map either buffer gate handler memo callback pending 
+  //  debounce component sort async tuple pure ref publish handler guard component 
+  //  select memo fold pipeline cache reducer reducer group keep stream component 
+  //  props eager sort fold memoize invalidate observer pure callback either buffer 
+  //  option lazy event debounce sentinel debounce publish queue sentinel invalidate observer 
+  //  debounce render transform async merge subscribe project resolve dispatcher lazy sentinel 
+  //  hook publish invalidate reducer reject option transform props resolve select group 
+  //  component throttle invalidate either guard event invalidate compose zip queue memoize 
+  //  tuple props dispatcher fold buffer fulfilled fulfilled reduce await pending memo 
+  //  resolve scan cache cache stream event memo debounce subscribe callback keep 
+  //  resolve guard dispatcher reject eager queue drop subscribe either result reject 
+  //  pending pure await gate zip resolve handler stream tuple ref pure 
+  //  pending drop project compose hook pending props sort component merge project 
+  //  props dispatcher sentinel observer queue invalidate render partition handler cache project 
+  //  throttle eager tuple effect reduce guard fulfilled stream invalidate compose result 
+  //  resolve group pipeline fulfilled hook stream tuple lazy buffer tuple dispatcher 
+  //  pure publish render handler map guard pair event subscribe group event 
+  //  buffer either reducer pending pure component pending debounce drop pending sync 
+  //  async queue result fulfilled option sync memoize effect handler memo effect 
+  //  memo either effect project result result filter ref buffer context ref 
+  //  throttle gate map event keep either reject observer drop
+  */
+})();
+
+// mod-0006 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[6] = {
+    id: 6,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0006';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '187');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  pipeline gate dispatcher context props buffer transform reduce effect either effect dispatcher 
+  //  sort project callback gate memoize select ref async memoize render cache 
+  //  gate observer sentinel group reduce project partition hook sentinel lazy pending 
+  //  subscribe fold debounce event sentinel project lazy component queue await scan 
+  //  reduce sort scan scan drop stream subscribe sync cache filter publish 
+  //  either reducer dispatcher gate tuple keep either stream sort eager sentinel 
+  //  pending component select handler event debounce handler callback transform fulfilled result 
+  //  await reducer group memoize state pipeline subscribe component async state compose 
+  //  sync effect observer partition pair observer merge merge pair component sentinel 
+  //  props cache fold debounce invalidate project buffer props partition either merge 
+  //  buffer lazy queue async memoize pipeline props ref resolve group dispatcher 
+  //  lazy partition sentinel lazy reducer drop buffer tuple cache publish filter 
+  //  memo handler event sentinel callback subscribe invalidate component lazy eager queue 
+  //  debounce debounce observer reject pair zip hook merge resolve async tuple 
+  //  reducer filter pending async await render context transform invalidate sort callback 
+  //  stream hook effect sort pair pure queue callback memoize reducer handler 
+  //  transform filter handler context async handler queue compose group filter effect 
+  //  zip reject buffer guard reducer event queue publish hook drop effect 
+  //  reduce reject dispatcher filter memo result stream gate sentinel map fold 
+  //  handler stream pair reject ref ref sort cache eager debounce lazy 
+  //  cache render partition debounce handler async memo transform pending option memo 
+  //  observer sort effect buffer context select state zip resolve queue callback 
+  //  ref state throttle group drop project fold publish map lazy memoize 
+  //  memoize pipeline guard sync resolve partition await lazy eager stream compose 
+  //  effect reject debounce memoize transform invalidate reject await scan either async 
+  //  publish zip pure either callback compose props handler pair ref stream 
+  //  props merge resolve result handler guard project pair filter eager buffer 
+  //  subscribe props pure sync lazy state event zip event hook reducer 
+  //  select buffer drop zip throttle result pipeline buffer merge tuple option 
+  //  subscribe keep dispatcher dispatcher component keep effect group sentinel stream async 
+  //  partition queue eager ref memoize context buffer render merge resolve pair 
+  //  subscribe sentinel gate component async either transform group throttle event resolve 
+  //  callback transform result state await dispatcher fold project merge reducer select 
+  //  effect fold map handler merge context publish eager result state pair 
+  //  queue scan cache handler group reduce reject buffer dispatcher invalidate guard 
+  //  reject state lazy component fold render cache handler eager event reducer 
+  //  debounce drop reducer lazy state partition buffer memo component props throttle 
+  //  eager filter callback buffer component keep invalidate async lazy select result 
+  //  invalidate merge reducer component props guard event handler group memo partition 
+  //  async effect await guard result pure fold scan project compose lazy 
+  //  stream lazy pair drop option scan effect sync pending reject result 
+  //  group either keep render observer option throttle effect transform props eager 
+  //  stream memo sort ref gate scan dispatcher state merge memoize pending 
+  //  pair eager ref event subscribe resolve component sentinel pair filter props 
+  //  pending hook cache transform observer pure gate compose select debounce drop 
+  //  pair group sort observer observer handler component keep pair context memo 
+  //  scan fold resolve dispatcher context fulfilled handler scan throttle reject sort 
+  //  buffer tuple effect guard fold handler hook handler group ref tuple 
+  //  merge transform debounce pure project subscribe gate lazy pair event fulfilled 
+  //  state queue keep zip filter pair callback pending debounce context async 
+  //  filter callback reducer guard either stream buffer resolve sentinel buffer fold 
+  //  await callback map drop publish memoize option select context event memo 
+  //  callback pending memo lazy eager pending pending sort filter memo project 
+  //  sync callback partition option memoize async pair either merge reject partition 
+  //  throttle select queue context state dispatcher either project props project observer 
+  //  context reduce merge component hook either buffer project callback resolve invalidate 
+  //  buffer buffer reducer guard pending scan group event cache sync event 
+  //  map queue cache invalidate state callback effect ref async project lazy 
+  //  component pipeline merge queue buffer sync either effect drop gate fulfilled 
+  //  buffer reduce select reduce pure reducer tuple drop group gate pipeline 
+  //  pending pair render sync resolve callback cache group stream map await 
+  //  memo zip observer partition event sync guard ref callback keep publish 
+  //  select effect context sync either map sort render map lazy queue 
+  //  debounce state reducer queue merge merge subscribe map state cache reduce 
+  //  stream state partition merge ref select throttle await result group group 
+  //  context guard queue observer callback cache publish handler dispatcher debounce render 
+  //  fold option ref throttle render eager handler state props pure callback 
+  //  invalidate tuple pending pipeline sentinel resolve queue fulfilled group context reject 
+  //  drop partition zip transform lazy fulfilled compose resolve render keep reducer 
+  //  reject zip pure memo publish reduce render resolve memoize invalidate throttle 
+  //  sync callback pair fulfilled component props sync ref effect filter hook 
+  //  zip subscribe compose group hook keep option option ref callback drop 
+  //  fulfilled reject invalidate handler memo dispatcher callback pure stream group context 
+  //  queue cache handler zip keep await result option filter reducer select 
+  //  pending dispatcher drop transform throttle async pair fold transform props reducer 
+  //  debounce filter eager scan handler map render subscribe sentinel observer async 
+  //  subscribe group reject cache memoize pure option sort project throttle hook 
+  //  state map result pair resolve scan pending fold resolve stream reducer 
+  //  async invalidate queue publish eager props map keep pending result select 
+  //  queue await subscribe fulfilled reject hook buffer lazy tuple pipeline fulfilled 
+  //  async option group callback debounce project map pipeline invalidate cache handler 
+  //  memo invalidate async lazy stream transform component keep lazy sort transform 
+  //  result option tuple context select render lazy throttle await await merge 
+  //  pipeline dispatcher sort memoize sentinel result either throttle debounce reject state 
+  //  either keep queue scan merge sort callback async memo zip group 
+  //  filter keep eager ref await state project project context throttle compose 
+  //  eager effect fulfilled async merge resolve pending stream reject await dispatcher 
+  //  memo effect cache project pending option event event state sentinel buffer 
+  //  eager pair queue gate await pipeline sentinel context group reduce reject 
+  //  project debounce partition stream merge observer state event memoize reduce pure 
+  //  stream await event merge gate component debounce invalidate pending render guard 
+  //  keep handler memo merge drop state eager component tuple partition reducer 
+  //  publish reducer scan scan fold reducer fulfilled publish memo partition resolve 
+  //  pure keep keep context guard lazy component guard buffer queue reduce 
+  //  fulfilled eager lazy either compose project drop fulfilled handler effect effect 
+  //  ref debounce invalidate transform partition queue handler drop handler effect debounce 
+  //  zip hook resolve zip sort publish props queue hook gate map 
+  //  scan select reject guard filter render map pair project debounce fulfilled 
+  //  component effect select filter invalidate reject sentinel cache handler resolve state 
+  //  fold async publish memo callback sync memoize props pipeline async reducer 
+  //  reduce resolve pipeline keep option publish partition event option scan memoize 
+  //  publish subscribe tuple reduce sync zip pair await transform callback render 
+  //  pending merge gate result map state drop sort memoize merge pure 
+  //  render resolve pending select map effect state zip pending pair callback 
+  //  publish subscribe pure buffer compose state either invalidate dispatcher memoize props 
+  //  lazy pair pipeline cache pending filter fold lazy pipeline compose map 
+  //  sentinel effect stream reject buffer gate observer buffer render reduce await 
+  //  event context lazy drop result memo pipeline compose pure memoize resolve 
+  //  pair handler reduce buffer sentinel select subscribe subscribe pure pending partition 
+  //  reject pair event group gate effect zip async sort sort drop 
+  //  compose zip select reduce callback sync map event async resolve fold 
+  //  scan merge dispatcher throttle invalidate memoize dispatcher debounce pair buffer partition 
+  //  select callback either async memo merge await observer option dispatcher cache 
+  //  sort effect async reduce tuple handler throttle tuple cache either async 
+  //  reducer fold event async map buffer throttle component eager props eager 
+  //  tuple filter invalidate buffer throttle guard pure reduce reducer dispatcher eager 
+  //  pair dispatcher guard filter reduce effect option scan render context merge 
+  //  eager dispatcher render subscribe result invalidate handler gate result sort state 
+  //  project sort resolve async async result transform option memoize result eager 
+  //  callback reducer transform option pair sort merge scan lazy render observer 
+  //  reduce handler sentinel pair transform project reject handler buffer queue project 
+  //  tuple queue filter component fulfilled ref invalidate pair component subscribe dispatcher 
+  //  callback effect tuple fold effect filter transform reject handler sentinel either 
+  //  memoize publish tuple reject props fulfilled async eager effect tuple memoize 
+  //  sort observer select pair pending handler fold state context transform render 
+  //  event partition render lazy result memo drop pure props state merge 
+  //  reducer tuple callback component sort sync ref pair guard sync stream 
+  //  publish subscribe handler merge memo resolve select resolve reduce map context 
+  //  pure pending pair sync throttle sync render pure reduce hook event 
+  //  effect hook subscribe async pending ref callback buffer guard state publish 
+  //  pending dispatcher partition sentinel scan throttle sentinel pure observer guard reducer 
+  //  sort option merge component zip publish lazy memoize invalidate event map 
+  //  sync queue transform compose render pending queue reduce buffer keep keep 
+  //  fold ref ref effect drop option fulfilled memoize event render callback 
+  //  cache effect pipeline either option pair gate result buffer tuple memo 
+  //  guard reducer observer select stream select drop filter project partition buffer 
+  //  filter component fold reduce event eager component cache debounce tuple transform 
+  //  either cache await reduce render gate stream partition zip async reducer 
+  //  memo reducer component transform pending project invalidate memoize either filter sentinel 
+  //  result async effect hook await await partition hook sentinel pair pair 
+  //  option queue context await cache pure group invalidate pipeline project resolve 
+  //  sort either filter compose keep handler select pair select project fold 
+  //  sort resolve callback throttle state sort reduce stream render gate props 
+  //  memo await async memoize fulfilled render map select tuple memoize resolve 
+  //  invalidate tuple component memo dispatcher filter state fold filter compose pending 
+  //  props scan buffer tuple gate debounce transform event reducer reducer debounce 
+  //  pending reject stream either scan either reject lazy pair gate map 
+  //  pending transform ref sentinel context map reduce event cache component merge 
+  //  observer lazy reject tuple handler fulfilled compose reject pipeline lazy sort 
+  //  cache cache keep queue await select tuple pending render transform filter 
+  //  reject cache pipeline lazy reduce invalidate stream state resolve gate throttle 
+  //  keep drop compose reduce compose reduce debounce stream filter keep map 
+  //  reject reducer pure buffer pending zip subscribe context cache pipeline keep 
+  //  either merge option memo eager partition handler either observer transform scan 
+  //  filter throttle effect resolve await publish debounce sort select subscribe transform 
+  //  hook fulfilled
+  */
+})();
+
+// mod-0007 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[7] = {
+    id: 7,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0007';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '298');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  observer async filter memo observer dispatcher context handler resolve state effect queue 
+  //  select reducer guard hook invalidate gate either pair observer compose render 
+  //  handler dispatcher project publish throttle compose throttle filter fold await event 
+  //  callback subscribe either publish event subscribe queue queue props context state 
+  //  memoize hook fold context pipeline project partition resolve either pipeline handler 
+  //  ref props props gate component keep reducer subscribe callback render fulfilled 
+  //  dispatcher either keep pipeline lazy pending either queue publish invalidate await 
+  //  pure guard tuple tuple dispatcher transform fulfilled reducer fulfilled resolve invalidate 
+  //  reducer map fulfilled state resolve pure debounce cache cache callback pending 
+  //  dispatcher option tuple buffer effect sort either publish invalidate effect compose 
+  //  reduce cache sync await transform ref event reduce queue result eager 
+  //  either reducer observer handler result throttle callback gate pure scan memoize 
+  //  either dispatcher fulfilled either queue project memo debounce scan option state 
+  //  partition observer hook context compose buffer subscribe zip invalidate invalidate stream 
+  //  fold pure zip drop resolve observer throttle resolve pipeline resolve throttle 
+  //  publish context merge tuple merge memo lazy transform scan either debounce 
+  //  await callback lazy state component fold fold sentinel reject hook pure 
+  //  pipeline hook debounce transform await ref sentinel fulfilled render throttle publish 
+  //  context scan select select effect observer state group scan select tuple 
+  //  project queue handler debounce drop callback hook pair observer hook event 
+  //  memoize resolve merge tuple tuple async reduce resolve tuple select sort 
+  //  project props result queue subscribe scan drop project handler merge transform 
+  //  throttle sort observer sync reject pipeline lazy throttle debounce buffer effect 
+  //  async stream hook callback async fulfilled memo component zip hook filter 
+  //  filter resolve reduce event debounce scan keep memoize publish memo buffer 
+  //  memo option effect filter drop invalidate filter zip either select publish 
+  //  pair resolve stream ref sync callback pending pair throttle throttle dispatcher 
+  //  debounce hook result eager reject keep ref eager props memo tuple 
+  //  context merge map throttle publish sync gate handler queue keep sentinel 
+  //  drop throttle component publish partition pure pending observer subscribe pair event 
+  //  filter reject option fold drop context pair throttle keep stream eager 
+  //  component callback pending reducer scan eager group callback buffer project pipeline 
+  //  tuple resolve zip throttle publish memo resolve debounce pure pipeline zip 
+  //  pair props context merge merge transform observer props compose merge component 
+  //  pipeline buffer callback eager reject option effect stream transform guard invalidate 
+  //  scan pending zip sync hook pair observer eager option map transform 
+  //  pipeline ref drop reduce lazy debounce keep subscribe sort compose render 
+  //  component zip buffer invalidate hook filter invalidate filter tuple throttle dispatcher 
+  //  handler eager map either effect drop keep pending pipeline either option 
+  //  select render partition option publish pipeline either pipeline stream component memoize 
+  //  zip transform gate handler observer invalidate eager memo either callback state 
+  //  sort sync pipeline effect map throttle pair either debounce stream observer 
+  //  transform props guard dispatcher invalidate props eager option transform option fulfilled 
+  //  guard memo sentinel throttle lazy cache either sort resolve fulfilled zip 
+  //  effect observer dispatcher resolve stream component observer memoize project filter tuple 
+  //  partition async map handler merge keep event ref transform result props 
+  //  throttle reduce memo drop reduce keep context map resolve partition eager 
+  //  debounce select pipeline subscribe await event reject handler invalidate render drop 
+  //  merge ref publish keep group map cache compose select project memo 
+  //  pair debounce component gate throttle select async event dispatcher memo pipeline 
+  //  event component tuple props debounce lazy state guard handler partition guard 
+  //  await fold debounce hook async transform hook lazy context stream reduce 
+  //  observer pure merge group props lazy buffer reducer option ref result 
+  //  pipeline transform gate compose filter tuple guard guard select hook eager 
+  //  event keep memo dispatcher state queue memoize filter sort drop resolve 
+  //  effect debounce effect zip publish transform observer dispatcher compose queue subscribe 
+  //  keep hook invalidate memo sort async compose reduce observer subscribe result 
+  //  result handler debounce sort transform map filter gate component tuple memo 
+  //  lazy ref ref select partition pair effect stream ref resolve memoize 
+  //  buffer dispatcher memoize buffer eager keep lazy scan throttle throttle keep 
+  //  resolve queue invalidate queue event hook option stream either tuple scan 
+  //  dispatcher tuple reduce pair cache sort compose props subscribe dispatcher fulfilled 
+  //  group pending tuple publish observer publish resolve buffer gate scan filter 
+  //  sentinel scan sync callback stream project state partition reducer compose stream 
+  //  eager event group publish gate callback tuple fulfilled reject sort pure 
+  //  observer memo await filter fulfilled map throttle memoize observer lazy component 
+  //  publish callback pending await partition pipeline dispatcher pending memoize pending memoize 
+  //  eager buffer result subscribe project option compose render lazy either select 
+  //  render tuple pure sentinel sort reduce transform pair publish pair fulfilled 
+  //  project sort pending pending filter props throttle reduce state fold pipeline 
+  //  callback gate publish transform pending cache handler debounce guard observer reducer 
+  //  throttle pure state observer partition either sentinel effect pure compose state 
+  //  await callback eager sort buffer reduce context memoize drop component pure 
+  //  map throttle reject pure option pipeline sync await resolve pipeline filter 
+  //  pair render lazy invalidate sentinel guard queue invalidate tuple publish component 
+  //  pending observer project option keep callback gate option cache transform map 
+  //  queue effect map invalidate invalidate await reducer compose memo pair subscribe 
+  //  buffer dispatcher props fold drop zip context pipeline async component pair 
+  //  component await guard fold reduce fulfilled component subscribe keep hook option 
+  //  reject result stream handler dispatcher project fold sync pure merge stream 
+  //  pending memo pipeline resolve drop partition partition hook gate gate fulfilled 
+  //  partition reducer observer component render reject observer pure eager memo result 
+  //  compose drop context reduce gate scan sort reject invalidate filter callback 
+  //  eager partition drop result throttle buffer handler subscribe component gate debounce 
+  //  event async ref render reducer handler context sort map reduce observer 
+  //  tuple invalidate map guard filter component gate dispatcher reducer project resolve 
+  //  fold drop cache sentinel ref guard observer publish component await pending 
+  //  transform lazy eager ref group stream effect dispatcher guard sort state 
+  //  map memo throttle sync eager group dispatcher filter reducer callback fulfilled 
+  //  memoize reducer dispatcher callback ref render compose component event state async 
+  //  throttle sentinel guard fulfilled drop pipeline filter dispatcher handler group render 
+  //  hook await pending publish compose fulfilled event props queue either effect 
+  //  transform filter project ref stream reject hook map event fold ref 
+  //  invalidate zip memoize pipeline invalidate drop effect filter render queue guard 
+  //  sync hook scan compose tuple subscribe select partition fulfilled state stream 
+  //  result zip buffer group keep effect keep memo result component tuple 
+  //  stream buffer group reduce async pair keep select throttle memo partition 
+  //  select group scan reducer pending pure merge transform scan transform async 
+  //  await invalidate reject reduce transform pending render context pipeline pair pair 
+  //  guard pending throttle compose debounce scan async handler component project invalidate 
+  //  effect throttle result fulfilled sort select pipeline hook pair debounce pair 
+  //  await cache dispatcher sentinel sentinel event props fulfilled queue zip component 
+  //  either observer memoize resolve zip debounce component keep sort reduce publish 
+  //  fold project throttle reject debounce handler guard state pure project buffer 
+  //  eager pending invalidate memo drop fulfilled filter callback async await tuple 
+  //  project tuple group publish guard gate buffer keep buffer resolve reducer 
+  //  stream sort component await merge dispatcher state transform fulfilled scan tuple 
+  //  stream sync fold debounce context group throttle scan pair merge resolve 
+  //  stream handler props render publish context resolve subscribe reduce transform transform 
+  //  context option zip reducer sync transform ref state component dispatcher zip 
+  //  dispatcher await drop project resolve select memo sync handler effect memo 
+  //  reduce result await reducer render reject select throttle select sort ref 
+  //  compose await pair cache context publish zip pipeline project buffer component 
+  //  select select subscribe pure context either invalidate fulfilled fold merge group 
+  //  select sentinel reject resolve fold eager sync keep invalidate zip dispatcher 
+  //  dispatcher keep either render group sort project drop pure props context 
+  //  resolve eager either observer partition publish eager fulfilled sort filter gate 
+  //  cache async effect buffer state await pending buffer group drop drop 
+  //  subscribe memo map memo result transform props ref memoize sentinel fold 
+  //  reduce guard publish select observer filter cache merge throttle render reject 
+  //  hook throttle handler queue fold keep dispatcher map compose buffer props 
+  //  context scan component publish observer publish cache cache transform sync props 
+  //  observer option select fold memoize dispatcher await state memoize pipeline either 
+  //  drop compose resolve memo select queue gate filter callback reduce state 
+  //  observer project await scan memo lazy pair option partition project hook 
+  //  keep subscribe await async reject buffer sort state memo either callback 
+  //  eager partition reducer invalidate project gate pair reducer transform zip either 
+  //  queue filter callback reducer callback compose subscribe resolve fulfilled sort reduce 
+  //  pipeline effect option fold event observer zip publish async fulfilled compose 
+  //  invalidate scan zip reduce gate resolve observer result handler keep callback 
+  //  component component pure await sort effect reducer pipeline throttle compose buffer 
+  //  sync partition render callback subscribe component sentinel option group reject stream 
+  //  observer event render select reducer state eager keep async publish project 
+  //  queue event keep guard throttle stream result invalidate merge map throttle 
+  //  pending publish ref stream map partition callback lazy publish pending map 
+  //  component sort keep select throttle lazy zip either memo async callback 
+  //  props subscribe buffer await queue guard reduce dispatcher publish fulfilled effect 
+  //  async async pipeline sort select await cache eager reduce result subscribe 
+  //  compose throttle sentinel async props map resolve tuple handler result render 
+  //  async async lazy sort effect state gate subscribe filter render callback 
+  //  debounce callback map group component lazy debounce buffer partition pending either 
+  //  buffer reject pipeline sort component buffer reducer handler buffer result guard 
+  //  invalidate select project async props dispatcher zip context observer invalidate callback 
+  //  cache throttle queue pair await context partition component effect context stream 
+  //  ref publish invalidate group debounce eager debounce zip callback resolve observer 
+  //  partition publish effect subscribe pending effect invalidate reject observer queue lazy 
+  //  reduce scan context drop reducer pure fulfilled result result state queue 
+  //  publish gate invalidate stream stream project throttle sync partition partition render 
+  //  stream sort reject option lazy async buffer sort fulfilled sort queue 
+  //  await context ref effect buffer publish group hook handler await invalidate 
+  //  sync dispatcher merge merge either pipeline debounce transform reducer either observer 
+  //  sort sort subscribe event either
+  */
+})();
+
+// mod-0008 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[8] = {
+    id: 8,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0008';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '93');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  keep handler map result reduce component sort filter invalidate props event subscribe 
+  //  sort callback stream buffer merge queue merge props invalidate gate cache 
+  //  sentinel context props zip pending resolve context hook sync effect pipeline 
+  //  handler memoize eager select either reduce dispatcher filter tuple scan throttle 
+  //  dispatcher reject partition map transform group pair buffer keep invalidate scan 
+  //  render memo transform eager reducer pipeline keep guard reject map sentinel 
+  //  memoize gate memo result sort fulfilled gate publish effect eager lazy 
+  //  reject option partition pending await either project callback project handler group 
+  //  scan scan component pending await merge reduce context project async pending 
+  //  fold component memoize publish drop stream either select queue reducer merge 
+  //  event ref transform state guard compose tuple effect sort throttle handler 
+  //  tuple keep memoize dispatcher hook either lazy sync transform reduce either 
+  //  await filter pending pure callback reduce scan buffer memo event throttle 
+  //  callback event project ref scan cache invalidate option sentinel await invalidate 
+  //  drop queue event drop option observer ref invalidate component group partition 
+  //  sentinel dispatcher reject fulfilled reject memoize pending state reject reject hook 
+  //  eager state project fold memoize zip pending eager sort queue invalidate 
+  //  state reducer dispatcher pure throttle throttle cache callback dispatcher pipeline reducer 
+  //  gate guard dispatcher project debounce transform context subscribe throttle render partition 
+  //  memo memoize event sort ref publish reduce option effect context transform 
+  //  resolve result throttle transform publish callback event group stream zip sync 
+  //  memo pending handler state stream event component context dispatcher await publish 
+  //  sort state sort await publish hook filter gate transform throttle event 
+  //  hook resolve resolve invalidate transform observer async reject pure throttle async 
+  //  debounce select pure buffer render invalidate partition partition result hook option 
+  //  drop filter compose eager partition guard reduce lazy map pure tuple 
+  //  guard ref callback fulfilled publish callback reject dispatcher memoize handler handler 
+  //  sort filter debounce component filter group cache pure filter reject stream 
+  //  queue pure drop await state gate state filter tuple sentinel callback 
+  //  filter tuple sort render guard reduce select reject sync resolve drop 
+  //  group group sort filter pure context resolve memoize stream partition buffer 
+  //  context sentinel context throttle result buffer throttle pending ref either hook 
+  //  callback cache drop result hook resolve scan render dispatcher memoize zip 
+  //  select either pure transform fold select ref zip either group cache 
+  //  pure scan compose context invalidate debounce merge gate sentinel filter effect 
+  //  event context render tuple publish handler transform stream result filter debounce 
+  //  project transform pending state keep filter pipeline gate keep sentinel pure 
+  //  debounce pending memo reducer resolve resolve event guard dispatcher reducer project 
+  //  async publish pipeline throttle fold publish filter event props reject cache 
+  //  project compose ref debounce partition tuple resolve scan fold fold filter 
+  //  context memoize project compose event either event event async project subscribe 
+  //  async scan lazy pair merge guard filter map subscribe hook reject 
+  //  state tuple filter ref queue ref state project either gate result 
+  //  memoize state filter resolve scan queue scan gate props render pure 
+  //  state debounce lazy pair handler partition memo render resolve handler sentinel 
+  //  buffer invalidate props result lazy render await option render resolve compose 
+  //  pure state memoize context fold project fold select context buffer tuple 
+  //  memoize either option debounce tuple zip reducer merge hook zip queue 
+  //  sync invalidate result reduce hook project keep option event tuple memoize 
+  //  result zip debounce tuple fold async pending async pending observer merge 
+  //  drop handler transform invalidate result reduce sort buffer memoize queue zip 
+  //  observer hook dispatcher reject result ref context publish sentinel debounce keep 
+  //  handler render pending partition effect render debounce fulfilled tuple await queue 
+  //  either subscribe scan fold pair memo pure publish stream scan group 
+  //  fulfilled debounce buffer sync select resolve project async guard props memo 
+  //  component option fulfilled cache pipeline debounce ref event lazy fold keep 
+  //  reject cache transform queue render hook tuple resolve render sort pipeline 
+  //  subscribe pending gate keep invalidate partition cache subscribe props subscribe lazy 
+  //  sort invalidate state transform event transform zip keep queue component compose 
+  //  sentinel throttle eager reducer reject reduce stream subscribe reject publish props 
+  //  hook component compose observer effect queue reject fulfilled ref gate zip 
+  //  select transform map reducer pipeline keep async pure filter tuple pure 
+  //  cache memo subscribe handler scan lazy project project event sentinel props 
+  //  throttle result reducer reject eager reducer ref drop scan sentinel reduce 
+  //  reducer subscribe fulfilled group pair reject sync context reduce throttle select 
+  //  async gate resolve effect fold result subscribe project memo guard cache 
+  //  eager component fulfilled context result select subscribe debounce eager drop callback 
+  //  partition sync option transform merge sync reduce either resolve drop guard 
+  //  result reject hook observer dispatcher callback memoize observer props props zip 
+  //  result memoize memoize sync merge queue callback eager merge lazy fold 
+  //  await dispatcher buffer callback subscribe reduce zip select props reducer drop 
+  //  guard state pure effect eager reducer sync compose resolve ref tuple 
+  //  reducer effect memoize zip props reduce zip zip sync memo eager 
+  //  pipeline event sort option tuple debounce observer publish group component tuple 
+  //  stream publish resolve keep cache reducer group effect reject component buffer 
+  //  select transform pipeline pair publish keep compose select context fulfilled pair 
+  //  callback map effect await observer sync select handler fulfilled subscribe scan 
+  //  render component scan props reduce publish throttle subscribe resolve stream guard 
+  //  await transform throttle sort scan effect component callback debounce keep option 
+  //  reduce hook reduce partition result scan transform component sentinel drop pure 
+  //  result throttle await drop eager memoize ref stream sentinel partition tuple 
+  //  dispatcher memo async option component pair scan hook compose ref observer 
+  //  merge dispatcher guard dispatcher async observer reduce pure stream render zip 
+  //  either reduce async keep render pipeline event drop sync throttle lazy 
+  //  event sentinel reject reject eager project option filter event async memo 
+  //  buffer reject async option sort sync context sort component component filter 
+  //  guard sync pipeline pair callback dispatcher pair select dispatcher fulfilled handler 
+  //  debounce async reduce sync sync keep fold pure sync publish transform 
+  //  lazy state eager pure component select effect cache eager await effect 
+  //  component sync state map buffer memoize map gate fulfilled either partition 
+  //  filter callback queue handler select group fold render fold props sentinel 
+  //  dispatcher invalidate invalidate dispatcher async option invalidate subscribe dispatcher publish reduce 
+  //  memo sync resolve transform hook memo resolve async fulfilled map memoize 
+  //  await throttle context drop zip component queue fold merge await sentinel 
+  //  props callback throttle merge sort fold debounce dispatcher throttle drop transform 
+  //  invalidate gate debounce group group component throttle context merge pair async 
+  //  reject merge compose async project throttle debounce event sentinel sentinel resolve 
+  //  publish lazy fulfilled compose eager project drop debounce sync tuple lazy 
+  //  subscribe tuple hook guard compose guard debounce map compose sync props 
+  //  pure reject merge publish cache handler guard lazy component memo partition 
+  //  merge debounce result debounce hook sync pending subscribe context zip props 
+  //  debounce observer reject pure async hook sentinel throttle cache resolve sync 
+  //  option memo sync gate result pure effect zip dispatcher context queue 
+  //  subscribe fulfilled callback memo buffer event either throttle throttle component guard 
+  //  callback either publish tuple transform select async keep cache memoize lazy 
+  //  transform scan filter result sentinel sync memo project callback result drop 
+  //  eager observer observer render debounce effect sync partition hook select compose 
+  //  buffer hook dispatcher queue reduce pure resolve pure reducer debounce tuple 
+  //  invalidate keep reducer scan subscribe sort fulfilled transform filter hook callback 
+  //  subscribe async resolve group merge sentinel sentinel memo component guard resolve 
+  //  reduce either async result invalidate sort pure lazy lazy cache cache 
+  //  debounce scan dispatcher resolve queue lazy sync hook lazy map drop 
+  //  either stream eager effect context async context state stream sort buffer 
+  //  buffer map context await invalidate throttle render subscribe either filter throttle 
+  //  pending eager callback effect pure hook async render memo context ref 
+  //  scan keep zip state effect either result fulfilled context scan callback 
+  //  throttle lazy filter effect either debounce subscribe tuple project effect group 
+  //  partition callback memoize hook handler filter group effect lazy context memoize 
+  //  transform props group callback eager effect fold cache pair reject compose 
+  //  context throttle render effect resolve reject debounce tuple merge stream publish 
+  //  cache render map invalidate reduce fulfilled reduce drop render debounce gate 
+  //  map either fold debounce subscribe partition either sync state ref observer 
+  //  select async async fold stream throttle ref drop reject render pending 
+  //  effect callback sentinel observer dispatcher queue eager callback context reject throttle 
+  //  callback reduce reduce throttle tuple buffer sort fulfilled reducer handler cache 
+  //  sentinel component effect callback queue scan dispatcher group gate partition zip 
+  //  fulfilled async render result filter subscribe option publish sort transform fulfilled 
+  //  merge fold gate project throttle either await invalidate observer pipeline select 
+  //  tuple subscribe queue merge props reducer result keep props buffer event 
+  //  zip props option zip subscribe effect group group pure fulfilled option 
+  //  context eager pending await lazy sentinel fulfilled pure merge keep observer 
+  //  scan memoize lazy reject memo keep fold group zip observer buffer 
+  //  keep reject async option memo observer component fulfilled zip effect callback 
+  //  guard project buffer filter context map option effect merge invalidate zip 
+  //  await throttle invalidate either async reduce sentinel handler throttle group map 
+  //  sort eager hook map pure merge render stream option throttle sync 
+  //  project ref publish component props lazy merge either await component event 
+  //  observer project effect reduce stream tuple pure sentinel invalidate throttle compose 
+  //  debounce throttle gate fold result keep reducer memo resolve eager throttle 
+  //  reducer invalidate fulfilled buffer option scan reducer memo async tuple resolve 
+  //  stream guard option queue project scan select cache sync zip hook 
+  //  cache sync ref group stream pending partition await memo map pure 
+  //  map state option subscribe dispatcher props transform result event eager invalidate 
+  //  await await memoize keep ref fold tuple state ref compose scan 
+  //  debounce merge memoize memo merge component handler eager await state resolve 
+  //  subscribe filter filter reduce sort pending fulfilled reducer keep fold state 
+  //  keep merge fold lazy reject reducer debounce subscribe pair reject merge 
+  //  memoize map either drop option props effect reducer queue await ref 
+  //  option dispatcher lazy pending option cache scan map eager handler cache 
+  //  observer map transform hook drop reducer debounce buffer resolve pipeline pair 
+  //  fold queue cache stream sort buffer props invalidate filter compose ref 
+  //  scan component event scan drop state sentinel scan option filter group 
+  //  reject callback ref component pending stream context buffer fulfilled compose zip 
+  //  eager partition context merge subscribe pure throttle reducer group cache memoize 
+  //  hook observer debounce
+  */
+})();
+
+// mod-0009 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[9] = {
+    id: 9,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0009';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '295');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  ref select zip async state map reducer group pure callback buffer fulfilled 
+  //  tuple await context publish subscribe project fulfilled async subscribe cache render 
+  //  pure group project await memo props option await map option reduce 
+  //  sync transform lazy event gate pending subscribe compose pure map pending 
+  //  option result gate resolve scan compose transform publish pure effect reducer 
+  //  drop async context buffer result partition pending reduce context reject resolve 
+  //  render tuple project stream hook await scan hook ref fulfilled partition 
+  //  memo render buffer pending effect resolve publish pipeline async pair stream 
+  //  project either ref memo throttle filter partition sentinel queue compose effect 
+  //  callback pipeline select tuple pure select fold scan await publish compose 
+  //  await fold event effect gate drop props dispatcher queue fold sort 
+  //  throttle context merge observer filter merge callback invalidate resolve await partition 
+  //  handler sort sentinel handler buffer await lazy effect effect buffer keep 
+  //  effect scan context lazy sync resolve component either sort observer event 
+  //  callback reject partition invalidate queue group fold scan dispatcher cache reducer 
+  //  transform map fold event await sync context subscribe context fulfilled select 
+  //  props reduce option partition queue group pipeline render fold await stream 
+  //  queue dispatcher observer context event fold await effect callback reduce reducer 
+  //  group eager observer option async resolve pair queue reduce publish either 
+  //  reduce memoize debounce await filter ref guard project group group scan 
+  //  buffer reject sync compose render pure filter option keep observer async 
+  //  map filter zip guard sort pure partition select scan reduce pending 
+  //  map ref reduce guard memo subscribe fold reject callback project queue 
+  //  resolve lazy either guard drop scan lazy event either effect pure 
+  //  reduce async merge eager pipeline pipeline publish project hook scan group 
+  //  transform invalidate pipeline resolve scan stream guard result callback zip render 
+  //  memo callback project result tuple keep dispatcher transform component sync option 
+  //  either component compose select sync fulfilled map guard ref await sync 
+  //  gate async filter dispatcher queue publish reduce select guard option debounce 
+  //  drop observer memo keep invalidate either lazy callback pure callback context 
+  //  await debounce publish async option throttle pipeline component eager publish queue 
+  //  memoize tuple queue option buffer callback sort reducer component event tuple 
+  //  lazy lazy option eager guard compose component sentinel tuple merge context 
+  //  pair project result effect select map handler transform dispatcher async lazy 
+  //  sync filter props pair tuple tuple reject partition memo transform event 
+  //  state project async context effect reducer render result sentinel project reduce 
+  //  pure observer throttle context props guard fulfilled pair eager zip render 
+  //  pair zip subscribe observer event invalidate effect publish queue publish reducer 
+  //  pair invalidate keep resolve buffer select callback map cache memo queue 
+  //  lazy publish either async await project handler select group event pair 
+  //  context stream sync props pipeline pair scan reject option publish filter 
+  //  async resolve zip debounce pending sync cache debounce pair subscribe pending 
+  //  context reject invalidate invalidate merge guard cache observer render select lazy 
+  //  props debounce merge await memoize sort invalidate drop subscribe queue ref 
+  //  tuple sort reducer callback lazy event pipeline queue resolve observer pair 
+  //  event partition ref merge pipeline zip map eager project dispatcher callback 
+  //  drop publish reduce reducer select ref map hook guard group event 
+  //  gate pure queue cache partition guard gate transform callback partition effect 
+  //  filter transform either effect scan project observer zip group pipeline event 
+  //  await dispatcher stream event pure sentinel pending component pending filter filter 
+  //  render callback gate context pipeline lazy stream merge effect merge result 
+  //  transform buffer memo sync async merge map async map map reduce 
+  //  fold memoize scan pure sync sentinel partition sort reject drop cache 
+  //  fulfilled memoize reduce pure queue sort subscribe handler gate publish hook 
+  //  queue drop reducer eager fulfilled await cache pure scan select compose 
+  //  fulfilled reducer reducer compose tuple reducer sentinel select debounce tuple hook 
+  //  async sync resolve reduce compose subscribe merge cache transform reduce throttle 
+  //  reducer state zip invalidate async reducer either cache either project reduce 
+  //  sentinel eager option publish result hook effect props memoize map sync 
+  //  async sync memo component memo pipeline effect scan await either queue 
+  //  guard guard sync fulfilled async props project sentinel render ref guard 
+  //  props state gate resolve debounce async handler await pure invalidate sync 
+  //  fold effect either drop sentinel component filter queue group keep pair 
+  //  ref option compose partition project invalidate keep guard reject partition buffer 
+  //  memoize effect render drop pair filter pair reduce either compose throttle 
+  //  dispatcher option fold map memo buffer partition dispatcher resolve ref debounce 
+  //  fulfilled handler group fold sentinel buffer option pending hook select component 
+  //  project group fold fulfilled sort partition project pending sync pure option 
+  //  sentinel option eager either observer props result guard reduce component resolve 
+  //  merge pending memoize resolve merge async sync filter reject props effect 
+  //  context async resolve keep debounce merge cache transform eager compose context 
+  //  fulfilled sync publish fold event queue eager resolve cache callback filter 
+  //  publish group pair queue sync select cache invalidate state publish scan 
+  //  memoize gate fulfilled zip resolve map await effect compose option handler 
+  //  filter merge fold props fold state map buffer sort stream ref 
+  //  debounce reduce compose filter transform pair transform merge invalidate fold fulfilled 
+  //  ref partition publish component sync guard publish lazy option pending transform 
+  //  tuple lazy partition hook project observer effect tuple scan zip memoize 
+  //  hook await scan sync subscribe reject fulfilled memoize queue lazy gate 
+  //  reduce queue subscribe props memoize handler pipeline zip group sort lazy 
+  //  publish reduce group pending gate handler state resolve effect memo effect 
+  //  handler project context state eager result drop pending props eager fulfilled 
+  //  pending callback queue debounce component select pending pair memo effect group 
+  //  group resolve effect scan select reduce eager pending dispatcher pair option 
+  //  handler eager effect tuple render pipeline either group zip dispatcher callback 
+  //  context pipeline memo event memoize select reject subscribe state component memo 
+  //  reducer filter dispatcher partition sync event invalidate result async pending queue 
+  //  lazy gate result partition publish gate context event pipeline filter transform 
+  //  pending memo merge component async invalidate sync debounce dispatcher pipeline render 
+  //  stream project event debounce transform drop sort effect gate reject guard 
+  //  callback tuple state pending hook drop pipeline async either transform tuple 
+  //  observer pair debounce pending map observer transform keep select stream pending 
+  //  context callback pair ref queue sync compose scan buffer ref keep 
+  //  partition option reducer event stream debounce fulfilled subscribe pipeline pair buffer 
+  //  stream handler sort reject tuple cache map cache cache queue handler 
+  //  cache drop queue pure pure observer filter hook ref cache ref 
+  //  async event pair project select pipeline tuple buffer state publish sentinel 
+  //  sync drop ref async reduce memo sync cache map render either 
+  //  select keep fulfilled async render reject partition fold subscribe state throttle 
+  //  props sync pipeline select props component gate reducer pipeline component fulfilled 
+  //  partition pending queue observer merge fold state keep throttle pending lazy 
+  //  compose async throttle effect hook eager zip fulfilled memoize guard zip 
+  //  eager either pair memo scan await compose invalidate handler select memoize 
+  //  handler lazy keep buffer drop drop compose dispatcher filter handler project 
+  //  zip memoize option reduce either merge pending option subscribe debounce sort 
+  //  handler reduce fold reduce project sentinel pure render result pair zip 
+  //  scan hook compose group fold dispatcher queue keep option debounce reducer 
+  //  drop sentinel result state async queue eager debounce observer sentinel keep 
+  //  async props pending zip gate render merge transform effect fold memo 
+  //  stream either props queue tuple project reject transform project buffer transform 
+  //  debounce sort project buffer partition render select memo observer pipeline sync 
+  //  result result project reject invalidate debounce gate fold publish sort partition 
+  //  memo keep pending sort effect fulfilled tuple pair hook context pipeline 
+  //  sort either zip event eager effect debounce group pending map transform 
+  //  handler hook eager await await transform component observer partition compose fold 
+  //  either subscribe pair sync observer publish sync tuple zip cache group 
+  //  sync component tuple pair callback scan either tuple reject invalidate keep 
+  //  resolve async effect tuple state component callback partition hook merge debounce 
+  //  event group select group throttle memo sync sentinel drop fulfilled transform 
+  //  subscribe zip pure subscribe async compose transform pair reduce queue tuple 
+  //  await group either component memoize buffer await throttle zip render tuple 
+  //  hook queue pipeline result debounce group reducer merge fold async invalidate 
+  //  project pure filter throttle group stream keep event publish effect stream 
+  //  partition fulfilled observer subscribe gate hook result subscribe zip resolve throttle 
+  //  guard await resolve result partition debounce either drop group gate stream 
+  //  stream cache pure memoize pipeline compose stream pending invalidate sentinel pipeline 
+  //  fold effect merge either dispatcher component resolve memoize callback drop context 
+  //  context select fold cache handler reduce effect event option publish cache 
+  //  subscribe transform queue await async scan reject subscribe component memo tuple 
+  //  filter invalidate pure sort map render scan reducer project zip handler 
+  //  render queue sync ref sentinel filter buffer either debounce result cache 
+  //  context ref select reducer tuple effect stream keep gate lazy hook 
+  //  project stream context option result throttle drop map dispatcher event queue 
+  //  pure resolve context pure cache resolve zip guard partition scan partition 
+  //  subscribe tuple debounce pure partition hook dispatcher await hook observer drop 
+  //  guard await component filter props lazy reduce event stream fold lazy 
+  //  group partition async event invalidate sort sentinel handler project map observer 
+  //  hook pure reducer async queue async group context eager dispatcher async 
+  //  scan pure effect scan context context buffer queue throttle context drop 
+  //  tuple debounce pure pure pipeline merge option sort pure result component 
+  //  event pure guard props state fulfilled pure resolve component eager select 
+  //  handler stream hook cache map debounce drop state props sync state 
+  //  reduce state drop reducer transform reduce gate handler context invalidate state 
+  //  publish effect props subscribe context pending lazy memo async tuple memoize 
+  //  throttle compose tuple pure pair invalidate reducer memoize fold ref stream 
+  //  pure option async merge memo reducer result reject either pure callback 
+  //  buffer handler queue option select eager transform reject gate state throttle 
+  //  zip fold component gate state tuple cache gate partition reduce fold 
+  //  component reducer merge sentinel reject eager reducer resolve zip fold gate 
+  //  hook result render drop filter reject pending partition compose async effect 
+  //  cache hook render ref filter stream handler queue pure compose publish 
+  //  effect event guard gate publish transform effect cache queue effect sentinel 
+  //  fulfilled pair filter zip select component observer keep zip keep stream 
+  //  zip resolve result pipeline pending component state gate fulfilled transform pure 
+  //  observer group reject fulfilled option memoize option lazy handler debounce gate 
+  //  fulfilled project event cache option merge drop pipeline ref sentinel reject 
+  //  partition
+  */
+})();
+
+// mod-0010 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[10] = {
+    id: 10,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0010';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '42');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  either option state stream memoize pipeline fulfilled pure sync partition debounce reducer 
+  //  result sync pair gate props map map filter reject zip sort 
+  //  cache eager partition group option pair guard select guard fold invalidate 
+  //  reducer zip option fulfilled project merge invalidate async fulfilled resolve result 
+  //  partition context memo option pure resolve pipeline hook filter merge tuple 
+  //  map filter guard render partition keep project group async effect partition 
+  //  group ref guard publish buffer scan zip pending state await stream 
+  //  select keep result state cache stream tuple state scan sync memo 
+  //  state throttle memo effect reduce drop hook reducer reducer transform hook 
+  //  reduce compose select event component filter gate component zip effect pending 
+  //  await sort pure eager group await filter fulfilled tuple group resolve 
+  //  render eager pending component tuple project ref guard option memo tuple 
+  //  callback ref reject callback group observer hook publish dispatcher merge scan 
+  //  pure group throttle pure effect ref event async ref event reject 
+  //  async transform guard sync partition pending tuple handler pending fulfilled transform 
+  //  async effect either project subscribe memoize keep handler lazy throttle map 
+  //  reject option filter sort handler merge invalidate buffer group drop select 
+  //  zip memoize option invalidate drop map transform option zip project option 
+  //  lazy reject pair stream partition render memoize filter render reduce ref 
+  //  project reduce reject await tuple eager cache observer queue dispatcher pure 
+  //  stream state option scan props publish pair publish resolve memo merge 
+  //  queue gate pure transform eager publish result pure component callback partition 
+  //  event sync pair eager memoize context component map dispatcher tuple queue 
+  //  fold async queue pipeline buffer context await event subscribe effect pending 
+  //  eager eager merge event throttle tuple group hook either reduce partition 
+  //  fulfilled render hook transform reduce debounce effect reducer partition observer effect 
+  //  lazy option state publish stream props throttle ref subscribe context transform 
+  //  event props dispatcher result invalidate pair buffer invalidate drop tuple sentinel 
+  //  drop callback cache pair merge dispatcher ref dispatcher callback resolve compose 
+  //  result pipeline component drop drop guard sync pair option compose publish 
+  //  stream pipeline state result event async sentinel group publish subscribe zip 
+  //  buffer filter tuple callback subscribe memoize result invalidate gate map map 
+  //  context select tuple zip effect pending merge pair cache cache queue 
+  //  dispatcher filter context buffer keep sort guard merge throttle reduce async 
+  //  fold queue transform map keep scan gate sync pure memo lazy 
+  //  component event await ref guard pair scan pipeline callback fulfilled sentinel 
+  //  observer pending dispatcher observer handler publish event effect hook compose drop 
+  //  event fulfilled sentinel invalidate resolve tuple debounce props dispatcher pure partition 
+  //  subscribe lazy throttle publish memoize merge map option fulfilled reject resolve 
+  //  reject lazy merge hook component hook ref lazy observer observer pair 
+  //  pair reject dispatcher fold handler select reduce sentinel throttle reduce project 
+  //  partition group subscribe fold zip keep resolve props map pair zip 
+  //  pending merge eager lazy pending eager fold throttle compose render either 
+  //  props guard debounce buffer guard await compose handler subscribe group fold 
+  //  drop gate result eager pure reducer compose filter state throttle observer 
+  //  await state sentinel subscribe partition result project memo keep callback component 
+  //  fulfilled memo pending async drop stream context memo pipeline queue filter 
+  //  context lazy pending fulfilled memo either state fulfilled filter pure cache 
+  //  queue observer select render either gate keep queue buffer handler partition 
+  //  handler either buffer tuple group compose partition memo reduce eager props 
+  //  reject component fulfilled reject guard tuple event compose hook drop reduce 
+  //  fold partition hook observer eager sort await invalidate filter result pending 
+  //  result sentinel event merge sentinel sentinel group drop filter callback compose 
+  //  render filter reject tuple merge buffer scan event partition queue merge 
+  //  await callback merge lazy render stream state guard hook guard stream 
+  //  tuple render observer dispatcher partition async cache scan pair pair option 
+  //  reject pipeline group cache gate memoize transform dispatcher throttle handler memo 
+  //  sentinel observer state zip reduce publish pair debounce throttle zip pipeline 
+  //  queue effect render pure queue subscribe resolve state reject partition tuple 
+  //  pure project zip scan project handler callback reject zip pure merge 
+  //  cache invalidate gate pending pending sort pipeline state transform ref group 
+  //  effect sentinel debounce keep cache keep option keep memoize throttle transform 
+  //  invalidate gate map effect fold guard reducer render lazy sync guard 
+  //  subscribe transform resolve eager effect select effect await ref reduce resolve 
+  //  lazy dispatcher callback map throttle keep map resolve sentinel memo map 
+  //  hook transform keep transform pair group eager eager async debounce filter 
+  //  drop handler context cache debounce scan pure either fulfilled reject compose 
+  //  sync queue pure props either project await drop context hook await 
+  //  resolve context pair keep effect state event reduce drop pure stream 
+  //  reducer pair effect handler compose effect option option either memo event 
+  //  render pure either await effect debounce dispatcher either subscribe async drop 
+  //  keep pending pure either stream gate option debounce zip cache drop 
+  //  group option drop eager drop partition pure stream callback fold pure 
+  //  debounce map pair invalidate effect guard zip gate reduce guard partition 
+  //  reject pipeline merge hook observer callback fulfilled state pair reducer ref 
+  //  pipeline partition ref invalidate pair sync pending sort buffer drop ref 
+  //  fold tuple tuple merge select sort fold group partition keep gate 
+  //  dispatcher compose merge group reject gate either debounce partition filter buffer 
+  //  drop await handler pair render observer lazy memoize transform hook cache 
+  //  effect transform partition eager state event result ref callback async props 
+  //  tuple result render drop filter effect fulfilled option result handler pipeline 
+  //  ref reject queue option partition event ref callback handler transform guard 
+  //  resolve partition scan reducer debounce zip guard invalidate pure keep subscribe 
+  //  lazy publish resolve memoize buffer sort lazy context tuple publish hook 
+  //  merge effect either guard ref throttle memoize context resolve buffer component 
+  //  effect render resolve invalidate async filter select debounce context buffer pipeline 
+  //  keep await gate throttle handler eager subscribe props transform drop hook 
+  //  sentinel memo drop subscribe merge compose compose pair zip zip guard 
+  //  await stream callback fulfilled drop result merge cache memoize await reducer 
+  //  memo memo buffer reducer keep publish compose sort drop reducer project 
+  //  guard fold project queue compose state scan memoize group gate props 
+  //  fold memo project map component props publish reduce queue keep compose 
+  //  component reduce pipeline ref cache state drop hook map event scan 
+  //  sentinel fold transform publish render subscribe reject compose fold await partition 
+  //  filter debounce transform context tuple scan props fulfilled lazy publish handler 
+  //  ref select either buffer fulfilled lazy group zip callback dispatcher effect 
+  //  guard sync tuple reduce pipeline reduce sort dispatcher sort memo select 
+  //  keep cache tuple filter memoize select result filter hook effect publish 
+  //  scan observer pair await event fold throttle tuple guard dispatcher either 
+  //  filter debounce pure sync transform project scan keep debounce gate throttle 
+  //  context callback pair group drop invalidate sync sync sentinel debounce drop 
+  //  keep merge invalidate event pipeline props resolve effect event pipeline scan 
+  //  map component memo hook drop scan reducer keep state filter sentinel 
+  //  result result tuple await tuple tuple sync subscribe sort fulfilled stream 
+  //  buffer filter select memo render memoize context pending props buffer ref 
+  //  subscribe lazy group map drop group stream either guard effect async 
+  //  props project zip cache gate map memoize await tuple zip sentinel 
+  //  lazy fold invalidate scan merge result gate pipeline project reduce compose 
+  //  stream map context pair invalidate eager subscribe lazy result zip pending 
+  //  pair transform gate invalidate resolve handler dispatcher map either either project 
+  //  transform await pair merge reject state sync eager group subscribe debounce 
+  //  render keep reducer fulfilled callback partition async zip reject select merge 
+  //  effect partition stream handler merge queue tuple either callback observer either 
+  //  hook memoize reducer gate partition tuple buffer either state reducer render 
+  //  component sync transform sentinel fold tuple pending reject memoize handler result 
+  //  memoize result debounce compose ref lazy context render pending scan handler 
+  //  pair await keep scan keep debounce await context reducer map ref 
+  //  observer await either map stream await event keep filter observer gate 
+  //  hook queue result fold sort lazy reject fold group select render 
+  //  buffer publish reducer reject debounce reducer lazy invalidate await effect pipeline 
+  //  props render select map sync throttle publish reducer select reject reject 
+  //  group drop handler eager sentinel context fold memoize memo reject gate 
+  //  state context memoize zip observer await hook reject guard option state 
+  //  option pipeline pipeline await map pending fulfilled drop project stream drop 
+  //  pure tuple guard option either debounce reduce invalidate drop state effect 
+  //  option zip hook either throttle stream select lazy result scan keep 
+  //  pending merge transform queue tuple subscribe either await reject sentinel keep 
+  //  drop either component stream pair fulfilled await reduce transform publish option 
+  //  throttle sentinel context pair fulfilled state transform callback reject await lazy 
+  //  subscribe lazy lazy dispatcher callback compose compose zip sort pair handler 
+  //  cache effect ref stream pure context props guard context either props 
+  //  project drop project component drop props transform gate debounce project scan 
+  //  component either resolve debounce memo buffer reducer gate queue debounce resolve 
+  //  async pair fulfilled effect pair sync pending async pair gate project 
+  //  scan zip scan await fulfilled guard debounce sort pair select pure 
+  //  scan tuple merge publish ref keep queue drop filter pair callback 
+  //  tuple pending queue cache hook fold sort sentinel group merge cache 
+  //  queue map state gate reduce lazy guard gate keep props observer 
+  //  props project reject tuple dispatcher tuple invalidate keep ref throttle resolve 
+  //  context pair ref cache event select debounce pipeline group merge scan 
+  //  eager scan state eager effect filter render context reduce fulfilled filter 
+  //  sort async tuple sync handler reduce guard component fulfilled ref props 
+  //  ref eager select reject stream group merge ref sort reject fold 
+  //  buffer queue map callback component map publish context guard pair guard 
+  //  lazy reject ref transform sync memo sync fold compose compose callback 
+  //  memoize event filter sync tuple zip partition eager merge callback stream 
+  //  merge memoize queue transform throttle callback keep lazy guard subscribe invalidate 
+  //  async handler callback pipeline stream effect drop guard option select zip 
+  //  reducer reject compose select event callback filter select fulfilled merge context 
+  //  context either debounce transform callback eager fulfilled dispatcher zip await invalidate 
+  //  gate component observer observer lazy observer compose compose hook option effect 
+  //  dispatcher memoize drop hook gate observer option lazy queue memo either 
+  //  component sync fold scan await stream component map await sync pending 
+  //  pipeline gate hook publish reducer result cache scan subscribe guard handler 
+  //  publish group sort reduce eager group throttle reduce scan filter effect 
+  //  transform sentinel publish partition state select callback async drop fulfilled callback 
+  //  await pure render option lazy either group subscribe guard render lazy 
+  //  state state eager option partition pending either
+  */
+})();
+
+// mod-0011 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[11] = {
+    id: 11,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0011';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '212');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  pending zip resolve debounce await subscribe fold state pure pending event partition 
+  //  eager render group cache memoize subscribe fulfilled filter pure merge async 
+  //  map guard props memoize either memo queue hook async dispatcher sort 
+  //  dispatcher guard fulfilled pipeline pair result fold sentinel sync queue reject 
+  //  filter zip zip fulfilled buffer map component await component pure reject 
+  //  drop effect state project stream throttle async debounce zip group pending 
+  //  event memoize pair queue filter context reduce option fulfilled ref map 
+  //  merge sync ref queue reducer map ref sync publish transform async 
+  //  pure sort reject render either map keep reduce drop invalidate filter 
+  //  effect transform observer map merge transform event buffer throttle hook event 
+  //  transform select observer stream pair pair transform sentinel async stream hook 
+  //  lazy fold compose ref resolve hook pure event result map throttle 
+  //  publish event cache merge publish transform await await scan observer memo 
+  //  filter callback sort cache project pending context keep project cache select 
+  //  reducer queue dispatcher transform subscribe compose sync buffer drop select pure 
+  //  context pair resolve reject tuple props fold ref async stream option 
+  //  debounce filter props merge fulfilled context transform effect observer tuple reducer 
+  //  observer sentinel memo callback hook partition handler memoize filter effect memo 
+  //  context invalidate callback pure callback await map queue pair async gate 
+  //  context await option partition props state select queue result buffer group 
+  //  state either hook pipeline debounce filter hook lazy dispatcher stream sentinel 
+  //  transform await pipeline resolve throttle pipeline context pair buffer subscribe keep 
+  //  pipeline reducer guard either memo memo callback project buffer transform sync 
+  //  lazy invalidate state partition ref event render event context eager either 
+  //  handler state resolve gate pending pending result scan props debounce handler 
+  //  reject partition reject callback lazy zip async drop fulfilled memoize queue 
+  //  stream handler guard fulfilled drop select pair filter hook pair sync 
+  //  event debounce group stream resolve select compose invalidate observer async resolve 
+  //  pure zip pipeline hook component cache drop transform tuple stream pair 
+  //  eager queue eager tuple partition transform merge queue subscribe result filter 
+  //  merge either project select event reducer stream await event resolve map 
+  //  subscribe ref transform filter result resolve buffer keep either cache keep 
+  //  props tuple buffer context reducer map stream async result reduce observer 
+  //  compose pending fold pure sentinel result sort publish fold guard stream 
+  //  tuple buffer invalidate partition resolve guard compose props reduce context pure 
+  //  render queue select tuple option observer handler zip compose async callback 
+  //  zip pending publish await compose invalidate dispatcher transform await memo memoize 
+  //  tuple merge project resolve props resolve result keep select merge resolve 
+  //  group memo scan either cache publish stream debounce await subscribe sync 
+  //  reducer throttle stream filter dispatcher compose callback throttle render cache eager 
+  //  effect gate gate pure resolve subscribe event async tuple pipeline lazy 
+  //  effect observer eager handler pending memoize pipeline publish keep observer group 
+  //  render sentinel select context option pure state component context reduce sync 
+  //  invalidate reducer keep memoize render buffer pending async drop merge queue 
+  //  tuple ref memo partition pipeline context lazy tuple resolve await context 
+  //  subscribe sort queue select eager select ref guard merge component observer 
+  //  throttle group reject invalidate effect pair partition fulfilled result map tuple 
+  //  memoize filter subscribe observer ref sort either async option merge memo 
+  //  event cache result result reject drop partition memoize async queue compose 
+  //  fulfilled drop reject sort ref memoize effect throttle pipeline scan filter 
+  //  pure fulfilled pure ref pending sort pending handler reject ref pair 
+  //  buffer handler pipeline handler pipeline debounce invalidate async filter debounce event 
+  //  compose eager result result dispatcher observer scan subscribe async zip partition 
+  //  gate invalidate pair option throttle partition publish props throttle pure subscribe 
+  //  reducer async throttle zip props event resolve project publish throttle buffer 
+  //  partition either map sync ref subscribe subscribe partition await filter sentinel 
+  //  reject async map group group fulfilled throttle sort observer group throttle 
+  //  result zip state guard publish transform handler pure dispatcher handler hook 
+  //  merge observer reducer zip ref reject render handler pending hook option 
+  //  fold await async ref memo merge state pair publish compose reject 
+  //  hook option memoize callback hook throttle callback pure memoize eager memo 
+  //  project invalidate sort scan ref cache render queue await transform state 
+  //  eager render lazy reduce partition props reducer pipeline queue stream context 
+  //  result throttle option observer render handler debounce lazy pair cache compose 
+  //  either reduce ref keep resolve project effect reduce reducer context option 
+  //  project guard reduce guard compose map pure group keep pure stream 
+  //  reduce tuple map memo drop memo buffer option sentinel group async 
+  //  map gate select reducer memo pure hook eager merge resolve publish 
+  //  handler filter pair handler guard guard debounce fold compose zip state 
+  //  pair dispatcher tuple pair sync hook observer context event effect sort 
+  //  props event invalidate map effect memoize async cache fulfilled sort event 
+  //  select map queue render memo render pair state tuple eager observer 
+  //  handler pending reject context queue pure stream tuple result compose state 
+  //  select scan ref context handler pure drop ref ref context cache 
+  //  keep zip reduce result scan gate lazy group buffer memo option 
+  //  sort merge zip map cache hook render result pair await sync 
+  //  subscribe memoize reducer either dispatcher project resolve memoize fold select pure 
+  //  pure tuple fold keep reducer map throttle either props hook invalidate 
+  //  subscribe reduce filter keep partition pair keep effect state reduce fulfilled 
+  //  render sync state await context fulfilled tuple component context state sort 
+  //  pair pending dispatcher tuple memoize render memoize map render render memoize 
+  //  state async lazy select project result context lazy keep partition props 
+  //  cache fold fold partition pair stream gate async debounce partition group 
+  //  select ref throttle stream project subscribe project pipeline state drop result 
+  //  reducer group reject throttle tuple await stream hook component eager hook 
+  //  filter reduce group state scan map tuple publish fulfilled reduce reject 
+  //  fold cache pipeline render hook group throttle keep memoize dispatcher pure 
+  //  memo context sync gate stream keep fulfilled project subscribe result debounce 
+  //  lazy memoize eager publish resolve dispatcher reject props sync gate pending 
+  //  resolve transform tuple merge subscribe hook transform sync await component event 
+  //  memo drop either select sort reducer dispatcher invalidate component throttle context 
+  //  guard sentinel partition memoize hook cache group stream lazy transform resolve 
+  //  context reject fulfilled fold memoize callback guard throttle sync component result 
+  //  sync render dispatcher cache cache pure guard pure scan pair group 
+  //  subscribe cache reduce stream reduce ref resolve compose result pair buffer 
+  //  ref fulfilled merge pair reducer effect pipeline callback debounce pure cache 
+  //  component eager publish pair sync fold keep eager publish zip context 
+  //  reject map subscribe zip event pair memo filter scan throttle drop 
+  //  keep merge context project component render reject component queue state fold 
+  //  event reduce invalidate partition pending filter sync partition queue observer tuple 
+  //  await reject partition pure cache memo dispatcher debounce sentinel drop render 
+  //  reducer reject gate event project option resolve pending ref async state 
+  //  select event hook cache debounce hook state render transform callback handler 
+  //  hook project invalidate state either handler pure scan pair lazy subscribe 
+  //  group await debounce fold fulfilled observer lazy fold throttle reducer merge 
+  //  debounce tuple filter await callback await state props ref pure queue 
+  //  component subscribe map guard keep callback lazy pending keep dispatcher memo 
+  //  render buffer props subscribe guard guard sentinel result reducer invalidate pipeline 
+  //  eager merge effect filter pair queue zip pipeline state publish await 
+  //  effect render sort hook tuple handler observer compose pipeline project reduce 
+  //  gate compose sync scan tuple compose sentinel either props hook component 
+  //  scan memoize component select ref pure zip map props resolve group 
+  //  subscribe subscribe keep memoize compose throttle resolve project compose dispatcher state 
+  //  observer lazy transform publish await callback compose pure buffer reject scan 
+  //  eager pending resolve stream subscribe props invalidate tuple reject render filter 
+  //  option drop throttle effect zip guard buffer guard async gate group 
+  //  guard compose compose map option memoize component queue scan sync context 
+  //  memo event reducer option tuple drop resolve state merge cache eager 
+  //  memo reduce reducer result debounce resolve invalidate pure effect ref buffer 
+  //  hook either lazy effect pending partition ref render debounce pure fold 
+  //  filter compose compose stream effect context invalidate cache callback invalidate effect 
+  //  gate sync pending lazy group sync fold pure render result either 
+  //  memo tuple component reducer memo stream option reducer queue reduce reject 
+  //  select state event merge fold observer eager cache fold option sync 
+  //  result memo tuple stream sync handler compose subscribe fulfilled hook filter 
+  //  select merge merge scan eager throttle memoize buffer transform resolve handler 
+  //  transform option keep merge compose merge state reducer buffer reduce await 
+  //  subscribe reduce render fulfilled event transform option hook fulfilled scan reject 
+  //  stream sort zip pure option result fulfilled partition guard stream select 
+  //  throttle gate memo pipeline transform reduce project cache reject dispatcher select 
+  //  observer context debounce scan pipeline drop lazy filter either buffer subscribe 
+  //  render merge sentinel debounce debounce debounce ref debounce gate partition gate 
+  //  sentinel event publish guard ref queue group pure callback resolve subscribe 
+  //  group pending pure partition throttle drop either pure drop merge async 
+  //  tuple observer ref lazy partition scan sync state memoize pipeline resolve 
+  //  filter pair publish invalidate merge sentinel group state memo either zip 
+  //  render scan event eager cache props transform zip pipeline pure render 
+  //  render result compose zip scan tuple group observer fulfilled project compose 
+  //  invalidate zip fold ref drop await filter scan subscribe reducer group 
+  //  memo merge keep select async queue tuple dispatcher hook pipeline compose 
+  //  debounce sentinel reducer throttle keep zip ref memo reducer callback context 
+  //  option project pure hook lazy debounce gate scan reducer stream map 
+  //  partition tuple compose partition eager pure pipeline pure map project tuple 
+  //  partition merge observer reducer resolve lazy buffer component component state ref 
+  //  publish pending result reject either memo guard memoize render map partition 
+  //  async tuple zip zip project component map await subscribe publish component 
+  //  resolve ref guard memo fulfilled scan tuple reducer handler result reducer 
+  //  partition either fold pure async async result ref stream memoize fulfilled 
+  //  handler queue drop fold sentinel keep queue transform invalidate await ref 
+  //  project sort pipeline map memo reject select zip eager memo reject 
+  //  throttle reject render cache filter scan fold sync render pair tuple 
+  //  result pipeline event lazy pair dispatcher fulfilled compose callback map memo 
+  //  sentinel cache compose sort buffer project fulfilled memo props option lazy 
+  //  pair context ref cache guard context sort pending pure sort dispatcher 
+  //  hook debounce stream scan props props transform select compose pure reduce 
+  //  callback reduce reducer pure pair pair partition pipeline invalidate lazy transform 
+  //  reducer sync queue hook either observer eager either buffer group pair 
+  // 
+  */
+})();
+
+// mod-0012 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[12] = {
+    id: 12,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0012';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '73');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  partition fold partition result partition buffer pending guard queue hook drop zip 
+  //  keep tuple drop invalidate compose scan render buffer props group reducer 
+  //  fold fold fulfilled callback keep either debounce either publish option select 
+  //  event reject transform ref pair effect merge pair observer lazy effect 
+  //  lazy memoize cache hook group pure transform invalidate pending map cache 
+  //  fold reject hook result throttle sentinel merge sort sort transform merge 
+  //  callback sync props observer compose pipeline gate filter eager filter drop 
+  //  pending callback state sort sort handler merge sentinel reducer fulfilled async 
+  //  observer event reducer sync either context handler ref fold reducer option 
+  //  hook tuple option component group hook fold await component pending pure 
+  //  pair filter sync reducer group tuple await event async async zip 
+  //  async filter gate context context scan compose context event callback handler 
+  //  reduce hook effect filter invalidate reject memoize option await invalidate callback 
+  //  fulfilled partition lazy sort fulfilled scan throttle buffer cache transform scan 
+  //  drop reject sync memoize event event sync memo filter pipeline props 
+  //  state state fulfilled sync render publish publish component tuple pure reduce 
+  //  component sync option fold subscribe tuple component cache reduce publish compose 
+  //  debounce merge throttle async reject project tuple eager reduce drop compose 
+  //  sync props ref filter group gate fulfilled keep reduce pair map 
+  //  pipeline transform stream await resolve effect event lazy lazy transform invalidate 
+  //  callback render lazy ref reducer debounce observer merge ref render sync 
+  //  merge filter subscribe guard subscribe tuple group await effect handler drop 
+  //  props hook group await scan resolve pending cache debounce state component 
+  //  scan props async event partition dispatcher gate fulfilled cache resolve resolve 
+  //  pending sort pipeline buffer component pipeline result publish state either ref 
+  //  transform transform pair stream group sort invalidate resolve pure lazy component 
+  //  subscribe option project drop dispatcher transform stream pair reducer event pending 
+  //  hook debounce group option subscribe buffer dispatcher group reject component pair 
+  //  render map await memoize zip memo buffer debounce pending project sync 
+  //  memo pure resolve select stream queue async drop publish keep scan 
+  //  sentinel scan fold tuple sentinel tuple gate await transform subscribe callback 
+  //  sort cache keep option stream reducer pending drop fold pending debounce 
+  //  result reducer hook hook callback pure filter publish effect sort group 
+  //  project effect merge fold memoize map debounce zip hook pipeline effect 
+  //  subscribe reject pair eager dispatcher resolve stream project memoize keep props 
+  //  guard async pipeline publish throttle compose project await cache guard partition 
+  //  ref subscribe scan cache option context memo subscribe buffer fulfilled props 
+  //  merge component sort queue reducer component buffer context reducer scan map 
+  //  eager debounce reduce stream publish throttle subscribe pure props lazy project 
+  //  sentinel hook memo scan await debounce zip drop memo state stream 
+  //  pending reduce group ref filter fold sync drop fulfilled fulfilled scan 
+  //  context sentinel guard guard sync buffer partition sentinel await filter invalidate 
+  //  subscribe fulfilled resolve select compose publish result publish invalidate eager component 
+  //  scan publish ref reject await debounce state pending guard partition effect 
+  //  reduce ref buffer fulfilled ref effect cache queue reject reject scan 
+  //  zip dispatcher publish hook throttle reduce sentinel result hook tuple transform 
+  //  project context component either either partition merge gate gate keep transform 
+  //  await option state pipeline group gate queue compose partition eager compose 
+  //  map reducer reducer group scan partition fulfilled either memoize drop render 
+  //  sort hook context option zip event merge pending event state compose 
+  //  tuple zip pending callback subscribe project memoize callback fold project debounce 
+  //  effect buffer pair await sentinel drop memo event either drop filter 
+  //  partition pair throttle filter effect guard props async subscribe effect zip 
+  //  lazy fulfilled reducer stream pipeline throttle cache transform observer render project 
+  //  memoize gate guard map sync zip queue buffer async cache dispatcher 
+  //  drop fulfilled lazy effect pair compose stream option pending effect subscribe 
+  //  props effect subscribe effect handler select keep pure pending pipeline reducer 
+  //  gate hook transform resolve ref sort queue reject throttle subscribe eager 
+  //  either drop throttle state eager pipeline await effect option guard select 
+  //  debounce context ref component sentinel resolve sort memo render cache dispatcher 
+  //  reducer drop event fulfilled context transform resolve reject result transform zip 
+  //  map callback guard async throttle await drop fold compose fold scan 
+  //  lazy filter debounce effect option scan tuple memoize render subscribe scan 
+  //  pending zip render select drop fulfilled option component select hook pure 
+  //  filter reducer zip merge reject eager partition publish map tuple cache 
+  //  partition context reducer project compose observer transform reducer either subscribe pipeline 
+  //  lazy compose memoize either compose component props state resolve zip pending 
+  //  map result publish merge merge select hook buffer ref debounce component 
+  //  reducer gate keep keep reject debounce context sort scan pair sentinel 
+  //  option props stream zip effect pair scan fulfilled publish event eager 
+  //  ref subscribe partition keep queue scan compose project group compose hook 
+  //  publish filter sync cache effect fold guard component render pipeline memo 
+  //  debounce either ref pipeline pure lazy ref publish pure stream reject 
+  //  await partition stream memo invalidate async gate select debounce resolve pair 
+  //  drop pure tuple compose publish state gate group fold fold reduce 
+  //  pipeline merge reject map pure reject pure guard pending pair invalidate 
+  //  stream hook sync tuple reducer queue group queue publish compose merge 
+  //  sort subscribe eager dispatcher observer drop state invalidate handler state ref 
+  //  handler group group fold cache sort fulfilled fold transform reduce cache 
+  //  pure async context fulfilled throttle fold throttle result cache render effect 
+  //  subscribe state group reject dispatcher context publish partition option render reducer 
+  //  option reject reduce tuple filter compose fold subscribe fulfilled partition callback 
+  //  memoize effect scan handler props component compose resolve tuple guard cache 
+  //  project hook merge async props render merge callback invalidate sync reducer 
+  //  select ref await debounce ref effect cache queue lazy dispatcher context 
+  //  fold project pipeline pending handler buffer pipeline scan map lazy reducer 
+  //  option pair scan map filter drop observer filter handler partition cache 
+  //  publish scan sentinel state callback memo memoize debounce pending resolve eager 
+  //  project subscribe pure guard sentinel keep state event resolve gate sentinel 
+  //  reject filter state observer result dispatcher option publish dispatcher scan project 
+  //  tuple pipeline reduce event context event reject hook context observer fold 
+  //  dispatcher eager sentinel transform fold fulfilled partition memo resolve publish subscribe 
+  //  resolve lazy pipeline handler sync keep effect keep invalidate debounce handler 
+  //  memo queue publish eager zip scan sync option either filter transform 
+  //  select partition compose pipeline option eager map subscribe render either zip 
+  //  throttle sync reducer zip sort pure keep fulfilled fold await sync 
+  //  context partition callback hook props transform component group gate keep partition 
+  //  handler hook buffer debounce gate guard pending memoize drop handler partition 
+  //  map merge observer debounce pure sort sync throttle gate guard partition 
+  //  context drop eager render scan debounce handler invalidate keep lazy debounce 
+  //  publish scan merge memoize debounce project fold sentinel select gate fulfilled 
+  //  effect pipeline memoize ref reject subscribe scan scan zip filter publish 
+  //  invalidate partition cache transform eager render context component sort event throttle 
+  //  throttle async context props filter reduce props queue either merge handler 
+  //  resolve map await either handler component lazy pipeline keep async callback 
+  //  invalidate keep compose zip option dispatcher ref ref fold sort effect 
+  //  memoize fold merge eager guard debounce effect async cache context transform 
+  //  reducer callback memoize result memo merge guard pure cache memo async 
+  //  sentinel scan throttle guard lazy merge reducer option pure drop compose 
+  //  drop fold pure sync component drop pipeline transform invalidate merge context 
+  //  result invalidate select props stream debounce fold memoize sort pipeline reducer 
+  //  compose sentinel callback buffer pure pending transform callback reduce queue debounce 
+  //  guard publish reject state select buffer fold transform dispatcher ref effect 
+  //  sync pending partition compose option fulfilled sort compose select group props 
+  //  await publish hook tuple buffer guard filter memoize state props component 
+  //  reject eager publish lazy keep result effect cache fulfilled tuple pure 
+  //  effect project memo pending callback fulfilled map guard ref observer ref 
+  //  await callback option sort ref reduce queue reducer memoize context fulfilled 
+  //  group state ref transform pipeline handler invalidate select guard sync zip 
+  //  resolve sentinel scan reject eager partition async either compose fold fold 
+  //  keep sync context group fold scan project sync sentinel map resolve 
+  //  reduce zip buffer memoize dispatcher project component pending sync eager sentinel 
+  //  partition dispatcher scan queue stream reduce pending fold queue cache map 
+  //  await props cache transform lazy buffer queue compose hook handler scan 
+  //  memo filter gate reducer render stream fold guard resolve pair dispatcher 
+  //  state merge event context await memoize reject tuple async pipeline map 
+  //  merge component select props memo observer dispatcher sentinel sentinel memo debounce 
+  //  await fold ref callback props option dispatcher publish pipeline context invalidate 
+  //  group invalidate async ref ref pending fulfilled render pipeline sort reject 
+  //  compose compose fulfilled debounce sentinel render drop pair project throttle render 
+  //  sentinel component eager state invalidate stream pair group pair debounce ref 
+  //  fulfilled sync partition ref debounce scan option result effect buffer reduce 
+  //  buffer option map sentinel fulfilled dispatcher stream pipeline reduce callback result 
+  //  option guard async event guard merge transform guard lazy option state 
+  //  sync publish queue callback zip callback guard queue reduce buffer partition 
+  //  reduce resolve reject guard dispatcher render component fulfilled reducer gate either 
+  //  props state sync filter handler ref hook ref eager async state 
+  //  select effect pending keep lazy await project throttle dispatcher fulfilled fold 
+  //  dispatcher event stream gate props props context dispatcher transform resolve partition 
+  //  callback publish result option either state reject group handler buffer scan 
+  //  cache compose await debounce select sync keep cache async gate transform 
+  //  filter props pair fulfilled keep sentinel reject eager sync stream context 
+  //  render ref pending pipeline scan merge event pipeline sentinel throttle effect 
+  //  scan cache stream subscribe buffer gate fulfilled project context keep async 
+  //  sync sentinel lazy state keep ref partition effect pair fold hook 
+  //  subscribe guard project zip buffer compose await await stream transform dispatcher 
+  //  reduce context debounce reject fulfilled stream sort transform handler compose resolve 
+  //  resolve debounce keep transform pair reducer effect throttle reduce state tuple 
+  //  hook effect debounce guard drop pipeline await invalidate memo state cache 
+  //  ref pure queue queue sort memoize state scan hook gate option 
+  //  compose sentinel eager props sync cache effect async await invalidate option 
+  //  stream invalidate tuple props await tuple debounce pair state fulfilled reject 
+  //  select drop component result publish state result invalidate fold scan keep 
+  //  effect either project lazy await lazy resolve filter handler handler guard 
+  //  handler keep partition drop await option reject memo tuple filter option 
+  //  sync
+  */
+})();
+
+// mod-0013 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[13] = {
+    id: 13,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0013';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '298');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  reduce state eager fulfilled reducer memoize scan ref dispatcher handler result reduce 
+  //  either eager tuple keep fold fold gate pair keep dispatcher pure 
+  //  cache resolve resolve keep scan context publish async event props dispatcher 
+  //  pure hook map sentinel event eager zip pair transform subscribe eager 
+  //  await reducer buffer callback memoize state transform callback observer merge guard 
+  //  either observer pair async effect buffer memo observer effect either sort 
+  //  hook filter await subscribe memo stream sentinel effect effect pipeline guard 
+  //  fold resolve option state context partition handler keep gate event sentinel 
+  //  invalidate project reduce sort cache either effect effect filter compose fulfilled 
+  //  invalidate callback result render sort fold keep transform pending invalidate select 
+  //  zip debounce queue stream reducer publish state fulfilled memo compose tuple 
+  //  reducer buffer zip reduce resolve state reduce component stream component render 
+  //  stream queue throttle project partition component pair props event drop component 
+  //  hook group component keep scan callback lazy scan fulfilled either async 
+  //  fulfilled invalidate gate effect scan component queue select keep callback sync 
+  //  dispatcher reject lazy reduce throttle drop guard keep reject filter component 
+  //  cache buffer memo memo scan merge zip group pending component keep 
+  //  compose sentinel sentinel scan eager pure queue pair select dispatcher fold 
+  //  hook compose compose pipeline debounce drop ref sort transform guard map 
+  //  invalidate option callback guard queue ref sync eager project ref tuple 
+  //  pipeline stream render reject throttle context group pair compose fulfilled option 
+  //  tuple sync publish scan partition await project publish gate gate sync 
+  //  component sentinel memoize context debounce queue ref sync queue project reducer 
+  //  option memo hook reject sync async ref project sort callback reducer 
+  //  invalidate resolve scan cache compose fold keep group dispatcher reducer ref 
+  //  fold context tuple reject subscribe option resolve zip component throttle lazy 
+  //  zip fulfilled keep memo eager stream eager sync buffer publish fulfilled 
+  //  pure observer publish pair hook async lazy stream lazy sort option 
+  //  drop context merge buffer handler map tuple hook publish fulfilled queue 
+  //  dispatcher observer sync pure buffer keep pure async state cache pending 
+  //  transform publish stream event async memoize sentinel event invalidate await queue 
+  //  component resolve component memoize scan async async pure memoize filter sort 
+  //  option result resolve throttle reject debounce memo pure invalidate context keep 
+  //  gate transform observer cache observer scan resolve keep eager effect partition 
+  //  debounce fulfilled pipeline pair state keep memo invalidate reduce reject sync 
+  //  pending buffer filter memo project pending map gate ref memo reducer 
+  //  component zip merge effect merge result partition subscribe async reject ref 
+  //  throttle hook gate gate sentinel publish result fulfilled filter eager select 
+  //  reducer option handler option effect guard group component stream drop keep 
+  //  lazy effect pair stream pure render compose select pure ref drop 
+  //  effect group transform compose sync await option event pending lazy guard 
+  //  event component sync context tuple publish project tuple option stream throttle 
+  //  ref pair tuple filter transform subscribe compose tuple gate tuple props 
+  //  map scan result component observer map pure fulfilled scan stream sync 
+  //  subscribe dispatcher handler callback callback callback sync result fold option queue 
+  //  pair pending render sentinel drop handler either sync invalidate select props 
+  //  handler hook group pending drop props fold sync state drop callback 
+  //  observer project transform context debounce event drop transform render sync gate 
+  //  drop merge memo select group pending filter filter observer filter callback 
+  //  reducer pending eager guard tuple result stream state sync either effect 
+  //  buffer resolve pending compose keep cache hook state hook resolve reject 
+  //  dispatcher publish gate project map render either props reducer select hook 
+  //  fold reduce await resolve stream pipeline reducer partition result subscribe reduce 
+  //  reduce eager state filter async map compose tuple ref filter filter 
+  //  eager observer eager subscribe option reducer reducer buffer dispatcher option reduce 
+  //  event project compose keep compose pending pending buffer effect merge observer 
+  //  publish hook fulfilled hook group gate cache compose lazy buffer scan 
+  //  cache fold partition sync pending queue zip either reject reducer debounce 
+  //  pure guard pure either queue memo map tuple subscribe hook compose 
+  //  subscribe stream callback observer subscribe dispatcher fulfilled buffer tuple sort hook 
+  //  publish pair pair zip pure buffer debounce state hook transform context 
+  //  async either scan reject option merge map reject render project stream 
+  //  scan partition project option keep subscribe group sort option fold tuple 
+  //  memo option transform sentinel option merge ref result either select group 
+  //  throttle cache option debounce hook observer tuple drop resolve pure buffer 
+  //  hook hook lazy guard pair pipeline eager sync sync queue hook 
+  //  subscribe group either publish callback throttle drop dispatcher zip option callback 
+  //  memo filter group context map buffer zip memo async handler tuple 
+  //  reducer guard observer eager scan partition async reduce group reduce fold 
+  //  memo result render observer publish context map scan cache render callback 
+  //  option throttle state scan reducer props lazy scan pure sync context 
+  //  group project select queue map merge reject map drop component sentinel 
+  //  async reducer guard option memoize compose reject zip compose gate reducer 
+  //  memoize partition handler pair event reducer option hook memo invalidate gate 
+  //  callback merge context effect eager queue pair queue context subscribe ref 
+  //  observer sync pipeline hook stream fold option resolve fold state drop 
+  //  queue observer keep pipeline debounce select observer tuple guard subscribe props 
+  //  props group pending reduce memoize project pending pipeline context guard scan 
+  //  pending ref sentinel memo compose handler hook pair reduce project sentinel 
+  //  option keep memo filter sync dispatcher dispatcher sort callback guard result 
+  //  stream buffer compose publish publish dispatcher throttle memoize scan await subscribe 
+  //  fulfilled state event hook hook eager reduce sentinel observer buffer cache 
+  //  partition invalidate publish invalidate stream resolve merge hook publish subscribe either 
+  //  handler cache handler publish tuple drop props async select memoize either 
+  //  publish reducer async invalidate result project component throttle throttle buffer debounce 
+  //  buffer select transform group scan filter render tuple partition eager group 
+  //  compose drop pipeline keep merge effect throttle publish eager gate map 
+  //  guard map map filter stream project partition zip compose pending eager 
+  //  filter render keep filter throttle pipeline result sentinel partition sync throttle 
+  //  zip reducer dispatcher merge select reduce state reducer group stream subscribe 
+  //  either fulfilled result resolve queue throttle resolve map pending callback fold 
+  //  state subscribe pipeline state partition option sentinel guard pure tuple publish 
+  //  ref pair map buffer dispatcher sync pair memo either scan reducer 
+  //  hook sort callback reducer option guard lazy hook pipeline map state 
+  //  memoize callback memo keep async effect gate async state filter async 
+  //  queue async option queue reducer sync filter lazy async hook merge 
+  //  pending fold stream ref compose select sentinel throttle memo ref effect 
+  //  result debounce invalidate sentinel memo throttle option observer memoize sort context 
+  //  async memoize pending either throttle observer fold either subscribe tuple partition 
+  //  partition props merge pipeline stream memoize state async either pair buffer 
+  //  render map fold hook scan pipeline hook pair hook effect component 
+  //  hook await pending zip component queue lazy keep scan group context 
+  //  merge filter drop queue subscribe filter tuple fold either subscribe ref 
+  //  pipeline publish sentinel sentinel fold state hook partition props state callback 
+  //  memoize sort component component fulfilled subscribe buffer publish queue queue option 
+  //  invalidate project props transform debounce compose merge tuple observer sentinel await 
+  //  reduce gate option callback dispatcher callback memo group transform debounce cache 
+  //  pure sort sentinel tuple throttle gate partition handler select memoize option 
+  //  sentinel callback memoize guard invalidate reducer async event reducer group subscribe 
+  //  lazy select debounce fulfilled render partition queue eager throttle drop component 
+  //  map project result component cache option memoize state group component map 
+  //  context drop fulfilled reduce dispatcher keep filter pending transform eager guard 
+  //  merge merge subscribe either eager partition dispatcher render transform gate pending 
+  //  either lazy observer gate event guard zip pair memoize gate lazy 
+  //  pair handler callback resolve ref callback pending tuple stream render event 
+  //  queue result partition reject pair memo observer component invalidate zip throttle 
+  //  either fulfilled either reduce pending pending cache event stream memo memoize 
+  //  project hook zip event either context subscribe component drop fold sentinel 
+  //  group compose await guard merge transform guard state project state subscribe 
+  //  result either memo dispatcher compose debounce partition memoize guard pair throttle 
+  //  pending handler ref pending pure hook guard partition pending callback stream 
+  //  map ref context sentinel transform invalidate sentinel sentinel either hook either 
+  //  buffer fulfilled event stream zip callback pair component tuple sync tuple 
+  //  context zip component transform result zip async memoize sort pending memo 
+  //  pair transform pure select tuple props invalidate reduce result project dispatcher 
+  //  reducer component props async pair either pipeline eager option subscribe keep 
+  //  publish option context hook callback sentinel component context lazy project either 
+  //  partition fold gate reject eager await result hook tuple result merge 
+  //  drop queue lazy reject gate gate publish reject guard callback subscribe 
+  //  zip await hook context render cache effect sentinel group partition pair 
+  //  hook pending async publish keep pure context event sort select hook 
+  //  compose tuple effect publish ref merge fulfilled filter pending render reject 
+  //  result filter zip fulfilled eager props drop memo debounce resolve handler 
+  //  context eager either buffer guard context result eager select select callback 
+  //  compose tuple callback resolve transform pair callback fold callback group ref 
+  //  memoize handler tuple gate keep pending pair scan buffer transform either 
+  //  state filter sort reducer callback queue either pure event component throttle 
+  //  drop publish props reduce observer throttle debounce partition fulfilled event pure 
+  //  debounce gate option scan compose hook publish reducer reducer pure dispatcher 
+  //  merge resolve either subscribe callback tuple state sync publish observer memoize 
+  //  memoize component context stream subscribe filter partition memoize gate sort stream 
+  //  guard option drop memoize sentinel memo filter render await invalidate reducer 
+  //  keep effect map throttle reducer partition stream pipeline memo compose result 
+  //  publish option sentinel reject result sentinel zip callback transform merge pair 
+  //  stream cache async keep project pure result group memoize pending fulfilled 
+  //  buffer keep observer group queue await reducer select partition option subscribe 
+  //  zip queue zip fulfilled handler async fulfilled merge guard compose await 
+  //  sort reduce callback select tuple subscribe guard cache sentinel hook drop 
+  //  memo transform eager sort memo memo effect partition memoize buffer pipeline 
+  //  callback memoize resolve sentinel option memo gate compose eager stream select 
+  //  sort memo drop event keep zip eager map sort await pure 
+  //  component map sync project either select memoize pipeline pending pair reduce 
+  //  state buffer select map ref guard sync render guard context option 
+  //  subscribe reduce pair stream callback drop project component event queue stream 
+  //  dispatcher sort zip publish props lazy state reject observer debounce lazy 
+  //  scan reject lazy debounce ref
+  */
+})();
+
+// mod-0014 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[14] = {
+    id: 14,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0014';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '187');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  async filter pending buffer map publish group props state fulfilled sentinel sentinel 
+  //  map component debounce async either fold partition hook buffer sentinel component 
+  //  transform invalidate sync context reducer callback stream render zip memo publish 
+  //  pure effect publish event fulfilled publish merge state pair dispatcher partition 
+  //  either lazy stream reduce callback merge throttle render hook observer partition 
+  //  component sync ref partition scan filter group compose observer filter transform 
+  //  select group merge merge compose debounce queue state sentinel sync throttle 
+  //  sync async pure component component pure merge memoize await memoize pure 
+  //  debounce await select sync invalidate guard context drop invalidate debounce eager 
+  //  result publish cache observer subscribe state pure transform state cache state 
+  //  group zip handler sort debounce callback guard either stream props lazy 
+  //  project stream invalidate async dispatcher render sync drop state stream fold 
+  //  option drop buffer render handler handler tuple debounce async scan render 
+  //  event filter fulfilled filter dispatcher filter either tuple compose queue reducer 
+  //  compose drop memo map fulfilled await publish eager keep option lazy 
+  //  await lazy handler tuple invalidate project observer keep debounce partition tuple 
+  //  pipeline filter sentinel reject memo lazy lazy async project invalidate pair 
+  //  context async context observer map compose sync fold resolve fulfilled pair 
+  //  reject fold invalidate zip reducer effect keep debounce cache scan sort 
+  //  either props fulfilled pipeline reduce await filter handler async fulfilled group 
+  //  context drop filter either compose eager gate project merge group event 
+  //  select invalidate async stream pending buffer queue handler sentinel hook effect 
+  //  queue keep fulfilled eager effect partition option queue sync pair render 
+  //  pipeline observer keep buffer memo sync resolve sync throttle handler await 
+  //  result group keep queue pipeline partition ref queue memoize gate group 
+  //  invalidate props reducer zip group result fulfilled scan state keep handler 
+  //  await partition map stream context component publish gate merge memoize fold 
+  //  event filter filter map invalidate event effect props group pending invalidate 
+  //  sort hook hook throttle compose memoize sync component props hook either 
+  //  buffer memo reduce filter sort async queue ref pair ref compose 
+  //  either effect eager either queue queue fulfilled throttle handler subscribe select 
+  //  reject props state partition result drop ref dispatcher option compose invalidate 
+  //  async drop pending pipeline pure callback group hook effect reject sentinel 
+  //  drop filter stream fulfilled option dispatcher sort subscribe reducer stream pair 
+  //  render filter guard publish cache memo pair hook publish context debounce 
+  //  queue pipeline callback handler scan select publish pure memo result publish 
+  //  gate option map async memoize memoize transform sentinel pair pair gate 
+  //  effect memoize publish throttle select eager merge memo hook sort option 
+  //  transform memo select subscribe fulfilled queue callback sentinel effect render invalidate 
+  //  context drop eager fold map component scan pipeline cache effect subscribe 
+  //  invalidate option props select sort reducer pair observer event keep reduce 
+  //  async await publish option scan effect observer filter guard reducer filter 
+  //  callback eager publish pair render ref cache await debounce lazy debounce 
+  //  drop either compose select select memoize pure buffer sync render queue 
+  //  pair sort group option sort lazy compose reject invalidate project result 
+  //  result pair queue zip event map zip context ref resolve map 
+  //  eager publish debounce transform fulfilled sentinel fulfilled zip memoize reducer pair 
+  //  props map queue stream props sync map cache lazy drop gate 
+  //  eager filter memo dispatcher render cache project tuple select memoize reducer 
+  //  subscribe drop async eager memo eager queue transform fold keep lazy 
+  //  map merge gate pending props memo option handler merge group transform 
+  //  filter pair compose context map pure event memo invalidate eager reducer 
+  //  invalidate pending render either fulfilled context state zip filter resolve fold 
+  //  drop resolve pure guard memo effect async subscribe pending render gate 
+  //  subscribe publish either reduce eager transform fulfilled pipeline publish event partition 
+  //  group sentinel sentinel handler publish sentinel fold lazy subscribe memoize dispatcher 
+  //  reducer gate fulfilled props group stream option component dispatcher group pure 
+  //  buffer throttle ref resolve memoize tuple merge invalidate guard transform keep 
+  //  pipeline hook context pair buffer lazy ref state sync map keep 
+  //  reduce observer scan merge guard observer pure compose debounce reject observer 
+  //  lazy callback publish zip sync resolve option keep merge transform cache 
+  //  sort event gate handler either callback group transform guard scan lazy 
+  //  gate transform partition eager merge guard component eager stream ref group 
+  //  drop memoize ref subscribe compose either queue either observer effect reduce 
+  //  reducer group async group ref pure observer memo event async render 
+  //  memoize queue project merge zip gate fold transform partition drop pending 
+  //  fold invalidate zip sentinel dispatcher merge filter dispatcher publish gate resolve 
+  //  publish guard debounce state component keep context context context option partition 
+  //  await debounce sort memo context buffer queue dispatcher debounce either pending 
+  //  fold subscribe pipeline render tuple either sort pair memo pure guard 
+  //  event scan event pipeline reject drop fold sentinel compose gate state 
+  //  fold throttle project zip group state pure invalidate scan sync invalidate 
+  //  async filter filter group event async observer transform filter result pure 
+  //  project tuple subscribe compose group filter option sync keep stream drop 
+  //  scan memo filter await partition pair stream state effect event await 
+  //  throttle select publish callback pipeline memoize either sync sync context pending 
+  //  resolve observer sort guard lazy reject select select sync map tuple 
+  //  callback resolve sentinel callback lazy sort context cache observer state merge 
+  //  result cache map partition reduce fulfilled select partition queue select callback 
+  //  select memo scan scan sentinel ref ref sync pure either callback 
+  //  throttle throttle merge handler context subscribe async callback publish guard pure 
+  //  pure context effect async stream async event sentinel async pair queue 
+  //  observer select observer stream transform observer pending memo handler invalidate transform 
+  //  pure debounce drop render drop either reduce fulfilled ref sync pending 
+  //  cache lazy pending ref result transform reducer queue async component effect 
+  //  pure hook ref queue zip effect publish transform async pipeline tuple 
+  //  pipeline fulfilled ref zip ref debounce stream component memoize either transform 
+  //  publish tuple map invalidate callback partition sort result select lazy eager 
+  //  tuple tuple hook project sentinel group memo queue dispatcher observer fold 
+  //  publish select zip transform publish partition pipeline option async render reduce 
+  //  zip await gate fulfilled map memoize memo gate resolve event eager 
+  //  filter props partition sentinel callback project gate zip publish invalidate transform 
+  //  keep filter map stream eager compose render tuple result handler either 
+  //  select lazy component context await reject compose map component pair reducer 
+  //  scan keep partition buffer props async handler drop transform reject buffer 
+  //  props event resolve gate render fulfilled handler transform dispatcher fulfilled sort 
+  //  handler keep compose stream transform observer cache sentinel reducer keep cache 
+  //  map sort sort sort sort select subscribe subscribe sort cache dispatcher 
+  //  result memo resolve fold zip lazy component debounce throttle select select 
+  //  group result filter pending group merge queue project fulfilled project buffer 
+  //  context project pending throttle merge keep hook hook result tuple zip 
+  //  select observer ref queue fold resolve sentinel filter render fold reject 
+  //  eager resolve throttle pending project sentinel subscribe sort resolve drop event 
+  //  memo result lazy compose fulfilled scan publish ref eager memo render 
+  //  stream event invalidate throttle observer keep handler hook memo zip queue 
+  //  pipeline queue publish drop subscribe pair result buffer partition scan ref 
+  //  sort reducer project await filter component context render throttle reject queue 
+  //  async queue callback filter component drop fulfilled props callback reduce option 
+  //  keep option dispatcher async project memoize stream compose pipeline compose pipeline 
+  //  event hook lazy reject pending publish queue dispatcher reducer throttle drop 
+  //  option reduce result select async pair option group drop pending select 
+  //  zip buffer ref event transform stream props invalidate group async subscribe 
+  //  filter select hook hook reducer resolve fold memo pipeline async component 
+  //  await keep fulfilled sync result tuple buffer pipeline tuple buffer result 
+  //  context effect cache filter sync drop callback callback await filter compose 
+  //  ref option reducer reducer result hook eager observer publish render guard 
+  //  observer tuple invalidate merge reject stream sync project subscribe sentinel component 
+  //  filter lazy scan select guard reduce fulfilled state stream queue pure 
+  //  compose option guard group sort resolve memo fulfilled merge async hook 
+  //  lazy publish reject zip pair component handler eager await render observer 
+  //  async result memoize props group transform filter pure compose component event 
+  //  throttle fulfilled filter cache await observer handler handler memo tuple queue 
+  //  memo compose hook scan queue keep partition reducer async option option 
+  //  drop subscribe props memoize fold tuple pending project effect reject effect 
+  //  compose reject either sync project state gate publish transform tuple lazy 
+  //  memo zip pipeline reject partition publish gate memoize zip callback option 
+  //  partition cache sentinel guard invalidate guard sync stream option tuple event 
+  //  eager sort handler group state result sync fulfilled fulfilled zip compose 
+  //  component project props gate dispatcher invalidate debounce queue hook partition keep 
+  //  debounce stream throttle observer lazy pipeline guard map scan eager partition 
+  //  effect reject pair tuple scan invalidate pair map guard buffer invalidate 
+  //  render option throttle compose sentinel handler filter keep render sync state 
+  //  render async publish memo render observer fulfilled compose ref throttle sentinel 
+  //  drop ref context merge callback ref reject publish project fulfilled memo 
+  //  cache either option gate scan option cache subscribe group zip reduce 
+  //  hook ref memo fulfilled throttle filter sort await sync pair throttle 
+  //  subscribe publish pending partition dispatcher ref keep callback pure partition pair 
+  //  dispatcher handler await result guard memo render group debounce ref hook 
+  //  sentinel resolve project invalidate map debounce stream memo handler memoize merge 
+  //  keep event either drop reject reducer lazy observer effect either option 
+  //  invalidate await effect queue group select handler render memo pure stream 
+  //  filter eager stream lazy result keep memo result cache state buffer 
+  //  transform reducer compose map tuple transform dispatcher throttle effect reduce drop 
+  //  fold sort transform context option effect reducer memoize publish debounce render 
+  //  group resolve transform keep stream reduce throttle partition zip dispatcher pair 
+  //  sync drop project pending publish guard partition pair option fold pair 
+  //  component props observer resolve state pipeline hook pure reject select compose 
+  //  tuple map async filter map publish stream scan tuple scan drop 
+  //  callback reducer hook either subscribe lazy memoize subscribe hook event event 
+  //  lazy cache map async sort reduce stream map cache pipeline result 
+  //  either zip component lazy await dispatcher memo await render stream transform 
+  //  zip map throttle effect reducer props render fulfilled ref handler handler 
+  //  hook project select context pipeline eager project component option select await 
+  //  pure observer cache transform subscribe context transform sentinel guard observer effect 
+  //  sort memo lazy hook zip lazy fulfilled queue queue pure callback 
+  //  publish debounce pending keep fold scan props
+  */
+})();
+
+// mod-0015 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[15] = {
+    id: 15,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0015';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '12');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  await lazy throttle fulfilled sync effect pair queue memoize partition select tuple 
+  //  pending props async queue async either reducer buffer merge callback queue 
+  //  memoize sentinel option eager observer pure keep sync publish merge eager 
+  //  subscribe memo debounce map context pipeline component subscribe component subscribe select 
+  //  await group fold result scan sync reducer memoize fulfilled eager handler 
+  //  pure ref resolve sentinel transform resolve zip result await subscribe keep 
+  //  tuple drop await lazy reject zip effect reject result lazy cache 
+  //  pure handler merge memoize await dispatcher effect debounce memo sentinel partition 
+  //  subscribe component eager hook pending reject component memo fold select subscribe 
+  //  select state context keep async stream result component select invalidate subscribe 
+  //  state merge buffer await tuple either props pending pair reducer reject 
+  //  await invalidate filter either throttle sort invalidate zip callback debounce memo 
+  //  pair ref await effect hook tuple callback eager render queue filter 
+  //  fold reject stream pair dispatcher eager option buffer subscribe invalidate effect 
+  //  select memoize fulfilled cache fulfilled reduce cache pair async tuple reduce 
+  //  sync sync zip gate queue memoize scan zip throttle keep subscribe 
+  //  await transform tuple tuple pair handler await dispatcher cache project merge 
+  //  sync group handler lazy sentinel eager map hook render sync option 
+  //  pair lazy memo group debounce result async memoize project memo reject 
+  //  fold merge merge map eager dispatcher scan async hook scan drop 
+  //  hook guard buffer result guard gate compose stream pure queue map 
+  //  callback publish render render invalidate drop buffer event hook handler guard 
+  //  memo throttle sync resolve props pure debounce pair buffer lazy guard 
+  //  project context stream queue component ref async select reduce project queue 
+  //  reduce effect transform guard publish reduce hook throttle props props cache 
+  //  component option event select gate callback select filter reject reducer event 
+  //  buffer select cache memoize await result result map fold render pipeline 
+  //  memoize scan debounce pair ref publish cache reducer pending context invalidate 
+  //  dispatcher guard reducer sync memo ref filter project queue pipeline hook 
+  //  await throttle drop result throttle transform buffer sync pair gate memo 
+  //  resolve gate sort async pure async zip props observer memoize keep 
+  //  pair invalidate fold component await event tuple reject render ref fold 
+  //  group zip invalidate pure handler debounce filter pure drop group dispatcher 
+  //  compose cache transform callback observer result either await stream pending select 
+  //  select guard context map props gate observer publish scan fulfilled queue 
+  //  sort select callback cache reducer hook sync hook sync debounce memo 
+  //  partition group cache drop filter await either subscribe subscribe merge guard 
+  //  result context result partition merge reducer tuple handler lazy reducer publish 
+  //  handler stream resolve filter publish callback observer eager reducer cache gate 
+  //  buffer resolve pair eager throttle buffer cache option debounce scan filter 
+  //  sentinel ref reducer fold context effect hook merge map cache zip 
+  //  async reject reject select fulfilled render invalidate either filter reject eager 
+  //  scan lazy component project zip component buffer option sentinel option fold 
+  //  async pair fold stream reject group guard component resolve stream publish 
+  //  ref fold gate reject context result render scan subscribe tuple select 
+  //  queue sort queue project merge gate props reducer debounce hook cache 
+  //  zip result keep group async stream zip queue event async merge 
+  //  sync dispatcher memo eager project event project state reject option cache 
+  //  scan async pipeline zip cache transform partition handler props queue group 
+  //  fold pipeline cache pending map hook transform effect component props gate 
+  //  render state project memo project memo result sentinel stream eager dispatcher 
+  //  lazy map queue drop sync props callback project ref context gate 
+  //  pipeline guard eager sentinel subscribe component group pending debounce hook render 
+  //  tuple context stream fold render queue observer memo project invalidate eager 
+  //  cache pair scan ref project keep sentinel throttle callback transform reduce 
+  //  memo cache debounce result group keep component sync partition queue callback 
+  //  pipeline partition fulfilled keep ref fulfilled subscribe ref keep reject pending 
+  //  event ref memoize fold subscribe render hook transform compose filter handler 
+  //  props memo reject debounce select await callback hook context sync memo 
+  //  lazy pending publish component fold fulfilled option ref component keep buffer 
+  //  eager option memoize subscribe group reducer gate keep drop guard memo 
+  //  tuple props group props handler buffer scan dispatcher memoize render cache 
+  //  resolve pending hook dispatcher pending context resolve observer component eager sentinel 
+  //  fulfilled dispatcher subscribe sentinel observer context buffer resolve compose buffer pure 
+  //  buffer reducer option memoize component either ref render group partition sort 
+  //  either fold fold handler publish queue buffer handler keep invalidate memo 
+  //  compose scan effect debounce hook pair compose project fulfilled tuple subscribe 
+  //  memo filter filter sort option subscribe reducer sentinel project gate dispatcher 
+  //  zip await invalidate buffer ref async context reducer zip partition subscribe 
+  //  invalidate compose await memoize result effect handler memo gate pipeline debounce 
+  //  scan group render option hook render merge memo merge pair debounce 
+  //  debounce stream partition ref event pipeline component throttle drop option async 
+  //  context map compose state debounce gate lazy observer transform props handler 
+  //  render fold cache eager pipeline resolve reject gate filter queue callback 
+  //  buffer eager fulfilled sentinel tuple select cache zip props pipeline callback 
+  //  reject queue buffer transform transform invalidate lazy pending map dispatcher ref 
+  //  props eager reducer publish callback zip filter reject guard props partition 
+  //  result pair transform queue throttle callback map observer memoize lazy context 
+  //  scan reducer filter guard fulfilled filter observer publish scan await pair 
+  //  either drop sort map props debounce await callback observer handler cache 
+  //  memoize project map lazy ref context guard map subscribe observer event 
+  //  debounce keep group debounce merge await ref gate eager props effect 
+  //  project pending reject zip props result tuple map buffer buffer group 
+  //  partition resolve invalidate throttle fold render publish merge option either zip 
+  //  throttle render fold hook option sort keep select publish reject result 
+  //  throttle compose pipeline compose sort buffer scan context sort sentinel pair 
+  //  transform ref context pending reduce transform throttle component keep callback lazy 
+  //  state option option subscribe pending ref project eager async debounce component 
+  //  throttle fold pending reducer reducer pure reduce resolve reject cache reduce 
+  //  pipeline props gate lazy map sentinel render sentinel memoize guard gate 
+  //  sentinel memoize observer eager keep result either debounce await queue memo 
+  //  reject ref render props project reduce filter subscribe event callback keep 
+  //  map publish memoize merge sync observer reducer pair reduce render fold 
+  //  context dispatcher event callback pair lazy dispatcher filter render reject memo 
+  //  fulfilled guard cache debounce reducer ref merge async subscribe scan fulfilled 
+  //  either handler select cache reject context reject compose observer throttle scan 
+  //  sync effect await pending publish sort partition handler partition publish scan 
+  //  event props pure queue ref merge callback callback reject reduce drop 
+  //  gate pending filter effect fold merge await stream await select props 
+  //  throttle dispatcher lazy scan compose sentinel debounce stream reducer fold observer 
+  //  scan compose handler lazy dispatcher compose cache either map option throttle 
+  //  effect fulfilled pending component filter observer stream buffer pipeline render zip 
+  //  publish queue sync context fold tuple await resolve pure queue reject 
+  //  ref eager pending state invalidate invalidate eager state guard zip lazy 
+  //  select async async pipeline map compose pending sync reducer throttle stream 
+  //  memoize reducer filter state gate keep either sort fold reject pipeline 
+  //  handler queue drop reduce pure merge ref observer invalidate map reduce 
+  //  async hook tuple lazy reducer drop guard cache debounce keep compose 
+  //  filter guard partition effect effect publish callback event scan dispatcher hook 
+  //  map event context async pending either memo callback compose resolve memo 
+  //  eager tuple zip pending pure debounce context state merge sentinel compose 
+  //  component guard guard merge throttle buffer memoize group publish zip cache 
+  //  either cache partition memoize select observer compose observer keep callback ref 
+  //  subscribe throttle sync invalidate reduce reducer publish ref render drop select 
+  //  throttle scan ref pending resolve sort keep reject compose transform state 
+  //  pure fold eager debounce props throttle queue debounce keep await sort 
+  //  option publish invalidate effect publish state scan handler map component memoize 
+  //  stream compose reduce pair queue buffer component cache compose ref async 
+  //  buffer publish map memoize context ref guard fold map async event 
+  //  pipeline await dispatcher subscribe stream publish memoize stream merge publish dispatcher 
+  //  zip scan reject guard reduce props partition merge eager component select 
+  //  project select component compose sync sync event buffer async buffer lazy 
+  //  hook component scan project project event map render throttle fulfilled compose 
+  //  keep pipeline props stream buffer pending gate partition reducer select fold 
+  //  memo ref memo select props throttle sync scan partition filter memoize 
+  //  async subscribe dispatcher memoize either publish handler invalidate select transform gate 
+  //  throttle render reject observer invalidate invalidate component subscribe debounce subscribe guard 
+  //  handler dispatcher render gate ref either zip map partition compose debounce 
+  //  tuple either component event subscribe hook map await pure observer eager 
+  //  drop pair keep handler sort filter either lazy project context effect 
+  //  pair async reducer pair either project tuple throttle render invalidate drop 
+  //  throttle callback map render props partition stream filter component context reject 
+  //  select debounce memoize memo project sentinel event stream sort handler select 
+  //  memo dispatcher gate sync throttle partition hook handler merge tuple async 
+  //  state subscribe keep stream partition cache stream handler pipeline keep subscribe 
+  //  merge filter sentinel lazy memoize drop props props publish hook props 
+  //  merge pipeline observer sentinel memoize render fulfilled event gate pair group 
+  //  memoize zip component pair option result cache render zip pipeline await 
+  //  pure buffer guard group keep project select compose either resolve sort 
+  //  observer component publish pair reduce drop props handler keep state props 
+  //  sync stream observer transform option option ref event memoize resolve sync 
+  //  group gate event filter option zip callback reducer fold props props 
+  //  pending merge merge result queue resolve effect throttle event debounce option 
+  //  stream handler partition keep dispatcher queue fold filter guard scan zip 
+  //  queue filter pair hook pipeline scan invalidate scan context handler tuple 
+  //  stream throttle props either drop subscribe dispatcher dispatcher fulfilled publish either 
+  //  throttle observer async render ref either map filter sync keep publish 
+  //  publish eager callback memoize buffer lazy select memoize props effect drop 
+  //  observer component result hook either sentinel eager memo resolve sync tuple 
+  //  dispatcher fold props callback render memo sort invalidate pending publish either 
+  //  context buffer callback drop merge compose result throttle debounce resolve invalidate 
+  //  pending fold gate reducer zip drop cache subscribe filter sort group 
+  //  tuple subscribe reducer scan subscribe group reduce resolve sync pending transform 
+  //  result pipeline cache pipeline map sentinel pure effect resolve sort result 
+  //  gate filter event await keep keep await context render buffer callback 
+  //  pipeline fulfilled event reducer props eager debounce effect
+  */
+})();
+
+// mod-0016 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[16] = {
+    id: 16,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0016';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '311');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  publish async event sort memoize sentinel buffer guard zip either cache effect 
+  //  group eager zip eager merge reduce sort lazy zip publish zip 
+  //  cache transform filter fulfilled zip compose props callback pending group partition 
+  //  effect gate pair group handler reducer await compose gate eager memo 
+  //  state merge sync memo hook throttle state pending select fold memoize 
+  //  sort sync pipeline reducer either sentinel invalidate state filter fold queue 
+  //  sync handler option props reduce component group stream memoize zip memo 
+  //  reduce throttle sync guard merge sort stream group partition state lazy 
+  //  drop project fold debounce transform subscribe map callback invalidate merge pending 
+  //  throttle gate sync merge scan handler sync map props project scan 
+  //  fulfilled subscribe reject pair drop merge hook lazy resolve observer debounce 
+  //  either callback reduce props select pure fold reject dispatcher eager component 
+  //  observer lazy option pending hook observer sort either compose memo lazy 
+  //  context tuple publish tuple effect memo either throttle keep dispatcher props 
+  //  transform pure component observer result hook reduce pure transform reject effect 
+  //  throttle context gate pure subscribe stream hook props select hook publish 
+  //  pipeline ref tuple option either memo effect map publish drop props 
+  //  subscribe context state buffer tuple reducer zip subscribe dispatcher pair ref 
+  //  async project fulfilled lazy callback reduce drop context fold event debounce 
+  //  either pair event partition render map state fulfilled lazy pending throttle 
+  //  option sync event component pipeline eager reducer subscribe async result hook 
+  //  dispatcher memoize callback tuple filter component observer lazy fulfilled resolve buffer 
+  //  component memo reject callback tuple memoize select project lazy observer keep 
+  //  filter event tuple pair debounce stream either async await reduce async 
+  //  invalidate gate fold dispatcher memo sentinel pipeline cache lazy props select 
+  //  ref reducer callback merge hook stream publish project cache reduce context 
+  //  compose fold memoize observer sort resolve callback pair handler map group 
+  //  handler effect ref pair reducer sort pending gate buffer fold throttle 
+  //  handler eager invalidate transform merge project fold sync subscribe sort select 
+  //  zip subscribe observer partition debounce group buffer memo render project eager 
+  //  keep throttle merge result publish observer debounce gate cache hook guard 
+  //  memo throttle merge partition transform subscribe reduce publish tuple select fulfilled 
+  //  sync callback map queue props buffer sync sentinel project memo state 
+  //  reducer effect map option handler queue dispatcher publish fold event select 
+  //  reduce result throttle option buffer fulfilled throttle cache zip pipeline effect 
+  //  map filter component render component observer effect zip dispatcher publish debounce 
+  //  project stream cache memo select map memo group project scan debounce 
+  //  gate effect observer eager stream memo callback component reduce result event 
+  //  sync select ref scan async invalidate ref lazy gate props scan 
+  //  sort reject eager result component filter merge component filter callback sentinel 
+  //  zip guard filter group pair reduce project drop filter event cache 
+  //  memo pending eager context partition context handler gate fulfilled debounce effect 
+  //  async result event memo reject observer reduce render observer stream handler 
+  //  fold state scan state subscribe group callback reject merge handler group 
+  //  merge state transform debounce stream fulfilled fold memoize stream compose sentinel 
+  //  transform state result async keep pair scan reducer observer pair scan 
+  //  fulfilled guard group debounce state async publish reject resolve sync pending 
+  //  compose map pair gate filter memoize zip effect debounce project render 
+  //  tuple group buffer guard reject pending await sentinel compose reduce guard 
+  //  await reduce map result transform fulfilled state tuple queue throttle throttle 
+  //  fold sentinel async queue sort reduce pending event eager eager state 
+  //  pending fold guard subscribe project merge project tuple stream gate event 
+  //  debounce zip memoize observer result async sentinel pending hook guard invalidate 
+  //  debounce drop fold stream merge lazy guard keep fulfilled memo subscribe 
+  //  transform sort pure queue sort await memoize either map drop reduce 
+  //  sync result merge reducer pending lazy lazy publish compose publish pair 
+  //  gate merge drop cache async compose handler tuple map lazy scan 
+  //  drop subscribe pending option fold render zip stream group async eager 
+  //  throttle transform select merge debounce observer pure async sort throttle observer 
+  //  await props buffer subscribe dispatcher project project queue pure throttle callback 
+  //  component stream debounce sync component zip resolve dispatcher event tuple reduce 
+  //  compose publish publish memoize map buffer invalidate drop subscribe pair partition 
+  //  reduce event transform resolve filter pending hook invalidate props zip map 
+  //  eager stream publish result debounce cache component pure pending render component 
+  //  reducer sync debounce fulfilled sync pair memoize filter throttle subscribe callback 
+  //  effect stream dispatcher pipeline compose props reducer reducer component keep tuple 
+  //  buffer event state keep scan observer scan partition publish filter hook 
+  //  eager select fold select fold stream either group throttle event effect 
+  //  subscribe observer pure fulfilled resolve stream state sync stream buffer either 
+  //  buffer pair stream component stream tuple compose effect debounce keep event 
+  //  fulfilled buffer reject memo event gate gate buffer partition keep eager 
+  //  buffer zip props pending lazy sort reduce observer option fulfilled observer 
+  //  filter stream zip select sort props drop gate result reject eager 
+  //  merge state callback memo sort either component memoize tuple gate handler 
+  //  reject stream publish gate observer filter partition invalidate transform memoize scan 
+  //  project filter guard scan merge reducer scan fulfilled sentinel handler ref 
+  //  stream zip hook result resolve memo zip event select buffer await 
+  //  pipeline keep group tuple project zip event select fulfilled state sentinel 
+  //  fold sync stream handler guard compose either queue callback dispatcher cache 
+  //  partition merge scan option option props ref reducer context reduce compose 
+  //  tuple callback scan group subscribe sentinel keep fulfilled fold eager partition 
+  //  transform result reduce effect effect props ref memoize await dispatcher scan 
+  //  effect stream observer zip pending reduce handler pending memoize pure pending 
+  //  props partition event map async reject invalidate context pending queue memoize 
+  //  memoize publish eager memoize render queue fold state group resolve event 
+  //  project dispatcher state throttle throttle publish context props subscribe effect buffer 
+  //  gate await ref handler state hook dispatcher pure reject compose stream 
+  //  transform reducer transform invalidate scan option handler filter reducer stream throttle 
+  //  guard observer map queue map props component hook dispatcher debounce group 
+  //  option props transform lazy stream ref reduce transform sort pipeline ref 
+  //  ref buffer props select guard drop either hook sentinel gate callback 
+  //  render async fold keep ref scan queue throttle filter throttle async 
+  //  select option map fold publish memoize drop select sentinel props tuple 
+  //  pending hook component debounce state result event cache stream sort drop 
+  //  event project effect fold async effect memo cache context lazy debounce 
+  //  select reduce debounce ref pending guard guard merge props transform debounce 
+  //  guard project component map scan sync project guard subscribe pair render 
+  //  guard project async throttle memoize compose compose compose async async handler 
+  //  await reduce tuple effect transform handler map handler transform callback reducer 
+  //  sentinel pipeline queue reducer callback sort either pending reject reject context 
+  //  fold memoize pipeline group component sort reduce pair component invalidate handler 
+  //  fold reject dispatcher invalidate select effect buffer pair transform effect state 
+  //  context scan sync hook sort buffer dispatcher zip drop zip debounce 
+  //  sync partition compose hook sentinel guard resolve resolve tuple handler pending 
+  //  state keep pending props scan memo state guard zip throttle ref 
+  //  sentinel reduce reducer fulfilled project result publish state cache either tuple 
+  //  memo reduce transform pure fold stream lazy keep compose sentinel pure 
+  //  throttle async project partition ref option pipeline pure pending memo filter 
+  //  callback cache reject scan compose render either stream gate either group 
+  //  reducer zip gate scan memoize effect throttle dispatcher handler either zip 
+  //  group buffer async event memoize callback sort render buffer either throttle 
+  //  option scan keep map transform debounce publish await memoize option subscribe 
+  //  callback sync transform merge pair component component compose pure merge cache 
+  //  callback group keep reducer either pair ref cache zip dispatcher await 
+  //  pure publish pair publish sort render await sort observer cache drop 
+  //  throttle await debounce eager memoize observer reduce memoize subscribe zip stream 
+  //  debounce sync compose ref throttle sentinel handler map await callback eager 
+  //  await gate option either context transform zip lazy callback gate partition 
+  //  sort lazy fold lazy memoize callback await result handler partition zip 
+  //  option event reducer result invalidate scan pure result context context async 
+  //  zip gate queue pipeline lazy pipeline props state map group lazy 
+  //  drop keep state either sync handler invalidate transform scan throttle component 
+  //  option resolve eager guard invalidate guard ref resolve merge cache eager 
+  //  map event context keep project compose stream event pure fold scan 
+  //  throttle merge pure queue props compose state guard partition pending stream 
+  //  scan zip sync event drop queue tuple drop group eager queue 
+  //  fold handler dispatcher group sentinel state observer zip drop throttle buffer 
+  //  observer debounce option partition partition resolve debounce reject sort debounce invalidate 
+  //  pipeline map pair stream invalidate throttle fulfilled tuple tuple component callback 
+  //  hook state pair group debounce sort props hook component pipeline partition 
+  //  merge reducer state merge queue hook pure throttle project component option 
+  //  callback gate sync resolve transform tuple transform sync compose transform map 
+  //  stream async compose compose subscribe keep async reducer reject publish merge 
+  //  transform sort event props publish tuple await pair filter resolve debounce 
+  //  async map sync partition observer guard select hook buffer result guard 
+  //  component scan queue subscribe pair group subscribe lazy effect async compose 
+  //  filter result sentinel invalidate dispatcher props drop observer compose reducer subscribe 
+  //  subscribe debounce map pipeline publish keep map reducer map select fulfilled 
+  //  throttle ref group guard event reducer stream group pure select sort 
+  //  scan event scan either option sync guard gate either either eager 
+  //  group project select cache keep dispatcher handler filter lazy pure select 
+  //  subscribe memo buffer component select partition effect filter cache keep context 
+  //  debounce either ref invalidate lazy effect keep fulfilled publish transform handler 
+  //  ref callback gate observer reducer queue ref scan handler lazy async 
+  //  throttle group group throttle state ref transform context transform pair invalidate 
+  //  group observer project pipeline cache scan effect callback memoize sort stream 
+  //  fold stream publish publish pending option map reduce ref compose reduce 
+  //  publish debounce throttle sort stream memo resolve keep ref group debounce 
+  //  context await option invalidate hook option sync dispatcher partition partition debounce 
+  //  either group fold zip sync effect result publish pair fulfilled result 
+  //  pending callback throttle map handler state either dispatcher fulfilled option gate 
+  //  buffer project scan context result reject dispatcher dispatcher hook select await 
+  //  ref dispatcher render subscribe sync context pending memoize compose reduce compose 
+  //  either throttle pipeline tuple drop project pipeline hook memoize observer render 
+  //  effect handler lazy compose throttle hook stream result partition fulfilled partition 
+  //  debounce sort compose
+  */
+})();
+
+// mod-0017 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[17] = {
+    id: 17,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0017';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '295');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  pipeline project map state guard result partition tuple option sort pure publish 
+  //  lazy gate sync fulfilled publish transform memoize throttle cache pure buffer 
+  //  async render reducer cache transform hook context pure context either dispatcher 
+  //  project option fold event observer memo hook memoize pair ref resolve 
+  //  await group memoize sync reject group transform reject observer hook effect 
+  //  sync pair either buffer select event buffer transform component partition await 
+  //  drop pipeline pure buffer memo debounce callback handler lazy invalidate pipeline 
+  //  callback memoize eager state select pair ref reject cache fold hook 
+  //  partition zip lazy await callback props context option queue option pair 
+  //  transform drop effect pure keep component project pure pipeline queue throttle 
+  //  stream reduce effect stream pending event resolve compose option memo render 
+  //  await memo eager pending map tuple map hook async observer event 
+  //  debounce queue context subscribe context subscribe resolve cache gate render lazy 
+  //  zip handler props reject transform pure fold pipeline reducer reject select 
+  //  handler memo project callback sentinel fold gate reject handler reducer fulfilled 
+  //  drop callback ref pure map guard callback group context filter effect 
+  //  gate zip props props sentinel partition keep hook partition fulfilled hook 
+  //  observer throttle tuple either props sync ref hook pipeline event pending 
+  //  transform dispatcher memo resolve eager option event event sync sort render 
+  //  event invalidate reduce pair reducer buffer compose buffer transform result merge 
+  //  ref resolve either map subscribe dispatcher callback guard handler result pure 
+  //  stream pair keep fulfilled publish throttle drop cache props reduce fulfilled 
+  //  async compose stream pipeline debounce fulfilled zip pipeline reject await ref 
+  //  reducer sort drop fulfilled guard filter lazy fold sort zip sync 
+  //  render component pending reject context render context sync map dispatcher context 
+  //  pending pipeline await pipeline reject tuple async pure throttle subscribe effect 
+  //  throttle stream select component reduce result compose sentinel project result scan 
+  //  scan observer reduce sync pending handler pair sentinel reject option pair 
+  //  memoize context option event reduce publish guard zip compose eager pipeline 
+  //  pipeline observer state fulfilled subscribe transform cache reject pending pure sync 
+  //  hook merge cache context sort lazy either guard select throttle async 
+  //  effect transform partition partition pipeline pair queue render project sentinel debounce 
+  //  reject merge reducer subscribe ref gate render effect queue debounce keep 
+  //  throttle merge merge buffer compose sync scan zip subscribe memo drop 
+  //  component group await compose either keep pure handler tuple gate eager 
+  //  observer filter memo handler props reject group async either scan resolve 
+  //  sync group context merge cache guard ref drop component reduce drop 
+  //  stream map subscribe fulfilled dispatcher sync either invalidate partition gate drop 
+  //  pending dispatcher handler scan resolve state props buffer context async queue 
+  //  effect render zip reject memo select memo fulfilled observer async fold 
+  //  render pipeline callback handler zip resolve option async handler zip stream 
+  //  either group props group async guard tuple throttle ref memo stream 
+  //  drop pipeline sentinel cache await observer callback render tuple pending subscribe 
+  //  option reducer buffer pure debounce memoize eager reject await filter gate 
+  //  state ref resolve invalidate publish debounce group hook either resolve scan 
+  //  state state dispatcher group props buffer eager sync pending state scan 
+  //  gate ref drop reducer component memoize observer eager map fold sync 
+  //  result pipeline component drop drop subscribe keep select callback ref tuple 
+  //  pair context fold partition props render sort component zip resolve filter 
+  //  pure stream sync keep result either zip transform fold pending reject 
+  //  drop either filter buffer context publish option tuple pipeline merge sync 
+  //  stream eager fulfilled invalidate queue dispatcher lazy async memoize dispatcher async 
+  //  debounce keep effect sentinel eager scan publish drop reject ref guard 
+  //  buffer effect state either handler either await fulfilled memo select fulfilled 
+  //  props render queue effect pair debounce reducer select stream result props 
+  //  pair hook async guard merge project pair zip memo publish gate 
+  //  publish state throttle state filter scan gate guard gate dispatcher debounce 
+  //  tuple state callback project component project cache effect cache event sync 
+  //  context handler sentinel fold keep effect pair component merge gate queue 
+  //  observer context sentinel event throttle option debounce result keep throttle option 
+  //  resolve pure memo handler partition buffer debounce either keep component observer 
+  //  dispatcher gate keep stream pure memoize reducer fold pending project observer 
+  //  event context component throttle option handler compose pipeline state throttle sort 
+  //  queue publish drop sync merge either invalidate invalidate cache stream scan 
+  //  reject context callback await pair select ref gate fold keep merge 
+  //  keep resolve subscribe reduce group callback select event eager context buffer 
+  //  throttle transform filter lazy callback gate buffer partition async callback option 
+  //  keep either zip sort pending group drop result buffer buffer component 
+  //  cache props transform pair reduce project await subscribe observer pipeline queue 
+  //  ref memo either pair resolve partition sort throttle tuple guard stream 
+  //  result handler tuple buffer render component option resolve lazy sentinel scan 
+  //  memo scan fulfilled result stream project context stream reducer sentinel publish 
+  //  pair invalidate lazy context debounce reduce drop either sentinel callback cache 
+  //  sync render pending observer filter sync zip throttle project pure event 
+  //  dispatcher keep effect state lazy reducer option memo stream debounce debounce 
+  //  buffer sentinel either pending gate scan memoize reducer reducer event sort 
+  //  tuple transform sentinel render reducer merge zip reducer context invalidate zip 
+  //  context dispatcher stream pending stream pipeline resolve debounce context throttle context 
+  //  state component cache group memo queue memoize merge lazy eager memo 
+  //  event state queue buffer component context render keep scan buffer tuple 
+  //  state invalidate hook dispatcher sort compose result option queue buffer debounce 
+  //  gate resolve throttle hook either resolve component effect ref await group 
+  //  fulfilled observer publish effect compose props dispatcher partition partition reduce stream 
+  //  keep eager select context group transform memo eager group effect context 
+  //  zip queue sort compose hook ref memoize zip effect scan lazy 
+  //  pair memoize buffer render hook scan guard pure callback guard publish 
+  //  await handler pending effect async await hook fulfilled merge event effect 
+  //  publish cache gate callback queue memoize map reducer handler sentinel eager 
+  //  stream subscribe eager eager context event event partition pending reduce gate 
+  //  component context project subscribe publish drop pipeline render result sync either 
+  //  sentinel guard group eager group stream gate invalidate eager await merge 
+  //  component subscribe pending event either lazy invalidate map observer lazy memo 
+  //  lazy either pure state zip sort component merge ref project merge 
+  //  memoize props reject await select sort subscribe hook reduce pair option 
+  //  sentinel pending pipeline fold pending partition await project sort fold sync 
+  //  sync sync sort reducer gate buffer sync sentinel callback project reducer 
+  //  invalidate sync transform pending eager eager await subscribe handler pending either 
+  //  subscribe cache effect observer queue dispatcher buffer cache drop scan filter 
+  //  sentinel state eager reject await pending state stream zip sync reduce 
+  //  scan gate reject observer resolve reject sync context props drop pair 
+  //  queue callback state state pair props merge drop fold state either 
+  //  buffer component merge compose either stream queue subscribe scan subscribe reject 
+  //  component render reducer hook scan await context stream hook transform debounce 
+  //  eager eager context pipeline sentinel stream sentinel fold map publish gate 
+  //  select callback invalidate lazy invalidate sort group pair eager project callback 
+  //  project event partition merge async tuple memoize cache await callback sync 
+  //  throttle transform partition project effect sort stream either result context result 
+  //  async pending guard pending pair dispatcher async debounce partition ref event 
+  //  merge subscribe project transform state scan option buffer zip handler map 
+  //  guard transform stream async stream partition await sort callback render dispatcher 
+  //  pure compose keep memo effect project option component throttle zip buffer 
+  //  project resolve publish event effect buffer fulfilled sort sort dispatcher handler 
+  //  merge effect publish handler ref sync compose dispatcher dispatcher async filter 
+  //  result handler sentinel tuple handler lazy compose ref component throttle buffer 
+  //  dispatcher context reduce ref publish dispatcher scan hook either props effect 
+  //  tuple dispatcher subscribe project result zip handler props sync publish sentinel 
+  //  select props invalidate map state pure debounce sync lazy state handler 
+  //  ref buffer pure partition drop async effect lazy drop reduce option 
+  //  event event select lazy group fold scan reject scan sort queue 
+  //  group pair subscribe effect hook async pipeline select hook debounce pure 
+  //  observer async select publish dispatcher resolve async fold context project lazy 
+  //  stream state scan stream observer select throttle hook project transform result 
+  //  fulfilled async lazy event hook await resolve publish tuple guard fulfilled 
+  //  group cache invalidate throttle pure hook handler gate effect buffer pipeline 
+  //  await subscribe hook pair await dispatcher pending state pending effect guard 
+  //  project hook pure option option memo fold group queue guard lazy 
+  //  pipeline project pipeline filter sync filter select drop lazy queue scan 
+  //  lazy guard group fold reject zip option resolve resolve handler async 
+  //  result memo resolve keep callback scan ref cache queue subscribe hook 
+  //  eager handler zip publish ref gate resolve group gate project event 
+  //  handler observer pair sentinel reducer dispatcher throttle memo tuple drop cache 
+  //  async hook sort render memoize guard keep stream hook publish context 
+  //  either ref guard handler callback keep pipeline transform hook filter transform 
+  //  debounce zip throttle project observer render option reduce state zip handler 
+  //  filter dispatcher invalidate memoize select project stream merge eager observer merge 
+  //  sentinel option sync lazy publish filter filter merge sync publish render 
+  //  drop compose fulfilled filter map select async project invalidate keep handler 
+  //  scan compose reduce component gate queue compose cache hook debounce handler 
+  //  result resolve either drop result pair drop context pipeline map sort 
+  //  publish pending debounce drop resolve invalidate component merge callback tuple reduce 
+  //  fold sync transform stream observer transform callback map partition async reducer 
+  //  event async sentinel props transform async scan reduce sync sync fulfilled 
+  //  drop scan filter partition pending map publish invalidate async context resolve 
+  //  project invalidate queue tuple subscribe fold hook reducer sort select invalidate 
+  //  resolve map fold either select option queue throttle select cache observer 
+  //  ref drop memoize event reducer reject reduce dispatcher memoize pure memoize 
+  //  hook props cache option keep reduce option keep memo resolve cache 
+  //  debounce pair resolve cache buffer context gate dispatcher eager guard tuple 
+  //  tuple invalidate lazy pair hook fulfilled guard callback component pending gate 
+  //  invalidate map map invalidate transform gate eager reject props sync pair 
+  //  result reject memo zip ref component await reduce hook pair pending 
+  //  stream pipeline handler context reject pending event throttle stream transform observer 
+  //  zip select fold fold gate fold project pipeline memoize partition subscribe 
+  //  throttle option pure drop subscribe reduce tuple dispatcher callback map pipeline 
+  //  handler ref drop invalidate memo dispatcher pure reduce pair event invalidate 
+  //  lazy merge queue pipeline observer memoize select
+  */
+})();
+
+// mod-0018 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[18] = {
+    id: 18,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0018';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '223');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  gate resolve subscribe memoize partition sync pipeline guard compose keep partition pipeline 
+  //  partition render filter transform keep transform sentinel await context partition sort 
+  //  result sentinel transform map sync reject reduce filter await drop scan 
+  //  debounce fulfilled resolve hook buffer async sort pure option effect filter 
+  //  callback map subscribe option invalidate state cache throttle props partition filter 
+  //  debounce component transform scan result context guard lazy memoize callback reject 
+  //  async pure drop partition partition group ref fold fold publish state 
+  //  callback sync debounce project memo props transform eager pure keep compose 
+  //  keep await memoize drop async either result state keep result guard 
+  //  gate await sentinel observer sort scan zip result callback callback fold 
+  //  event state sync group debounce scan memoize guard handler filter memoize 
+  //  dispatcher observer compose sentinel scan lazy debounce context sort fold guard 
+  //  either component observer throttle select compose pair render handler props stream 
+  //  pure subscribe guard partition lazy ref stream debounce group partition memoize 
+  //  eager group context cache fold guard pending debounce state eager guard 
+  //  throttle debounce invalidate event result context handler observer keep state effect 
+  //  gate props reject stream select stream stream eager effect compose reducer 
+  //  sort sentinel filter await await result reduce zip buffer compose result 
+  //  fulfilled keep merge effect transform option stream cache queue context group 
+  //  memoize pipeline transform transform sentinel publish observer tuple sentinel effect group 
+  //  publish compose pair partition props hook async map group await drop 
+  //  context transform memoize fold partition observer callback tuple ref compose buffer 
+  //  reduce pair context sort async fold render merge eager pipeline result 
+  //  select memo zip effect fold select dispatcher invalidate group compose context 
+  //  filter scan eager merge handler props option either fulfilled debounce pipeline 
+  //  reduce project cache await project context event callback tuple pure memoize 
+  //  reject resolve map throttle async async select cache eager drop guard 
+  //  memo reducer ref reject select handler compose reduce group merge memoize 
+  //  filter drop guard select context lazy props sync group stream pending 
+  //  props props pipeline buffer cache pending guard pure zip throttle subscribe 
+  //  gate ref hook subscribe subscribe compose map observer result option group 
+  //  merge invalidate render map project project merge reject debounce invalidate drop 
+  //  async memo queue keep props handler event either render props subscribe 
+  //  zip reducer guard zip pair sort sort invalidate dispatcher ref lazy 
+  //  group sort ref component pending filter queue filter select publish drop 
+  //  invalidate project pure publish guard stream pending fulfilled state project event 
+  //  callback reduce component fulfilled project ref debounce merge observer gate either 
+  //  async transform queue queue zip transform keep sort invalidate select compose 
+  //  buffer pure reduce sort zip dispatcher reduce reducer partition group hook 
+  //  tuple stream filter context merge effect tuple drop cache observer render 
+  //  tuple result merge zip handler subscribe project keep memo pending throttle 
+  //  observer scan fold guard reducer gate tuple select dispatcher filter event 
+  //  async debounce reducer debounce component option lazy invalidate handler filter either 
+  //  reduce observer eager throttle sentinel group either component memoize select lazy 
+  //  zip select tuple state pure eager component scan sentinel invalidate await 
+  //  handler callback ref resolve lazy event cache memoize reduce sync component 
+  //  render pending async result memo state event pipeline guard sync memoize 
+  //  queue async keep pure pipeline memoize reject invalidate buffer event state 
+  //  stream guard compose pair map ref subscribe result project props fulfilled 
+  //  result pure sentinel buffer fold buffer sync props option stream filter 
+  //  queue context lazy callback ref hook component publish memo keep filter 
+  //  partition publish merge state component reduce eager tuple select keep project 
+  //  lazy gate render buffer hook either render pure partition tuple observer 
+  //  effect async debounce pure zip gate cache queue filter sync result 
+  //  sort stream gate subscribe debounce handler await lazy either reducer await 
+  //  callback compose observer publish result buffer project pair await compose callback 
+  //  pipeline scan select either tuple merge async drop pipeline queue eager 
+  //  state resolve component scan subscribe reducer transform sort reducer result component 
+  //  lazy debounce debounce sentinel guard option invalidate project state guard drop 
+  //  map merge buffer select throttle guard pending handler compose effect handler 
+  //  sentinel reducer lazy await group fold reduce result component drop transform 
+  //  buffer pipeline fold result filter handler render zip select handler cache 
+  //  reduce map buffer pure filter debounce drop observer either resolve pending 
+  //  scan throttle map publish hook scan render transform scan pipeline publish 
+  //  memo component resolve dispatcher reject lazy tuple buffer option queue dispatcher 
+  //  invalidate stream dispatcher handler effect lazy result context context dispatcher option 
+  //  guard either reject map lazy either buffer async lazy lazy keep 
+  //  cache sync guard component result invalidate either dispatcher cache await effect 
+  //  stream select fulfilled render option handler merge queue effect sync keep 
+  //  sort await fold reduce subscribe partition fold eager zip ref group 
+  //  component pair props callback tuple cache tuple pair queue observer sentinel 
+  //  buffer subscribe ref resolve invalidate lazy invalidate throttle buffer pure handler 
+  //  project pipeline drop memo select pure publish scan await scan state 
+  //  throttle zip event fulfilled callback handler fold state fulfilled stream transform 
+  //  dispatcher subscribe observer compose reject guard async handler buffer merge eager 
+  //  memoize render throttle publish observer sort context debounce lazy state queue 
+  //  lazy pair render merge stream context reject group publish guard merge 
+  //  sync tuple subscribe props observer debounce compose stream keep tuple publish 
+  //  either result sentinel pipeline sort cache pure drop transform project callback 
+  //  resolve component partition filter tuple pair project stream component map zip 
+  //  invalidate resolve debounce partition option partition throttle eager pipeline memo state 
+  //  merge async event compose either pipeline option eager dispatcher pipeline pending 
+  //  result cache lazy resolve sentinel state sentinel fold state buffer sentinel 
+  //  reduce fulfilled select publish stream guard ref project throttle cache result 
+  //  filter memo project observer buffer pending pipeline callback transform reducer invalidate 
+  //  keep reject either pending option guard partition pending subscribe context lazy 
+  //  sort reduce memo ref callback zip await context cache filter filter 
+  //  result zip reduce drop callback drop sentinel merge reducer zip stream 
+  //  effect reduce pipeline hook transform memoize zip keep lazy group either 
+  //  pair subscribe hook compose result guard async group props props fold 
+  //  await stream debounce zip guard keep handler project guard cache sentinel 
+  //  pipeline context props pair buffer lazy guard await either project lazy 
+  //  render queue guard transform resolve compose partition fold reject callback eager 
+  //  guard eager stream lazy partition component dispatcher merge drop transform sort 
+  //  fulfilled guard gate publish queue pair partition compose guard sentinel publish 
+  //  sync select filter debounce filter handler ref fulfilled either memoize callback 
+  //  transform gate pipeline fold buffer reducer sentinel memoize filter guard memoize 
+  //  project lazy dispatcher project resolve props context queue sync gate guard 
+  //  callback await drop project effect await reducer observer queue hook partition 
+  //  fold filter transform state zip invalidate tuple scan event await memo 
+  //  state pipeline lazy partition props await render reduce queue sync select 
+  //  zip select fulfilled pair scan memo fulfilled reducer scan throttle transform 
+  //  drop merge component publish drop zip cache sort cache gate event 
+  //  callback stream memoize keep compose fulfilled pure resolve render state transform 
+  //  event fulfilled fulfilled project callback tuple either invalidate event compose transform 
+  //  invalidate group project guard dispatcher transform effect tuple reducer zip reject 
+  //  buffer transform partition debounce event async cache sync await scan props 
+  //  state dispatcher callback memo guard callback lazy select keep async throttle 
+  //  reject pure state sort select pair memo guard resolve fulfilled gate 
+  //  zip stream sort memoize queue buffer state fulfilled transform zip debounce 
+  //  fulfilled effect sentinel fold sort select ref resolve zip await scan 
+  //  effect tuple scan gate reducer reject project guard result scan render 
+  //  group select sort project await gate component fold merge eager keep 
+  //  pure handler await throttle keep cache publish pending scan filter await 
+  //  memoize context effect pipeline scan resolve project pipeline publish state observer 
+  //  subscribe dispatcher cache effect context reject gate render props memo await 
+  //  result effect resolve compose ref publish buffer debounce fulfilled subscribe cache 
+  //  tuple result publish reject guard select gate fold merge lazy lazy 
+  //  async result context fulfilled memo gate guard callback throttle filter fulfilled 
+  //  group props await buffer await map reduce component resolve queue memoize 
+  //  sentinel guard publish sort component memo dispatcher zip async compose scan 
+  //  project memoize component sentinel project gate resolve ref sync sync scan 
+  //  group subscribe dispatcher await sort guard ref scan option sort transform 
+  //  map event sort map callback reduce invalidate partition pure event eager 
+  //  throttle filter debounce callback await project fold throttle merge publish sentinel 
+  //  memoize transform async transform render gate buffer await map observer async 
+  //  stream reduce queue effect merge invalidate pending publish partition cache fold 
+  //  pair filter reduce async invalidate option lazy drop observer compose fulfilled 
+  //  scan dispatcher partition state filter memoize callback sentinel zip tuple scan 
+  //  result fold compose props hook partition partition dispatcher merge ref transform 
+  //  keep publish invalidate reduce publish sentinel async event option lazy component 
+  //  fulfilled subscribe guard await subscribe debounce partition result fold callback effect 
+  //  pipeline event zip transform sentinel result observer pure dispatcher props drop 
+  //  filter ref handler pair event sentinel result gate map ref memo 
+  //  async stream transform resolve transform fulfilled observer props zip sort reduce 
+  //  stream option observer eager dispatcher handler gate eager memoize callback handler 
+  //  guard compose ref context dispatcher callback pending pair memo resolve project 
+  //  select group hook callback props props debounce effect reduce sync state 
+  //  pair throttle resolve await render reject gate reducer select reduce lazy 
+  //  pair pipeline async render event project pipeline component transform invalidate pure 
+  //  partition reduce debounce ref pure sort option await event ref reject 
+  //  stream lazy pending queue render option ref dispatcher stream map drop 
+  //  keep resolve eager component keep option stream sort zip sentinel queue 
+  //  queue keep fulfilled lazy drop dispatcher reject eager partition group invalidate 
+  //  async pipeline reduce drop throttle sync handler keep reducer reduce pipeline 
+  //  pair render subscribe await guard event subscribe reject resolve await reducer 
+  //  cache fulfilled sort select either event sync lazy memo cache render 
+  //  observer project select eager stream event result await fulfilled sentinel invalidate 
+  //  pending project cache dispatcher buffer reducer result merge effect sync queue 
+  //  dispatcher reject hook memo queue buffer guard keep guard map transform 
+  //  render sentinel reduce await sentinel filter handler dispatcher effect pipeline guard 
+  //  keep observer ref scan async sync gate lazy sync sync publish 
+  //  await scan sort async compose throttle subscribe pair gate publish scan 
+  //  props reduce await eager pipeline transform drop callback tuple gate buffer 
+  //  fulfilled partition option publish
+  */
+})();
+
+// mod-0019 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[19] = {
+    id: 19,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0019';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '238');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  reduce sync props partition pair effect keep scan pending invalidate partition map 
+  //  render drop component async fold queue reject callback sort pair memoize 
+  //  render resolve state invalidate pair ref gate debounce observer keep gate 
+  //  group queue guard sync memoize pair component render reducer option async 
+  //  cache transform stream handler hook callback fulfilled compose buffer project reduce 
+  //  invalidate memoize reduce partition partition scan pair guard scan merge component 
+  //  tuple render observer fulfilled throttle transform keep invalidate cache buffer tuple 
+  //  pure stream compose pure result await sync memoize component filter merge 
+  //  guard keep guard hook cache dispatcher drop sort subscribe option subscribe 
+  //  sort component await component sentinel dispatcher hook subscribe transform tuple drop 
+  //  debounce pair memoize hook map project render keep resolve lazy drop 
+  //  select group either publish select handler sync partition callback memoize option 
+  //  pure scan filter lazy scan subscribe sentinel option result pending context 
+  //  pending sentinel cache eager pending fulfilled compose async callback memo callback 
+  //  reducer component ref partition pipeline option component guard filter merge option 
+  //  event reject buffer filter merge filter lazy component pair render dispatcher 
+  //  memo pair handler pipeline callback select fulfilled option partition buffer state 
+  //  component pipeline pure memo result fulfilled fold state callback ref hook 
+  //  partition filter gate result memo result compose fold reject map result 
+  //  either queue either scan async reducer hook debounce context callback event 
+  //  handler dispatcher lazy partition resolve stream drop fulfilled event sort effect 
+  //  pending eager tuple sync component compose callback sentinel gate observer scan 
+  //  merge sort resolve partition map cache result map pair publish zip 
+  //  pure pending handler tuple option render drop cache memo tuple ref 
+  //  dispatcher ref sync partition pending pair tuple dispatcher fulfilled fulfilled debounce 
+  //  gate resolve merge effect sort component observer throttle keep filter pipeline 
+  //  eager filter event group pipeline reject throttle result sync pending callback 
+  //  event transform pipeline fulfilled merge memo sync lazy tuple map tuple 
+  //  observer sort compose zip dispatcher ref reduce ref component throttle drop 
+  //  hook sort pair stream observer context resolve async reduce option queue 
+  //  stream cache select debounce fulfilled component callback sort buffer sort await 
+  //  await component render reject context queue project partition fold eager dispatcher 
+  //  throttle project sync compose props queue resolve queue either memoize cache 
+  //  reject eager pair merge reject gate group partition props scan eager 
+  //  lazy compose memo component option reject map select queue publish handler 
+  //  await sync partition event pair drop filter fold reject subscribe async 
+  //  reject pipeline select buffer queue sentinel lazy publish cache memoize pipeline 
+  //  subscribe lazy hook guard pipeline reject lazy guard effect select group 
+  //  compose tuple dispatcher buffer state queue debounce resolve invalidate observer map 
+  //  pending reduce cache eager context option filter sort drop cache map 
+  //  merge resolve pending select scan keep throttle group fulfilled filter props 
+  //  await scan publish subscribe ref filter guard context gate either ref 
+  //  publish props reduce callback reject compose reject drop pure filter compose 
+  //  state await publish keep pipeline either ref throttle reduce hook select 
+  //  queue stream compose debounce effect result context reduce eager pending props 
+  //  queue props transform callback state invalidate ref sort async zip event 
+  //  zip context event eager event buffer component memo component pair publish 
+  //  subscribe pipeline reducer event partition sync drop reduce gate gate memoize 
+  //  pending zip eager await pending dispatcher publish reducer await transform resolve 
+  //  fulfilled observer pipeline map result keep invalidate props ref stream compose 
+  //  map callback transform subscribe guard render event subscribe buffer scan hook 
+  //  component lazy sentinel partition pipeline guard project scan render cache memoize 
+  //  fold option props throttle fold compose pair sentinel scan scan render 
+  //  throttle zip effect ref ref callback cache transform either async result 
+  //  reduce queue hook render throttle either stream pair invalidate debounce pair 
+  //  select debounce option buffer effect reduce pending reducer throttle reduce compose 
+  //  option render async transform event queue sort hook cache state option 
+  //  throttle dispatcher pair sync throttle reject pipeline subscribe keep context memoize 
+  //  throttle sync tuple context keep buffer pipeline filter memoize filter reducer 
+  //  select drop pair transform cache event project pipeline hook reducer props 
+  //  lazy guard option project partition debounce resolve eager await reduce ref 
+  //  group scan zip partition memoize state tuple fulfilled publish compose pure 
+  //  keep throttle gate subscribe fold buffer resolve dispatcher props invalidate render 
+  //  result zip publish memoize eager throttle tuple reducer filter await compose 
+  //  async sentinel context invalidate merge pending invalidate zip pipeline dispatcher merge 
+  //  compose zip fold debounce partition state fulfilled project merge event dispatcher 
+  //  await pair subscribe transform sentinel select project pure compose callback resolve 
+  //  throttle pending props cache pending throttle await transform partition transform reduce 
+  //  tuple reduce invalidate pending lazy effect zip fulfilled debounce component effect 
+  //  zip effect throttle subscribe sync subscribe memo map transform context memoize 
+  //  pure queue resolve transform observer component handler reduce throttle memoize lazy 
+  //  render result partition keep filter callback either component sync sort queue 
+  //  state map handler reject invalidate option partition debounce project zip eager 
+  //  select props group partition compose pending map buffer event async filter 
+  //  publish props buffer sync select tuple buffer zip memoize zip pair 
+  //  throttle component pending group fold debounce cache queue map project merge 
+  //  sentinel tuple tuple transform callback guard result component context buffer effect 
+  //  handler guard throttle tuple reducer component select pipeline hook group keep 
+  //  dispatcher reducer effect fold transform either compose throttle stream sync pure 
+  //  memoize cache fold merge resolve queue sentinel map state pure sync 
+  //  sync pending drop reduce publish event pipeline await merge buffer drop 
+  //  reject map scan eager drop render reducer memo fold sort map 
+  //  merge memoize memo pure props dispatcher async map reducer gate handler 
+  //  callback cache eager memo subscribe lazy drop resolve pair resolve sync 
+  //  queue compose option memo pair subscribe drop filter reject cache hook 
+  //  pair queue sync lazy subscribe fold pair sort lazy fold reject 
+  //  memo filter event drop gate observer gate component select ref select 
+  //  sort pure queue sync reducer resolve buffer lazy ref project map 
+  //  option group pipeline buffer invalidate resolve zip component pending memoize lazy 
+  //  gate map pair component map zip sort render eager event merge 
+  //  reject guard scan dispatcher project ref select lazy resolve guard queue 
+  //  sort publish effect fulfilled buffer either drop option drop buffer effect 
+  //  stream props reducer sync hook map reject debounce either reduce component 
+  //  guard option publish merge guard transform pending compose callback async gate 
+  //  memoize either zip pending tuple filter component lazy filter gate await 
+  //  effect transform debounce queue either ref result stream partition merge queue 
+  //  guard component keep either callback keep scan zip reduce pair component 
+  //  props keep merge pipeline memoize event invalidate callback option invalidate gate 
+  //  partition fold eager memoize drop gate ref observer filter reduce dispatcher 
+  //  fold tuple filter transform reducer event props memoize transform reject pure 
+  //  pipeline await lazy props drop buffer project ref context dispatcher reducer 
+  //  publish fold guard tuple zip pending select callback props either reduce 
+  //  queue invalidate reducer partition drop buffer reduce cache option guard pure 
+  //  sentinel reduce partition ref result fulfilled group observer invalidate group sync 
+  //  pair event group tuple sort invalidate fold buffer filter component pure 
+  //  sync option map keep hook fold fold pending throttle throttle pure 
+  //  eager reducer eager transform handler sync component state reject zip memo 
+  //  zip event fulfilled reduce props gate eager keep buffer reducer state 
+  //  buffer merge event buffer partition pair merge option drop filter props 
+  //  lazy reducer drop props subscribe context pure memo stream pair hook 
+  //  keep either event queue await scan invalidate cache sync either fulfilled 
+  //  keep gate reduce filter map event lazy subscribe callback sort pair 
+  //  pipeline sentinel fulfilled subscribe sentinel filter option effect eager sync select 
+  //  component reject component group async compose map either fold debounce memo 
+  //  reducer sync tuple reduce tuple fold select cache group context pair 
+  //  event compose filter publish subscribe project pair resolve guard select group 
+  //  pipeline callback memo zip pair stream lazy result effect lazy callback 
+  //  sync subscribe pure select group select invalidate reduce drop eager pair 
+  //  sync dispatcher observer memo reducer async callback render invalidate component resolve 
+  //  map pipeline ref pipeline filter lazy drop fold memoize pending resolve 
+  //  pipeline component reducer option pair transform drop reduce either stream partition 
+  //  event lazy map callback hook pure callback pair invalidate buffer option 
+  //  render zip drop state reduce either sort compose queue merge debounce 
+  //  observer select eager resolve callback memoize sentinel async gate debounce callback 
+  //  partition render sync buffer select group dispatcher select observer sort reject 
+  //  partition pure merge scan event result memo fulfilled resolve either dispatcher 
+  //  fold tuple component observer async transform resolve eager fold callback callback 
+  //  project stream drop eager memo reject pure reduce publish invalidate memoize 
+  //  option buffer reducer compose drop async handler compose sort reducer drop 
+  //  await resolve async reject partition throttle either cache merge throttle scan 
+  //  resolve dispatcher pipeline sync effect throttle observer pending render result event 
+  //  option pure filter pure merge select pipeline reduce eager zip zip 
+  //  eager event reject keep sentinel sync lazy lazy gate sentinel pipeline 
+  //  project stream merge cache resolve state gate event effect render map 
+  //  project resolve either group handler stream guard result context component pair 
+  //  observer zip queue gate compose buffer option hook filter pipeline handler 
+  //  invalidate reduce subscribe scan async transform reduce effect sentinel fold dispatcher 
+  //  subscribe filter await partition buffer throttle either group queue dispatcher select 
+  //  resolve observer transform pending tuple queue partition partition transform merge observer 
+  //  compose eager hook reducer tuple reject eager result reduce component handler 
+  //  async render sentinel memo option sentinel pure drop sync sync publish 
+  //  throttle keep option group filter merge drop tuple keep pending scan 
+  //  reducer memo stream result zip gate guard buffer partition queue async 
+  //  pure event async stream props subscribe lazy gate keep partition queue 
+  //  result group component props component partition pending filter compose filter memo 
+  //  drop pending dispatcher eager lazy map dispatcher either sort observer project 
+  //  fulfilled buffer reject buffer pure drop compose observer gate debounce select 
+  //  throttle effect filter sort event buffer sort reduce context project tuple 
+  //  reject select resolve invalidate subscribe scan fulfilled pair reduce invalidate lazy 
+  //  props compose dispatcher publish ref render project option memo reject publish 
+  //  await stream debounce eager merge hook zip reject guard event select 
+  //  zip event event hook zip props pending ref group resolve stream 
+  //  callback sentinel compose reduce map keep sync zip effect group tuple 
+  //  transform compose sort throttle cache resolve pipeline reject either queue async 
+  //  zip zip async handler cache eager drop zip memoize resolve buffer 
+  //  merge reducer partition handler pipeline
+  */
+})();
+
+// mod-0020 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[20] = {
+    id: 20,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0020';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '36');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  fold invalidate pending pair dispatcher guard invalidate pipeline async result throttle handler 
+  //  project memoize render drop hook props context throttle merge reducer debounce 
+  //  render component scan transform gate reducer stream memoize debounce throttle invalidate 
+  //  memoize ref throttle filter context pure drop filter handler transform memo 
+  //  await transform option sort reducer sort handler tuple sentinel dispatcher either 
+  //  context buffer debounce await hook sentinel fold pair select drop pair 
+  //  async compose event sync state guard ref memoize eager handler lazy 
+  //  tuple pipeline state context memoize throttle state either pure memo cache 
+  //  observer observer render await pending option tuple partition handler handler compose 
+  //  pending compose lazy buffer pure guard cache tuple map queue hook 
+  //  either either map fold memo guard cache reject event lazy pipeline 
+  //  await state eager subscribe memoize buffer sort resolve filter fulfilled sync 
+  //  sync publish group merge select observer drop compose transform filter merge 
+  //  reducer memoize hook eager scan queue zip pending subscribe callback reject 
+  //  await partition project zip fulfilled reject reject compose gate reducer queue 
+  //  fulfilled memo async pipeline handler dispatcher zip filter debounce publish lazy 
+  //  pending reducer transform keep reject publish dispatcher sync buffer zip cache 
+  //  pure ref ref select reducer state transform ref queue merge tuple 
+  //  dispatcher guard memo cache reject resolve stream partition drop dispatcher keep 
+  //  render filter select eager merge component debounce pair memo hook publish 
+  //  publish queue async debounce component guard lazy component debounce pair option 
+  //  transform memo memo stream lazy tuple stream props publish handler await 
+  //  option await cache props pure guard ref drop fold map subscribe 
+  //  keep result cache result partition memo sentinel fold context throttle callback 
+  //  filter pipeline pure select hook props keep zip pipeline debounce pure 
+  //  tuple scan pure queue filter map observer pending group merge callback 
+  //  lazy pure merge drop debounce context async throttle eager context queue 
+  //  pending scan throttle fulfilled render scan either context zip debounce gate 
+  //  props dispatcher lazy eager compose select sentinel merge pipeline dispatcher pending 
+  //  reducer handler pure either effect keep stream eager await debounce reject 
+  //  state partition either publish pair memo dispatcher sync project result fulfilled 
+  //  resolve sort option context sort partition buffer await gate debounce sort 
+  //  keep subscribe dispatcher select reject drop queue keep queue cache eager 
+  //  component fulfilled async handler buffer subscribe guard props buffer pending callback 
+  //  drop render reduce fold compose reduce drop publish select group reject 
+  //  dispatcher memoize option handler async result hook invalidate memoize pure pair 
+  //  scan callback component ref sentinel tuple effect either drop component async 
+  //  partition compose queue sync gate async effect component drop result drop 
+  //  gate lazy ref sort drop sync sentinel partition group stream render 
+  //  invalidate pipeline render sentinel compose memo zip drop effect partition map 
+  //  lazy compose handler pure lazy pipeline memo partition gate option invalidate 
+  //  subscribe gate filter project effect lazy memo queue hook dispatcher guard 
+  //  pending pending handler ref dispatcher memoize sentinel scan result debounce pending 
+  //  sort context observer await render callback guard sentinel props await memoize 
+  //  eager callback stream group scan scan drop eager reducer invalidate sync 
+  //  await tuple context memo keep fold gate tuple drop stream group 
+  //  handler state state reduce select sync transform result state sync callback 
+  //  throttle dispatcher reduce result sentinel sentinel handler sentinel invalidate throttle pipeline 
+  //  scan observer eager throttle guard sort gate handler zip fulfilled publish 
+  //  zip pure fulfilled event project state filter memoize effect sort reduce 
+  //  subscribe sort pair context project state tuple compose sync option async 
+  //  resolve result sentinel lazy pipeline map observer resolve reduce pending async 
+  //  queue gate handler component group gate group publish hook fulfilled dispatcher 
+  //  fulfilled render sort tuple event result callback context map memo zip 
+  //  either handler pending fold result zip subscribe merge component observer result 
+  //  merge select filter observer reduce resolve throttle props state reducer drop 
+  //  merge throttle group subscribe handler event select props pure pipeline option 
+  //  keep render cache zip pipeline filter zip result sort option compose 
+  //  cache buffer invalidate drop guard reject state memo pipeline stream hook 
+  //  ref result queue resolve event hook render select handler zip pipeline 
+  //  stream sync await render memo fold publish reduce handler cache pure 
+  //  effect context pipeline group pure merge stream result gate reducer state 
+  //  map pipeline props eager buffer hook hook zip pipeline reducer debounce 
+  //  select lazy ref effect transform map handler sync event reject fulfilled 
+  //  fold throttle callback memoize zip subscribe memoize observer props option callback 
+  //  sentinel sort context hook filter subscribe drop sort reducer handler gate 
+  //  transform render filter callback hook partition ref dispatcher resolve reducer compose 
+  //  result await option callback subscribe callback throttle filter fulfilled props component 
+  //  sync fulfilled sentinel lazy gate map fold eager eager stream guard 
+  //  keep hook debounce reject debounce pipeline merge keep hook result compose 
+  //  throttle scan state observer transform cache state option keep either publish 
+  //  option memoize pure context event sync subscribe debounce partition filter pair 
+  //  compose publish pure event publish pure cache zip select drop observer 
+  //  gate ref debounce lazy dispatcher group compose cache sort handler option 
+  //  publish sync sync lazy async queue project dispatcher dispatcher partition fulfilled 
+  //  reducer stream project render hook pair pair reject filter result async 
+  //  select compose component reject stream invalidate sort event async handler sort 
+  //  sync compose scan render fulfilled merge throttle reject pure debounce context 
+  //  async reducer partition result partition observer fold pure sync hook props 
+  //  drop cache cache throttle eager sync handler cache merge event fold 
+  //  sentinel ref pipeline buffer await stream reducer option map observer component 
+  //  lazy subscribe subscribe resolve resolve callback pipeline observer subscribe transform pure 
+  //  reject pair fold filter component sentinel merge subscribe handler sort reduce 
+  //  publish sync publish reject tuple cache project gate subscribe memoize queue 
+  //  throttle project await partition publish merge debounce handler scan async zip 
+  //  lazy throttle sentinel memoize dispatcher debounce filter sort lazy subscribe dispatcher 
+  //  scan dispatcher async lazy keep component pure eager component eager async 
+  //  map pipeline debounce observer props sort keep guard event filter invalidate 
+  //  cache zip async pending tuple component state fold result guard callback 
+  //  gate ref context compose hook filter map pipeline reducer group keep 
+  //  drop select sentinel await queue stream keep stream buffer memo project 
+  //  memo drop group memoize hook props handler tuple lazy select stream 
+  //  eager sync await sort handler pending sync sort map memoize render 
+  //  reject group guard cache sync eager result effect cache select map 
+  //  context memoize state await memoize publish state tuple pure buffer result 
+  //  option reducer invalidate event event eager drop eager fold handler queue 
+  //  props keep zip component debounce throttle sentinel hook callback stream eager 
+  //  async eager memoize reduce sync pending event map callback compose compose 
+  //  sentinel context gate context sync fold effect keep state compose buffer 
+  //  guard context memo zip guard sync pending keep stream gate zip 
+  //  memoize gate invalidate partition keep queue dispatcher pair stream dispatcher invalidate 
+  //  sync component zip stream pure pure guard sort memo gate await 
+  //  reducer event sync hook fold buffer filter queue pair render tuple 
+  //  async pending tuple resolve callback render publish props observer reduce component 
+  //  reduce event await reject queue reducer resolve fulfilled memoize transform memo 
+  //  props sort pair effect pure fold cache stream pair props publish 
+  //  fulfilled gate async cache event partition pipeline either sort event cache 
+  //  observer queue either eager buffer pipeline tuple option select sentinel reducer 
+  //  project pipeline fulfilled keep props reject zip reducer partition keep merge 
+  //  compose debounce effect reduce reject pair handler memoize queue fulfilled result 
+  //  gate observer compose fold hook gate select async sort memoize eager 
+  //  resolve pair project drop stream fulfilled reject keep invalidate reduce merge 
+  //  hook ref observer pure result guard reducer debounce result fulfilled project 
+  //  context tuple memo scan reducer keep props keep publish zip cache 
+  //  publish pipeline reduce drop tuple state ref hook component sort sort 
+  //  debounce render await sort callback memoize sort handler filter tuple pure 
+  //  buffer pair memo callback eager callback observer tuple tuple invalidate resolve 
+  //  reducer hook sentinel props stream pending tuple eager invalidate invalidate observer 
+  //  event sort cache group pipeline dispatcher pure zip merge render pending 
+  //  pending zip partition map zip pure pipeline filter sentinel props eager 
+  //  result filter reject eager lazy effect memo handler context tuple pending 
+  //  publish drop render async pipeline callback reducer result pair result event 
+  //  drop guard map select gate scan queue lazy resolve compose project 
+  //  debounce reducer gate reduce observer select debounce async state group hook 
+  //  publish map buffer resolve debounce eager compose group component event callback 
+  //  dispatcher throttle effect merge sort merge tuple tuple pure dispatcher handler 
+  //  hook await select resolve transform sentinel group select select handler guard 
+  //  resolve component pure select pending await ref fold project select await 
+  //  gate buffer merge memoize memoize pure fulfilled cache context fold props 
+  //  render resolve pipeline await compose memoize observer subscribe callback debounce reducer 
+  //  transform zip publish resolve either invalidate effect props props reducer pair 
+  //  scan resolve pure fulfilled event await async lazy fold reducer drop 
+  //  zip fulfilled debounce memo callback guard reducer filter state memo partition 
+  //  map gate hook await guard reduce buffer context queue callback either 
+  //  publish map pipeline partition handler eager state compose lazy sentinel sync 
+  //  eager fold either props select state result async buffer project group 
+  //  eager sentinel reducer component lazy throttle pure map publish stream tuple 
+  //  publish map select zip cache project option ref select callback reducer 
+  //  debounce result memoize dispatcher memoize guard dispatcher reducer merge state component 
+  //  reduce resolve partition transform props buffer pending effect throttle props effect 
+  //  hook sentinel pipeline pure reject transform select component buffer select event 
+  //  project await state ref group publish partition pure option memoize select 
+  //  throttle buffer filter buffer sort resolve cache reducer queue sync invalidate 
+  //  dispatcher guard pending context group resolve pair cache state result dispatcher 
+  //  pipeline state compose pure compose callback pair project async ref context 
+  //  event fulfilled gate partition result sentinel pending await state guard render 
+  //  partition throttle event dispatcher lazy tuple zip lazy fold filter project 
+  //  context debounce queue ref project result pipeline event publish eager pair 
+  //  project event scan map eager observer transform throttle tuple pure project 
+  //  fulfilled async effect zip guard sort publish pending either filter async 
+  //  group stream event drop stream pair keep result sentinel zip zip 
+  //  select hook transform pair async sort sentinel component project lazy event 
+  //  subscribe context scan project map publish memo await compose cache pair 
+  //  cache gate guard partition tuple either filter invalidate reduce guard partition 
+  //  zip scan project observer compose queue filter filter sort filter merge 
+  //  eager fulfilled component memoize handler lazy filter async memoize state memoize 
+  //  ref effect await
+  */
+})();
+
+// mod-0021 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[21] = {
+    id: 21,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0021';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '222');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  memo partition debounce project state transform fold guard lazy filter fold observer 
+  //  tuple compose pure result async fold handler select keep memo component 
+  //  async sort buffer render component component result resolve event result pipeline 
+  //  reject fold pending filter fulfilled stream state throttle async throttle handler 
+  //  cache option render event memoize scan sort reducer group cache pure 
+  //  handler map lazy sort hook queue either filter component throttle either 
+  //  state fulfilled select pair reduce hook dispatcher effect hook throttle callback 
+  //  compose transform drop await await stream reduce hook reducer cache reject 
+  //  memoize handler handler scan pair sentinel props state guard guard component 
+  //  ref tuple fulfilled project guard await guard filter pair merge memo 
+  //  await filter sort project throttle async sync compose sort pair ref 
+  //  select guard zip project tuple zip ref event queue handler await 
+  //  ref debounce async pipeline reducer project pipeline sentinel sentinel transform event 
+  //  stream render memo render drop props ref gate eager compose map 
+  //  pending option pipeline fulfilled select keep partition keep either stream reject 
+  //  map callback gate tuple observer transform project debounce context guard either 
+  //  dispatcher compose guard pair ref compose scan publish reducer sentinel project 
+  //  reduce throttle throttle invalidate state fulfilled dispatcher reduce throttle map await 
+  //  callback gate reject fold hook sort stream buffer throttle reduce lazy 
+  //  state subscribe state scan group publish debounce queue context state group 
+  //  keep sync resolve tuple filter pipeline memo component sort effect gate 
+  //  reducer result compose option tuple transform sort tuple memoize option subscribe 
+  //  fold ref sort memoize map compose merge await guard async guard 
+  //  reject lazy result handler map render buffer queue props scan map 
+  //  group gate project state reduce reduce reject effect component callback context 
+  //  sentinel event hook reject reduce map transform either option fulfilled transform 
+  //  ref partition callback await pair pair memo handler sort async cache 
+  //  debounce queue memo pending state guard memoize context resolve reject compose 
+  //  observer project zip filter cache sort pipeline gate reduce lazy ref 
+  //  async stream reject drop publish select dispatcher merge result zip sentinel 
+  //  render pure debounce resolve pure filter guard cache pending state map 
+  //  sync await async fold dispatcher map ref event drop buffer drop 
+  //  filter project queue merge sort context compose subscribe effect project stream 
+  //  event reduce tuple observer merge fulfilled group gate lazy publish reducer 
+  //  props transform either render pipeline gate props async fulfilled drop lazy 
+  //  option eager async transform observer buffer event async queue memoize either 
+  //  observer memo subscribe publish keep group fold ref tuple queue async 
+  //  buffer option keep eager pipeline zip project compose context pending event 
+  //  context effect project fulfilled debounce tuple guard context tuple compose gate 
+  //  reduce merge stream map context fulfilled memoize state fulfilled select dispatcher 
+  //  await event scan await subscribe map observer observer component observer state 
+  //  pending reducer drop sort queue reject fold tuple observer component filter 
+  //  reduce tuple memoize state ref resolve either merge zip result callback 
+  //  stream group sync drop render scan state pipeline props hook invalidate 
+  //  gate fulfilled await map component pending option memoize buffer ref resolve 
+  //  zip ref either cache context reduce cache memo effect ref hook 
+  //  pipeline zip render merge merge memoize sentinel async invalidate invalidate fold 
+  //  merge memoize guard pure resolve keep pending state filter transform cache 
+  //  compose project invalidate option guard debounce debounce memo sentinel reduce effect 
+  //  memo state fold project pending event queue memoize keep state event 
+  //  scan queue either reduce pair map hook reducer subscribe subscribe filter 
+  //  queue pure sync sort merge reducer render async callback reduce pipeline 
+  //  fulfilled pure transform context project compose merge ref pipeline reduce fulfilled 
+  //  tuple subscribe publish publish sync handler cache fold pair invalidate sync 
+  //  memoize zip filter lazy memoize context partition invalidate project queue stream 
+  //  fold publish await reduce cache pure async cache ref tuple event 
+  //  async cache async await invalidate publish gate invalidate hook stream keep 
+  //  publish sentinel subscribe guard result tuple throttle queue group render merge 
+  //  props component fold fulfilled scan pure stream compose render async guard 
+  //  cache state debounce partition state either merge map option eager queue 
+  //  compose component ref map filter either handler sort pipeline map debounce 
+  //  reducer transform map reduce gate drop gate map render props resolve 
+  //  map dispatcher transform reject observer dispatcher resolve guard merge gate pair 
+  //  tuple result tuple group sort pure async throttle merge await partition 
+  //  transform option observer pending memoize throttle cache gate sync guard pending 
+  //  option gate reject callback cache ref queue pending gate partition state 
+  //  pipeline sentinel tuple debounce queue fold tuple cache subscribe sync fulfilled 
+  //  props merge dispatcher compose transform filter partition buffer either reduce scan 
+  //  throttle pure subscribe group transform dispatcher sentinel pending pipeline guard transform 
+  //  select async pipeline pending project sentinel memoize subscribe async callback compose 
+  //  sentinel reducer publish callback drop option callback resolve event stream keep 
+  //  ref pair subscribe zip pending map context filter gate zip props 
+  //  memo reduce lazy scan await render state handler map pipeline compose 
+  //  lazy effect pair either observer gate hook render scan sync gate 
+  //  context drop ref map observer publish pipeline dispatcher scan effect async 
+  //  fulfilled either stream publish pure pipeline reducer event guard props sort 
+  //  pair buffer handler lazy reject await select fulfilled state handler tuple 
+  //  hook context sort gate gate invalidate queue either hook filter subscribe 
+  //  subscribe project hook throttle compose merge memoize state pipeline option props 
+  //  zip map subscribe memoize subscribe guard eager reducer subscribe drop project 
+  //  event async handler memo effect buffer drop project stream dispatcher fold 
+  //  select transform component publish partition scan component select memoize tuple group 
+  //  queue scan queue reduce merge pair await memoize fold eager stream 
+  //  merge reject memoize resolve drop pipeline handler zip component fulfilled pipeline 
+  //  project stream invalidate keep fold buffer transform buffer async callback tuple 
+  //  pending gate ref drop pipeline partition fold reduce invalidate eager transform 
+  //  throttle event reducer memoize sort lazy stream props throttle guard callback 
+  //  reducer pending eager compose zip queue effect reject group component lazy 
+  //  debounce await memoize option throttle reducer sentinel await stream resolve select 
+  //  event cache zip handler sort partition filter resolve select lazy sentinel 
+  //  pair zip pure guard sentinel filter callback sync result option eager 
+  //  scan compose reducer fulfilled merge scan fold tuple throttle async cache 
+  //  memo ref pending transform fold guard reducer stream subscribe buffer project 
+  //  observer effect render transform guard reject hook ref reducer pure queue 
+  //  invalidate async group pair transform gate pair memoize ref either keep 
+  //  gate group gate event component pair invalidate pipeline event buffer scan 
+  //  fold fold render stream memoize either pending either resolve context observer 
+  //  queue debounce scan select observer result zip sort scan queue fold 
+  //  reject await reducer reducer memoize transform sentinel event eager render render 
+  //  props reducer throttle scan ref queue callback eager hook render pending 
+  //  component result cache map reject component eager resolve pending reducer fold 
+  //  component event reduce pending fold await subscribe drop scan sync tuple 
+  //  fold callback publish throttle reducer render resolve resolve sort ref buffer 
+  //  invalidate gate buffer zip guard fulfilled sentinel sync drop invalidate subscribe 
+  //  tuple buffer publish lazy invalidate fold resolve await project stream result 
+  //  reducer handler group stream memo option keep throttle queue throttle scan 
+  //  dispatcher scan ref map either buffer pure cache ref effect state 
+  //  reducer await filter fold debounce memo gate callback scan map eager 
+  //  sentinel stream component pair reject stream sort eager reject cache map 
+  //  sort fold transform stream await transform pair state memoize ref resolve 
+  //  effect callback component reduce cache gate debounce render either subscribe buffer 
+  //  transform fold buffer fold ref fulfilled pending pair gate queue sentinel 
+  //  eager throttle group lazy subscribe tuple sentinel queue project event throttle 
+  //  tuple component zip sort resolve memoize cache guard partition buffer result 
+  //  pipeline context reducer sync reject project render fulfilled dispatcher pipeline fulfilled 
+  //  context result props lazy debounce merge pair zip observer state handler 
+  //  props invalidate buffer debounce tuple fold partition reducer tuple await memoize 
+  //  lazy cache resolve resolve either reject tuple memo observer reduce pair 
+  //  project project state sentinel option option map merge sentinel map event 
+  //  component hook fold await sentinel project lazy handler scan invalidate async 
+  //  project pair stream cache fulfilled queue buffer zip map async props 
+  //  scan await ref stream await event drop sort sort reduce drop 
+  //  component hook event lazy queue await subscribe handler queue observer await 
+  //  ref pure resolve render queue sort option transform async guard select 
+  //  state group pair pure component keep sentinel filter sort reject resolve 
+  //  throttle option lazy resolve subscribe render await group memo reject transform 
+  //  lazy debounce pure project scan reduce tuple resolve debounce option debounce 
+  //  subscribe component zip scan pair map resolve context state memoize reduce 
+  //  effect merge await publish transform partition buffer gate guard hook zip 
+  //  compose ref resolve option pipeline keep dispatcher eager compose await debounce 
+  //  sync pipeline state handler context async sort memo pair state memo 
+  //  async lazy effect either map observer map transform select context stream 
+  //  gate subscribe publish scan group sync either fulfilled throttle lazy scan 
+  //  hook queue pair gate render publish gate keep stream either invalidate 
+  //  result merge event hook option pending resolve pipeline fulfilled merge resolve 
+  //  scan buffer resolve project resolve context reducer render async render render 
+  //  keep pipeline guard sentinel partition memoize keep pair lazy event cache 
+  //  buffer ref compose queue keep fold invalidate effect render reduce gate 
+  //  transform pure pipeline effect dispatcher observer callback group compose effect hook 
+  //  project memo merge pure transform filter scan partition sort zip filter 
+  //  event sync await memoize subscribe invalidate fulfilled pair memo pair invalidate 
+  //  reduce callback filter resolve buffer gate props memo guard fulfilled reduce 
+  //  compose props transform publish queue component state observer sort cache ref 
+  //  ref keep subscribe render throttle context props merge stream render gate 
+  //  option buffer tuple props ref memoize lazy pending filter partition reducer 
+  //  buffer partition await callback queue state component compose sync handler tuple 
+  //  sentinel await map subscribe memoize async resolve keep subscribe callback either 
+  //  pending keep throttle await lazy queue guard memo fulfilled resolve pipeline 
+  //  partition pure effect sync fold sentinel guard await group memoize keep 
+  //  buffer project guard pair async either publish context dispatcher resolve hook 
+  //  invalidate ref tuple throttle callback queue hook option queue guard props 
+  //  ref props sentinel render handler eager map dispatcher reject option memoize 
+  //  project drop stream invalidate stream option observer ref gate project handler 
+  //  fulfilled sync callback map keep reject fold throttle context debounce lazy 
+  //  sort project pipeline reduce callback pair zip memo partition map effect 
+  //  publish scan filter observer hook lazy partition buffer filter scan ref 
+  //  throttle dispatcher component event merge reducer tuple reduce reject subscribe
+  */
+})();
+
+// mod-0022 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[22] = {
+    id: 22,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0022';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '304');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  ref project resolve callback reducer debounce map option context publish event state 
+  //  await map sort event pipeline props props compose fulfilled resolve stream 
+  //  observer guard map observer lazy fold pending drop eager drop option 
+  //  scan tuple eager resolve lazy option group state option state callback 
+  //  hook await invalidate scan compose sync eager pure queue pending queue 
+  //  effect resolve publish event eager buffer resolve pair memo cache render 
+  //  await hook eager invalidate partition reject props context zip component project 
+  //  context pending scan hook filter memoize compose render observer pair debounce 
+  //  option context zip partition compose transform either hook debounce hook reject 
+  //  project publish ref compose drop map reject filter throttle merge project 
+  //  partition throttle result event event either select debounce eager partition tuple 
+  //  invalidate subscribe sort queue pair scan tuple merge compose stream fold 
+  //  throttle pending pure await resolve effect ref pending eager compose buffer 
+  //  observer reduce render fold keep memo callback reject memoize buffer result 
+  //  component map context either props cache either group partition memoize partition 
+  //  stream merge observer debounce partition pipeline invalidate context invalidate sentinel partition 
+  //  component sync eager memoize drop state result select pending zip transform 
+  //  transform project stream keep props reject handler fold either async memoize 
+  //  scan reduce context invalidate publish props props memoize gate observer transform 
+  //  tuple guard hook cache ref lazy partition context stream effect sentinel 
+  //  group either hook compose reducer pair keep partition stream render sync 
+  //  fulfilled props result tuple fulfilled zip invalidate guard sentinel resolve callback 
+  //  ref lazy observer filter pending fold dispatcher keep props compose guard 
+  //  cache memoize reducer observer context gate compose fulfilled sort pair cache 
+  //  ref pair event subscribe either render scan callback state project lazy 
+  //  hook compose component project lazy memo filter memo component partition effect 
+  //  async eager pipeline handler reducer async effect guard pure sync state 
+  //  compose keep props hook transform sync guard pipeline await await map 
+  //  subscribe option pipeline render handler async throttle select await keep either 
+  //  reduce context keep reducer pair sentinel fulfilled ref handler select reduce 
+  //  render guard reject tuple guard guard memo keep project fold pending 
+  //  pending sync props reject async group context callback invalidate dispatcher invalidate 
+  //  memoize keep subscribe pure sentinel async subscribe subscribe pair component either 
+  //  pipeline async tuple memoize fold context resolve group zip guard publish 
+  //  handler reduce buffer async sentinel guard sync pair ref reducer callback 
+  //  throttle invalidate memoize resolve pending compose sync hook pair props memo 
+  //  await filter subscribe sentinel pure context map keep option reduce project 
+  //  fold result dispatcher drop partition select effect sort tuple compose keep 
+  //  partition pair async merge select keep props guard gate event eager 
+  //  pending memoize group buffer reducer map queue props state map throttle 
+  //  filter result project state resolve group filter effect handler pair publish 
+  //  project either eager publish throttle sentinel lazy pure fold scan cache 
+  //  fulfilled result hook pair debounce result zip filter pipeline merge props 
+  //  partition fulfilled memoize dispatcher pair project result zip observer drop context 
+  //  fold cache memo transform scan invalidate filter pipeline await callback event 
+  //  await props zip event state reject eager project reducer group guard 
+  //  buffer await lazy eager drop transform invalidate transform await ref throttle 
+  //  component zip drop either project throttle result memo option event render 
+  //  map pending merge gate keep hook project keep transform reduce group 
+  //  reduce pending filter zip sync option zip context sync queue memoize 
+  //  eager guard fold hook await context fold reject project pipeline handler 
+  //  throttle subscribe event callback hook project scan callback await transform fold 
+  //  zip pure project group stream scan effect pair resolve sentinel fold 
+  //  stream pair props compose await transform map keep hook tuple reducer 
+  //  handler buffer hook ref result await resolve group reducer dispatcher state 
+  //  fold callback event memoize transform handler effect tuple select guard stream 
+  //  filter hook compose dispatcher gate merge guard callback publish callback component 
+  //  subscribe compose component throttle resolve group keep await tuple hook tuple 
+  //  event fold effect pair subscribe guard pending publish hook map props 
+  //  option merge pipeline option queue invalidate stream lazy memoize publish ref 
+  //  memoize either reject tuple select dispatcher observer subscribe pure publish pipeline 
+  //  effect memo event handler dispatcher partition observer group hook subscribe pipeline 
+  //  option render pending lazy pair pair select ref state stream pipeline 
+  //  callback keep callback async reducer observer component guard guard reduce filter 
+  //  fulfilled merge callback pure callback effect project select either sentinel result 
+  //  callback sort either sentinel either invalidate sentinel keep merge ref reject 
+  //  pair drop fulfilled dispatcher subscribe ref subscribe scan handler reducer memoize 
+  //  stream debounce tuple filter stream cache props either buffer debounce stream 
+  //  drop queue pure result gate partition fold ref eager select tuple 
+  //  buffer pure memoize lazy await filter fulfilled project pending await filter 
+  //  throttle callback project invalidate resolve pure merge sort observer fold lazy 
+  //  project effect dispatcher pure context result guard component queue memoize filter 
+  //  props cache either guard handler pair context async throttle throttle sentinel 
+  //  either resolve async result subscribe state resolve callback resolve debounce reducer 
+  //  await option invalidate effect group map either pair dispatcher resolve fulfilled 
+  //  reduce buffer sync keep memo hook debounce guard eager await guard 
+  //  reduce reducer async option throttle cache ref state state keep filter 
+  //  keep partition reject component result pipeline merge group reject result reducer 
+  //  throttle pending zip props cache drop debounce memoize sentinel reduce throttle 
+  //  queue partition merge handler tuple async either event reject stream hook 
+  //  subscribe async zip lazy map merge filter keep queue tuple zip 
+  //  debounce render lazy transform component drop keep map component partition await 
+  //  await sync partition zip partition select tuple scan async merge debounce 
+  //  pair select callback await component result props drop queue keep zip 
+  //  guard render stream pair compose callback eager sync component pair filter 
+  //  handler subscribe filter pair result observer reducer gate keep memoize callback 
+  //  group scan throttle reducer drop map cache props resolve ref debounce 
+  //  sort context context pending observer reducer scan queue pipeline sentinel pipeline 
+  //  debounce event select project merge observer pair resolve ref project buffer 
+  //  debounce zip context component partition invalidate tuple filter select sync gate 
+  //  sync sync state option async sentinel reject option pair compose dispatcher 
+  //  resolve group observer guard render select map state context reject zip 
+  //  memoize pair cache async ref invalidate component sort compose memoize option 
+  //  handler fulfilled component map group filter sentinel debounce reject pending reject 
+  //  publish filter memo throttle option await either debounce observer guard state 
+  //  buffer stream gate map memoize pure reduce tuple hook drop event 
+  //  dispatcher ref pipeline await lazy context throttle reduce sentinel merge fold 
+  //  result props pending reject tuple option await effect map cache debounce 
+  //  pure result ref ref memo handler effect drop pair pure dispatcher 
+  //  queue queue reducer dispatcher guard memoize sentinel await resolve keep cache 
+  //  fold callback tuple group project state dispatcher eager fulfilled reducer filter 
+  //  props partition await memoize props tuple pure either keep fulfilled invalidate 
+  //  async merge select debounce sort sync callback tuple queue scan resolve 
+  //  queue sort observer subscribe gate group cache reduce hook tuple component 
+  //  callback gate context invalidate resolve fold memo pipeline handler lazy stream 
+  //  async pending buffer await stream observer either render either filter drop 
+  //  select observer transform zip scan select reject option render compose invalidate 
+  //  merge reject debounce callback drop pending fold sentinel publish resolve handler 
+  //  group map hook subscribe cache pair throttle reducer context sort event 
+  //  select ref zip partition event component partition callback select keep component 
+  //  dispatcher component publish throttle map sort pair reject result group sentinel 
+  //  map event sort props either component hook eager option map compose 
+  //  keep lazy props props tuple either publish compose event throttle reducer 
+  //  handler guard merge project debounce dispatcher fold memoize fold publish eager 
+  //  await guard pipeline group reducer dispatcher throttle invalidate gate either lazy 
+  //  render option tuple drop effect drop effect observer reduce reduce drop 
+  //  handler event guard reducer observer props cache map memo state gate 
+  //  cache sentinel component hook async invalidate pair group keep ref hook 
+  //  debounce pipeline filter fold props pipeline zip handler sort callback merge 
+  //  reduce event group pure sentinel await gate sync partition throttle fulfilled 
+  //  observer pipeline group async invalidate publish context memoize dispatcher publish scan 
+  //  tuple queue buffer compose invalidate select fulfilled tuple project sentinel pipeline 
+  //  scan stream handler lazy pair stream buffer compose render dispatcher lazy 
+  //  memo memoize resolve invalidate merge fold hook compose queue state tuple 
+  //  guard zip handler fulfilled invalidate render transform map component pipeline props 
+  //  result partition scan event sentinel eager reduce props pure pure invalidate 
+  //  reducer eager scan sentinel group pending compose project handler state group 
+  //  hook context pure guard zip dispatcher context option merge lazy cache 
+  //  map transform invalidate callback pair reducer publish ref await memo async 
+  //  async map ref dispatcher sync dispatcher pending props subscribe state stream 
+  //  resolve stream group scan resolve callback context map keep state pair 
+  //  map eager either tuple buffer resolve pair sort group sort ref 
+  //  fold throttle effect handler state pure filter gate option fulfilled observer 
+  //  drop component dispatcher pipeline transform reducer queue tuple tuple partition sentinel 
+  //  cache context context memo await reducer invalidate queue debounce subscribe resolve 
+  //  event stream callback result tuple reduce compose eager effect sentinel guard 
+  //  map fold context group eager select async scan ref compose resolve 
+  //  memo pair render context project event throttle queue drop queue event 
+  //  option ref invalidate publish async pure map memoize pair zip gate 
+  //  resolve stream handler scan drop compose drop zip context resolve handler 
+  //  group sort dispatcher partition pure select select result context gate sync 
+  //  render sync hook fulfilled sync merge stream publish pair buffer filter 
+  //  debounce invalidate resolve sort tuple tuple reducer compose keep partition map 
+  //  pure state reject reject drop resolve pure tuple pending project dispatcher 
+  //  filter sort filter memoize sort context eager render partition reject memo 
+  //  group ref filter state queue await debounce reducer pure fold memoize 
+  //  reject gate event render gate callback subscribe reducer callback reduce dispatcher 
+  //  event keep observer filter pair pipeline group pure reduce fold result 
+  //  either drop compose memo map state sync gate project handler observer 
+  //  sort pipeline stream either pipeline event fulfilled lazy effect reducer cache 
+  //  pipeline memoize invalidate throttle component sentinel dispatcher resolve guard await handler 
+  //  pure subscribe keep hook event async ref result gate queue map 
+  //  context cache pipeline reduce gate invalidate fold context sync project sentinel 
+  //  stream props sync tuple props group await lazy reducer callback subscribe 
+  //  sort merge pending resolve debounce fulfilled reject component callback keep fulfilled 
+  //  callback handler dispatcher transform
+  */
+})();
+
+// mod-0023 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[23] = {
+    id: 23,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0023';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '164');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  option lazy reject drop queue filter pending queue effect dispatcher memoize sort 
+  //  dispatcher callback fulfilled event sync reduce keep memoize props sentinel merge 
+  //  reducer invalidate fold gate effect guard queue cache reducer state props 
+  //  option reduce group compose sentinel map async await map compose gate 
+  //  queue transform zip transform sort reduce drop fold guard reject drop 
+  //  gate async publish ref option memoize pair sentinel tuple drop await 
+  //  reduce publish queue pair fulfilled dispatcher async scan result event guard 
+  //  await project cache context filter stream transform drop lazy stream sort 
+  //  fulfilled dispatcher queue memoize compose handler pair dispatcher subscribe sentinel group 
+  //  async publish pure merge pair result gate await stream throttle pipeline 
+  //  result dispatcher buffer compose component transform event dispatcher fold pair filter 
+  //  cache pipeline fold memoize cache tuple sort transform reducer fold observer 
+  //  lazy filter reducer dispatcher lazy render drop resolve hook memoize sync 
+  //  gate reduce stream project observer sentinel subscribe memo select pair component 
+  //  stream sort reduce ref await handler guard fold throttle reduce drop 
+  //  partition eager hook state subscribe stream debounce gate project pure queue 
+  //  stream await result keep reject project guard reduce context pure eager 
+  //  memo subscribe effect throttle cache context ref reduce stream state ref 
+  //  render guard pair stream ref project memoize either render eager gate 
+  //  event result option eager invalidate component throttle reject pure pipeline filter 
+  //  option observer effect memoize merge filter async resolve debounce filter dispatcher 
+  //  eager reduce hook select memoize reducer pure reducer merge stream either 
+  //  event sort transform compose gate pipeline resolve pipeline throttle sort gate 
+  //  buffer context zip select props subscribe compose handler reject pair filter 
+  //  observer filter group render option reject pure filter result gate guard 
+  //  scan fulfilled option effect pending fold callback context pending await subscribe 
+  //  scan pure zip option eager memo drop group sync lazy stream 
+  //  props lazy reducer pending state component group pair invalidate context memo 
+  //  pure map sort hook throttle pending pending lazy option gate select 
+  //  queue guard zip result cache dispatcher pipeline map context fulfilled queue 
+  //  filter props context throttle memoize publish pending pure debounce cache cache 
+  //  queue publish context fulfilled guard effect option stream event partition throttle 
+  //  project scan sort reducer handler debounce component compose transform filter queue 
+  //  async pipeline lazy keep eager pure compose effect either reducer stream 
+  //  state throttle effect scan event partition keep sync result compose option 
+  //  select resolve filter publish handler handler zip ref pending option event 
+  //  scan queue handler pending sort project select either event pair group 
+  //  subscribe keep resolve tuple fold props event publish sort keep hook 
+  //  component event queue context stream partition fulfilled transform lazy either filter 
+  //  render callback eager component lazy option props transform either fulfilled guard 
+  //  guard dispatcher debounce reject transform callback reducer subscribe memoize props props 
+  //  resolve event tuple handler reducer reduce zip pair sync reduce group 
+  //  cache eager publish tuple throttle pipeline eager async handler fold pure 
+  //  zip effect map sort stream scan pipeline invalidate group reduce zip 
+  //  dispatcher sync hook ref fold drop tuple handler zip select effect 
+  //  scan async merge sync stream debounce compose scan guard sentinel memo 
+  //  pair props select props either fold ref observer sentinel map filter 
+  //  sentinel stream gate await props sync gate keep event gate reducer 
+  //  pipeline await select pure observer memoize effect map reducer reduce map 
+  //  partition zip gate queue transform pipeline merge effect guard state pending 
+  //  handler drop drop lazy lazy state keep queue fulfilled fold fulfilled 
+  //  transform reduce context resolve reduce stream state buffer guard sort scan 
+  //  debounce pending scan buffer pipeline gate subscribe debounce await dispatcher compose 
+  //  reject ref sentinel scan sync pipeline publish pipeline either await lazy 
+  //  event fulfilled ref merge map handler component event sync fold handler 
+  //  merge async stream pending drop lazy tuple result gate async lazy 
+  //  zip props zip project compose pending project context select pair zip 
+  //  event partition ref stream invalidate filter stream project drop props pair 
+  //  async lazy sentinel fulfilled subscribe event group effect await partition reject 
+  //  gate hook group memo state reject pair compose stream cache drop 
+  //  lazy ref observer merge partition compose eager hook reducer gate effect 
+  //  observer pipeline tuple lazy reducer keep resolve dispatcher result memo project 
+  //  props drop cache tuple stream props gate dispatcher eager component filter 
+  //  drop pending map cache zip stream fold effect either async result 
+  //  partition fold keep state sort fold cache component tuple fulfilled queue 
+  //  render queue throttle either group zip guard gate result sync scan 
+  //  transform dispatcher fulfilled hook drop debounce subscribe handler effect eager reduce 
+  //  event buffer resolve pair dispatcher sentinel fulfilled observer group pending resolve 
+  //  observer eager pair reducer result partition reject pending observer reject event 
+  //  event event cache compose observer scan lazy reduce eager reject debounce 
+  //  guard reject hook project tuple debounce reject stream tuple stream event 
+  //  sentinel render memoize pipeline debounce zip event resolve drop map sort 
+  //  invalidate fulfilled state pure gate eager pending tuple pure memoize keep 
+  //  buffer await eager transform callback reject select select pipeline observer observer 
+  //  resolve project await pending resolve gate either fulfilled await scan transform 
+  //  map debounce sync compose await publish keep tuple event context props 
+  //  drop transform handler publish pure sync transform either reduce tuple reject 
+  //  stream cache await effect reject props memo memo pair sync eager 
+  //  effect merge pair pure select dispatcher pure map merge filter select 
+  //  hook invalidate project stream guard pipeline callback keep context async callback 
+  //  either memo eager event observer fold event merge stream partition reducer 
+  //  memoize sort observer tuple ref invalidate pure cache drop buffer buffer 
+  //  ref await transform group publish async eager tuple pair buffer option 
+  //  pair sentinel group publish partition throttle callback select map select lazy 
+  //  reducer transform dispatcher option compose either filter cache filter scan sync 
+  //  drop stream drop subscribe group guard merge reject merge await gate 
+  //  memo sync compose reducer throttle transform resolve reducer reducer queue pair 
+  //  project async callback result await stream eager gate project pipeline pending 
+  //  throttle project publish component eager stream keep reject lazy fold either 
+  //  subscribe debounce project merge eager sentinel event select memoize guard zip 
+  //  transform zip throttle memo eager sentinel props cache select reducer pipeline 
+  //  resolve publish lazy project memo resolve option component reduce sync stream 
+  //  effect either props group publish tuple pipeline observer eager eager map 
+  //  memoize gate gate filter stream group sentinel hook ref stream project 
+  //  queue resolve result resolve project event group drop state hook partition 
+  //  guard sync context reducer group merge reduce fulfilled filter observer ref 
+  //  stream transform fold throttle ref async subscribe cache pair props props 
+  //  tuple project invalidate queue keep select eager map sort scan sort 
+  //  invalidate reducer pipeline stream filter context stream map event memoize subscribe 
+  //  transform tuple option filter callback sort project select observer context sync 
+  //  map compose keep pure pending resolve group invalidate resolve component cache 
+  //  merge select async zip compose guard debounce observer buffer zip filter 
+  //  dispatcher pipeline effect fold fulfilled keep publish render select pair observer 
+  //  gate subscribe context pair throttle result resolve gate subscribe pending async 
+  //  zip dispatcher tuple props event result dispatcher guard transform drop props 
+  //  transform pure lazy sentinel tuple hook handler compose lazy sort map 
+  //  either pure context filter memo hook ref map event pair debounce 
+  //  memo debounce memo fulfilled publish throttle event subscribe cache either event 
+  //  cache resolve fold sync invalidate filter partition context publish effect eager 
+  //  async zip debounce callback event sort pair reduce fold result select 
+  //  props select event lazy gate handler group hook dispatcher zip pair 
+  //  async either select component pure pair partition reject merge map map 
+  //  callback component reducer await buffer sentinel callback lazy publish transform component 
+  //  lazy observer merge observer handler reject buffer filter handler async scan 
+  //  render stream stream sync zip fulfilled stream eager keep sync pending 
+  //  option keep stream pending await throttle compose reduce context fold resolve 
+  //  either eager effect option transform memo compose component map pending sort 
+  //  publish reject merge props invalidate props project pipeline sort sentinel merge 
+  //  reduce filter dispatcher sentinel subscribe component event effect callback stream pure 
+  //  tuple publish stream select lazy project group gate option drop filter 
+  //  compose component sort publish event memo debounce drop stream transform pair 
+  //  select props filter resolve publish gate component compose queue reduce pending 
+  //  select gate merge fulfilled reject memo fulfilled eager merge effect debounce 
+  //  handler callback keep pipeline reduce pair pipeline invalidate pending partition reducer 
+  //  subscribe option guard sync effect project fulfilled publish memo stream gate 
+  //  state guard scan stream scan compose guard render hook map reducer 
+  //  async resolve gate state pure hook sentinel guard fulfilled gate dispatcher 
+  //  observer eager queue buffer project group filter handler either buffer partition 
+  //  project map sync lazy memo effect pipeline project async handler event 
+  //  queue filter transform pure lazy cache observer fulfilled handler eager fulfilled 
+  //  memoize component handler fold pipeline map option sentinel fold resolve select 
+  //  handler either zip dispatcher guard lazy select pipeline project pair keep 
+  //  queue handler scan subscribe sort buffer fulfilled sentinel context gate gate 
+  //  event pending publish scan guard transform publish reject option callback effect 
+  //  invalidate buffer compose memoize reducer buffer select cache render pending dispatcher 
+  //  render drop compose throttle fulfilled gate debounce invalidate queue handler cache 
+  //  publish memo ref select pure project render project fold fold filter 
+  //  filter dispatcher eager map context observer compose compose guard pair sort 
+  //  drop option option zip await pending dispatcher pipeline compose project component 
+  //  project publish sync scan tuple reduce event callback result ref select 
+  //  merge scan guard reduce cache props either lazy either project pair 
+  //  event stream observer either project partition resolve cache props reducer effect 
+  //  project option select gate reject partition fold fulfilled zip tuple either 
+  //  callback sort project compose drop subscribe state gate keep group memo 
+  //  event group pipeline render observer transform sentinel sort reducer group transform 
+  //  fold subscribe hook context invalidate reduce sort queue pending reject event 
+  //  map callback filter ref transform await sync pipeline result effect partition 
+  //  render callback transform sort effect result sort invalidate guard fulfilled throttle 
+  //  stream debounce option option result fold fold select gate reducer invalidate 
+  //  invalidate resolve project drop zip invalidate group filter stream invalidate sentinel 
+  //  subscribe callback dispatcher event render memoize ref component dispatcher reject sync 
+  //  guard sync reducer lazy resolve state memoize drop zip subscribe reducer 
+  //  ref props transform invalidate pipeline partition eager map observer eager pipeline 
+  //  gate pair observer handler merge filter event project either stream ref 
+  //  reducer component result dispatcher callback lazy memo compose compose group pending 
+  //  context memo queue resolve stream async debounce merge ref observer select 
+  // 
+  */
+})();
+
+// mod-0024 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[24] = {
+    id: 24,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0024';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '61');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  fulfilled lazy event dispatcher drop context pure props sync callback handler handler 
+  //  invalidate resolve effect pipeline scan either context result reduce merge dispatcher 
+  //  tuple async result effect dispatcher compose keep cache component lazy scan 
+  //  props component drop merge gate pair memo effect sort tuple stream 
+  //  group throttle reject invalidate scan reduce guard fulfilled render state resolve 
+  //  effect lazy resolve resolve ref memo component hook memoize async memo 
+  //  publish select effect props pending compose filter observer buffer memoize pending 
+  //  reduce sync result callback project lazy pending observer drop observer sync 
+  //  event state debounce keep await filter sentinel merge resolve gate fold 
+  //  filter result memo merge merge zip ref memo tuple scan memoize 
+  //  event select sort pair throttle drop map drop publish lazy reducer 
+  //  tuple callback props either context state handler keep resolve either select 
+  //  dispatcher dispatcher zip reducer pure state throttle invalidate compose guard handler 
+  //  group event publish async scan sort guard project merge sync render 
+  //  partition option subscribe stream transform callback fulfilled component memoize transform ref 
+  //  observer component hook project state sync select invalidate merge pending dispatcher 
+  //  result scan either render select group select async state reject effect 
+  //  guard pipeline pair scan zip subscribe tuple sort callback async invalidate 
+  //  merge transform filter guard filter keep sort partition sentinel subscribe zip 
+  //  pure compose project merge memo reject fold filter transform memo pair 
+  //  async reject sentinel filter fold memoize sync resolve lazy buffer fulfilled 
+  //  publish props fold transform reject zip fulfilled reduce state guard option 
+  //  select reduce memo invalidate memo merge pipeline memo component fulfilled observer 
+  //  handler compose transform memo state sentinel queue tuple memoize effect throttle 
+  //  context handler props resolve invalidate ref drop fold state zip project 
+  //  effect either result await effect drop ref eager invalidate zip buffer 
+  //  state zip throttle buffer eager result sync throttle group memoize effect 
+  //  zip merge result group either zip eager memo eager sort handler 
+  //  project map option memo async project scan queue event reducer debounce 
+  //  memoize either sort handler hook context cache context cache group map 
+  //  pending filter callback zip throttle subscribe handler transform eager pending compose 
+  //  event callback select context memo render group await transform event map 
+  //  props project props keep memo transform subscribe sync component publish cache 
+  //  ref state transform sync partition memo component tuple memo cache option 
+  //  compose merge debounce option invalidate subscribe state throttle dispatcher filter pair 
+  //  drop sentinel zip async sort memoize transform pair pure gate cache 
+  //  partition reducer component memo await zip sync render memo memoize guard 
+  //  state keep stream drop sentinel await observer ref lazy callback callback 
+  //  ref compose reject drop debounce guard reject drop invalidate option publish 
+  //  transform merge memoize merge reduce resolve merge sentinel keep transform memoize 
+  //  hook effect cache subscribe debounce reduce group await partition scan drop 
+  //  reject debounce eager either scan resolve component async fold option filter 
+  //  props props buffer debounce result memo fulfilled zip merge subscribe select 
+  //  group callback hook await ref pending throttle pending component pending option 
+  //  subscribe effect resolve buffer cache props callback debounce result fold map 
+  //  fulfilled partition memo hook invalidate reduce option fold context throttle tuple 
+  //  filter effect sentinel result merge zip stream debounce hook guard reduce 
+  //  result result transform effect render throttle observer event context fulfilled state 
+  //  reduce invalidate keep group state subscribe select stream throttle gate debounce 
+  //  ref result async pipeline await pure sentinel tuple merge observer throttle 
+  //  resolve guard reject pending sentinel group cache merge guard memoize partition 
+  //  pure either sort subscribe effect pipeline reducer merge either eager tuple 
+  //  render transform tuple debounce pipeline pure sort observer throttle cache props 
+  //  handler throttle compose publish dispatcher memo either reduce dispatcher filter handler 
+  //  reduce state cache transform ref dispatcher reduce guard option state component 
+  //  resolve scan handler dispatcher fulfilled memoize pending state cache event sentinel 
+  //  render hook scan tuple ref queue lazy dispatcher transform handler async 
+  //  merge result map tuple reducer dispatcher state effect pair debounce memo 
+  //  pipeline context cache state option project either pair effect group partition 
+  //  handler callback subscribe reject map reject debounce pair reject await component 
+  //  pure filter stream async queue partition project drop pending fold await 
+  //  hook throttle throttle state component fold result group zip event debounce 
+  //  debounce await map subscribe group select scan guard debounce context merge 
+  //  transform memoize transform effect callback guard effect keep cache merge queue 
+  //  async gate state select pipeline invalidate debounce queue context partition tuple 
+  //  callback scan callback merge lazy lazy pending select map resolve cache 
+  //  component queue partition keep pending handler invalidate zip effect observer pipeline 
+  //  pipeline reducer filter stream sync sort sort reject ref async filter 
+  //  pending stream publish handler option map select sentinel handler invalidate debounce 
+  //  publish fold dispatcher hook throttle result async reject tuple eager fulfilled 
+  //  component pending pipeline tuple observer subscribe transform tuple eager buffer pending 
+  //  eager result render result observer reducer reject effect sort sort keep 
+  //  transform pipeline hook transform await tuple filter either keep dispatcher sync 
+  //  pipeline eager pure project effect throttle transform memo state reducer tuple 
+  //  keep dispatcher drop gate pipeline group hook pipeline ref await tuple 
+  //  gate memo group reject guard keep select resolve lazy reject project 
+  //  drop pipeline partition debounce result scan gate zip queue handler partition 
+  //  reducer merge reduce transform zip stream drop callback cache stream keep 
+  //  guard either memo reject gate transform observer group memo fold dispatcher 
+  //  either pure result effect event invalidate reduce hook sync partition hook 
+  //  reducer state stream state queue pending partition event effect pure merge 
+  //  async pair keep effect ref sort invalidate eager invalidate throttle dispatcher 
+  //  handler fold fold pair pair pure reject sentinel subscribe keep ref 
+  //  stream buffer debounce invalidate hook pending option reducer guard context result 
+  //  memoize group map pure gate hook select gate eager tuple resolve 
+  //  subscribe select reducer pure gate compose publish sentinel scan callback select 
+  //  lazy map props compose component project map debounce scan subscribe drop 
+  //  memoize publish state observer filter transform sort buffer keep reducer project 
+  //  invalidate result callback result invalidate group gate await partition fulfilled map 
+  //  resolve observer memoize lazy queue filter lazy drop debounce sort render 
+  //  props render state invalidate sentinel await buffer effect select pending sort 
+  //  memoize props dispatcher resolve guard sort drop pair pipeline filter reducer 
+  //  reduce context pipeline gate component state project resolve render props async 
+  //  fulfilled result drop render queue handler context merge event option drop 
+  //  stream reduce component context gate handler gate gate pure resolve sync 
+  //  props buffer queue context debounce reducer project drop ref publish state 
+  //  pipeline resolve memo result queue zip render props pair hook stream 
+  //  guard option reduce observer subscribe throttle scan scan result stream drop 
+  //  fulfilled buffer memoize cache gate either observer render subscribe memoize reduce 
+  //  debounce map sentinel queue throttle debounce guard reducer sentinel compose filter 
+  //  buffer transform context ref stream state memo observer fold sort pipeline 
+  //  resolve memo debounce component compose throttle callback publish handler effect drop 
+  //  pending state sync reject pipeline publish lazy group observer pipeline ref 
+  //  tuple hook reject filter gate lazy publish memo sentinel memoize zip 
+  //  context dispatcher partition resolve scan result zip filter render either partition 
+  //  memo option component sort hook tuple hook memo transform hook publish 
+  //  throttle reject zip cache sort resolve debounce fold context state observer 
+  //  handler lazy queue dispatcher pair reduce reject fulfilled callback throttle async 
+  //  await gate compose keep subscribe pipeline partition sort option lazy dispatcher 
+  //  pair transform memoize result sort async project fold callback reducer lazy 
+  //  stream publish memoize pending debounce fulfilled subscribe filter queue gate either 
+  //  resolve resolve hook eager cache reducer result scan pending guard stream 
+  //  option state resolve tuple stream memo filter pair tuple zip hook 
+  //  cache group result async observer result drop sync sort throttle sync 
+  //  tuple dispatcher buffer zip keep buffer merge memo queue fold buffer 
+  //  sort state sentinel transform tuple fold fulfilled dispatcher group guard sort 
+  //  reducer fold stream gate filter lazy project memoize zip tuple render 
+  //  memoize event scan invalidate await reducer observer zip queue memoize fulfilled 
+  //  dispatcher eager effect publish subscribe map invalidate memo either queue gate 
+  //  subscribe resolve throttle fulfilled async invalidate map publish pure ref transform 
+  //  cache event props sync ref resolve pair drop state fulfilled drop 
+  //  fold reject component context effect fulfilled compose publish keep fulfilled option 
+  //  render option pending gate reducer debounce sync stream sentinel option buffer 
+  //  gate option filter fulfilled reject partition reduce component throttle zip filter 
+  //  drop sort event throttle pipeline render option hook merge transform scan 
+  //  lazy pending reject lazy stream props guard buffer ref select buffer 
+  //  memo debounce memo sentinel sync project sentinel resolve fulfilled partition throttle 
+  //  hook lazy render render stream result ref eager fulfilled resolve observer 
+  //  hook async observer cache memoize ref effect merge reject lazy partition 
+  //  map resolve reject context pair transform fulfilled zip map throttle throttle 
+  //  pair ref cache resolve filter option event scan group transform result 
+  //  buffer pair sync handler select tuple sentinel subscribe lazy handler resolve 
+  //  sentinel memo scan debounce project callback cache gate component compose reduce 
+  //  stream throttle sort sentinel cache state effect hook props fulfilled pure 
+  //  memoize merge result project effect cache queue component hook pure async 
+  //  props guard reduce reduce resolve handler sentinel result invalidate debounce memoize 
+  //  reject observer sync group dispatcher zip queue component eager buffer dispatcher 
+  //  ref merge partition await dispatcher select await keep reducer fold props 
+  //  handler context queue compose effect sentinel sync memo transform handler state 
+  //  drop lazy callback sort resolve result partition event callback subscribe throttle 
+  //  sync lazy component pending eager component publish scan compose buffer invalidate 
+  //  merge either state project sync stream group zip memoize observer fold 
+  //  debounce partition memo result context dispatcher fulfilled lazy compose select handler 
+  //  filter reject keep ref result filter handler filter callback map component 
+  //  component effect stream async compose group scan pair ref pair tuple 
+  //  map ref drop pure either dispatcher reject drop pure zip compose 
+  //  zip context tuple eager subscribe result queue map gate either drop 
+  //  compose drop subscribe reduce merge invalidate event publish pure buffer render 
+  //  component pending transform render observer transform buffer filter group dispatcher resolve 
+  //  compose tuple state compose observer reduce guard select sentinel publish throttle 
+  //  group invalidate drop sync sync reducer props callback option component await 
+  //  sync subscribe handler ref map resolve merge publish scan eager scan 
+  //  drop gate drop cache ref handler project callback observer reject project 
+  //  project guard throttle stream props context scan memoize state component scan 
+  //  context state map async component
+  */
+})();
+
+// mod-0025 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[25] = {
+    id: 25,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0025';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '213');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  transform transform memoize state map pipeline observer sync observer transform invalidate queue 
+  //  sentinel buffer observer stream group handler map effect async gate drop 
+  //  stream observer reduce result publish props gate await hook zip stream 
+  //  keep buffer publish select pending handler map dispatcher event await memoize 
+  //  tuple pair queue dispatcher group await memo pipeline observer reducer project 
+  //  props zip pending pending merge debounce effect reject scan resolve ref 
+  //  gate pure context pair render lazy callback fold reduce state pair 
+  //  sentinel subscribe callback reject invalidate handler publish stream state cache buffer 
+  //  publish ref guard zip reduce await async await event either gate 
+  //  fulfilled component dispatcher sync render cache merge pending pipeline filter context 
+  //  sort either dispatcher memo component subscribe either pending scan sentinel props 
+  //  zip observer hook ref effect component state guard fulfilled callback sort 
+  //  gate pair fold project invalidate reducer filter buffer async pure transform 
+  //  hook fulfilled filter lazy fulfilled event context gate filter filter pair 
+  //  observer map observer cache throttle invalidate gate debounce pipeline fold callback 
+  //  fold observer sync handler invalidate dispatcher group result partition pure resolve 
+  //  pending hook memoize pending dispatcher scan resolve sentinel sort effect sentinel 
+  //  map transform eager compose lazy select hook publish publish stream queue 
+  //  partition debounce map keep scan pair subscribe merge compose throttle reject 
+  //  callback pure pipeline gate props debounce resolve reduce select tuple pair 
+  //  buffer event stream pending await compose callback await guard fold result 
+  //  merge pipeline pure pipeline await either memoize map async select guard 
+  //  fulfilled pipeline map pipeline event compose dispatcher publish fold sync gate 
+  //  reject fold queue transform fold throttle memoize compose resolve pending drop 
+  //  pure filter buffer publish publish either context memoize context lazy buffer 
+  //  eager merge map compose reducer transform group sort drop reducer zip 
+  //  invalidate group guard select observer gate context dispatcher pending state hook 
+  //  partition subscribe lazy state guard tuple sentinel either reduce fold memo 
+  //  ref cache async transform pure reduce memo pending reject lazy props 
+  //  stream async hook publish either either fulfilled keep event reject compose 
+  //  reduce event stream tuple select project stream pipeline cache callback state 
+  //  effect eager result hook transform observer reject select event filter select 
+  //  option publish transform fulfilled result effect partition compose fold sentinel fold 
+  //  subscribe pipeline render resolve callback group render props resolve project resolve 
+  //  reduce publish guard await cache either either resolve scan eager handler 
+  //  option partition callback subscribe memoize drop sort pending reject state state 
+  //  result queue callback sort sort hook sync dispatcher state buffer callback 
+  //  gate guard map resolve sync eager project merge state hook buffer 
+  //  group ref observer reject handler pipeline map result compose component fold 
+  //  lazy reject buffer event reduce publish eager lazy subscribe buffer keep 
+  //  ref eager zip ref reducer fold sync pipeline compose filter group 
+  //  buffer result hook handler result publish invalidate project pure publish keep 
+  //  subscribe dispatcher sync ref project cache pipeline buffer pair props pure 
+  //  publish lazy throttle keep cache guard reducer zip group callback lazy 
+  //  await lazy lazy pending drop drop memo pipeline queue reject handler 
+  //  merge map async guard keep gate drop event context queue await 
+  //  either result memo transform hook subscribe dispatcher partition project debounce memoize 
+  //  state filter fold context compose reduce render context partition stream subscribe 
+  //  memo pure cache eager ref lazy publish compose queue eager await 
+  //  option either lazy invalidate event callback result either event lazy props 
+  //  eager buffer select debounce props option throttle resolve pair await sentinel 
+  //  pair await pipeline project fold group async pending cache render sort 
+  //  async gate map throttle async callback publish subscribe sort reject pending 
+  //  memoize queue fold pair stream project lazy merge sentinel sync publish 
+  //  filter reject guard fold keep compose hook publish throttle eager select 
+  //  invalidate publish either effect eager pure render stream project map render 
+  //  observer state transform filter debounce handler memoize tuple reduce memoize pair 
+  //  fulfilled tuple reject filter drop subscribe select group debounce debounce cache 
+  //  throttle await reduce partition zip debounce reduce props async event pair 
+  //  reject state fold event reduce debounce gate memoize ref props partition 
+  //  project render memo either partition props event zip invalidate subscribe ref 
+  //  pure tuple publish tuple throttle reducer reducer pending partition resolve debounce 
+  //  stream memo event pure event gate publish merge guard event state 
+  //  project queue pure reduce event reject pending group subscribe either compose 
+  //  select hook publish debounce zip ref drop transform drop effect either 
+  //  group either result debounce props ref event dispatcher drop component dispatcher 
+  //  filter buffer project event partition compose zip option map reduce handler 
+  //  buffer handler hook invalidate reduce invalidate memo debounce partition project gate 
+  //  drop tuple zip gate dispatcher async memo fold reduce publish sort 
+  //  sort either keep group component cache lazy fulfilled observer project ref 
+  //  sync map scan drop async queue queue debounce render scan merge 
+  //  eager await tuple merge scan async pipeline effect group pure publish 
+  //  map render pair drop reduce keep async merge props debounce lazy 
+  //  sentinel subscribe memo cache cache resolve fulfilled gate publish cache select 
+  //  pending invalidate render effect handler transform scan compose sentinel reject context 
+  //  pair reject sync await fold map observer fulfilled tuple publish zip 
+  //  eager cache keep result pending drop dispatcher component component project memoize 
+  //  filter eager throttle either component sentinel zip stream buffer fold transform 
+  //  reducer project either memoize publish hook pure guard cache merge option 
+  //  handler throttle resolve sort transform memo option render stream publish subscribe 
+  //  pair cache await event result event reducer result reducer memoize resolve 
+  //  either select stream invalidate event await render pure queue buffer memo 
+  //  props invalidate observer reject stream buffer transform either filter reject ref 
+  //  fold render callback ref result pure merge invalidate sentinel subscribe reducer 
+  //  reject reducer select debounce reducer drop observer throttle tuple state pair 
+  //  project subscribe pair hook tuple option gate zip callback sync transform 
+  //  cache keep await tuple merge subscribe zip cache cache component hook 
+  //  project observer handler fulfilled drop group gate result fulfilled reducer lazy 
+  //  tuple reduce subscribe state pending hook dispatcher compose throttle drop stream 
+  //  transform keep group eager event subscribe gate reduce scan sort sync 
+  //  map event sort tuple publish stream async handler compose render buffer 
+  //  observer effect queue reject sync invalidate await component lazy context project 
+  //  effect option pipeline tuple memoize dispatcher handler context option hook state 
+  //  memoize sync context memoize handler stream publish group hook invalidate sync 
+  //  reducer props state pair await pending event dispatcher tuple dispatcher select 
+  //  event pending lazy subscribe scan map cache throttle gate invalidate guard 
+  //  map hook invalidate fulfilled stream fold debounce fulfilled fold throttle sync 
+  //  fold project sentinel observer state fold result scan filter tuple publish 
+  //  either dispatcher fulfilled cache ref component handler reject pure async render 
+  //  component stream cache tuple result merge option fulfilled effect buffer component 
+  //  hook lazy stream map project partition component sync stream pure state 
+  //  pure dispatcher option publish debounce partition fulfilled reducer keep reducer result 
+  //  dispatcher tuple select eager component pure sentinel group invalidate observer async 
+  //  reject render resolve pipeline pending drop group hook partition state throttle 
+  //  map eager option fold props await fold compose await stream lazy 
+  //  option tuple partition effect fold buffer event zip handler queue callback 
+  //  either option ref lazy queue group event option scan subscribe tuple 
+  //  resolve filter resolve pure either debounce lazy publish merge reject project 
+  //  merge state ref transform select async fold result publish observer option 
+  //  memoize queue scan pair partition map reducer reducer handler result group 
+  //  tuple fold effect sort gate lazy guard fold sync either transform 
+  //  scan project eager map observer guard render ref reducer gate sync 
+  //  dispatcher sync render pipeline reducer guard props buffer transform queue await 
+  //  sort transform async project merge resolve state stream partition lazy cache 
+  //  state keep pair invalidate compose pure event subscribe props observer gate 
+  //  queue project filter tuple select map context keep reducer publish queue 
+  //  fulfilled lazy await memo sort select merge select publish sentinel pipeline 
+  //  callback cache async project lazy pure scan filter memoize select pipeline 
+  //  invalidate sync project cache project observer option event await observer eager 
+  //  sync queue event props state transform sentinel zip tuple zip buffer 
+  //  invalidate fold pending pending context callback reduce publish merge keep reject 
+  //  stream transform stream tuple partition sync state publish reduce hook drop 
+  //  merge debounce debounce result render buffer event dispatcher pending drop memoize 
+  //  either lazy transform filter props compose context render throttle filter observer 
+  //  sort lazy dispatcher buffer state memo filter sort reduce sentinel invalidate 
+  //  memoize pending debounce sentinel debounce debounce dispatcher reduce tuple map option 
+  //  ref gate map invalidate hook pending sort either transform lazy select 
+  //  pending select debounce observer throttle sentinel observer group sync reduce publish 
+  //  group render transform callback select pure invalidate context group callback handler 
+  //  queue handler event event invalidate either publish partition sync map dispatcher 
+  //  invalidate select option hook project either reject reducer reject await either 
+  //  lazy context fold reducer context async context state pending filter merge 
+  //  reject either project stream context invalidate async fold pure sync eager 
+  //  hook memo debounce pair memoize effect transform async drop pending pipeline 
+  //  merge pair guard subscribe reject either component event hook cache sort 
+  //  select fulfilled effect group partition pair select fold guard either event 
+  //  gate memo ref sync either compose memoize drop async render drop 
+  //  partition eager map pure hook sort keep select context filter effect 
+  //  throttle merge pending reduce reject sync effect resolve compose effect await 
+  //  reduce reduce result props dispatcher select map tuple stream observer option 
+  //  pending group await debounce props publish queue render await reduce dispatcher 
+  //  group cache hook invalidate observer effect reducer merge memo map sort 
+  //  guard lazy transform render compose eager cache zip merge fold async 
+  //  reject drop scan hook async subscribe memo zip memoize async fold 
+  //  component result component gate fold dispatcher pure drop tuple map tuple 
+  //  pipeline gate eager fold pipeline result merge await fulfilled async props 
+  //  eager fulfilled publish reject stream filter tuple async hook project merge 
+  //  state await zip queue guard map publish buffer sort tuple context 
+  //  either cache select keep zip context partition debounce publish buffer memoize 
+  //  subscribe state render handler dispatcher reject sentinel publish hook subscribe scan 
+  //  stream eager props eager fulfilled merge cache cache cache eager reducer 
+  //  reject partition merge memo gate filter reducer project queue filter stream 
+  //  option debounce partition async lazy context memoize effect context pure eager 
+  //  memoize props compose sentinel memo fold sync subscribe group map event 
+  //  reject sort props reject project pending pipeline project observer result fulfilled 
+  //  ref callback context fold ref handler lazy pipeline filter cache handler 
+  // 
+  */
+})();
+
+// mod-0026 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[26] = {
+    id: 26,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0026';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '187');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  pipeline context props render partition scan pending queue map reject async fold 
+  //  gate resolve reduce pipeline fold result effect stream component fulfilled throttle 
+  //  scan resolve memoize throttle effect hook pipeline memo scan filter throttle 
+  //  zip gate guard subscribe result component context drop sentinel partition zip 
+  //  buffer eager select buffer throttle callback keep context render tuple partition 
+  //  resolve sync sentinel async handler sync event state keep component merge 
+  //  reduce pipeline hook publish fulfilled lazy option compose map debounce queue 
+  //  memoize subscribe subscribe ref pair state memo observer pure memo ref 
+  //  sentinel cache component drop pure publish pending lazy effect publish memo 
+  //  pure pair sort callback drop keep sort buffer reducer reducer reduce 
+  //  state debounce sort handler pipeline stream render memoize subscribe sort pipeline 
+  //  subscribe tuple pipeline stream reject memoize memo state component keep throttle 
+  //  transform fold guard props async lazy sync hook gate reject merge 
+  //  sort effect async result async pair render group observer publish group 
+  //  publish sync buffer invalidate pair pipeline tuple filter drop debounce ref 
+  //  memoize sort reduce option cache partition effect ref queue invalidate buffer 
+  //  invalidate compose subscribe filter hook component dispatcher sentinel observer component pending 
+  //  queue hook context lazy buffer effect filter pending group publish pure 
+  //  keep pair reduce map scan sentinel dispatcher publish queue fold reducer 
+  //  transform await map callback hook queue scan async throttle result await 
+  //  keep project fulfilled hook observer render fold cache reducer memoize either 
+  //  guard drop dispatcher sentinel compose hook group invalidate zip reject publish 
+  //  transform reject resolve lazy sync stream buffer pair memoize fold tuple 
+  //  zip result await pending partition option transform render callback map sentinel 
+  //  debounce debounce reducer map gate stream group cache pair lazy zip 
+  //  stream buffer group scan sentinel cache option debounce transform project stream 
+  //  publish keep resolve component partition queue memo either drop drop guard 
+  //  fold sort ref tuple project debounce pair invalidate compose merge ref 
+  //  memoize guard publish fold pending debounce sort sort async group context 
+  //  tuple compose drop fulfilled render pending scan stream pipeline dispatcher invalidate 
+  //  ref reduce await context debounce reduce memoize group result fulfilled group 
+  //  props buffer stream group observer option tuple drop pure memoize fold 
+  //  reduce map await pending keep reduce pending publish compose event subscribe 
+  //  async event memo compose fold handler queue filter group sort reject 
+  //  hook debounce guard drop keep buffer component compose fold merge result 
+  //  gate pure event debounce throttle cache gate guard buffer result component 
+  //  partition state pair sort ref transform state option subscribe publish buffer 
+  //  reducer partition event buffer sort guard project publish handler publish zip 
+  //  compose stream queue subscribe tuple eager transform event pending eager dispatcher 
+  //  async eager guard props sort publish debounce publish cache compose transform 
+  //  reducer cache callback await zip stream await dispatcher reducer pure select 
+  //  reduce buffer filter reject reject sync throttle fold zip pending sentinel 
+  //  stream debounce zip dispatcher eager zip ref option handler either stream 
+  //  select memoize memoize lazy context option stream subscribe group tuple reduce 
+  //  pair zip tuple reject component group map props partition await hook 
+  //  memoize memoize await hook context zip render result publish callback transform 
+  //  filter keep scan eager resolve reduce pending gate filter sentinel queue 
+  //  sync fold project reducer option reject transform group buffer sort group 
+  //  guard buffer result invalidate group subscribe callback pair eager callback render 
+  //  cache project compose pending cache ref select drop pair hook observer 
+  //  pipeline context sort publish subscribe transform throttle fulfilled stream debounce ref 
+  //  ref zip buffer fulfilled reject scan filter option sort scan project 
+  //  lazy context memo merge throttle render transform observer debounce sentinel select 
+  //  dispatcher ref stream zip debounce ref sentinel filter fulfilled reduce buffer 
+  //  queue keep reject state memo group resolve handler callback queue compose 
+  //  memo select project context observer merge cache partition option context dispatcher 
+  //  pipeline buffer handler await throttle pending select select ref ref effect 
+  //  sentinel sort option throttle render queue render handler async render lazy 
+  //  gate either project subscribe debounce group queue subscribe buffer fulfilled scan 
+  //  gate select publish debounce async scan either filter observer gate reduce 
+  //  eager state handler reduce scan sort dispatcher observer props state cache 
+  //  dispatcher partition effect fold component either map zip sort drop fold 
+  //  pair invalidate memo merge pending await context pair async pipeline reducer 
+  //  render project callback pipeline effect tuple map pair memoize handler fold 
+  //  callback invalidate zip effect handler group async component sync transform reducer 
+  //  state fulfilled group eager state hook reducer memoize lazy filter filter 
+  //  keep transform sentinel drop await filter project pipeline dispatcher transform memo 
+  //  event event state observer subscribe gate fold subscribe pending props result 
+  //  stream hook subscribe either debounce hook queue tuple async async select 
+  //  group observer component ref reduce eager reducer queue group sort lazy 
+  //  transform memoize memoize group pipeline reduce either tuple pure subscribe map 
+  //  memo either reduce queue reducer select resolve buffer event result map 
+  //  keep cache sync sync tuple await memoize hook sort throttle keep 
+  //  merge await observer pending render hook option callback throttle invalidate reject 
+  //  memo transform project memo fulfilled reduce ref gate buffer queue memoize 
+  //  state partition reduce callback context guard buffer context pair event filter 
+  //  memoize invalidate state merge ref memoize cache guard sync handler render 
+  //  pipeline hook event result await resolve effect throttle pending component invalidate 
+  //  context group lazy reduce either debounce sort memoize compose keep sort 
+  //  state keep pending reducer guard result option callback memo sync sentinel 
+  //  keep context scan merge hook effect stream select cache keep resolve 
+  //  map drop dispatcher throttle sentinel reject guard pair reducer lazy map 
+  //  reducer state compose stream subscribe keep effect event event reject result 
+  //  guard observer filter resolve reject render component memoize partition event handler 
+  //  sync handler eager buffer callback fulfilled reject tuple reduce map fulfilled 
+  //  keep cache result keep guard observer select debounce callback eager component 
+  //  await pair sort gate buffer pending select sort filter observer keep 
+  //  observer eager sync context reducer fulfilled hook pending lazy gate invalidate 
+  //  transform props keep eager throttle compose lazy effect effect scan async 
+  //  partition pipeline transform pure project debounce pure group async tuple merge 
+  //  select cache merge lazy render merge observer pipeline async lazy fold 
+  //  cache tuple publish group select pure eager subscribe map partition observer 
+  //  pure throttle group publish context lazy memo lazy drop memoize publish 
+  //  guard memo reduce observer stream publish fold lazy result group async 
+  //  eager state filter tuple select pipeline memoize buffer pending invalidate pending 
+  //  transform sort sentinel reject dispatcher publish group publish handler eager buffer 
+  //  resolve reject gate reduce resolve transform pipeline group pair cache memoize 
+  //  select partition event cache lazy async callback memo observer result component 
+  //  tuple select async compose lazy fold stream queue observer merge ref 
+  //  pure context state pair sync pending memoize cache tuple merge effect 
+  //  memo map effect queue state gate throttle queue effect compose pure 
+  //  await eager effect context result reduce sync sync sentinel project pure 
+  //  scan guard component handler pending drop ref debounce observer memo select 
+  //  group ref guard pipeline reducer effect throttle handler props pipeline callback 
+  //  drop filter guard filter scan sync lazy compose fold pair gate 
+  //  subscribe gate props render handler sync option guard select await stream 
+  //  keep option sentinel dispatcher memoize component props gate option option await 
+  //  lazy sync pure subscribe tuple event memoize dispatcher invalidate observer sync 
+  //  observer gate debounce props context guard hook partition project pair select 
+  //  reducer hook partition render eager await render invalidate ref either context 
+  //  async subscribe render option handler async pipeline state drop fulfilled publish 
+  //  eager await render pure stream drop group ref callback state state 
+  //  context drop subscribe project zip context zip merge partition either handler 
+  //  zip filter transform sentinel throttle transform invalidate tuple pure await props 
+  //  pure resolve fold memo component merge context hook observer tuple event 
+  //  sentinel gate sync project compose pipeline props hook keep dispatcher props 
+  //  sentinel either cache invalidate transform hook hook reject compose render sort 
+  //  merge partition buffer drop sentinel lazy drop scan throttle reducer state 
+  //  sort component lazy subscribe result project handler reducer tuple props sync 
+  //  drop props fulfilled state partition option handler memoize sort state hook 
+  //  drop reducer throttle result resolve subscribe context lazy callback queue result 
+  //  effect buffer ref reducer fulfilled pair state zip stream option memo 
+  //  context project invalidate effect callback sort zip group memo debounce handler 
+  //  lazy fold sort sort event option pipeline effect drop state zip 
+  //  async cache props stream throttle subscribe keep gate props event scan 
+  //  fold publish option reject props transform state observer guard handler project 
+  //  effect keep sync handler handler render memo reduce state reject buffer 
+  //  pipeline result tuple option reject props reducer sync component await ref 
+  //  async await state render pipeline handler async publish result render eager 
+  //  reducer sort handler subscribe partition observer keep pair hook map buffer 
+  //  sentinel option pending select callback subscribe hook select hook project sentinel 
+  //  ref async invalidate compose merge render ref context dispatcher publish filter 
+  //  reject map memoize lazy stream tuple queue debounce scan subscribe publish 
+  //  hook eager cache dispatcher option props guard result queue compose pure 
+  //  cache state tuple effect reject reduce compose debounce fulfilled sort observer 
+  //  throttle observer compose render either memo pending pure zip gate resolve 
+  //  pure context pure map partition invalidate props keep handler ref throttle 
+  //  invalidate filter props event throttle result effect props reducer callback pair 
+  //  memo invalidate resolve dispatcher sync either debounce observer sentinel sort callback 
+  //  compose either invalidate project stream pending compose select callback handler callback 
+  //  event pair invalidate result publish filter result group observer zip component 
+  //  reduce ref pipeline effect result render callback reject reducer effect transform 
+  //  scan invalidate async context context filter resolve invalidate buffer dispatcher buffer 
+  //  merge queue guard filter event callback context cache cache component buffer 
+  //  sort lazy pipeline queue compose component context reject guard eager keep 
+  //  reducer effect map callback handler transform keep throttle eager lazy queue 
+  //  render pipeline hook map gate compose buffer option subscribe callback buffer 
+  //  state dispatcher event await filter resolve pending memo ref merge memoize 
+  //  props reduce stream merge zip subscribe reducer fold ref props compose 
+  //  gate drop either either sort drop publish async result event tuple 
+  //  queue effect zip compose event eager keep gate reject debounce memo 
+  //  reducer dispatcher keep merge reduce invalidate state queue props pair merge 
+  //  props queue ref render scan group throttle render pure throttle sentinel 
+  //  lazy select async keep result pipeline select select debounce render tuple 
+  //  effect lazy state either option dispatcher pure keep group pair project 
+  //  throttle state filter publish compose either sync event callback
+  */
+})();
+
+// mod-0027 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[27] = {
+    id: 27,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0027';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '284');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  callback publish sentinel memo memo pending pending callback sentinel render reject await 
+  //  reducer handler debounce props transform pure resolve project pair keep fold 
+  //  pending drop observer either scan either effect throttle project select pipeline 
+  //  filter sort project merge keep publish zip render effect stream compose 
+  //  effect state project either reducer component select render sort group pure 
+  //  result publish option throttle either component sentinel pair hook pipeline option 
+  //  zip sort partition transform sort throttle cache map reduce buffer async 
+  //  cache invalidate memoize project transform sentinel select drop fulfilled async zip 
+  //  cache pair either memo reject partition resolve fulfilled props await result 
+  //  cache transform observer reject reduce memo zip state group queue debounce 
+  //  cache tuple eager publish pipeline resolve reducer component memo effect guard 
+  //  project async reduce render async project render reduce drop memoize result 
+  //  observer reject callback merge pipeline transform merge reducer invalidate tuple transform 
+  //  transform fulfilled reduce reduce sync resolve sentinel reducer gate keep fulfilled 
+  //  sync callback throttle pure buffer pending sync render pure zip render 
+  //  sync result pair pure event memo scan pair filter callback zip 
+  //  map filter observer partition stream keep merge project map memo reducer 
+  //  dispatcher scan callback dispatcher context memoize throttle reduce filter queue event 
+  //  await ref handler callback resolve reject invalidate ref props publish reduce 
+  //  pipeline stream fold handler reduce option context transform invalidate invalidate callback 
+  //  sort reducer reject resolve fold dispatcher zip result fulfilled invalidate guard 
+  //  resolve invalidate async effect guard partition group guard keep either pair 
+  //  memo publish sentinel buffer merge subscribe reducer filter memoize await props 
+  //  buffer option debounce dispatcher gate throttle select zip either gate cache 
+  //  option transform group subscribe transform pure event compose lazy partition pipeline 
+  //  scan drop event select group component reducer guard handler context either 
+  //  tuple stream throttle sync filter ref gate compose filter fulfilled sync 
+  //  map fold reject memo merge gate compose state project reject stream 
+  //  memo subscribe select reduce reject transform context publish merge publish state 
+  //  pending subscribe observer state resolve observer async debounce debounce resolve render 
+  //  buffer queue publish merge guard effect async pipeline select event await 
+  //  tuple handler map stream render callback pending invalidate tuple callback transform 
+  //  transform ref buffer ref await props option merge handler props props 
+  //  sentinel memo memoize cache ref ref transform context callback queue tuple 
+  //  hook reducer compose result select effect project observer eager effect event 
+  //  partition guard keep handler callback sort fulfilled guard subscribe merge lazy 
+  //  sort compose either publish project event memo tuple transform drop resolve 
+  //  option async project debounce component either tuple eager queue context hook 
+  //  dispatcher transform invalidate partition filter memo stream transform keep sort guard 
+  //  transform props pipeline partition async map cache select pending fulfilled effect 
+  //  filter eager ref render scan drop throttle reducer await component lazy 
+  //  hook keep tuple cache zip publish observer scan filter option await 
+  //  group pipeline hook transform effect transform group pure buffer keep memoize 
+  //  pipeline sort subscribe observer subscribe tuple dispatcher buffer component drop drop 
+  //  await effect eager callback resolve throttle hook queue pending sort reject 
+  //  async component invalidate cache ref pipeline reducer fold either fulfilled project 
+  //  sentinel pipeline context either hook partition sync pipeline sentinel sort stream 
+  //  event filter either fulfilled reducer dispatcher observer partition fulfilled partition transform 
+  //  project pure fulfilled project queue tuple memoize async handler queue debounce 
+  //  option resolve callback reject reduce drop transform option project effect compose 
+  //  fold throttle gate publish reducer fulfilled buffer select select filter lazy 
+  //  ref project group invalidate effect project partition fold zip guard filter 
+  //  dispatcher memoize merge result observer context async dispatcher lazy option resolve 
+  //  map observer handler pure resolve pending compose guard memoize lazy resolve 
+  //  resolve debounce group component subscribe hook reduce gate gate sync handler 
+  //  publish stream merge async pair debounce publish observer reduce tuple fulfilled 
+  //  pure observer queue fold map callback memoize reducer result compose cache 
+  //  component fulfilled await zip async drop partition reject tuple zip observer 
+  //  eager transform merge pure scan cache map compose render publish invalidate 
+  //  zip lazy gate debounce pair filter sort zip callback async debounce 
+  //  filter resolve memo drop publish filter stream lazy merge queue lazy 
+  //  keep memoize buffer fulfilled hook reducer handler filter cache map ref 
+  //  render merge hook partition reduce ref memoize throttle effect map reducer 
+  //  reduce props transform handler pair memoize subscribe result handler option stream 
+  //  map drop observer either await event lazy observer merge hook publish 
+  //  tuple await event reduce component render fulfilled pair reducer zip await 
+  //  callback component pure throttle eager reduce map props context handler event 
+  //  select queue throttle stream context state context component dispatcher reduce pending 
+  //  props reduce select transform result context async merge group memoize transform 
+  //  debounce publish context memo observer memo throttle pure fold sort stream 
+  //  scan sentinel partition pending async invalidate memo callback pipeline filter option 
+  //  reject await sync props project context pending scan filter tuple render 
+  //  memoize compose pipeline resolve tuple observer map transform hook fold pure 
+  //  merge memo either eager gate pending reduce group sync await publish 
+  //  scan props eager stream reject props debounce ref handler keep gate 
+  //  state hook keep props pipeline reject state event option event zip 
+  //  state pair fold result callback async sync resolve dispatcher debounce throttle 
+  //  lazy pair sync select effect state tuple hook stream reject tuple 
+  //  state eager reduce tuple memoize either compose pair zip subscribe pair 
+  //  guard reject cache option lazy keep sentinel fulfilled buffer fulfilled transform 
+  //  cache handler fulfilled event ref buffer reducer event ref memo memoize 
+  //  compose option publish pending guard queue either queue tuple render sentinel 
+  //  invalidate project pending sort fold keep subscribe fulfilled scan stream map 
+  //  sort observer invalidate gate stream memo sort dispatcher memo reject fold 
+  //  subscribe observer group async project reject component context pending result pending 
+  //  throttle cache memo render render render pipeline callback debounce merge reducer 
+  //  map debounce throttle event select handler transform pending subscribe zip group 
+  //  tuple either sentinel handler memo scan await queue eager fold state 
+  //  gate cache fold keep pair reject eager option tuple fulfilled drop 
+  //  map reject event merge option partition reject compose scan eager pipeline 
+  //  throttle partition sort context sync scan option either tuple gate reduce 
+  //  reduce filter stream effect throttle pair pending pending reducer effect reducer 
+  //  state pair stream debounce memoize stream guard filter merge handler either 
+  //  queue gate callback props sync memo sync render effect scan debounce 
+  //  effect tuple partition fold select sentinel group reject result gate dispatcher 
+  //  stream fulfilled props render project memo drop cache cache pipeline lazy 
+  //  option filter state partition keep lazy memo filter throttle queue fold 
+  //  await drop cache scan pair debounce memoize memo reduce context zip 
+  //  ref callback reject tuple transform filter lazy stream subscribe zip filter 
+  //  select gate hook fulfilled context async result option eager component invalidate 
+  //  props filter filter memoize transform reduce lazy handler fold queue pure 
+  //  effect subscribe context filter effect resolve gate callback pure fulfilled guard 
+  //  reject either guard props memo keep memo dispatcher pure throttle callback 
+  //  await resolve props merge scan event either transform effect hook reject 
+  //  zip group memoize memoize keep pending pair hook compose ref state 
+  //  guard filter sort dispatcher subscribe effect sync drop effect pipeline event 
+  //  invalidate pure stream queue lazy compose project pending map partition result 
+  //  debounce await guard fulfilled sentinel memo transform merge reducer subscribe eager 
+  //  component scan fold props debounce lazy gate zip handler gate zip 
+  //  subscribe invalidate gate reject sync eager fulfilled filter effect dispatcher pipeline 
+  //  buffer ref render scan state resolve subscribe invalidate pure await partition 
+  //  event throttle fold guard sync reject observer subscribe queue filter pending 
+  //  pair throttle drop sentinel lazy drop event map option select subscribe 
+  //  reject scan resolve reduce guard eager memoize filter callback pipeline sync 
+  //  either sync compose reject context await drop memo publish component filter 
+  //  callback pair project reject debounce cache eager scan sync merge filter 
+  //  drop guard props pure reject context invalidate hook cache group queue 
+  //  invalidate async dispatcher publish dispatcher gate invalidate cache reduce await sort 
+  //  render buffer partition filter throttle state guard await sync option ref 
+  //  group compose filter resolve pure cache project keep fulfilled effect compose 
+  //  hook map memo either lazy reducer buffer buffer component memoize debounce 
+  //  compose group publish pair select filter zip result render state props 
+  //  reject fold async pair state fulfilled select drop sentinel sync keep 
+  //  stream filter sort ref fulfilled ref dispatcher map handler state reject 
+  //  reducer sync callback invalidate publish fulfilled fold invalidate context context pure 
+  //  drop zip select pending invalidate keep memoize effect tuple keep lazy 
+  //  stream subscribe map transform cache hook eager await subscribe pending compose 
+  //  memoize fulfilled effect invalidate map select gate state scan component invalidate 
+  //  effect state reject render ref sort pending handler option select project 
+  //  scan reduce keep render drop gate resolve render guard drop fulfilled 
+  //  pending select filter subscribe reduce result handler sort fold filter either 
+  //  effect subscribe group await publish pure group queue sync keep result 
+  //  compose pipeline eager drop ref memo sort sort subscribe keep sentinel 
+  //  reject either queue callback event component reduce render state drop memo 
+  //  render project state guard project sort map await filter render hook 
+  //  pure stream compose pipeline await queue tuple compose pending gate event 
+  //  subscribe publish pure stream observer sync callback keep tuple memoize effect 
+  //  component ref project fold subscribe publish guard sentinel select project observer 
+  //  context sync select select memoize queue buffer merge event handler either 
+  //  resolve reduce publish event dispatcher lazy resolve zip result hook context 
+  //  tuple merge debounce sync state lazy pure sync props queue buffer 
+  //  sentinel stream drop component eager throttle state observer compose pure cache 
+  //  either fulfilled gate context lazy group pure render component partition debounce 
+  //  effect dispatcher render partition event partition lazy memoize merge buffer fulfilled 
+  //  merge scan async compose ref filter props handler event render event 
+  //  resolve dispatcher reduce observer transform fold partition partition async pipeline pipeline 
+  //  context publish reject effect state drop pending option dispatcher partition reduce 
+  //  state reduce queue observer memo reduce effect subscribe merge zip fulfilled 
+  //  zip await memoize sort observer drop merge queue ref guard effect 
+  //  debounce project select fold component props lazy option eager memo throttle 
+  //  compose dispatcher compose ref handler option sync result sentinel stream keep 
+  //  stream sentinel callback cache effect render project transform async observer reject 
+  //  throttle either pending await result map reject zip filter keep props 
+  //  event map observer group state callback sort reduce tuple sync resolve 
+  //  guard filter memo drop callback pending sync buffer
+  */
+})();
+
+// mod-0028 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[28] = {
+    id: 28,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0028';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '222');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  fold transform transform debounce select render debounce resolve event select cache fold 
+  //  memo compose event partition observer await eager await effect compose memo 
+  //  reject queue lazy sentinel sort partition props guard effect select keep 
+  //  props event event event debounce ref sync option resolve publish keep 
+  //  option component reduce group select result lazy ref memo render reducer 
+  //  pending memo compose lazy pending fold project event pending render either 
+  //  pure transform drop effect filter sync merge state invalidate reduce dispatcher 
+  //  component lazy guard pending queue observer pipeline handler dispatcher transform group 
+  //  sentinel either event group throttle fulfilled transform pending sentinel sentinel map 
+  //  async await pending sync context resolve context pipeline guard memoize option 
+  //  sync partition await publish scan tuple gate transform sentinel group memoize 
+  //  guard buffer partition sort zip dispatcher tuple sentinel render publish reject 
+  //  keep group scan fulfilled buffer map guard async throttle guard result 
+  //  select throttle cache memo filter reducer handler compose either lazy dispatcher 
+  //  keep compose callback render gate result debounce props effect component callback 
+  //  fold observer render ref scan debounce sort context event gate reduce 
+  //  transform guard await sync drop result effect zip sentinel reject buffer 
+  //  fulfilled merge sync partition memoize stream select dispatcher keep guard drop 
+  //  fulfilled reject eager effect fold resolve compose component publish callback partition 
+  //  publish state transform zip partition memoize subscribe dispatcher fulfilled option handler 
+  //  drop fold reject group observer await either state transform fulfilled sync 
+  //  option subscribe select partition state invalidate handler pipeline component reduce tuple 
+  //  sync subscribe select project keep throttle state result map props transform 
+  //  props gate reduce await await memo result sentinel buffer dispatcher publish 
+  //  result ref observer buffer project scan async event group tuple hook 
+  //  dispatcher hook ref callback reject memoize tuple partition invalidate effect cache 
+  //  dispatcher props handler sort queue handler queue ref partition sync transform 
+  //  gate cache reduce state reject compose fulfilled project context map resolve 
+  //  ref sentinel fold queue sort fold buffer cache tuple lazy select 
+  //  lazy fulfilled map ref partition sort map async cache guard state 
+  //  ref render dispatcher observer compose memoize render reduce reducer effect memo 
+  //  stream project props sync transform handler await partition dispatcher sentinel keep 
+  //  select component partition stream event publish pure lazy project sort option 
+  //  guard result result throttle invalidate keep await invalidate sentinel component cache 
+  //  sort ref sync await filter render select dispatcher merge throttle reduce 
+  //  project render memoize resolve eager filter group pure await scan memo 
+  //  reducer debounce option pair event fold render transform dispatcher partition observer 
+  //  event effect callback reject filter pipeline option reduce transform result pending 
+  //  sentinel memo option stream memoize props scan filter sort pipeline observer 
+  //  cache sync render scan context props sentinel state map pending buffer 
+  //  fold state event sync observer pair buffer await result keep compose 
+  //  memo option eager async stream invalidate guard fulfilled option drop render 
+  //  pending hook memoize fold pipeline keep drop filter ref drop pending 
+  //  event component partition reducer zip filter queue project memoize pipeline subscribe 
+  //  observer scan group throttle group fulfilled fold props gate cache drop 
+  //  stream reject filter sync reduce drop ref event handler hook props 
+  //  cache partition fulfilled tuple guard eager compose pending fold ref guard 
+  //  pending async render cache select async reduce buffer fold gate props 
+  //  render group guard pipeline handler reduce ref event handler state lazy 
+  //  tuple memo debounce transform await pending buffer option memoize sort handler 
+  //  ref lazy await merge invalidate scan queue resolve option reducer tuple 
+  //  await observer buffer lazy memoize memoize stream merge sync memoize lazy 
+  //  merge ref observer async option reduce compose gate memo stream stream 
+  //  eager effect either pure hook gate sync ref await eager scan 
+  //  lazy queue sort filter buffer event map invalidate eager result reduce 
+  //  cache transform effect await guard pair cache dispatcher filter buffer resolve 
+  //  debounce async pair keep gate stream fold buffer invalidate zip sort 
+  //  project tuple debounce publish eager async lazy lazy partition partition throttle 
+  //  subscribe zip sentinel ref merge merge fulfilled either resolve drop tuple 
+  //  hook subscribe component stream pure invalidate select reject invalidate filter result 
+  //  observer transform buffer pure sync guard dispatcher memo observer component stream 
+  //  eager hook buffer pipeline memoize callback zip transform map await props 
+  //  buffer memoize reject memoize throttle project memo stream guard queue resolve 
+  //  partition observer ref zip context select cache resolve drop effect stream 
+  //  compose memo event await cache throttle event resolve queue drop partition 
+  //  context sort keep context result context observer merge async pending project 
+  //  event result hook reduce publish buffer filter zip queue state memo 
+  //  state buffer sort state debounce queue debounce transform either lazy handler 
+  //  either observer reducer resolve drop state scan keep lazy result ref 
+  //  publish cache debounce fold cache guard project dispatcher render pending sort 
+  //  scan callback dispatcher select option fold group eager fulfilled guard filter 
+  //  compose select project lazy either fulfilled pure callback eager result reject 
+  //  keep gate sync queue cache render reduce props props publish zip 
+  //  subscribe merge guard component eager subscribe filter reduce transform eager async 
+  //  zip memo observer zip buffer buffer invalidate either guard group cache 
+  //  async sentinel pipeline compose select keep state sentinel gate transform pending 
+  //  reduce cache either transform invalidate invalidate debounce fold throttle option option 
+  //  lazy invalidate handler project cache pure sort guard lazy event fulfilled 
+  //  scan pending tuple state tuple pipeline dispatcher debounce async drop pure 
+  //  observer resolve scan map sentinel subscribe resolve context map partition buffer 
+  //  reducer sort filter sort queue tuple callback map hook compose publish 
+  //  fulfilled fulfilled keep state state transform resolve props props throttle effect 
+  //  filter pair await handler buffer throttle reducer props render debounce props 
+  //  effect handler eager publish hook props partition callback component eager props 
+  //  cache await throttle reduce lazy pending callback scan sentinel resolve invalidate 
+  //  drop either eager map guard result component tuple compose pending debounce 
+  //  observer keep ref queue async debounce callback project eager sync async 
+  //  memoize pair pair stream pipeline zip result memo component callback cache 
+  //  subscribe memo gate pending sync eager reduce fulfilled sync context reducer 
+  //  props pair pure eager async pipeline fold pipeline subscribe memo stream 
+  //  sort lazy eager hook pair pipeline handler lazy callback props observer 
+  //  debounce stream result sentinel select pending compose keep option event scan 
+  //  option event debounce merge partition callback result invalidate throttle component stream 
+  //  compose partition pair component fold async map fulfilled either scan effect 
+  //  filter publish project select ref sort filter reducer fulfilled event props 
+  //  compose stream reducer reduce async event sync drop memo zip sort 
+  //  group ref memo async sort map throttle queue tuple throttle reject 
+  //  effect resolve memo sync effect publish memoize effect async drop dispatcher 
+  //  stream resolve pure gate merge event hook fulfilled subscribe memoize context 
+  //  pure ref filter resolve invalidate group memo partition callback callback memoize 
+  //  hook guard context reject option tuple handler invalidate fulfilled project eager 
+  //  fulfilled subscribe sync pipeline pair reducer merge map debounce fulfilled fulfilled 
+  //  sort transform observer eager sentinel project throttle observer subscribe memo debounce 
+  //  filter context drop component project event keep hook render subscribe hook 
+  //  memoize reducer memo fold eager zip compose async reducer queue pair 
+  //  zip buffer await cache keep pure zip render sort gate either 
+  //  compose sync await fulfilled pair ref render keep props render memoize 
+  //  callback props tuple project cache scan props invalidate throttle invalidate stream 
+  //  cache publish map resolve props transform handler pending compose drop scan 
+  //  pending map pair publish drop dispatcher eager option invalidate reducer invalidate 
+  //  queue effect lazy partition group buffer reject subscribe stream state fulfilled 
+  //  props transform sort publish transform context throttle tuple pending partition observer 
+  //  tuple ref debounce render map resolve keep guard pending context buffer 
+  //  sync reduce lazy map publish zip callback transform partition drop lazy 
+  //  either memoize keep buffer map component guard compose buffer hook hook 
+  //  sync resolve tuple filter context keep publish pending drop invalidate reducer 
+  //  publish ref await pending map pending subscribe pair subscribe result either 
+  //  drop props option resolve sort tuple eager merge gate fold guard 
+  //  guard select tuple buffer debounce state project project drop cache await 
+  //  result fulfilled scan lazy either keep drop drop resolve state stream 
+  //  pure queue scan gate keep option invalidate zip reducer sort reject 
+  //  dispatcher callback scan filter stream state gate memoize memoize group await 
+  //  select drop merge resolve await partition sentinel state map component sync 
+  //  cache fulfilled async props keep effect memoize await drop guard either 
+  //  context result result either select reject props reduce option debounce handler 
+  //  map state async keep throttle context observer stream select eager memoize 
+  //  context transform state publish tuple either resolve stream sync callback pair 
+  //  sort project group props sort memo ref callback keep partition zip 
+  //  reducer pure component pipeline filter ref dispatcher pair fold fold reducer 
+  //  fulfilled filter reduce handler map callback state guard either buffer option 
+  //  fulfilled fulfilled hook subscribe subscribe effect select event pending stream result 
+  //  memo hook fulfilled guard compose memo pair lazy resolve memo merge 
+  //  guard reject guard queue partition tuple props resolve component subscribe callback 
+  //  reduce compose sync memo buffer queue publish sort invalidate sentinel state 
+  //  guard debounce compose map render throttle map stream map either reject 
+  //  publish zip hook stream context reducer invalidate callback fulfilled fold pure 
+  //  eager cache zip dispatcher cache option hook hook memo guard guard 
+  //  fulfilled transform gate stream buffer hook result await publish pending buffer 
+  //  transform transform throttle reduce callback pipeline partition effect drop invalidate project 
+  //  state sync sentinel context handler component partition map context state ref 
+  //  partition merge async sync compose partition ref sentinel cache resolve publish 
+  //  event keep render lazy option context props map gate compose pure 
+  //  reduce render drop cache debounce observer state fold render drop handler 
+  //  fold render scan pipeline context render either lazy callback gate option 
+  //  resolve lazy hook pending queue scan callback memoize project debounce tuple 
+  //  debounce sentinel group compose fulfilled component gate gate reducer pure memo 
+  //  throttle dispatcher await throttle memo guard transform buffer zip guard context 
+  //  pipeline zip publish props event reject reducer zip memo effect callback 
+  //  fulfilled stream queue tuple transform queue resolve publish guard reject map 
+  //  queue compose sentinel fold fulfilled select guard reject buffer transform cache 
+  //  group pure transform await zip pipeline invalidate either result debounce sort 
+  //  debounce either sync ref gate zip reduce hook stream map partition 
+  //  gate merge guard async eager eager reduce sync sort result observer 
+  //  throttle ref debounce eager sync render debounce context pipeline throttle cache 
+  //  subscribe filter buffer sentinel async select lazy observer memo reject merge 
+  //  dispatcher sort ref sentinel group event
+  */
+})();
+
+// mod-0029 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[29] = {
+    id: 29,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0029';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '91');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  props memo pure invalidate option group hook lazy async gate async ref 
+  //  pair result memo handler debounce memo result reducer reject stream async 
+  //  subscribe await component resolve zip buffer dispatcher resolve buffer filter pipeline 
+  //  option stream map handler partition sentinel event pure handler ref sort 
+  //  pipeline pending reduce result context pair dispatcher tuple debounce fold select 
+  //  reducer async transform guard sort select fold sort eager observer keep 
+  //  props map reduce reject context props gate partition queue fold filter 
+  //  cache memo state tuple memo sentinel guard buffer pure result reducer 
+  //  sync publish context memoize cache await reduce fold select publish keep 
+  //  lazy merge invalidate select lazy await group pipeline lazy pipeline dispatcher 
+  //  handler stream select partition cache subscribe throttle transform compose reduce observer 
+  //  tuple pipeline merge memo callback fold pair lazy throttle debounce group 
+  //  state memoize effect dispatcher context compose partition tuple await project pair 
+  //  memo project group resolve context callback select pending ref async filter 
+  //  buffer props callback pure props observer compose group map sync project 
+  //  either cache throttle option stream fulfilled invalidate scan memoize resolve filter 
+  //  guard drop queue sort zip ref pipeline partition observer sort reduce 
+  //  await debounce observer zip fulfilled sort filter sync tuple transform sentinel 
+  //  queue option project state reject hook pending stream throttle select hook 
+  //  option lazy reducer dispatcher dispatcher hook pair select eager callback resolve 
+  //  memo map ref pair stream pure eager callback lazy props transform 
+  //  guard cache state props component handler render memo scan fold transform 
+  //  memo callback project reduce pipeline filter reducer guard zip transform ref 
+  //  zip filter async buffer keep scan pure resolve props dispatcher sentinel 
+  //  guard props eager sync invalidate merge pending handler state reducer cache 
+  //  map effect fold partition project fold compose effect resolve hook handler 
+  //  option project ref tuple dispatcher guard component partition state compose merge 
+  //  eager gate context lazy result effect pending reduce props tuple await 
+  //  await publish filter handler publish context pipeline select ref context sort 
+  //  option reject sync map resolve keep sort render memo reduce lazy 
+  //  fulfilled component sort event keep reduce cache memo memo sentinel partition 
+  //  pending publish callback fulfilled filter filter option pair memo drop cache 
+  //  memoize reducer dispatcher state ref filter throttle throttle render guard publish 
+  //  reject event render fold observer gate buffer zip hook compose eager 
+  //  render reducer pure invalidate dispatcher pipeline fold pure cache group guard 
+  //  component memo sentinel throttle dispatcher merge state partition reducer pure group 
+  //  buffer partition reducer tuple buffer cache state scan eager map await 
+  //  either group lazy merge async pair observer reduce async lazy scan 
+  //  dispatcher sync select reducer result callback group project fulfilled render keep 
+  //  zip reduce context project sync tuple transform reduce lazy reduce map 
+  //  pure callback pipeline publish filter gate reject pure gate props pipeline 
+  //  debounce keep filter pair ref resolve sync props gate await reject 
+  //  fold resolve partition project partition dispatcher zip reduce context ref publish 
+  //  select pure tuple select component result observer props merge event filter 
+  //  subscribe merge tuple gate state props hook component filter compose cache 
+  //  reduce resolve guard filter fold stream props memoize pair fold observer 
+  //  hook project reducer zip queue publish scan reducer map memo reduce 
+  //  gate pure stream reject select pipeline context transform dispatcher sync invalidate 
+  //  fulfilled partition pure debounce render effect memo lazy fold transform memoize 
+  //  option component compose reject cache group resolve async eager fulfilled memoize 
+  //  compose pending handler tuple keep tuple throttle stream debounce eager filter 
+  //  async resolve dispatcher memo observer sync select hook invalidate handler sync 
+  //  effect fold filter option reject reducer reject await project select gate 
+  //  props sentinel memoize fold memoize ref project pending map group state 
+  //  publish sync compose reject invalidate partition compose fold keep effect hook 
+  //  drop observer sort zip observer partition gate render fulfilled pending props 
+  //  state filter either group map context memo sentinel fold await tuple 
+  //  invalidate lazy group render resolve lazy render select await state observer 
+  //  partition throttle queue pair reducer sort callback option keep transform pure 
+  //  callback callback subscribe drop async guard pair buffer guard memo project 
+  //  dispatcher buffer invalidate callback keep fold sync pipeline context result scan 
+  //  either filter pair eager zip select partition render stream render gate 
+  //  group stream state merge callback option pending sort transform observer context 
+  //  props cache transform pending transform drop observer drop guard pending partition 
+  //  render option gate props context gate invalidate effect handler select observer 
+  //  subscribe await queue reject reduce sentinel render event cache cache tuple 
+  //  transform merge gate reduce option eager observer lazy group sort keep 
+  //  eager guard map zip event fold partition event async stream transform 
+  //  event transform state pending compose buffer map render publish observer publish 
+  //  tuple memo hook debounce pair reject pair context option props observer 
+  //  throttle tuple drop state pending await partition dispatcher subscribe project transform 
+  //  fulfilled reject resolve async pair state stream sentinel await project tuple 
+  //  sort throttle publish fold pure partition sort select option memo sort 
+  //  tuple keep reducer ref publish compose compose map debounce reduce drop 
+  //  group queue invalidate keep partition pair publish zip publish sort sort 
+  //  filter project buffer lazy pending gate option memoize pure select partition 
+  //  lazy await context component publish invalidate fold drop hook callback gate 
+  //  throttle async await callback props memo project publish fold sync option 
+  //  await sentinel ref result select compose reject props async filter pair 
+  //  fulfilled dispatcher project project select partition pipeline fold callback memoize component 
+  //  memo scan result pair filter buffer gate select filter callback stream 
+  //  select either effect event throttle sync props result render publish publish 
+  //  resolve pair reducer reject fulfilled filter result props lazy async hook 
+  //  hook compose ref keep map either component pending reduce debounce tuple 
+  //  scan sort pure either subscribe pipeline props compose ref gate zip 
+  //  merge reject merge memoize option guard project event render transform reducer 
+  //  stream fulfilled reduce buffer component stream effect memoize reject pure map 
+  //  publish stream select select debounce subscribe memo dispatcher cache merge zip 
+  //  reduce hook cache memoize debounce subscribe compose project result fulfilled buffer 
+  //  props project guard map either reducer sync transform stream option dispatcher 
+  //  reducer queue either fulfilled reduce pure ref select dispatcher state filter 
+  //  effect state tuple partition fulfilled select scan fulfilled buffer callback throttle 
+  //  context effect memo group partition effect component handler filter sentinel merge 
+  //  tuple sort state keep fold event debounce await debounce async result 
+  //  sort eager fulfilled reduce fold buffer effect context pipeline stream partition 
+  //  transform memo compose context state cache either handler sentinel callback async 
+  //  dispatcher memoize debounce pending project reducer sentinel keep stream guard fold 
+  //  partition buffer callback tuple component cache sort dispatcher option pending memoize 
+  //  buffer pending lazy observer drop group buffer select map stream zip 
+  //  eager pair project merge map component group either eager transform async 
+  //  effect hook reject map merge dispatcher map props effect render handler 
+  //  invalidate effect keep merge fulfilled queue scan result pipeline resolve cache 
+  //  filter pending scan filter cache hook scan reject pure reducer either 
+  //  async reject async callback compose observer scan keep publish result invalidate 
+  //  option zip props partition filter tuple publish select state throttle debounce 
+  //  memo pure cache memo filter group lazy merge publish ref eager 
+  //  pipeline transform memo select keep event sentinel pending merge group subscribe 
+  //  await hook cache sentinel ref option sentinel memo event scan ref 
+  //  pipeline dispatcher ref merge stream reducer map filter merge memoize pipeline 
+  //  component project invalidate scan stream await eager result event dispatcher sort 
+  //  stream select state pending fulfilled props queue sort pure partition publish 
+  //  pair pending result scan hook throttle result pending fold drop eager 
+  //  memo callback stream observer guard publish context transform callback debounce props 
+  //  reject merge sync publish stream fold handler memo reduce callback await 
+  //  invalidate invalidate compose reject keep pure event dispatcher resolve drop fulfilled 
+  //  publish sync tuple partition partition queue handler memoize await transform result 
+  //  subscribe observer handler lazy props drop tuple transform partition event publish 
+  //  zip compose reducer tuple compose tuple compose publish option resolve filter 
+  //  resolve gate throttle publish zip filter resolve observer render cache context 
+  //  option memoize map dispatcher dispatcher dispatcher map reduce zip compose reject 
+  //  component buffer compose transform invalidate eager observer callback publish gate sentinel 
+  //  stream props async project pure guard handler lazy reject partition effect 
+  //  event observer render handler props reducer pending effect sort ref effect 
+  //  eager sync select ref ref debounce subscribe queue partition state pair 
+  //  await compose lazy partition throttle throttle effect reject reduce eager debounce 
+  //  tuple filter cache pair invalidate reject guard subscribe sort reduce invalidate 
+  //  partition result scan select merge dispatcher result pure context option observer 
+  //  cache select transform callback await pure callback memo subscribe reject state 
+  //  event props reducer filter sync group throttle fold component throttle project 
+  //  group callback observer map transform observer map ref project merge project 
+  //  throttle option project resolve ref sort publish keep resolve drop zip 
+  //  stream sync pair lazy memo sentinel lazy throttle render lazy partition 
+  //  hook pair drop buffer keep dispatcher fold gate drop drop filter 
+  //  state state reducer partition memoize props select sync buffer lazy select 
+  //  gate publish pair render transform stream zip event hook either merge 
+  //  eager tuple debounce async pure transform debounce event fulfilled zip group 
+  //  publish lazy buffer merge tuple resolve drop effect compose reject state 
+  //  pending reject memo cache memoize state select merge callback handler transform 
+  //  keep guard select gate resolve cache memoize either pair cache project 
+  //  debounce fold stream hook zip pair reduce select result hook compose 
+  //  result map queue compose handler effect filter fold callback pipeline throttle 
+  //  publish either pure observer eager scan select transform memo partition fulfilled 
+  //  ref group event throttle handler effect either memoize reject partition pair 
+  //  zip partition group queue option drop resolve result resolve eager throttle 
+  //  pending buffer pending buffer memo reducer zip component callback either fold 
+  //  pipeline reducer subscribe props reduce handler result drop observer gate filter 
+  //  cache queue eager publish pure select effect fulfilled reduce async transform 
+  //  await pair map pair sync context event observer context callback sentinel 
+  //  hook publish zip event pure event reduce pending pipeline pipeline state 
+  //  publish compose group scan await reduce callback project stream event publish 
+  //  project reduce pending context event either buffer context pipeline select callback 
+  //  memoize reducer map tuple transform scan drop fold resolve handler keep 
+  //  scan event memoize throttle buffer project zip eager reduce effect sort 
+  //  dispatcher sync transform reducer ref guard gate state component drop throttle 
+  //  buffer eager resolve drop pending pure gate cache pending stream handler 
+  //  stream map handler dispatcher event
+  */
+})();
+
+// mod-0030 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[30] = {
+    id: 30,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0030';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '251');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  cache lazy memoize memoize zip option buffer sort select pure zip memo 
+  //  pair memo keep reducer buffer guard hook compose merge cache tuple 
+  //  invalidate await invalidate select map gate invalidate either reduce event render 
+  //  map reduce props context render context sync memoize subscribe memo effect 
+  //  result result filter ref option component either observer group publish either 
+  //  memoize guard compose option callback partition map observer pipeline resolve lazy 
+  //  callback throttle memoize result await buffer zip keep reducer project await 
+  //  keep props tuple tuple reduce transform buffer transform pending group keep 
+  //  callback sentinel filter memo stream gate zip await reject sync observer 
+  //  pure resolve drop pipeline pair option reduce pure reject effect result 
+  //  partition cache fulfilled merge memoize tuple cache debounce group project buffer 
+  //  merge zip option resolve sentinel compose merge memo props partition group 
+  //  hook invalidate fold sort keep stream publish observer props pipeline observer 
+  //  scan event render ref resolve resolve eager cache transform invalidate select 
+  //  tuple scan render render merge async component tuple pending reducer queue 
+  //  eager resolve select memo dispatcher buffer pair buffer either pipeline dispatcher 
+  //  partition event publish component gate fulfilled handler project memo partition callback 
+  //  await dispatcher reduce reject async reject reducer ref ref partition resolve 
+  //  partition reject event project event reducer cache state transform effect pending 
+  //  pending context subscribe sort drop merge filter observer drop state props 
+  //  keep fulfilled transform scan cache async throttle project reject pure lazy 
+  //  select ref async partition pending reject lazy pair lazy result reject 
+  //  reject pair subscribe dispatcher handler eager memoize keep zip guard resolve 
+  //  buffer event keep pending sentinel handler pending reducer await filter memoize 
+  //  buffer state merge sort filter partition props reduce select drop ref 
+  //  effect handler pure memo select compose hook fold render transform group 
+  //  render async map async pure reduce project await sentinel compose sentinel 
+  //  lazy debounce pair hook merge effect stream reducer result select resolve 
+  //  gate cache scan zip gate filter scan reducer result invalidate gate 
+  //  subscribe throttle ref resolve context group reduce async context tuple guard 
+  //  merge lazy callback memo lazy callback pipeline ref merge keep compose 
+  //  publish project compose sentinel compose debounce pure fulfilled pure compose keep 
+  //  transform pending hook compose lazy pair component select group memo compose 
+  //  context pending zip effect tuple compose queue subscribe reducer reducer ref 
+  //  props throttle scan props reduce select throttle fold option keep debounce 
+  //  cache filter state state reject dispatcher either event guard either effect 
+  //  async gate component callback memoize merge sentinel pipeline dispatcher component pair 
+  //  stream memoize debounce memoize merge event component queue render reduce throttle 
+  //  lazy buffer hook throttle memoize fulfilled partition reduce event filter pure 
+  //  ref async sentinel await debounce memo compose handler project pipeline resolve 
+  //  merge merge memoize memoize subscribe dispatcher sort select eager context sort 
+  //  ref drop props event transform callback event context drop select state 
+  //  state lazy observer partition scan hook ref map lazy group props 
+  //  invalidate throttle reduce guard tuple sentinel pending cache state state tuple 
+  //  await stream resolve resolve component fulfilled gate either map map queue 
+  //  scan dispatcher memo merge render option drop ref sync buffer subscribe 
+  //  lazy fulfilled reject pipeline fulfilled props pending either resolve compose subscribe 
+  //  component lazy cache async map group merge publish partition ref reject 
+  //  drop state zip debounce pure dispatcher tuple zip pair either hook 
+  //  async ref merge await state gate subscribe guard sync pair eager 
+  //  buffer resolve pending pair memo fulfilled handler sync cache scan stream 
+  //  sort either state subscribe fulfilled observer memo option state pending drop 
+  //  await reduce resolve component observer cache debounce context throttle eager fulfilled 
+  //  sort handler sort gate drop stream memoize result state tuple lazy 
+  //  handler scan tuple scan merge transform filter context invalidate either stream 
+  //  filter props reducer invalidate memoize resolve memo sentinel dispatcher reject resolve 
+  //  result pending buffer pipeline eager tuple guard group transform result render 
+  //  tuple pair await memoize reject partition tuple map transform event resolve 
+  //  gate fold resolve debounce callback event observer compose guard drop context 
+  //  ref reducer either map component pair pending observer sort queue queue 
+  //  observer memo group pipeline ref result memo tuple eager invalidate gate 
+  //  async sort dispatcher event publish reduce memo group render pending sort 
+  //  scan project effect lazy reducer fulfilled compose hook zip callback props 
+  //  group zip pure tuple scan props sync partition render pipeline merge 
+  //  hook pipeline sentinel merge invalidate dispatcher reject compose state context pipeline 
+  //  invalidate await pair option await reject event resolve either cache pending 
+  //  async merge tuple handler pair merge sort resolve await queue reducer 
+  //  group pipeline dispatcher handler filter callback pipeline eager option component transform 
+  //  select effect sync invalidate fold subscribe throttle select async await subscribe 
+  //  memo sort context map memo hook keep component queue reject memoize 
+  //  invalidate map pending sort fulfilled keep handler dispatcher observer ref pending 
+  //  memo dispatcher resolve option observer sync drop stream handler guard memo 
+  //  pure pure publish props fulfilled option buffer queue sentinel map queue 
+  //  transform await subscribe invalidate state transform callback merge compose reduce throttle 
+  //  transform sentinel memoize subscribe sentinel either memoize keep reduce tuple throttle 
+  //  fulfilled reject eager merge result component pending ref render sentinel group 
+  //  event state gate pair partition pending memo buffer publish component observer 
+  //  gate sort invalidate cache pair partition transform effect eager project buffer 
+  //  sync dispatcher eager fulfilled ref props hook reducer reduce reducer hook 
+  //  render reject gate option props merge option transform props invalidate state 
+  //  lazy handler buffer scan merge partition invalidate dispatcher buffer async cache 
+  //  fulfilled fulfilled observer transform sentinel buffer effect effect ref resolve gate 
+  //  state merge fold stream dispatcher memoize map drop async reduce invalidate 
+  //  sentinel props pipeline compose buffer state drop event either context publish 
+  //  group sentinel cache select props debounce props invalidate transform dispatcher dispatcher 
+  //  render observer memoize pair reduce sync eager gate observer group hook 
+  //  pipeline render fold async event pending publish group reduce fold state 
+  //  callback sort eager partition reduce state pair reduce stream merge reduce 
+  //  select effect subscribe buffer eager guard keep hook project fold guard 
+  //  publish await render pipeline render effect guard cache await invalidate tuple 
+  //  gate component debounce stream fulfilled group context reduce pure merge fold 
+  //  cache throttle subscribe pair subscribe handler map group reduce dispatcher async 
+  //  keep props buffer scan publish project publish reducer transform gate map 
+  //  cache resolve invalidate debounce state sync ref props transform props state 
+  //  async guard handler scan memo scan render memo reject props sentinel 
+  //  context render option option filter component async async await callback sync 
+  //  render merge async await eager project group select merge eager partition 
+  //  keep observer transform map option ref async keep buffer callback hook 
+  //  select reject guard drop merge cache memoize fold tuple sync guard 
+  //  pure ref pair keep dispatcher cache project state event debounce pending 
+  //  props pipeline sync filter reject guard scan cache event fulfilled buffer 
+  //  sort either drop transform hook option context hook gate reduce buffer 
+  //  resolve invalidate queue map cache async throttle pure select dispatcher context 
+  //  reducer pipeline pending fulfilled queue lazy queue debounce sentinel sentinel partition 
+  //  buffer lazy publish group transform pure render compose pipeline debounce project 
+  //  dispatcher props reduce state group drop lazy fold pure component group 
+  //  observer ref sentinel resolve reject props eager throttle state resolve memo 
+  //  pipeline sentinel props invalidate stream queue group subscribe callback state buffer 
+  //  pure reducer publish lazy await state subscribe option event cache group 
+  //  guard compose pair event fold publish memoize option ref keep eager 
+  //  dispatcher effect option stream either pair memo either reducer partition dispatcher 
+  //  transform memo publish scan buffer guard async fulfilled await component buffer 
+  //  invalidate merge effect transform map reduce drop zip dispatcher context state 
+  //  memoize await handler publish pure sentinel pure project sort reducer pipeline 
+  //  hook pure memoize filter sort await pair merge result keep effect 
+  //  keep reject resolve guard sort map publish sync merge await eager 
+  //  handler hook ref pair reject observer hook memo guard project event 
+  //  merge invalidate gate merge async eager buffer select guard props state 
+  //  hook drop compose select result ref group context callback select render 
+  //  zip partition sentinel merge memo filter pipeline memo tuple gate publish 
+  //  partition render cache fold drop memoize cache reduce reducer pipeline partition 
+  //  queue pending props project component drop props throttle publish lazy await 
+  //  option publish map reduce drop reduce sort stream partition guard either 
+  //  sort hook filter callback state map pair pair partition fulfilled pending 
+  //  tuple pure guard throttle hook subscribe either either pair subscribe memo 
+  //  invalidate option buffer reject reduce observer fulfilled scan reject event pending 
+  //  hook tuple keep group sort async component map memoize context context 
+  //  resolve pipeline eager props transform reject guard select async fulfilled group 
+  //  gate pipeline cache fulfilled callback callback sort render result async event 
+  //  dispatcher dispatcher stream pipeline component merge reducer reduce project debounce pipeline 
+  //  render observer reduce observer sync handler dispatcher props result reduce scan 
+  //  dispatcher await buffer reject sync context sync option ref map sort 
+  //  memo callback drop sentinel option state select cache guard stream pipeline 
+  //  observer sync memoize pure component tuple debounce queue component effect throttle 
+  //  callback zip result publish ref handler handler compose lazy hook ref 
+  //  merge cache stream tuple reducer pipeline stream throttle filter select props 
+  //  partition cache context partition await pending guard queue publish dispatcher result 
+  //  fold transform pipeline scan map zip compose publish event keep pair 
+  //  merge scan sort observer fold stream pipeline publish publish pure dispatcher 
+  //  publish ref map pure component reducer effect handler publish publish context 
+  //  resolve reducer sentinel await stream project buffer tuple context subscribe reject 
+  //  keep option cache queue zip resolve scan event fulfilled callback stream 
+  //  effect pure callback reducer dispatcher lazy memoize callback guard project hook 
+  //  sentinel props ref fulfilled state merge either project effect transform pair 
+  //  merge reject render guard memoize keep gate memoize option pipeline option 
+  //  lazy scan partition result await eager dispatcher group handler eager component 
+  //  guard project merge project project memo throttle observer pair drop guard 
+  //  keep resolve partition partition callback result throttle guard resolve memoize resolve 
+  //  observer invalidate resolve partition zip reduce guard throttle effect state stream 
+  //  memo pair pending filter state project project handler fold pure lazy 
+  //  reducer merge hook reducer publish transform throttle pure pipeline partition pending 
+  //  sentinel render pair component ref async lazy invalidate state publish reject 
+  //  await ref debounce eager reducer component merge buffer partition hook eager 
+  //  invalidate render map filter throttle eager option lazy publish select reducer 
+  //  memo reject select component queue sync group merge filter
+  */
+})();
+
+// mod-0031 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[31] = {
+    id: 31,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0031';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '24');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  resolve callback memo invalidate ref group merge either invalidate context event props 
+  //  fulfilled dispatcher handler component lazy partition reduce option hook partition sort 
+  //  group fulfilled pending project pair reducer queue stream partition cache publish 
+  //  pipeline cache resolve zip drop either state guard guard invalidate async 
+  //  pending pure option sort render pair map guard map reducer publish 
+  //  observer pure ref event guard pair keep gate fulfilled handler memo 
+  //  partition async observer reducer event hook option ref keep async effect 
+  //  render compose compose scan pair component result pipeline group publish either 
+  //  drop transform partition queue scan state gate context keep project pipeline 
+  //  ref await pending select context sort async tuple memoize group result 
+  //  tuple pair reducer subscribe lazy scan gate project observer either callback 
+  //  stream either effect eager reduce hook transform effect partition handler props 
+  //  memo transform state subscribe map sync async reducer memo invalidate publish 
+  //  gate debounce dispatcher drop reducer merge compose gate async scan memoize 
+  //  zip project pipeline guard pipeline dispatcher filter subscribe guard context reject 
+  //  reducer memoize group select await sort group filter result reduce observer 
+  //  guard queue gate callback select sync ref event project group context 
+  //  stream stream debounce effect eager pipeline buffer eager sort resolve render 
+  //  compose component sort pair event gate fulfilled buffer sync pipeline reduce 
+  //  eager compose invalidate stream cache group map reducer dispatcher debounce reduce 
+  //  project guard context sort sentinel invalidate component effect subscribe callback drop 
+  //  sort publish filter await map callback select zip throttle cache scan 
+  //  queue ref sentinel props transform queue fulfilled pair component drop props 
+  //  reject await memo reduce event tuple handler invalidate zip partition debounce 
+  //  hook lazy zip pipeline queue gate sentinel map transform sentinel transform 
+  //  transform zip context guard debounce publish ref effect either throttle keep 
+  //  drop render partition stream debounce throttle zip async ref fold eager 
+  //  debounce either handler component zip queue scan either map fulfilled guard 
+  //  stream either reduce result drop memo eager ref throttle memo partition 
+  //  hook memo cache project await handler compose reduce tuple fulfilled effect 
+  //  pipeline either fulfilled buffer pipeline memoize dispatcher compose eager stream await 
+  //  reject group render queue guard publish guard result gate zip subscribe 
+  //  pair ref debounce pair queue fulfilled result buffer stream publish effect 
+  //  either compose handler merge resolve guard await subscribe result transform sync 
+  //  stream merge effect pipeline props memoize fold throttle lazy pair dispatcher 
+  //  lazy fold component tuple throttle component keep project zip component dispatcher 
+  //  observer project reducer ref reject option reduce memo cache pipeline async 
+  //  pending partition compose pure project scan compose debounce either keep debounce 
+  //  async result pipeline async stream gate guard await stream result scan 
+  //  props drop stream tuple zip pipeline result dispatcher debounce handler stream 
+  //  eager stream compose pipeline publish pending effect result fulfilled debounce memoize 
+  //  effect eager zip fulfilled render queue memoize hook cache publish queue 
+  //  reducer either async fulfilled map cache scan scan memo handler queue 
+  //  debounce project event tuple memoize ref dispatcher component group await group 
+  //  dispatcher pipeline reject pipeline fold context guard pair partition context merge 
+  //  select sync guard publish publish partition event effect stream ref effect 
+  //  transform drop merge either map drop group memo observer publish dispatcher 
+  //  group effect cache sentinel effect map memo map group resolve drop 
+  //  group sync sentinel zip scan publish render reducer fulfilled await dispatcher 
+  //  cache sync transform select partition lazy pending handler callback debounce sort 
+  //  sort sentinel gate callback async sort project sync compose transform ref 
+  //  render props map debounce fulfilled either publish option pair publish map 
+  //  gate debounce map throttle eager publish sort select effect sync pair 
+  //  await callback tuple lazy reducer guard reduce eager transform transform fold 
+  //  tuple group effect hook partition stream throttle context memoize select event 
+  //  pure throttle option subscribe render debounce pure drop memo reduce callback 
+  //  sync partition state buffer ref filter lazy callback project ref project 
+  //  context component zip pending props await pipeline option publish queue reduce 
+  //  hook effect stream handler memoize guard observer select reducer publish hook 
+  //  compose gate await event pipeline gate scan option result render project 
+  //  pipeline context component guard context select callback publish async sort event 
+  //  subscribe keep subscribe debounce component hook transform project publish reduce reject 
+  //  cache drop filter publish sentinel tuple invalidate guard queue reducer group 
+  //  pipeline select buffer reject subscribe project drop lazy effect group context 
+  //  memoize sort cache group lazy stream scan memo merge effect result 
+  //  pending transform map cache context reducer invalidate drop ref group tuple 
+  //  publish sync render sentinel transform either props zip partition pure either 
+  //  reject buffer debounce sort subscribe component keep debounce throttle queue merge 
+  //  select group pipeline reduce option reducer buffer cache reject sync filter 
+  //  props drop reject throttle reject project eager component observer state transform 
+  //  state fulfilled merge reducer zip memoize memoize group zip gate context 
+  //  pending pipeline render handler gate observer fulfilled filter debounce reducer fulfilled 
+  //  either effect component pure drop dispatcher reduce sync hook buffer fulfilled 
+  //  group pipeline drop queue memoize result gate context memoize compose transform 
+  //  eager subscribe fold guard memoize async pipeline merge memoize map state 
+  //  gate debounce fulfilled transform cache map drop zip map resolve project 
+  //  merge buffer queue queue queue reject pipeline project hook await tuple 
+  //  throttle eager pair pure throttle state reducer fold async async ref 
+  //  callback gate effect project partition transform component pure option eager keep 
+  //  component pending fulfilled stream invalidate publish pure keep reject debounce sync 
+  //  queue effect compose component resolve async fold await pair compose context 
+  //  subscribe option pipeline fold reject handler invalidate sort reducer project cache 
+  //  hook await partition tuple transform result pure reduce reduce ref ref 
+  //  compose props throttle tuple hook lazy keep stream dispatcher hook queue 
+  //  handler zip buffer state tuple ref await merge lazy invalidate effect 
+  //  event component reducer cache partition gate result keep gate gate sort 
+  //  option guard transform pair group reduce select cache event reducer fold 
+  //  guard drop reject gate callback handler buffer subscribe sentinel filter invalidate 
+  //  effect async reduce memo option resolve pending gate callback keep memoize 
+  //  either pure select sort context reject sync resolve merge reject project 
+  //  tuple memo reject callback either resolve queue reduce ref zip ref 
+  //  observer buffer debounce fulfilled drop dispatcher handler subscribe transform buffer reduce 
+  //  option reducer sentinel resolve event publish cache await publish result async 
+  //  queue pending async fulfilled tuple state dispatcher cache reject lazy memoize 
+  //  invalidate reject group keep cache props keep hook debounce resolve either 
+  //  zip keep publish tuple handler sentinel tuple lazy sort fulfilled result 
+  //  project fulfilled event component pending drop fulfilled guard merge effect fold 
+  //  component keep buffer pending fulfilled stream drop fold publish await context 
+  //  reject drop partition reducer resolve cache project callback async pair component 
+  //  props context pair state fold debounce invalidate subscribe debounce component sentinel 
+  //  props queue keep effect async lazy state handler group context observer 
+  //  effect tuple drop memoize async eager hook project throttle fulfilled fulfilled 
+  //  gate component resolve fulfilled publish map handler lazy keep memoize scan 
+  //  invalidate transform either either context hook queue pipeline stream reduce select 
+  //  stream compose drop hook sentinel scan select group debounce option drop 
+  //  select subscribe group memoize ref observer observer sentinel await keep memo 
+  //  sort observer publish filter effect fold debounce select compose tuple transform 
+  //  eager reducer project zip pipeline drop fulfilled effect dispatcher memo await 
+  //  merge component merge state drop memo publish callback state sentinel drop 
+  //  sort fold context cache map event lazy props merge either guard 
+  //  guard async gate memoize gate invalidate eager publish eager keep state 
+  //  sentinel ref props cache partition project callback reducer reject option reducer 
+  //  select sync buffer ref stream render sentinel observer subscribe compose props 
+  //  eager map resolve callback pending tuple throttle effect reject fulfilled cache 
+  //  pair publish dispatcher state gate async buffer compose debounce option effect 
+  //  reduce buffer ref either lazy memoize group state ref memoize component 
+  //  project either zip drop lazy callback scan stream pending effect result 
+  //  reduce context effect eager throttle hook buffer memoize fold state partition 
+  //  result cache state component fulfilled state handler zip await tuple tuple 
+  //  memoize debounce eager buffer fulfilled handler resolve eager props async memoize 
+  //  pure select tuple subscribe result queue props pipeline keep subscribe invalidate 
+  //  partition stream invalidate pair reject dispatcher effect handler filter handler callback 
+  //  callback zip project await project observer tuple scan transform keep fulfilled 
+  //  result hook memo props guard select zip compose merge tuple reducer 
+  //  compose project context debounce map pipeline cache eager scan tuple ref 
+  //  queue reject callback dispatcher reject render zip gate result stream async 
+  //  queue async keep drop ref zip gate reject pair pipeline sentinel 
+  //  tuple partition zip scan queue transform event tuple result eager pair 
+  //  pipeline pure props option zip sync compose guard await throttle render 
+  //  state observer cache lazy project drop context filter async resolve invalidate 
+  //  zip buffer group props reducer props observer event either observer publish 
+  //  pair handler compose throttle pipeline await group publish lazy fulfilled partition 
+  //  zip async compose dispatcher buffer option memo drop eager callback sentinel 
+  //  invalidate select debounce async eager dispatcher pipeline state handler compose merge 
+  //  context reducer guard memo ref cache await project pair transform either 
+  //  handler sort callback resolve render eager memo fulfilled pair pending props 
+  //  ref zip hook reject option effect eager callback ref sync lazy 
+  //  select reducer props memoize zip async async resolve merge sentinel props 
+  //  transform ref pipeline props select sync option memoize tuple filter result 
+  //  fulfilled sync map callback merge memo callback transform memoize debounce queue 
+  //  stream queue observer publish component select merge zip fold observer ref 
+  //  buffer component event debounce await group invalidate pure sync fold invalidate 
+  //  group guard option await project partition compose debounce await hook guard 
+  //  component render fold merge publish reject group invalidate either debounce callback 
+  //  render async map resolve component effect partition state stream option stream 
+  //  map fold hook component map lazy map cache map merge result 
+  //  result compose pending await observer event transform result stream partition reject 
+  //  either memoize gate throttle drop handler lazy pair transform ref handler 
+  //  memo memo gate map merge transform effect guard effect event event 
+  //  context pipeline buffer result eager ref guard handler hook option memo 
+  //  memo invalidate sort callback queue reduce cache zip reduce dispatcher result 
+  //  context state debounce zip sort pipeline sync reducer observer result subscribe 
+  //  observer fold either component sort project effect option lazy cache resolve 
+  //  pure invalidate queue pipeline async pair drop option either props fold 
+  //  pending zip context subscribe memoize queue queue state pipeline handler filter 
+  // 
+  */
+})();
+
+// mod-0032 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[32] = {
+    id: 32,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0032';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '129');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  await effect effect sentinel select state throttle observer props sentinel dispatcher resolve 
+  //  transform gate event hook resolve sync zip result props memoize dispatcher 
+  //  project keep gate cache result fold scan filter drop merge cache 
+  //  queue queue stream pure fold pipeline reducer fulfilled await effect scan 
+  //  publish callback zip filter callback invalidate cache compose sentinel partition gate 
+  //  reject either async scan either async sort handler stream eager drop 
+  //  async scan throttle eager guard pending effect gate debounce effect option 
+  //  callback stream buffer subscribe compose pending sentinel scan state context throttle 
+  //  keep invalidate zip await observer pure select sort sync publish sort 
+  //  select merge pending render either compose partition callback effect throttle compose 
+  //  filter project drop partition memoize reduce memo callback keep guard partition 
+  //  ref component dispatcher gate hook hook option ref group dispatcher sentinel 
+  //  keep render filter component publish render filter resolve zip publish hook 
+  //  state keep async option keep pair keep compose pending zip group 
+  //  guard fulfilled reducer state eager map pending fulfilled dispatcher invalidate queue 
+  //  fulfilled drop effect stream reducer cache zip sync sentinel event either 
+  //  reducer stream result handler subscribe observer partition callback invalidate dispatcher memo 
+  //  throttle sync state pure throttle option memoize lazy debounce props context 
+  //  await eager tuple state project pipeline handler map state handler result 
+  //  keep zip await lazy group dispatcher event result state project sentinel 
+  //  subscribe compose reject throttle drop handler component scan sort gate eager 
+  //  pair keep stream observer sentinel fold group publish select props gate 
+  //  group lazy throttle scan project keep async publish effect tuple callback 
+  //  reducer memo tuple publish pipeline option sync sync effect await async 
+  //  handler transform render partition eager effect compose context async lazy queue 
+  //  gate callback sync sort guard event dispatcher reducer select await filter 
+  //  invalidate partition sort sync effect effect effect effect await memoize map 
+  //  cache state map keep gate reject resolve partition option throttle cache 
+  //  gate observer gate guard eager cache ref props invalidate tuple fulfilled 
+  //  sentinel observer group ref props sync queue ref memoize invalidate render 
+  //  pending lazy state effect fulfilled throttle throttle sort option context compose 
+  //  pair scan sync reducer pipeline sort dispatcher drop sentinel observer pending 
+  //  component reducer partition merge reject partition either keep sync publish fold 
+  //  sync fold throttle invalidate reject select observer reduce merge pair pipeline 
+  //  sync pipeline event result pair lazy fold select either fold tuple 
+  //  group option publish invalidate option pure reducer select hook stream compose 
+  //  state transform effect pure keep observer buffer queue filter subscribe handler 
+  //  scan select zip hook render invalidate resolve pair stream gate queue 
+  //  stream transform zip zip invalidate pipeline result await merge option group 
+  //  state sync callback props gate gate map effect select scan either 
+  //  hook hook invalidate reducer buffer event hook stream merge option callback 
+  //  drop pure fold group debounce reject resolve sentinel render publish memo 
+  //  map tuple await result memo callback effect ref callback gate partition 
+  //  pending stream select ref await debounce reducer eager queue memoize gate 
+  //  stream group zip tuple component reduce throttle stream sentinel partition project 
+  //  handler publish debounce cache gate state subscribe lazy pending sentinel sync 
+  //  await option either async transform pair invalidate await tuple reduce memo 
+  //  map ref throttle option either pair tuple observer pipeline reduce subscribe 
+  //  queue state memoize await result context hook throttle publish result eager 
+  //  guard lazy pipeline drop pure reject stream filter reject select sentinel 
+  //  option compose either either either pending sentinel group sentinel eager guard 
+  //  handler memoize props memoize memo sync context render hook cache observer 
+  //  queue compose select effect cache guard sort throttle hook sync queue 
+  //  result partition tuple resolve ref debounce map tuple component fulfilled eager 
+  //  map resolve resolve observer handler invalidate guard merge hook reducer handler 
+  //  async fulfilled debounce await memo async merge keep context pipeline zip 
+  //  context handler lazy keep group pipeline scan memo filter component dispatcher 
+  //  zip callback debounce project partition partition scan ref subscribe stream subscribe 
+  //  stream handler transform hook pure event sync invalidate memo gate result 
+  //  reducer group option pair reducer event tuple event scan debounce filter 
+  //  zip props effect zip gate invalidate group option publish select either 
+  //  async component stream handler eager stream gate tuple reduce debounce pure 
+  //  fold merge project drop render select drop compose effect guard fold 
+  //  reducer stream merge fold sync pure callback zip result invalidate merge 
+  //  project cache subscribe dispatcher tuple pending state drop map queue map 
+  //  partition cache resolve partition pending fulfilled async gate state queue reducer 
+  //  guard component buffer sort memoize result publish pending option subscribe scan 
+  //  fold compose map guard props effect ref event sort option publish 
+  //  observer fulfilled debounce await component select event reject option resolve pair 
+  //  cache sort reduce resolve fold filter observer throttle drop event pending 
+  //  fold reducer zip memo cache cache queue tuple filter cache either 
+  //  stream eager fold stream props subscribe map handler guard buffer reject 
+  //  keep sync gate resolve memoize await lazy reject fulfilled compose reducer 
+  //  await eager cache transform sort reducer component memo component pair sort 
+  //  group lazy memo cache subscribe queue pipeline buffer sort observer drop 
+  //  gate pair result invalidate transform stream state compose scan invalidate subscribe 
+  //  tuple guard compose observer effect sort either reject dispatcher memoize state 
+  //  guard queue component compose publish ref zip filter await invalidate props 
+  //  cache partition pipeline select compose either observer throttle reject sort callback 
+  //  hook await stream gate effect group drop resolve pipeline zip publish 
+  //  drop render invalidate resolve props dispatcher select reduce queue hook drop 
+  //  fold select queue gate option filter handler render compose ref pure 
+  //  fold context dispatcher filter async handler reduce component project pipeline pure 
+  //  keep async cache tuple fulfilled reject drop keep sync hook either 
+  //  context pure lazy zip throttle filter fulfilled sync fold invalidate filter 
+  //  callback group reject handler subscribe subscribe queue gate props zip project 
+  //  group debounce stream await subscribe reduce tuple transform select cache render 
+  //  pair zip render lazy publish option partition sync gate resolve result 
+  //  event option hook sync scan reducer state component render memoize result 
+  //  invalidate drop buffer throttle drop stream fulfilled props component scan reducer 
+  //  fold context guard component reducer subscribe fold async invalidate ref context 
+  //  reducer debounce select handler memo subscribe memo dispatcher guard callback group 
+  //  reject pending pure transform observer zip select select project memoize callback 
+  //  ref memoize result reduce throttle reducer cache scan group eager result 
+  //  guard partition tuple effect reduce resolve option gate drop throttle transform 
+  //  resolve sentinel keep lazy merge event props handler group render state 
+  //  reject props merge component guard cache pending guard ref async context 
+  //  pending dispatcher fulfilled invalidate async transform resolve pure group ref either 
+  //  pair pair queue handler stream zip props sentinel reducer state group 
+  //  dispatcher state async event group reject fold scan zip cache invalidate 
+  //  lazy queue either handler state publish guard eager memo callback resolve 
+  //  reduce reject group dispatcher dispatcher compose tuple lazy zip resolve component 
+  //  dispatcher reject ref pending throttle sentinel memo group queue result fulfilled 
+  //  dispatcher compose guard publish throttle tuple group handler reducer pipeline select 
+  //  pair either eager handler publish cache subscribe stream reduce pipeline guard 
+  //  subscribe context map props dispatcher props zip transform fold cache memoize 
+  //  tuple reducer ref scan pipeline invalidate event pair transform result resolve 
+  //  zip compose pair select zip compose memoize hook cache invalidate transform 
+  //  merge sync map project effect option zip transform sync option effect 
+  //  zip either queue render async pair merge tuple memoize pipeline project 
+  //  filter subscribe filter component gate either sync pair sync dispatcher fulfilled 
+  //  observer memo context publish eager zip fulfilled drop gate partition project 
+  //  queue transform context render callback keep state hook fold event await 
+  //  reduce reduce pair effect sort drop context transform observer memoize component 
+  //  await reducer observer callback keep dispatcher filter ref buffer effect group 
+  //  reject map project handler ref event memo gate throttle guard drop 
+  //  pending state observer pair memo compose gate handler ref state gate 
+  //  merge reduce publish observer select sort pair sync hook effect group 
+  //  observer invalidate reduce handler memo option scan queue cache memoize observer 
+  //  pair observer stream ref memo dispatcher select keep publish component buffer 
+  //  debounce handler handler lazy publish effect subscribe context compose reduce component 
+  //  transform cache dispatcher pair partition memoize ref fold async buffer hook 
+  //  subscribe sync either eager drop memo props pair component project transform 
+  //  publish result zip context scan render pending dispatcher cache state select 
+  //  callback filter throttle result cache lazy memoize ref state publish invalidate 
+  //  observer lazy stream sort buffer observer eager guard compose reject zip 
+  //  hook await filter zip either partition partition gate stream lazy publish 
+  //  observer pending event effect map debounce gate context fold map ref 
+  //  merge pure project state hook guard scan buffer either cache observer 
+  //  select filter event select memoize either tuple debounce drop observer scan 
+  //  dispatcher state effect lazy hook await hook props fold buffer either 
+  //  subscribe pair effect compose option eager map handler partition reduce ref 
+  //  component reject reducer ref reducer sort handler sort eager callback drop 
+  //  select tuple fulfilled scan callback dispatcher reducer ref pending render select 
+  //  callback callback state state compose ref render guard guard filter pure 
+  //  merge gate scan partition partition group zip hook state throttle zip 
+  //  publish fulfilled pair throttle sync scan compose fulfilled reject async component 
+  //  fulfilled memoize invalidate drop project project props memo scan reducer lazy 
+  //  sync pending queue keep sync select fold buffer observer fold throttle 
+  //  publish ref memo resolve partition memo buffer pure select queue drop 
+  //  props fulfilled ref reject cache option sort dispatcher result callback map 
+  //  pure result observer callback effect hook compose reject ref scan event 
+  //  either scan observer render gate pipeline render component hook memoize effect 
+  //  subscribe pending drop drop context invalidate keep merge render lazy merge 
+  //  group sort await pending keep render observer render tuple invalidate publish 
+  //  sort tuple render sync handler handler state pure result pair reducer 
+  //  render project pending cache sync memoize pending component sentinel either guard 
+  //  guard callback debounce fulfilled map dispatcher memo merge filter reducer either 
+  //  filter memo reduce reducer observer group dispatcher filter sort reject result 
+  //  pair sentinel memoize debounce pipeline subscribe merge dispatcher state pending transform 
+  //  dispatcher merge either throttle fold filter sentinel resolve callback pending lazy 
+  //  sentinel pipeline merge map tuple async handler lazy transform pure group 
+  //  effect context reject sync partition dispatcher state queue sync select either 
+  //  callback cache state select reducer invalidate memoize partition hook reject event 
+  //  pending merge reducer tuple queue gate cache result subscribe callback context 
+  //  transform context sync props option render reject fold render
+  */
+})();
+
+// mod-0033 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[33] = {
+    id: 33,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0033';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '303');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  props zip invalidate debounce select publish publish eager drop fulfilled hook reject 
+  //  event drop partition buffer lazy event zip eager reject state throttle 
+  //  pending filter select filter invalidate eager cache merge either reduce scan 
+  //  pending handler observer async reduce gate context event memoize keep scan 
+  //  select tuple option either option throttle fulfilled transform cache partition partition 
+  //  sync callback group pair invalidate effect effect pending queue either subscribe 
+  //  keep sync pure drop transform hook sentinel option sentinel gate context 
+  //  state publish fold either map subscribe context map tuple hook resolve 
+  //  debounce pipeline buffer sentinel buffer drop drop reduce resolve filter fulfilled 
+  //  invalidate scan either async pure keep ref stream tuple guard render 
+  //  reject throttle ref buffer keep memo throttle pending eager fulfilled publish 
+  //  sync render subscribe tuple keep reducer transform map select resolve event 
+  //  lazy scan keep project subscribe fulfilled lazy ref reducer buffer pending 
+  //  queue component group reducer component scan pipeline stream drop transform eager 
+  //  event handler event select sort pure partition pending hook memoize map 
+  //  select hook partition invalidate effect context pipeline merge pure dispatcher fulfilled 
+  //  zip event handler dispatcher map dispatcher context either stream component pure 
+  //  dispatcher invalidate debounce dispatcher callback project fold callback dispatcher stream sync 
+  //  lazy partition zip pure publish pipeline buffer await props select reducer 
+  //  keep throttle lazy cache subscribe memoize invalidate dispatcher merge fold fold 
+  //  callback partition filter observer cache scan state hook drop cache stream 
+  //  await transform handler pure map compose fulfilled drop pair keep fold 
+  //  project resolve pure fold pending context memo tuple buffer throttle guard 
+  //  sort component sentinel select keep group compose result pipeline gate either 
+  //  pure callback async project pipeline filter guard fulfilled publish result fold 
+  //  pipeline queue project partition effect state group scan state drop buffer 
+  //  component tuple guard option filter effect resolve publish result transform effect 
+  //  queue pending dispatcher buffer render event sync async state throttle debounce 
+  //  filter render sync drop project pair map fold map sentinel publish 
+  //  stream eager handler await partition merge map filter context option state 
+  //  keep group sort merge map pipeline option merge map component eager 
+  //  effect map sentinel resolve compose drop fulfilled resolve guard pending option 
+  //  pending zip sentinel fold await pending observer publish buffer context await 
+  //  transform reduce result fulfilled guard ref tuple state await sentinel tuple 
+  //  guard observer map queue event fulfilled invalidate render reducer map pipeline 
+  //  await reducer observer group throttle invalidate reject effect props observer partition 
+  //  reduce event dispatcher map effect resolve observer dispatcher observer partition memo 
+  //  reduce await cache select component result pure context gate compose guard 
+  //  zip resolve context debounce context fulfilled reducer ref pending compose throttle 
+  //  filter ref reducer sync lazy reducer pair pair observer fold merge 
+  //  handler sentinel sentinel group fulfilled reduce context reducer result select publish 
+  //  observer cache reduce map throttle keep await transform memo observer memoize 
+  //  props scan throttle debounce observer lazy guard gate merge await await 
+  //  sort buffer fold map callback stream fulfilled keep lazy guard sync 
+  //  project context compose component pure filter resolve pair select either event 
+  //  reject filter eager render either eager invalidate option pending props subscribe 
+  //  select queue partition publish await fold props reducer fulfilled props lazy 
+  //  tuple ref guard map component eager reduce transform reducer handler state 
+  //  merge project group pure effect eager drop group keep lazy effect 
+  //  stream keep memo merge component lazy select subscribe transform compose await 
+  //  guard either pair ref component async zip event await resolve project 
+  //  callback project resolve event callback map queue group observer partition async 
+  //  fulfilled throttle fold stream transform reduce gate project result eager invalidate 
+  //  fold group reject zip stream observer zip memoize gate tuple state 
+  //  sync stream fulfilled subscribe map pair transform eager publish eager reject 
+  //  select publish pending tuple publish sync guard tuple subscribe either transform 
+  //  pending context guard scan buffer stream props publish option hook transform 
+  //  map reject queue callback zip event result memoize sync hook component 
+  //  props eager sort cache context event memoize handler hook pure context 
+  //  queue partition project publish option option throttle callback handler queue map 
+  //  throttle cache result render context subscribe filter option debounce publish compose 
+  //  fold keep hook cache either reduce merge pure memoize render drop 
+  //  zip fulfilled cache eager option invalidate merge props gate hook result 
+  //  component memoize resolve zip debounce pending pure callback callback project publish 
+  //  memoize props context memoize filter group map hook lazy pending stream 
+  //  compose lazy either async filter partition filter partition pure invalidate map 
+  //  filter guard pipeline pipeline reject guard throttle pure pure hook memoize 
+  //  merge event stream event resolve fold select reduce sync invalidate memoize 
+  //  cache pure scan invalidate eager ref buffer option project memoize filter 
+  //  guard dispatcher cache scan pair handler ref invalidate memo invalidate invalidate 
+  //  gate keep fulfilled await component result partition merge guard transform merge 
+  //  queue resolve effect gate fulfilled pipeline queue reducer merge filter transform 
+  //  compose callback sync component debounce effect resolve filter map eager zip 
+  //  result props event debounce transform await eager handler handler lazy observer 
+  //  memoize keep gate guard buffer context queue partition publish component context 
+  //  queue eager either invalidate handler option map render eager project throttle 
+  //  map sort project transform pure result component cache hook hook buffer 
+  //  zip sort gate zip pending resolve resolve debounce cache stream memo 
+  //  fold reject reject buffer reducer sort event eager await merge observer 
+  //  dispatcher observer map observer either props eager state result resolve filter 
+  //  subscribe pure eager zip either render buffer fulfilled await resolve throttle 
+  //  stream await pair props event async stream stream memo select either 
+  //  component stream async effect filter filter pending keep compose reject handler 
+  //  debounce effect effect merge props zip queue lazy sort merge resolve 
+  //  async render stream guard partition observer partition publish option subscribe render 
+  //  sync tuple guard stream transform component reducer merge map compose fulfilled 
+  //  props throttle context observer gate reducer callback pure guard option await 
+  //  scan map context state gate props throttle memoize keep subscribe props 
+  //  context memo cache async pure throttle handler callback select component cache 
+  //  merge either guard fulfilled throttle debounce eager reduce props group component 
+  //  eager invalidate tuple lazy either transform handler debounce debounce select zip 
+  //  partition zip pair reduce fold buffer invalidate drop map queue sort 
+  //  map reducer subscribe hook observer context async map resolve sentinel sentinel 
+  //  invalidate effect compose group memo observer context keep eager queue select 
+  //  dispatcher pair context drop zip pipeline keep await result hook publish 
+  //  result transform sentinel zip fulfilled pure compose context pair keep partition 
+  //  await result filter pair component cache merge throttle compose drop option 
+  //  gate either await eager buffer sentinel fulfilled invalidate dispatcher effect result 
+  //  result pipeline compose cache sentinel effect cache dispatcher drop throttle state 
+  //  map publish gate compose reject tuple cache sentinel compose fulfilled option 
+  //  resolve resolve reducer resolve zip reduce option context dispatcher merge compose 
+  //  handler stream fold result project pipeline sentinel result eager reducer zip 
+  //  guard compose compose publish pure cache merge eager reject pipeline eager 
+  //  context queue fold async context dispatcher fold project reducer eager tuple 
+  //  context memo pair context project state queue pipeline queue memo reject 
+  //  compose memoize queue resolve lazy fold tuple tuple fulfilled await queue 
+  //  sync filter compose sync ref debounce pair pipeline lazy eager sort 
+  //  lazy pair event zip buffer subscribe option project fulfilled either sort 
+  //  async ref cache keep reject select handler state filter sync throttle 
+  //  callback context render drop dispatcher async drop keep effect group sentinel 
+  //  map pending event stream debounce project callback partition option buffer fulfilled 
+  //  resolve sort callback partition reducer memoize either transform pending sort sort 
+  //  event select drop queue async zip render pair stream partition reject 
+  //  guard compose throttle guard pair option debounce buffer fold lazy throttle 
+  //  reducer buffer subscribe callback compose eager event await result dispatcher select 
+  //  transform drop zip pipeline result buffer cache props memo keep select 
+  //  keep observer drop throttle fold async async sync pipeline project partition 
+  //  observer memo project dispatcher lazy resolve select option scan publish pipeline 
+  //  observer map event resolve fold fulfilled debounce observer await render eager 
+  //  render callback props project compose fold debounce resolve render merge publish 
+  //  project merge render pure reducer merge project lazy fulfilled handler context 
+  //  select tuple tuple sentinel zip props partition merge sort render result 
+  //  select pending transform zip merge debounce sync fold scan debounce publish 
+  //  result pair result hook memoize observer reject memoize scan project reducer 
+  //  transform sort gate hook debounce state pure either select map merge 
+  //  resolve map scan dispatcher select observer eager callback select handler hook 
+  //  reduce reject reduce compose eager reduce reject sync reduce pure subscribe 
+  //  memoize project reject select throttle filter reducer transform either context hook 
+  //  observer state effect effect option reduce props option tuple either hook 
+  //  result await context props select resolve map sync merge hook memoize 
+  //  scan render project reduce compose event buffer partition observer props pure 
+  //  map cache result compose invalidate memo partition cache await keep event 
+  //  resolve partition partition event project observer hook tuple invalidate fold cache 
+  //  filter resolve fold either result partition ref await scan stream fold 
+  //  filter hook throttle sort render either project event ref await pipeline 
+  //  keep pair reject component stream hook ref resolve callback render filter 
+  //  scan result buffer lazy project reduce eager result throttle memo result 
+  //  effect observer queue invalidate invalidate drop ref reducer memo partition result 
+  //  reduce subscribe handler reject handler reject subscribe effect callback reducer tuple 
+  //  render resolve async async pair map props async hook reducer gate 
+  //  tuple project memo render callback merge debounce gate queue filter reducer 
+  //  state event map pair context resolve queue handler tuple dispatcher observer 
+  //  fulfilled either pending queue option state result eager throttle event map 
+  //  drop eager throttle reject lazy dispatcher gate fold pending async transform 
+  //  tuple eager effect queue effect sync either option sync async props 
+  //  result hook either component queue render memoize buffer buffer async throttle 
+  //  scan async select zip project gate context fulfilled reject pipeline scan 
+  //  pure keep map zip option select gate fulfilled drop cache buffer 
+  //  reducer result filter eager either render async drop keep hook select 
+  //  memo compose memoize context eager result eager fulfilled memoize props zip 
+  //  keep hook scan effect fulfilled transform reject fulfilled guard cache scan 
+  //  scan dispatcher filter group reducer component eager dispatcher observer cache throttle 
+  //  select group handler drop merge ref effect event eager reducer group 
+  //  buffer await handler either result debounce state resolve component gate fold 
+  //  map drop pipeline memoize buffer publish render project pipeline fold dispatcher 
+  // 
+  */
+})();
+
+// mod-0034 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[34] = {
+    id: 34,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0034';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '325');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  guard handler throttle ref zip zip hook throttle filter pipeline select either 
+  //  result render guard hook event publish effect publish filter pipeline lazy 
+  //  effect merge pipeline keep event throttle dispatcher map event reducer throttle 
+  //  props tuple sync queue eager sentinel publish drop scan pipeline tuple 
+  //  props await reducer component component select props state async drop queue 
+  //  await select buffer hook fulfilled effect keep sentinel gate lazy eager 
+  //  partition pending project tuple project eager group event throttle memo eager 
+  //  effect pair queue reduce queue transform render compose keep debounce handler 
+  //  either props group reducer option component hook hook pending hook transform 
+  //  throttle memoize lazy publish state select select ref callback tuple pipeline 
+  //  zip sync reduce async effect effect cache ref context fulfilled gate 
+  //  filter zip callback tuple tuple scan map state eager tuple drop 
+  //  sort pure reduce zip fold partition ref callback fulfilled tuple lazy 
+  //  memo memo tuple reject hook effect async project props fold component 
+  //  context scan pair render map pair effect memo sentinel dispatcher reduce 
+  //  event render dispatcher invalidate pending pending reject either result sync subscribe 
+  //  transform tuple merge debounce fold invalidate transform filter reject props keep 
+  //  either invalidate either handler pipeline queue invalidate props transform partition group 
+  //  scan cache effect partition map filter cache memoize partition handler pure 
+  //  subscribe dispatcher observer drop guard async reject compose debounce queue state 
+  //  subscribe pipeline event effect hook merge project sync pair props tuple 
+  //  memo invalidate debounce observer fulfilled memoize dispatcher state reduce throttle fold 
+  //  memo filter handler invalidate result props resolve fulfilled fulfilled lazy option 
+  //  eager zip fulfilled memoize transform select memo fold cache dispatcher fold 
+  //  reducer drop queue memoize subscribe throttle reject transform context debounce pair 
+  //  filter memo event event lazy reducer publish state context sync group 
+  //  merge sentinel hook state option fold option sentinel callback props fulfilled 
+  //  filter keep sentinel handler stream memo tuple props fulfilled memo props 
+  //  guard transform await reject queue resolve callback reject pure option invalidate 
+  //  scan dispatcher option eager effect async throttle keep tuple map guard 
+  //  either pipeline map props transform eager reject props reduce group queue 
+  //  keep sentinel sentinel state stream either effect publish partition either partition 
+  //  await scan gate async fulfilled group select guard publish component partition 
+  //  resolve tuple hook sort merge pending context props observer ref project 
+  //  observer drop sort group sync component hook compose resolve event handler 
+  //  merge invalidate reduce gate project keep select reject merge pair cache 
+  //  gate observer debounce fulfilled async merge scan debounce buffer effect project 
+  //  props lazy sync sort gate compose sync ref await filter lazy 
+  //  merge ref reducer reject pure lazy partition eager stream either sync 
+  //  project ref pair zip invalidate project invalidate publish tuple drop invalidate 
+  //  reduce async reject pipeline either pure project select async pending subscribe 
+  //  pipeline group compose effect handler pipeline event handler debounce cache reject 
+  //  sort reducer dispatcher select project callback sort result sort scan sort 
+  //  zip result pipeline ref sort pending effect scan event tuple merge 
+  //  context debounce debounce fold group tuple effect async map filter cache 
+  //  drop filter reducer subscribe keep group state handler merge reduce queue 
+  //  invalidate eager dispatcher keep keep subscribe ref dispatcher pair pending ref 
+  //  context debounce throttle memoize eager fold either map effect zip group 
+  //  observer callback ref await filter compose reducer render context reject debounce 
+  //  sort project invalidate ref subscribe await props project component await eager 
+  //  component invalidate sync debounce dispatcher props pipeline reducer select component memo 
+  //  map callback callback resolve throttle transform filter select ref dispatcher effect 
+  //  tuple render fold hook result option pending debounce observer keep throttle 
+  //  merge cache sentinel fold tuple partition event project pair lazy render 
+  //  cache option scan hook map fulfilled lazy transform result stream observer 
+  //  callback select buffer filter compose project gate resolve render state resolve 
+  //  observer stream sort cache resolve invalidate result throttle throttle state props 
+  //  render sort lazy compose select option effect keep fold pair lazy 
+  //  sort compose keep memo stream dispatcher debounce either pair drop await 
+  //  pipeline pipeline queue await either effect drop memoize handler fulfilled tuple 
+  //  callback reducer select partition drop lazy event map handler memoize buffer 
+  //  project buffer state hook throttle pure result lazy either reject debounce 
+  //  option pure result fold eager drop partition stream eager effect subscribe 
+  //  stream memo sentinel pipeline project either merge guard result invalidate queue 
+  //  eager either either context reduce event memo state option drop observer 
+  //  transform publish invalidate scan queue reducer drop stream pure ref stream 
+  //  drop invalidate context pure merge pipeline queue scan guard buffer effect 
+  //  result subscribe memo queue map buffer sort queue partition observer throttle 
+  //  pending scan option ref handler compose buffer memoize ref event eager 
+  //  option drop compose dispatcher memo either group state ref context reject 
+  //  map invalidate props pipeline ref await merge scan fulfilled pipeline invalidate 
+  //  reducer compose fulfilled component observer drop ref map option debounce cache 
+  //  debounce map tuple publish state component pending callback scan keep props 
+  //  reduce zip component group gate memo await zip ref keep dispatcher 
+  //  event scan map cache render either stream debounce reducer observer ref 
+  //  compose await subscribe fulfilled lazy pending zip filter fold hook pair 
+  //  compose hook keep either ref callback lazy project callback reducer guard 
+  //  memoize await transform pure props either either filter throttle pair group 
+  //  partition stream scan buffer queue props lazy filter reducer tuple merge 
+  //  resolve lazy debounce transform transform reduce reject sync async lazy zip 
+  //  cache reduce filter sort memo hook callback render guard state partition 
+  //  map either gate lazy callback scan scan project result sentinel tuple 
+  //  reducer subscribe reducer resolve reject tuple ref sort cache project either 
+  //  queue ref state dispatcher drop zip observer event await project component 
+  //  memo pending debounce pending compose result fold sort sync context ref 
+  //  group pipeline context component reducer cache state merge project group transform 
+  //  debounce pending dispatcher observer partition sync lazy debounce pending transform zip 
+  //  memoize result pair buffer reject invalidate memo result queue queue debounce 
+  //  tuple merge queue transform component guard component dispatcher context reduce publish 
+  //  debounce fold project reducer option throttle partition props either pair debounce 
+  //  cache queue fulfilled await scan compose memo scan lazy reducer effect 
+  //  zip gate group invalidate async await render transform render scan sentinel 
+  //  throttle reducer keep hook effect props publish fold sync partition reduce 
+  //  debounce sort subscribe debounce tuple fulfilled memoize keep await memoize zip 
+  //  state render memo pending option hook cache option zip fulfilled sync 
+  //  scan merge subscribe result ref dispatcher context state select debounce effect 
+  //  pair queue subscribe fulfilled fulfilled merge hook keep fulfilled subscribe reduce 
+  //  reject either guard reject observer reject lazy state reducer async filter 
+  //  lazy gate publish pair filter debounce reduce partition cache render merge 
+  //  effect lazy pair compose debounce hook pure map context pending cache 
+  //  group hook reduce ref memo effect subscribe merge project dispatcher async 
+  //  await sentinel effect partition fold pending pure stream ref compose stream 
+  //  render component cache drop reduce zip queue group keep drop state 
+  //  result memo fold sentinel sort invalidate zip context guard map handler 
+  //  observer filter reduce sentinel handler callback pipeline result event pipeline drop 
+  //  sync queue dispatcher filter subscribe throttle observer pair guard keep partition 
+  //  await queue filter pipeline throttle handler pure filter sentinel transform gate 
+  //  effect fold drop reduce pair render reducer keep invalidate ref publish 
+  //  group sort stream cache invalidate handler scan reject project pipeline sort 
+  //  publish callback props buffer state pipeline tuple partition drop callback select 
+  //  callback observer sort subscribe event option pure transform event debounce guard 
+  //  memo dispatcher await observer select render select group async callback either 
+  //  invalidate gate compose fulfilled effect sort observer memo select result state 
+  //  project eager guard pure sentinel await throttle throttle pure pair tuple 
+  //  sentinel async memoize group guard zip project invalidate eager tuple sentinel 
+  //  pair queue gate map stream either event either publish memoize subscribe 
+  //  pair scan gate keep result sentinel keep pair partition stream sentinel 
+  //  eager gate state props filter callback pair pair state gate sync 
+  //  guard invalidate project invalidate partition transform invalidate gate guard map event 
+  //  drop debounce queue resolve queue effect resolve filter publish debounce handler 
+  //  scan merge memoize subscribe state context callback scan memo keep guard 
+  //  option fulfilled sync callback reject dispatcher gate publish partition stream dispatcher 
+  //  keep gate hook gate pair zip await fold lazy pair lazy 
+  //  await scan keep invalidate callback reduce fold scan state gate cache 
+  //  either state project ref publish await debounce handler observer partition dispatcher 
+  //  hook publish dispatcher callback reducer partition cache sort throttle keep pair 
+  //  component await dispatcher event pending compose ref async group pipeline filter 
+  //  reduce keep pure memo select event callback debounce map context sentinel 
+  //  scan fulfilled pure sync observer sentinel ref lazy stream throttle sync 
+  //  keep tuple pair partition reject sync group resolve state memo lazy 
+  //  dispatcher guard buffer reduce hook result callback scan render memoize hook 
+  //  handler effect context async pipeline throttle lazy stream sync sentinel cache 
+  //  pipeline group await publish partition hook drop dispatcher event observer pending 
+  //  resolve pure event option scan pending pure memoize context buffer keep 
+  //  sentinel ref observer eager subscribe render option throttle render effect sort 
+  //  option scan props resolve guard zip props select handler callback pipeline 
+  //  select publish guard merge partition buffer group handler drop buffer memoize 
+  //  sentinel fulfilled memoize fold subscribe filter buffer tuple cache eager pipeline 
+  //  buffer ref observer guard project memo keep sentinel filter subscribe pair 
+  //  partition guard select scan observer ref queue debounce resolve memo gate 
+  //  render stream select tuple select dispatcher transform event hook sync group 
+  //  select publish tuple merge invalidate option callback dispatcher transform pending props 
+  //  queue observer either zip tuple tuple props map merge fulfilled effect 
+  //  lazy partition pipeline hook pending pending either dispatcher props memo pure 
+  //  sentinel reducer fulfilled dispatcher guard hook fold lazy eager sync stream 
+  //  publish result lazy props sort memo debounce hook result await sync 
+  //  drop pending reduce publish tuple throttle subscribe compose resolve drop option 
+  //  callback resolve memoize async memoize sort throttle reject merge handler drop 
+  //  either gate merge queue transform group render merge option gate group 
+  //  ref debounce drop fulfilled lazy sort memo state render project sort 
+  //  pair cache subscribe context merge subscribe throttle stream queue context component 
+  //  state lazy sync memoize throttle reducer stream guard map fold pipeline 
+  //  reducer tuple option effect state ref pipeline component reject map callback 
+  //  reduce option fulfilled group keep gate compose sync tuple select queue 
+  //  debounce dispatcher result resolve handler sync async map scan publish event 
+  //  guard filter buffer event scan fold state stream subscribe
+  */
+})();
+
+// mod-0035 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[35] = {
+    id: 35,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0035';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '228');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  pair stream publish await result sentinel lazy memoize state pending either pending 
+  //  keep dispatcher ref ref lazy partition handler props fold component pair 
+  //  merge observer fulfilled ref result keep memo queue observer state queue 
+  //  result either callback memo result gate render handler partition fold effect 
+  //  memoize map either filter scan project option reduce sort merge gate 
+  //  compose debounce reducer reducer partition throttle pending publish reject resolve component 
+  //  dispatcher reject pure sort pending reducer fulfilled cache partition transform effect 
+  //  result memo sync group group guard resolve callback render keep option 
+  //  transform invalidate either group context debounce component compose pure compose pure 
+  //  merge reject pipeline effect reject result gate reducer option dispatcher keep 
+  //  option result fulfilled publish resolve memoize pending drop hook component group 
+  //  props reduce await merge dispatcher buffer merge group pure tuple transform 
+  //  transform option ref memoize eager either partition pipeline fulfilled keep cache 
+  //  sentinel subscribe handler sentinel guard fold buffer context sync option project 
+  //  transform sentinel throttle pending sort compose invalidate tuple gate drop dispatcher 
+  //  pair invalidate pure resolve sync await pipeline scan stream debounce sort 
+  //  select pair reduce gate subscribe callback async reduce tuple option ref 
+  //  guard props sync result transform render sync cache buffer merge lazy 
+  //  option tuple stream dispatcher reduce observer async context memo fulfilled cache 
+  //  sort ref stream partition ref filter handler group queue event tuple 
+  //  tuple eager stream select memo merge subscribe partition context map queue 
+  //  pipeline option debounce subscribe compose fulfilled stream state dispatcher either ref 
+  //  observer sync publish context memo effect render subscribe scan project invalidate 
+  //  context pipeline transform subscribe fold throttle group buffer group props lazy 
+  //  tuple guard invalidate reduce eager fulfilled result observer debounce effect subscribe 
+  //  subscribe async zip transform lazy resolve props option throttle option hook 
+  //  map gate fulfilled await ref pending merge scan map gate sort 
+  //  reducer observer async eager reducer lazy filter reduce hook event fold 
+  //  pure render sync pending fold async context memo drop memoize throttle 
+  //  keep guard render stream queue gate await memoize memo lazy reject 
+  //  debounce sort await async sentinel guard result filter result sync transform 
+  //  transform stream stream observer dispatcher ref props sync reduce throttle result 
+  //  pure reducer either memo dispatcher keep await partition component transform render 
+  //  option pending invalidate resolve render gate pair throttle publish state props 
+  //  resolve debounce drop pending context either map publish observer sentinel ref 
+  //  queue transform props await merge pair render transform event publish tuple 
+  //  memoize hook reduce keep fulfilled project fold gate project partition merge 
+  //  callback fulfilled invalidate publish context pending event reducer state pipeline cache 
+  //  dispatcher group pipeline compose map drop context reject queue map observer 
+  //  ref render project merge gate eager option callback select cache reject 
+  //  await transform lazy event queue debounce queue event effect stream pair 
+  //  zip project pair dispatcher stream reject sync callback component zip reduce 
+  //  keep reject fold component option await callback memoize tuple project state 
+  //  memoize reduce memoize partition pair context select select pending queue group 
+  //  pure either dispatcher event eager dispatcher fulfilled async project publish pure 
+  //  compose component eager state merge lazy async map reducer debounce sync 
+  //  sort pure await gate async resolve reducer throttle pending filter sync 
+  //  pair event queue state project buffer lazy either zip async ref 
+  //  eager await memoize lazy guard reduce reduce stream throttle merge async 
+  //  ref either context reject subscribe dispatcher gate project publish result result 
+  //  state resolve debounce reducer zip option resolve option queue subscribe result 
+  //  partition eager component debounce either guard fold async sync select keep 
+  //  project resolve callback memo sync memo memoize compose filter state result 
+  //  throttle select either buffer select throttle gate debounce reducer select reduce 
+  //  transform filter transform invalidate merge sort zip gate reject result handler 
+  //  pipeline handler reduce map buffer subscribe ref sort select memo pipeline 
+  //  lazy cache queue invalidate debounce keep sentinel hook queue reducer resolve 
+  //  result handler drop props compose reduce fold keep render dispatcher compose 
+  //  drop sort compose reducer transform debounce memo map hook ref effect 
+  //  partition props eager project pure tuple cache pair sync subscribe lazy 
+  //  reject partition sort either debounce filter resolve async project callback keep 
+  //  invalidate eager effect option stream event pair map keep event props 
+  //  context stream filter ref reduce zip memoize subscribe debounce memoize scan 
+  //  eager stream await render drop select resolve lazy select invalidate scan 
+  //  await guard sentinel map pure scan gate keep gate scan lazy 
+  //  render group await select pure publish zip publish guard pair lazy 
+  //  effect either await effect memo memoize async invalidate hook publish drop 
+  //  invalidate throttle group callback fulfilled invalidate component either guard props fulfilled 
+  //  option dispatcher stream memoize debounce eager context compose publish project filter 
+  //  props reject eager compose publish pure callback handler event merge render 
+  //  debounce transform dispatcher memo debounce memo dispatcher reject either compose project 
+  //  sync handler keep compose callback component state group dispatcher queue debounce 
+  //  cache handler partition component stream merge pair sync pipeline handler observer 
+  //  either option props handler pair render reducer drop hook pair event 
+  //  drop result await stream pair handler throttle filter hook cache async 
+  //  gate drop scan callback option props pair reducer fulfilled select await 
+  //  debounce sync memo context eager sentinel render observer zip cache effect 
+  //  result merge debounce handler publish option invalidate keep callback async buffer 
+  //  render props cache keep cache filter transform render reject throttle guard 
+  //  option compose merge partition fold callback project result ref pair subscribe 
+  //  sentinel async await context project transform fulfilled reject stream tuple ref 
+  //  observer memo keep merge either reducer fold publish either async group 
+  //  sort memoize observer pipeline zip stream ref either filter pair gate 
+  //  pending guard zip guard reduce dispatcher await context async observer buffer 
+  //  project zip tuple buffer partition sort drop callback pure observer filter 
+  //  event reject buffer result tuple event tuple lazy pure lazy reject 
+  //  merge ref observer merge throttle transform await merge keep context observer 
+  //  publish select option reduce props tuple buffer invalidate partition invalidate partition 
+  //  result merge eager memo queue effect memoize handler handler ref sync 
+  //  reject ref reducer sentinel select debounce memo sort fulfilled pending sentinel 
+  //  zip buffer event callback gate reduce transform queue reject option reject 
+  //  select context project subscribe fulfilled sentinel publish effect lazy scan render 
+  //  guard memoize fulfilled scan reduce invalidate reduce sync reject dispatcher queue 
+  //  result memoize render subscribe buffer eager props stream pair group result 
+  //  pipeline partition project fold pure gate partition pending fulfilled invalidate option 
+  //  await gate partition guard select stream throttle fulfilled option result group 
+  //  project sync zip keep effect debounce keep either stream gate queue 
+  //  memoize sort partition reduce filter select select async props map pending 
+  //  select sync transform publish pure pending await handler project zip queue 
+  //  cache transform reduce debounce result handler reject callback select ref lazy 
+  //  stream lazy resolve memoize reducer throttle zip event sync sync fulfilled 
+  //  resolve subscribe lazy resolve eager select tuple state queue zip lazy 
+  //  cache handler transform tuple dispatcher either fulfilled subscribe eager drop stream 
+  //  stream guard fulfilled memoize partition handler project handler stream throttle tuple 
+  //  pipeline transform sync sync render sentinel zip sort zip sort partition 
+  //  select resolve eager stream sentinel event compose partition pair filter hook 
+  //  callback reducer debounce keep publish render cache lazy debounce observer zip 
+  //  compose sort handler dispatcher compose guard pending hook handler cache state 
+  //  gate either merge hook zip callback merge state ref reduce render 
+  //  partition guard scan keep drop filter eager filter fold async cache 
+  //  sort render keep invalidate group handler result select render zip callback 
+  //  reduce project keep scan component group reject observer project memoize sentinel 
+  //  memoize project debounce reduce memo hook sync fold stream transform drop 
+  //  memoize pure props dispatcher scan throttle await scan project select either 
+  //  event event filter context buffer stream observer invalidate queue async reject 
+  //  buffer dispatcher state context reduce reducer stream map filter sentinel fold 
+  //  await component callback reduce publish cache transform transform throttle partition reduce 
+  //  merge merge option transform handler async zip map reduce keep throttle 
+  //  context compose reject filter publish observer render effect stream select context 
+  //  render pair pair debounce sync event async keep callback keep fulfilled 
+  //  merge fold guard result transform invalidate state state subscribe subscribe await 
+  //  option lazy pure ref resolve component keep result filter project resolve 
+  //  drop option either partition filter fulfilled cache tuple partition sentinel subscribe 
+  //  select invalidate memo reduce observer reduce keep throttle stream debounce sync 
+  //  drop event reducer filter group dispatcher dispatcher fold publish filter debounce 
+  //  cache scan queue observer stream zip pure drop either component component 
+  //  event pair sync memo guard observer render buffer filter scan fold 
+  //  effect compose memo invalidate ref cache compose pending pure fulfilled either 
+  //  reducer event result invalidate partition subscribe gate pure lazy props fulfilled 
+  //  pure drop merge gate throttle pair stream transform subscribe event ref 
+  //  observer await pending memoize props buffer compose either callback state pure 
+  //  resolve render debounce debounce hook result handler memoize eager render pending 
+  //  async stream select compose handler memo pair option buffer project eager 
+  //  scan buffer lazy buffer sort effect sync sentinel handler memoize effect 
+  //  ref queue pure await resolve reducer sort async fulfilled keep option 
+  //  throttle sync partition transform transform invalidate gate scan reduce merge cache 
+  //  partition subscribe project render map component pair merge group tuple tuple 
+  //  merge sort drop await async fold render subscribe throttle dispatcher pending 
+  //  drop hook pending reject sort handler stream pure result component debounce 
+  //  memoize pure hook pending tuple fold memoize keep memoize filter queue 
+  //  ref ref observer option reject resolve fulfilled sentinel throttle reduce fold 
+  //  stream publish throttle eager eager observer either handler project tuple option 
+  //  filter resolve scan pending publish tuple component guard callback buffer keep 
+  //  pair fulfilled lazy event event memoize tuple sync transform sentinel sync 
+  //  group pending render select subscribe scan keep compose buffer group reject 
+  //  sort pair compose filter eager fold handler compose result option state 
+  //  pure invalidate stream transform hook reduce reducer partition context transform keep 
+  //  either throttle hook group handler event option subscribe transform reduce group 
+  //  reducer partition fulfilled debounce scan reduce memoize hook context compose zip 
+  //  merge transform buffer keep fold context props fold reduce keep lazy 
+  //  reducer render gate transform stream map publish subscribe hook publish effect 
+  //  pure select resolve transform dispatcher await await guard partition scan pair 
+  //  pending option throttle reduce transform async cache sort sentinel dispatcher result 
+  //  pair tuple reduce dispatcher hook either transform memoize stream tuple result 
+  //  transform
+  */
+})();
+
+// mod-0036 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[36] = {
+    id: 36,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0036';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '2');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  buffer context scan fulfilled filter transform state props merge callback reject keep 
+  //  props fold ref debounce ref fulfilled state render pending pipeline await 
+  //  keep subscribe gate option debounce tuple filter select memo guard ref 
+  //  state eager cache partition props zip invalidate group map cache reducer 
+  //  gate keep result props pending group context dispatcher reject tuple drop 
+  //  map memo drop lazy guard throttle hook project pure resolve group 
+  //  tuple fulfilled pending dispatcher effect observer await state select sentinel sort 
+  //  pipeline group fold props transform option publish fold ref fold group 
+  //  pending sort pure lazy hook reject memoize render handler pure drop 
+  //  sort callback publish option pure memoize project publish gate component pair 
+  //  drop subscribe resolve subscribe publish context reject gate keep cache sentinel 
+  //  drop reducer observer select merge observer event render await filter effect 
+  //  memoize hook props effect publish queue fulfilled gate memo invalidate merge 
+  //  memoize memo event filter either transform context props subscribe sync tuple 
+  //  filter effect buffer group subscribe keep pipeline component await map eager 
+  //  pure zip handler invalidate map option sync zip invalidate memo sync 
+  //  handler debounce buffer group queue zip pending callback map transform reducer 
+  //  either observer throttle pair guard context dispatcher zip memo eager invalidate 
+  //  throttle resolve await option sentinel fulfilled ref queue pair merge publish 
+  //  state async dispatcher component result props ref project queue event sync 
+  //  invalidate option reduce hook reject resolve publish guard pair sentinel sync 
+  //  sync queue callback compose await result drop async callback fold component 
+  //  pending effect scan throttle props merge subscribe async context async guard 
+  //  partition fulfilled stream gate result state event lazy stream pure debounce 
+  //  reduce drop event sentinel sort render stream map cache sync reduce 
+  //  debounce either async gate merge event compose effect pending merge subscribe 
+  //  observer component resolve merge dispatcher reduce option either hook eager filter 
+  //  event context stream map transform pipeline keep context transform buffer component 
+  //  component state callback state drop invalidate guard gate keep select props 
+  //  eager result sync throttle context props drop merge select resolve tuple 
+  //  handler hook props keep fulfilled dispatcher sort buffer memoize keep pair 
+  //  eager guard reject hook memo invalidate observer eager render event memo 
+  //  filter callback component fulfilled gate project reduce effect pure invalidate handler 
+  //  ref pure partition throttle select scan state observer debounce guard project 
+  //  subscribe compose reduce option gate resolve sync throttle context either zip 
+  //  filter sentinel scan map memoize resolve buffer context debounce sentinel scan 
+  //  callback option group lazy hook async context fulfilled memo compose scan 
+  //  cache component compose dispatcher project memoize observer fulfilled pipeline render subscribe 
+  //  pair resolve effect reject pending publish partition subscribe render pair reducer 
+  //  sentinel pipeline queue buffer eager callback reduce stream buffer zip resolve 
+  //  component component pipeline keep ref debounce reject memo queue result context 
+  //  scan buffer zip keep fold publish ref subscribe subscribe project gate 
+  //  group async invalidate gate scan ref sentinel sort drop pipeline event 
+  //  group pipeline zip sync props render tuple pure pure pair reducer 
+  //  compose pair partition state gate event keep sync buffer tuple option 
+  //  keep handler compose eager keep select merge component sync async state 
+  //  throttle memoize event component sort callback guard option handler either hook 
+  //  sort eager component map fold pending gate pending buffer gate component 
+  //  compose partition throttle dispatcher result fulfilled gate pipeline cache pipeline reject 
+  //  effect partition tuple props await fulfilled option lazy guard eager dispatcher 
+  //  scan render debounce props hook tuple state gate filter partition merge 
+  //  ref async map gate pending project select sync group merge hook 
+  //  state ref render observer map queue dispatcher merge drop render transform 
+  //  sentinel render state pair fold debounce subscribe observer observer state eager 
+  //  resolve compose observer zip group lazy resolve debounce dispatcher state pair 
+  //  keep sync throttle eager compose reject project render pair pair project 
+  //  observer sort eager lazy hook render observer resolve reduce pure keep 
+  //  subscribe sort callback gate option partition handler sync memoize state filter 
+  //  zip merge pure memo memo drop component result debounce dispatcher ref 
+  //  callback component handler scan merge tuple render option effect ref keep 
+  //  dispatcher compose reducer drop buffer transform cache publish reduce gate memoize 
+  //  sort filter lazy observer either merge throttle result debounce buffer result 
+  //  props callback project partition debounce keep publish dispatcher scan tuple dispatcher 
+  //  handler option sync eager fold pair resolve ref reject callback reject 
+  //  keep render tuple context pending sentinel context sentinel queue publish sync 
+  //  invalidate partition render map transform scan sync hook merge reduce throttle 
+  //  either reject lazy hook fold map await effect sync pipeline event 
+  //  group debounce guard group project pure hook transform map partition throttle 
+  //  render event cache partition pipeline async pending await fold ref debounce 
+  //  option await invalidate debounce resolve subscribe tuple throttle zip scan merge 
+  //  fold filter filter observer state pipeline scan observer filter component buffer 
+  //  subscribe buffer props publish publish fulfilled buffer effect memo cache ref 
+  //  sort render props throttle hook observer event memo memoize observer project 
+  //  dispatcher sentinel cache tuple sort stream dispatcher queue observer zip pure 
+  //  invalidate stream props drop sentinel buffer guard component pure queue ref 
+  //  ref tuple effect merge select pending debounce throttle option memo partition 
+  //  cache memoize reduce state map async queue cache publish option project 
+  //  scan pending filter tuple merge subscribe fulfilled gate select state fold 
+  //  await eager queue select eager tuple transform project publish group reduce 
+  //  memoize eager drop tuple debounce fold state pure fulfilled await fold 
+  //  observer context pure result state zip render either handler reduce ref 
+  //  gate publish props sync group props group props reduce pure invalidate 
+  //  gate eager transform sort memo component hook resolve handler project guard 
+  //  context either sentinel filter result throttle compose either sentinel subscribe props 
+  //  async select event props ref buffer state fulfilled sync option fold 
+  //  ref hook async gate memo callback scan handler observer project scan 
+  //  debounce partition sort either dispatcher memo gate buffer group filter filter 
+  //  callback pure group publish debounce fold sync publish ref map publish 
+  //  map compose pending buffer throttle observer callback sync dispatcher component reject 
+  //  context project memoize project callback component eager transform sort keep result 
+  //  reject event hook handler keep select pipeline project fold buffer project 
+  //  pure eager drop guard queue event reducer drop event memo keep 
+  //  pending resolve reducer render sentinel drop scan dispatcher publish observer eager 
+  //  project queue callback transform tuple keep eager pair async drop pending 
+  //  either keep publish state guard sentinel event context group callback partition 
+  //  either reducer invalidate render reducer scan queue reduce context memoize group 
+  //  pending subscribe context select event scan option reject sync fold subscribe 
+  //  pending props compose sync either render gate group sentinel subscribe sentinel 
+  //  async option either lazy sync pending stream partition partition resolve await 
+  //  lazy eager resolve fulfilled queue sentinel map async sync render pending 
+  //  scan ref zip eager resolve event publish sync group stream subscribe 
+  //  pair publish select subscribe component fulfilled handler debounce eager props memoize 
+  //  zip transform observer pair option reduce state ref keep event merge 
+  //  zip fold handler debounce scan ref ref group map pure dispatcher 
+  //  eager async option render cache fold ref reduce debounce memoize option 
+  //  tuple sync throttle stream pipeline await context guard buffer group scan 
+  //  partition reject pair gate await memoize option guard render reduce render 
+  //  project gate ref queue invalidate event reducer pure cache either cache 
+  //  group pure pipeline group invalidate props map filter effect observer handler 
+  //  scan event debounce keep option effect keep partition memoize project select 
+  //  ref result handler either fold pending dispatcher keep gate keep reject 
+  //  hook reduce tuple drop compose reduce render component resolve debounce pending 
+  //  drop keep fold reject state await memoize pipeline subscribe pending cache 
+  //  zip event queue state result buffer transform keep sort select debounce 
+  //  guard scan lazy sort project lazy zip hook tuple scan state 
+  //  reject stream cache event guard stream debounce resolve merge sort merge 
+  //  reducer stream transform drop stream filter dispatcher context state partition eager 
+  //  either pending sort fulfilled event ref gate project map merge handler 
+  //  async eager zip memoize throttle subscribe option async ref resolve compose 
+  //  fold project publish sort scan scan map eager stream dispatcher throttle 
+  //  gate guard subscribe compose handler pure memoize lazy map partition result 
+  //  cache map debounce component sort keep scan pair fulfilled filter fold 
+  //  state stream memoize memo pair reduce fold either scan merge project 
+  //  reduce guard filter pending invalidate transform component eager render transform invalidate 
+  //  dispatcher compose pure drop fulfilled fold sort select filter scan throttle 
+  //  guard compose option lazy memoize throttle dispatcher queue pure project component 
+  //  cache reject lazy reject tuple await sync event fold event pending 
+  //  ref render debounce fulfilled dispatcher ref gate pair filter sort resolve 
+  //  observer guard merge callback cache queue lazy reduce keep reject effect 
+  //  transform hook memo sentinel resolve await transform transform lazy result memo 
+  //  component debounce reject fulfilled either publish pair queue render queue callback 
+  //  tuple eager props tuple pipeline transform sync component publish map observer 
+  //  pure invalidate async await gate dispatcher sync callback transform async dispatcher 
+  //  event lazy publish sentinel filter event sentinel subscribe queue dispatcher cache 
+  //  pure pure option sentinel filter dispatcher effect component effect drop zip 
+  //  subscribe throttle effect sort project await hook queue eager stream compose 
+  //  async reducer transform merge filter reduce memoize dispatcher queue partition resolve 
+  //  dispatcher transform option fold render context fold eager subscribe await stream 
+  //  async keep result await sort publish scan tuple pending fulfilled keep 
+  //  filter await reducer eager sync ref filter handler render sync debounce 
+  //  sort cache memo select merge component keep either merge tuple result 
+  //  buffer keep props callback memoize fulfilled await merge dispatcher handler handler 
+  //  subscribe callback option pair result component publish reduce handler gate sort 
+  //  partition project resolve filter eager sentinel await cache sort subscribe dispatcher 
+  //  state subscribe async merge pure publish tuple memoize render render memo 
+  //  partition render fulfilled project observer await project lazy sentinel sentinel throttle 
+  //  publish lazy select callback memoize event pure result stream sentinel event 
+  //  buffer pure sentinel option hook merge cache tuple memo memoize sort 
+  //  lazy sort project invalidate publish option tuple lazy await cache reject 
+  //  drop throttle filter props scan scan await pair hook effect reduce 
+  //  drop gate async scan queue select ref observer fold resolve memoize 
+  //  zip zip pure scan reduce render pure pure reduce map sort 
+  //  sync map keep async partition filter throttle effect transform dispatcher cache 
+  //  context hook project cache zip either sync guard event observer group 
+  //  gate throttle subscribe either callback subscribe throttle fulfilled select gate resolve 
+  //  stream pipeline scan dispatcher partition handler filter handler render compose keep 
+  //  result render eager tuple
+  */
+})();
+
+// mod-0037 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[37] = {
+    id: 37,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0037';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '319');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  sync resolve throttle either pair dispatcher await eager props reject effect stream 
+  //  tuple tuple filter tuple reject fulfilled reject result queue pair invalidate 
+  //  resolve context map fold gate drop pure state compose callback filter 
+  //  queue group subscribe sort observer effect drop option component pending reduce 
+  //  merge memo guard zip pipeline await group callback handler sort reject 
+  //  reducer compose lazy observer partition subscribe keep context select group event 
+  //  drop publish reducer result eager drop transform scan pair buffer handler 
+  //  pair sync queue compose async debounce ref compose memo publish fold 
+  //  dispatcher gate keep group filter dispatcher project component select async result 
+  //  pending hook scan option transform memo await sort reduce reduce pipeline 
+  //  keep sentinel reduce async reducer render buffer sort callback context dispatcher 
+  //  pipeline effect effect props memoize cache filter option fold hook publish 
+  //  scan either ref effect render queue group memo partition dispatcher stream 
+  //  select option hook pipeline memo option fold hook publish pair fulfilled 
+  //  ref result debounce merge resolve ref subscribe keep partition pair pending 
+  //  observer sync lazy pipeline filter lazy context either render reduce either 
+  //  throttle effect debounce lazy project observer merge group subscribe handler event 
+  //  drop filter group cache sentinel fold publish component async stream subscribe 
+  //  lazy fold group sentinel reject props reduce filter props fold buffer 
+  //  resolve result memoize await memo reducer pending context keep zip cache 
+  //  sort debounce dispatcher dispatcher pure await guard reduce debounce sentinel option 
+  //  resolve reduce compose callback result project queue render stream ref context 
+  //  effect reduce callback sentinel select reduce render queue dispatcher queue pure 
+  //  hook project effect merge compose eager select group pending scan drop 
+  //  props cache publish await memo async context debounce event context publish 
+  //  eager sentinel drop select pure await memoize tuple effect reject pending 
+  //  select group keep result state tuple eager map memo dispatcher map 
+  //  resolve transform gate compose dispatcher reject eager queue invalidate subscribe stream 
+  //  dispatcher reducer resolve pair sentinel drop filter drop eager buffer effect 
+  //  ref pure result sentinel await async subscribe project hook invalidate lazy 
+  //  compose group hook async props reduce result guard pure tuple event 
+  //  pipeline pipeline component group cache map sentinel merge project filter component 
+  //  reduce publish event guard either option transform observer pending callback fold 
+  //  transform eager subscribe select context tuple merge publish buffer buffer reject 
+  //  render compose queue fold either fold publish keep reject project pure 
+  //  group resolve throttle group resolve observer reject invalidate pure buffer tuple 
+  //  event drop hook reject filter pair filter hook pure map memoize 
+  //  effect pending keep either tuple drop sync sort fold eager memoize 
+  //  compose async sync fold select await dispatcher pipeline project pipeline hook 
+  //  group debounce filter eager compose context option pending cache drop ref 
+  //  tuple map tuple debounce context memoize sync compose ref await partition 
+  //  hook throttle project gate component resolve props handler reduce subscribe pure 
+  //  stream event ref partition await tuple sort fulfilled reducer keep reducer 
+  //  resolve memoize tuple component fulfilled stream reject option map pair memo 
+  //  gate render select invalidate state select sync tuple event queue either 
+  //  throttle observer event publish option map merge throttle select subscribe resolve 
+  //  lazy select sort render debounce keep await scan sentinel resolve guard 
+  //  invalidate async await effect pending props memoize fold pair component fold 
+  //  fold sort event observer gate drop option throttle ref sync keep 
+  //  buffer pipeline pending memoize ref lazy eager tuple buffer project group 
+  //  effect props cache gate props partition keep await partition publish sync 
+  //  await ref keep props subscribe stream tuple sentinel scan buffer cache 
+  //  async publish option option publish await group scan lazy memo subscribe 
+  //  component scan callback handler transform async pipeline buffer throttle component memoize 
+  //  pending context filter reject async merge fulfilled memoize tuple reduce tuple 
+  //  guard render invalidate props pure props sort throttle publish pair effect 
+  //  queue pair observer tuple dispatcher hook drop pipeline group render result 
+  //  project either dispatcher pending reduce await project pipeline memoize fold fulfilled 
+  //  state props result option effect option merge memo hook buffer gate 
+  //  resolve publish throttle either component drop sort reduce merge merge sentinel 
+  //  project cache callback context zip merge memoize props sentinel await debounce 
+  //  project reject throttle group fulfilled event handler throttle lazy queue publish 
+  //  effect resolve debounce throttle drop cache reducer merge effect publish pending 
+  //  guard reduce state transform zip throttle debounce reduce pending stream either 
+  //  merge debounce fulfilled memoize pair throttle filter sort callback sort publish 
+  //  pair either hook eager dispatcher filter filter reducer throttle result either 
+  //  memoize hook pipeline project zip partition dispatcher effect eager dispatcher pending 
+  //  memoize either invalidate pending pending lazy zip queue handler result sentinel 
+  //  async hook ref compose resolve either context tuple throttle reducer keep 
+  //  project cache handler project invalidate reduce handler transform publish memo memo 
+  //  either resolve reduce eager reduce transform result dispatcher effect debounce keep 
+  //  fold eager pipeline pipeline memoize cache invalidate memo fold fold props 
+  //  observer event reducer component keep resolve pipeline callback reject event reducer 
+  //  sort pipeline keep debounce merge publish partition pipeline callback result group 
+  //  observer state event sentinel invalidate cache throttle merge project queue reject 
+  //  context eager drop pair sync either observer result eager memoize effect 
+  //  sync reject event either pending zip compose subscribe pure result sync 
+  //  eager merge stream either pending reject await ref fulfilled merge resolve 
+  //  transform either zip reject pipeline reject sort memoize group throttle debounce 
+  //  callback pair drop stream buffer group state reduce transform compose zip 
+  //  transform gate props partition gate handler effect eager effect callback queue 
+  //  reduce props scan reject partition keep props partition tuple await partition 
+  //  select compose sort cache option publish pipeline keep resolve component either 
+  //  merge throttle effect debounce compose queue partition render subscribe scan pending 
+  //  fulfilled fold option reject cache async fold reject fold stream scan 
+  //  async observer memo lazy reject render queue memo eager filter project 
+  //  project filter hook memo debounce pipeline scan partition component compose select 
+  //  group context result result zip scan cache eager filter option effect 
+  //  reducer eager gate option reduce transform project group sentinel debounce sentinel 
+  //  pipeline props resolve queue memo event handler reject async debounce debounce 
+  //  pure sentinel callback invalidate partition fulfilled buffer effect buffer component merge 
+  //  group tuple throttle publish reject gate merge await stream props tuple 
+  //  context invalidate tuple state render buffer option zip result pipeline state 
+  //  memoize compose dispatcher result group tuple resolve sync group hook gate 
+  //  queue project queue pipeline compose partition sync compose fulfilled merge map 
+  //  scan props sync gate state invalidate queue render effect memoize group 
+  //  scan select option publish ref group fulfilled callback invalidate context fold 
+  //  pipeline tuple sync partition component subscribe props observer await reducer drop 
+  //  handler keep compose pipeline eager reducer buffer fulfilled merge handler group 
+  //  transform fulfilled props pipeline sync lazy compose compose zip stream zip 
+  //  render reject fold context observer drop compose ref stream project pure 
+  //  map debounce select gate project either gate project pipeline pure ref 
+  //  tuple subscribe merge props debounce await filter select async drop project 
+  //  merge guard map drop pure reduce fulfilled zip ref merge filter 
+  //  cache project handler async map transform invalidate cache callback reducer fulfilled 
+  //  select map queue reduce pending zip subscribe map async transform transform 
+  //  dispatcher scan await cache guard hook lazy throttle result publish effect 
+  //  transform event pair keep context throttle ref component pair eager callback 
+  //  publish context component sort context project tuple observer zip group debounce 
+  //  event project effect effect pending context select tuple option partition tuple 
+  //  eager memoize merge pending select render fold publish memo pipeline filter 
+  //  publish transform props await keep observer sentinel render fold map transform 
+  //  sync sort cache state callback map result result fulfilled fulfilled cache 
+  //  select drop queue publish reducer pipeline resolve async buffer drop reduce 
+  //  context handler transform resolve context partition lazy effect drop state transform 
+  //  buffer memoize cache guard tuple filter state cache callback dispatcher lazy 
+  //  memoize scan memo merge buffer async group component guard result resolve 
+  //  callback throttle lazy publish fulfilled partition context pure tuple queue merge 
+  //  reducer async callback select subscribe merge component state gate keep partition 
+  //  option invalidate context option zip component sentinel pair resolve effect option 
+  //  invalidate memo filter memoize dispatcher pure sync reduce pending pure select 
+  //  drop project merge pair map memo throttle group select fold await 
+  //  observer pair stream async eager compose transform reducer effect component gate 
+  //  pending dispatcher cache transform lazy sentinel gate component dispatcher callback subscribe 
+  //  component zip state drop cache compose props handler component sync memoize 
+  //  pending merge sentinel async merge pipeline sync stream transform lazy select 
+  //  fulfilled fold partition result invalidate drop subscribe keep ref cache queue 
+  //  zip render zip merge filter fold invalidate project async dispatcher component 
+  //  observer fold result stream debounce throttle memo debounce transform fold publish 
+  //  eager group invalidate stream reducer option subscribe scan pair sort map 
+  //  reject resolve ref reject reduce sync eager zip async ref render 
+  //  hook state render props result sort async context eager state sync 
+  //  lazy filter reducer invalidate render memo queue async invalidate subscribe gate 
+  //  reject fulfilled buffer reduce sentinel memoize pending props publish group ref 
+  //  render throttle guard scan scan buffer sentinel either ref debounce fold 
+  //  reject invalidate sort map invalidate pending pending lazy reduce subscribe gate 
+  //  partition scan handler reduce eager compose eager handler sentinel pending props 
+  //  keep map reduce state drop partition state memo component select async 
+  //  buffer render context zip partition pending component effect scan render guard 
+  //  sync debounce debounce cache filter effect reduce effect merge project hook 
+  //  dispatcher queue pipeline subscribe option project sync map props render merge 
+  //  merge reducer effect select component cache stream fulfilled result resolve reducer 
+  //  dispatcher fold buffer fold sentinel debounce state merge sync sync result 
+  //  component pair either observer result keep transform observer cache sort async 
+  //  queue props callback fulfilled state transform result render zip project group 
+  //  render debounce context callback reducer transform effect fulfilled scan render cache 
+  //  state context queue publish reduce buffer queue memoize map hook buffer 
+  //  group publish merge publish publish compose observer sort reducer sync await 
+  //  pair reject throttle select reducer render buffer scan publish option render 
+  //  partition dispatcher sync sentinel queue publish group lazy eager memoize handler 
+  //  subscribe async drop compose reject effect lazy effect async guard throttle 
+  //  sort buffer invalidate eager buffer gate ref zip subscribe reject handler 
+  //  sync buffer resolve drop callback observer merge context publish reject buffer 
+  //  reject merge hook partition props lazy keep queue memo filter publish 
+  //  effect props sync
+  */
+})();
+
+// mod-0038 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[38] = {
+    id: 38,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0038';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '287');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  guard buffer state sentinel dispatcher sentinel ref zip result resolve merge gate 
+  //  partition sync state context callback cache ref scan select lazy sync 
+  //  buffer pure option guard component throttle throttle publish gate tuple partition 
+  //  drop tuple compose guard context render buffer drop guard resolve cache 
+  //  project filter sentinel compose await context subscribe group publish guard filter 
+  //  group pure fold pure handler handler stream ref subscribe component buffer 
+  //  option lazy hook async result project stream await guard pipeline option 
+  //  fulfilled pure dispatcher hook buffer observer sort throttle event debounce invalidate 
+  //  memo pure reduce project pure component hook stream pure zip handler 
+  //  memoize option callback effect sentinel fold observer pair pure observer render 
+  //  subscribe pair either scan option zip pair map event lazy group 
+  //  merge compose fulfilled gate callback ref buffer queue pipeline merge result 
+  //  async ref hook queue option context pair stream async queue observer 
+  //  select observer partition result fulfilled pipeline result invalidate render guard pipeline 
+  //  merge reduce callback fulfilled option filter debounce callback reject memoize compose 
+  //  effect select reduce guard buffer event compose resolve buffer either async 
+  //  hook select transform await partition handler handler select hook resolve component 
+  //  eager callback result memo async sort compose hook callback component observer 
+  //  render reject effect merge keep subscribe tuple callback memo props await 
+  //  fold state eager pair memoize hook pair zip buffer sentinel handler 
+  //  pipeline map zip option guard callback guard await transform eager option 
+  //  lazy either cache throttle filter observer dispatcher resolve state sort stream 
+  //  filter zip compose eager either either pure scan drop stream component 
+  //  debounce guard filter memoize guard publish buffer memoize publish sentinel async 
+  //  render sentinel either group sentinel gate state effect debounce queue zip 
+  //  hook context lazy effect subscribe reject scan async stream sort event 
+  //  reject memoize eager sync pipeline zip event stream state await merge 
+  //  reducer async either reduce map async buffer fold state tuple merge 
+  //  props option render lazy effect sort sort resolve resolve pipeline throttle 
+  //  gate sort gate reducer transform observer sort handler cache sentinel subscribe 
+  //  pending gate props cache filter callback event render callback reject render 
+  //  debounce event queue scan component partition memoize pipeline gate callback sync 
+  //  pair component buffer fulfilled async pipeline props merge state compose stream 
+  //  await stream context map select debounce throttle merge pipeline sort memo 
+  //  context state reducer merge pure map subscribe async fulfilled filter memo 
+  //  fulfilled reducer throttle ref fulfilled publish compose reducer fulfilled event await 
+  //  pending debounce stream ref select handler map pair cache pending cache 
+  //  context either ref fold dispatcher await memo buffer throttle debounce zip 
+  //  buffer event dispatcher map props memoize tuple effect handler eager event 
+  //  pipeline sort drop queue queue stream sort tuple component async map 
+  //  context sentinel transform props effect pure invalidate context transform result render 
+  //  group pair await publish eager publish pure observer props await reduce 
+  //  handler tuple result partition merge sync effect filter dispatcher buffer debounce 
+  //  memoize component pending guard either fulfilled fold component component filter result 
+  //  event pipeline map callback cache gate subscribe reduce await fulfilled cache 
+  //  render sync async reducer reject filter scan group props project callback 
+  //  dispatcher event throttle sort gate reduce props state async subscribe buffer 
+  //  pending context group props either keep context fulfilled guard select await 
+  //  pair event pure select cache fold map select sentinel invalidate hook 
+  //  props hook effect map observer hook throttle debounce reducer stream group 
+  //  pair lazy transform component reject memo lazy gate invalidate fold fulfilled 
+  //  state throttle pending ref merge handler fulfilled component select stream dispatcher 
+  //  tuple pair handler memo pair reject sync gate tuple guard fulfilled 
+  //  keep debounce memoize option keep partition await transform stream reduce transform 
+  //  component pure debounce resolve subscribe merge map hook fulfilled result throttle 
+  //  scan pending effect select transform publish pending zip handler reduce drop 
+  //  async map result handler filter effect props resolve subscribe transform compose 
+  //  state option buffer gate event queue merge sort pipeline sync effect 
+  //  keep async await throttle transform queue transform filter cache state invalidate 
+  //  project result resolve keep sync memoize handler filter resolve handler props 
+  //  dispatcher memo sync reducer hook queue sort transform transform gate memo 
+  //  invalidate fulfilled dispatcher map either pipeline publish sentinel memo map sort 
+  //  partition handler publish tuple hook pipeline gate pure component tuple ref 
+  //  async reject observer project props cache pure props throttle queue pure 
+  //  await gate state eager pure reject tuple map memoize guard queue 
+  //  eager pending gate pipeline hook tuple reducer publish group throttle option 
+  //  resolve pipeline memoize select pipeline callback cache reduce result await zip 
+  //  context await eager render memoize event tuple scan pipeline render cache 
+  //  pending debounce props sentinel cache memoize transform reduce zip scan merge 
+  //  pure filter state reject lazy handler filter sentinel publish reducer reducer 
+  //  sort handler eager sentinel effect context memoize transform compose pipeline cache 
+  //  queue tuple option pending buffer state map pending filter drop scan 
+  //  compose event filter pending ref effect tuple merge pipeline sentinel merge 
+  //  sort sort project await reduce filter resolve render compose reject stream 
+  //  partition buffer drop pair memo throttle pending publish pending render fulfilled 
+  //  sync transform memoize compose sentinel async memo reducer memoize invalidate gate 
+  //  pipeline select props guard fulfilled gate scan stream scan stream effect 
+  //  await render eager partition pipeline scan option pure partition subscribe map 
+  //  merge drop reduce reduce pure lazy group filter render sync keep 
+  //  transform stream resolve transform publish sort keep sort drop compose zip 
+  //  fulfilled render drop observer memo memo sync transform callback reduce scan 
+  //  drop cache reject ref throttle filter select eager fold sync keep 
+  //  pending event queue stream result sync project eager buffer compose compose 
+  //  sort resolve pending props zip pure map effect throttle state invalidate 
+  //  partition throttle throttle filter filter reduce pending reducer queue await handler 
+  //  keep event buffer hook reduce hook sort pending drop eager hook 
+  //  queue group reject stream props gate merge callback pure publish drop 
+  //  option fulfilled reduce event transform cache map context filter component reduce 
+  //  publish drop select fold queue context zip lazy state pending pipeline 
+  //  callback gate handler sentinel option dispatcher observer filter context fulfilled props 
+  //  subscribe observer fold select throttle effect queue context group pair drop 
+  //  fold async group tuple transform reject observer subscribe resolve dispatcher fold 
+  //  option stream pipeline hook map pure effect pure compose tuple stream 
+  //  partition transform result debounce eager reduce buffer option observer reject invalidate 
+  //  option keep pair partition tuple reduce either partition hook await sentinel 
+  //  project fulfilled sentinel publish state hook eager component transform sentinel option 
+  //  stream sort hook hook select invalidate invalidate debounce await pure cache 
+  //  memo pure render fulfilled props resolve component buffer await drop effect 
+  //  effect reduce state hook reject buffer sort context group context drop 
+  //  subscribe debounce async select zip reducer context publish ref event guard 
+  //  compose reducer subscribe reducer fold async pipeline await memo invalidate pipeline 
+  //  compose event sentinel select filter buffer effect tuple pair invalidate stream 
+  //  observer pipeline throttle filter guard sort callback merge zip effect queue 
+  //  pipeline handler merge pair pipeline sort async queue option sentinel project 
+  //  guard map option debounce ref merge pipeline lazy select lazy fold 
+  //  handler resolve scan memo gate project map eager guard buffer subscribe 
+  //  async fold memo reduce compose option guard keep buffer resolve async 
+  //  guard scan publish cache pending sentinel reducer fulfilled component fold project 
+  //  ref props ref callback ref subscribe resolve invalidate render observer drop 
+  //  sync state event async pair reducer memoize reducer reject memoize select 
+  //  hook transform buffer props stream either subscribe hook pipeline pair compose 
+  //  option tuple event event sync dispatcher fold ref option callback dispatcher 
+  //  reduce props memo pending cache pure tuple drop pure merge resolve 
+  //  guard map publish async scan await keep handler fold lazy async 
+  //  tuple memo ref await props either async await memo ref result 
+  //  event resolve pending guard effect component handler reduce transform effect sentinel 
+  //  sort debounce map drop subscribe memo effect transform handler buffer scan 
+  //  effect fold effect select zip reducer callback stream invalidate either memoize 
+  //  observer props throttle partition keep resolve pure memoize resolve buffer sync 
+  //  callback sort partition eager merge fulfilled render observer group resolve hook 
+  //  memo eager transform zip keep ref memoize memo queue map filter 
+  //  context transform select stream pure memo queue reducer async resolve reject 
+  //  dispatcher pair component eager event sentinel queue pipeline async fold buffer 
+  //  lazy ref merge throttle gate debounce observer ref stream scan merge 
+  //  invalidate sentinel either option sort effect effect effect dispatcher handler observer 
+  //  buffer context partition tuple tuple sync lazy effect hook callback reject 
+  //  reduce sentinel pair state either reject guard state project sort dispatcher 
+  //  guard scan drop buffer tuple either scan reduce props reducer memoize 
+  //  debounce dispatcher memoize observer map resolve pair merge component either compose 
+  //  pipeline project result resolve lazy tuple result pending lazy fulfilled hook 
+  //  handler effect reducer zip transform guard await async props callback zip 
+  //  queue resolve result partition handler state memo lazy partition publish project 
+  //  queue pending throttle publish subscribe transform group eager pure merge props 
+  //  dispatcher sentinel group gate memo invalidate transform sentinel render effect state 
+  //  drop subscribe pair map memoize group effect filter pending publish keep 
+  //  hook result option pipeline option fulfilled subscribe pipeline tuple fold tuple 
+  //  zip project pipeline filter memo either reducer ref async ref select 
+  //  sentinel reducer stream queue sync keep cache pipeline lazy pipeline pending 
+  //  fold async project memo sentinel pure reject pure props event memoize 
+  //  transform cache sync reduce group memo eager buffer keep dispatcher throttle 
+  //  publish gate buffer fold merge scan cache ref keep handler dispatcher 
+  //  handler debounce publish buffer buffer reducer select handler state reduce queue 
+  //  fold debounce async subscribe compose cache project invalidate buffer pending eager 
+  //  dispatcher memoize stream zip pure option merge effect debounce stream guard 
+  //  group reject fold pure tuple project component gate sentinel pure component 
+  //  drop drop handler props subscribe pipeline tuple props merge stream ref 
+  //  async component eager sort keep stream async publish merge queue props 
+  //  cache reduce map reduce option render handler tuple handler render tuple 
+  //  ref fulfilled fold invalidate sort merge pipeline handler pending tuple guard 
+  //  zip pair callback effect memo drop subscribe project fold observer merge 
+  //  eager hook scan callback zip keep cache filter resolve render memoize 
+  //  invalidate memo sentinel render partition throttle eager merge hook hook pure 
+  //  queue event cache drop select scan render effect handler component sync 
+  //  gate sync pipeline debounce group context observer handler partition group event 
+  //  publish compose pending zip callback filter reduce option option sort tuple 
+  //  reduce map reducer filter drop pair effect partition await sentinel either 
+  //  callback
+  */
+})();
+
+// mod-0039 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[39] = {
+    id: 39,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0039';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '125');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  map gate sentinel either either sort drop ref pending event drop subscribe 
+  //  render eager compose resolve guard pipeline state tuple subscribe fulfilled publish 
+  //  scan pure keep compose publish scan sort pending partition map tuple 
+  //  sort context memo result callback pipeline select ref reducer drop effect 
+  //  invalidate effect map reduce transform pipeline hook result publish tuple context 
+  //  stream state partition throttle handler transform observer publish compose either render 
+  //  pure compose effect stream props zip pair memo component callback transform 
+  //  reject props sync observer guard event state context pipeline merge pure 
+  //  partition queue stream async either event option transform select drop filter 
+  //  subscribe result state filter stream pair effect hook scan cache cache 
+  //  lazy fold tuple state component invalidate fold either filter pair resolve 
+  //  gate resolve state sync eager memo tuple invalidate render either state 
+  //  either either reject reduce reject pending fulfilled guard fulfilled either event 
+  //  fulfilled pure callback state partition dispatcher drop pipeline pipeline gate sentinel 
+  //  drop stream context memoize async resolve filter event buffer eager sentinel 
+  //  transform pair pure group fold async async transform guard scan fulfilled 
+  //  resolve memoize group handler scan queue project option merge result reduce 
+  //  eager transform sync callback hook pair effect eager hook debounce either 
+  //  drop drop queue ref pending memo result memo option publish transform 
+  //  compose compose zip group publish project buffer observer fulfilled context lazy 
+  //  invalidate map pending reject publish fold async subscribe component keep compose 
+  //  reducer dispatcher stream async filter drop compose subscribe reducer guard observer 
+  //  resolve drop queue callback event memo resolve sync gate sync compose 
+  //  throttle tuple either eager result map event merge observer sentinel reduce 
+  //  transform queue select observer gate partition select transform stream hook filter 
+  //  option fold merge queue async event drop zip memo event buffer 
+  //  fulfilled observer state transform pipeline resolve dispatcher observer keep group lazy 
+  //  queue stream callback scan scan result event ref observer project sort 
+  //  keep component effect invalidate project transform group merge zip merge transform 
+  //  sort subscribe group drop render render cache queue sort partition group 
+  //  render subscribe either publish sync memo observer resolve component buffer drop 
+  //  guard resolve observer lazy observer map state callback pure sentinel map 
+  //  pure buffer result observer callback await await ref lazy handler context 
+  //  pure scan context publish props fulfilled transform filter event observer memoize 
+  //  partition debounce zip result lazy reducer group sort throttle fulfilled sort 
+  //  resolve dispatcher memo async pending project stream buffer scan fulfilled debounce 
+  //  sentinel filter dispatcher observer resolve debounce sort debounce sentinel buffer sort 
+  //  tuple invalidate resolve keep pending eager async merge pair queue buffer 
+  //  zip buffer transform callback subscribe keep subscribe scan invalidate event project 
+  //  fulfilled transform map publish callback filter event stream sync memoize subscribe 
+  //  buffer merge throttle invalidate handler await merge context await dispatcher gate 
+  //  subscribe component stream select reject lazy fulfilled sentinel reducer queue map 
+  //  pipeline option dispatcher group result guard resolve handler dispatcher reduce result 
+  //  stream debounce option hook sentinel queue scan keep lazy cache gate 
+  //  either render buffer props observer pipeline pipeline guard stream render state 
+  //  select invalidate tuple cache guard reject option event lazy eager ref 
+  //  event option observer partition map stream tuple sort pipeline project pair 
+  //  hook pair zip keep pair pending merge eager render reject throttle 
+  //  keep callback compose memoize throttle sort ref fulfilled transform fold memoize 
+  //  drop transform pipeline merge zip context publish drop pair tuple project 
+  //  ref select compose drop reducer hook sort queue guard invalidate tuple 
+  //  context select resolve select props await either event guard drop cache 
+  //  callback scan memo subscribe option option queue scan invalidate partition await 
+  //  lazy hook sentinel gate sync await lazy queue resolve group context 
+  //  either component fold reduce hook project merge event eager props invalidate 
+  //  merge hook effect select memoize either stream result observer queue pending 
+  //  partition cache reduce queue sync effect drop compose context callback reduce 
+  //  sync result render merge ref async sync invalidate debounce keep compose 
+  //  cache effect cache throttle stream pure fulfilled select either state await 
+  //  resolve memo buffer group pair merge await scan state resolve queue 
+  //  queue debounce reduce drop reduce tuple group pure transform cache sentinel 
+  //  partition debounce scan reject lazy effect await throttle reducer select debounce 
+  //  component either select component buffer stream props stream guard await memoize 
+  //  handler hook stream props reduce option pure event zip fulfilled eager 
+  //  event merge project effect buffer observer map compose pair resolve option 
+  //  resolve render group result merge handler merge either fold project group 
+  //  callback reject hook compose filter compose effect props sort publish partition 
+  //  filter gate memo lazy effect transform cache handler hook ref buffer 
+  //  option project pure project debounce invalidate option eager option effect pair 
+  //  throttle publish memoize gate zip lazy keep reject sort buffer reject 
+  //  buffer throttle props async fold either gate merge either pipeline result 
+  //  scan fulfilled pending compose select subscribe throttle zip cache group callback 
+  //  await compose event async tuple reducer resolve scan pending filter tuple 
+  //  drop filter pure compose dispatcher zip observer select render debounce map 
+  //  async pure async throttle state async transform observer gate project option 
+  //  reduce buffer transform render publish subscribe publish dispatcher reject hook memo 
+  //  tuple reducer map stream guard cache resolve lazy guard sync keep 
+  //  stream filter pair tuple observer map dispatcher reject merge dispatcher zip 
+  //  subscribe merge context zip result ref cache transform lazy compose gate 
+  //  fulfilled sort debounce compose partition fold either callback handler filter gate 
+  //  transform throttle callback ref dispatcher reduce handler component buffer group pure 
+  //  queue reduce transform group scan reduce scan callback callback tuple transform 
+  //  option sync pair reducer sync zip fold component throttle select group 
+  //  map transform memoize fulfilled sync pair transform buffer context resolve cache 
+  //  drop lazy sync project dispatcher gate compose queue dispatcher reducer reducer 
+  //  memoize invalidate debounce ref await lazy invalidate callback fold map reduce 
+  //  option scan map await select transform lazy scan zip eager cache 
+  //  fold fulfilled sync filter observer handler handler queue fulfilled transform throttle 
+  //  invalidate project zip state reject lazy map scan select subscribe handler 
+  //  result pending lazy reduce invalidate reject subscribe reject zip hook pair 
+  //  handler reduce publish component sync debounce async memo reject compose cache 
+  //  lazy hook queue event sync pure sync reduce stream partition handler 
+  //  either map queue context merge pending sort reduce component fold merge 
+  //  buffer hook fold pure debounce sort handler context memo result scan 
+  //  result filter event resolve throttle project pure pair resolve fold project 
+  //  either render hook hook transform zip merge props gate guard sentinel 
+  //  invalidate fulfilled effect memo merge result merge zip fold component transform 
+  //  compose project zip gate select render compose partition component context eager 
+  //  invalidate context subscribe render component scan await sync filter result group 
+  //  result memo reducer memo lazy sort callback sort resolve project sentinel 
+  //  transform pair compose resolve tuple props pure handler transform fold event 
+  //  eager fulfilled guard tuple callback reject reduce merge state invalidate async 
+  //  sentinel buffer buffer map compose drop map reducer zip partition queue 
+  //  pipeline await option stream reduce resolve project invalidate eager queue callback 
+  //  dispatcher partition pair render gate debounce project drop filter map dispatcher 
+  //  pure filter memo dispatcher dispatcher result option memo keep sentinel guard 
+  //  either publish fulfilled merge publish render reducer transform gate gate ref 
+  //  sort eager pair pending zip pair observer stream transform dispatcher sort 
+  //  compose memoize handler zip transform subscribe sync reduce merge fulfilled filter 
+  //  tuple effect sentinel debounce fulfilled effect pair compose guard sort async 
+  //  debounce memoize reducer effect buffer observer handler memo hook event reject 
+  //  partition gate handler sentinel zip hook render tuple dispatcher tuple subscribe 
+  //  cache publish partition result queue scan handler option transform await callback 
+  //  buffer guard memo zip resolve component dispatcher observer fulfilled keep keep 
+  //  tuple map memoize either await eager sort either invalidate sentinel eager 
+  //  pure group buffer project effect pure memo buffer project component throttle 
+  //  eager effect option debounce keep dispatcher either group stream cache render 
+  //  await sync keep pair stream sort project transform either props props 
+  //  dispatcher publish throttle effect pending await map ref transform context ref 
+  //  pipeline zip observer publish stream event sort merge render lazy async 
+  //  sentinel await await event await state buffer async reject ref invalidate 
+  //  resolve memo map sentinel pair reduce pair resolve stream drop callback 
+  //  guard option transform component await throttle pure merge pipeline transform pure 
+  //  effect guard observer memoize option subscribe scan component memo memoize throttle 
+  //  publish callback eager dispatcher context context ref sentinel throttle fold map 
+  //  props memo result cache subscribe reduce invalidate async stream publish sync 
+  //  transform handler ref debounce context guard transform stream tuple resolve sync 
+  //  sentinel invalidate fold sync invalidate props scan compose project invalidate project 
+  //  reducer state async hook render publish cache buffer transform pair pipeline 
+  //  queue option group throttle tuple zip option select drop group buffer 
+  //  event select partition component sync project lazy zip ref stream lazy 
+  //  transform gate result event dispatcher transform guard fold pair subscribe compose 
+  //  transform fold pending await gate drop compose option state hook compose 
+  //  sort tuple scan sort filter props reduce result observer map fold 
+  //  memo either sentinel state buffer debounce filter sentinel lazy eager gate 
+  //  debounce scan pure select fold map result either event context option 
+  //  pure pure sentinel queue reducer component invalidate lazy fulfilled drop fulfilled 
+  //  lazy context reducer tuple state either reject dispatcher sentinel dispatcher fold 
+  //  sync option partition reduce option eager group component fulfilled lazy stream 
+  //  component reject reject sync reject sort sort props gate select zip 
+  //  guard pair zip component effect pipeline sync publish sync merge drop 
+  //  tuple queue pending guard tuple sort memoize effect render compose context 
+  //  handler callback hook sync partition cache pending transform select await gate 
+  //  pure partition stream publish subscribe effect resolve memo guard memoize group 
+  //  partition queue buffer hook dispatcher fulfilled group fold sync reject partition 
+  //  queue gate fulfilled reduce pure compose zip invalidate compose transform resolve 
+  //  props select hook pair queue pipeline reduce event await context sync 
+  //  fold memo throttle eager lazy eager fold filter component component pending 
+  //  drop option filter pure option partition subscribe keep sort tuple scan 
+  //  stream project gate render context pure gate option zip sync async 
+  //  await tuple result throttle pending eager zip scan gate pending stream 
+  //  pending await select transform stream reducer scan keep reject filter guard 
+  //  await compose subscribe zip ref memoize publish drop transform reduce ref 
+  //  filter eager group callback compose callback stream pair option stream guard 
+  //  reducer dispatcher handler context option queue reduce sort compose fold select 
+  //  publish queue tuple
+  */
+})();
+
+// mod-0040 -- synthetic boot module
+;(function () {
+  var g = (typeof window !== 'undefined' ? window : globalThis);
+  var bag = (g.__BENCH_MODULES = g.__BENCH_MODULES || {});
+  bag[40] = {
+    id: 40,
+    render: function (root) {
+      var el = document.createElement('div');
+      el.textContent = 'mod-0040';
+      el.className = 'bench-module';
+      el.style.setProperty('--h', '273');
+      root.appendChild(el);
+      return el;
+    }
+  };
+  /* PAD:
+  cache ref memo hook fulfilled memoize invalidate invalidate pipeline either eager async 
+  //  context project resolve stream component eager lazy render handler partition effect 
+  //  merge result transform buffer fulfilled merge reject reducer async memoize option 
+  //  pipeline memo ref option scan ref gate partition select handler gate 
+  //  filter filter pair fulfilled callback option pure stream subscribe pair subscribe 
+  //  pending queue transform option reject hook transform hook scan hook option 
+  //  pair pipeline tuple memo queue effect either callback tuple filter scan 
+  //  filter ref tuple effect dispatcher guard dispatcher fulfilled sync either gate 
+  //  queue result eager pair tuple fulfilled pipeline dispatcher resolve dispatcher pipeline 
+  //  sort state pipeline group buffer reduce option publish keep handler event 
+  //  merge group subscribe dispatcher reject invalidate keep transform sentinel throttle keep 
+  //  gate sync eager sort memoize select props filter state fulfilled pure 
+  //  reducer invalidate transform subscribe guard transform stream publish handler props state 
+  //  transform map pure dispatcher state keep context result filter subscribe pending 
+  //  filter handler fold effect pipeline callback reject observer sentinel transform async 
+  //  scan sort props queue eager eager effect compose props callback render 
+  //  filter invalidate debounce memoize subscribe callback either await render eager pipeline 
+  //  buffer state pure memoize async debounce publish render event handler await 
+  //  scan zip subscribe async gate async render resolve async lazy render 
+  //  reject option subscribe lazy sort keep context fold reduce pipeline resolve 
+  //  debounce resolve guard sync event component compose props component keep publish 
+  //  subscribe transform zip reduce effect pure subscribe buffer pure memo drop 
+  //  lazy dispatcher partition zip queue subscribe transform keep sentinel stream reduce 
+  //  guard queue context observer await dispatcher select reduce reduce compose merge 
+  //  publish drop memoize buffer partition transform lazy transform option merge keep 
+  //  merge compose option debounce queue partition fold group memo observer option 
+  //  result eager hook option scan select partition cache throttle effect select 
+  //  observer reject guard scan handler component tuple group guard buffer async 
+  //  resolve memoize zip await pair buffer await scan guard partition pipeline 
+  //  buffer filter group reject stream component publish reduce callback state invalidate 
+  //  cache project partition resolve group result sync reject ref result eager 
+  //  pending context eager reject sort async scan gate either sync select 
+  //  keep sync ref zip memo tuple handler callback throttle reducer pipeline 
+  //  handler merge guard filter throttle tuple pending guard handler sort buffer 
+  //  lazy ref gate resolve either filter fold pipeline scan filter memoize 
+  //  result project throttle hook resolve publish fulfilled reject reject drop pure 
+  //  project lazy stream project either scan effect project merge ref sort 
+  //  filter filter callback reduce partition sentinel fold async scan buffer group 
+  //  project invalidate zip memoize await reject handler buffer reject zip zip 
+  //  group either event resolve gate either ref pure guard eager fulfilled 
+  //  dispatcher reducer state filter publish pending queue zip gate async pair 
+  //  effect select scan sentinel guard component map sync project compose memoize 
+  //  option group project state buffer sort project scan reject handler debounce 
+  //  observer event state transform stream compose queue sync fold result eager 
+  //  option filter resolve debounce pipeline compose component partition effect sort async 
+  //  fold pair drop pure resolve observer transform pure map pending eager 
+  //  option gate stream callback reducer transform publish partition publish cache memo 
+  //  stream map async debounce pair result pipeline memo callback observer sync 
+  //  pure option partition stream merge pipeline pair zip publish throttle hook 
+  //  async pure throttle reducer eager merge either scan reduce project sort 
+  //  component subscribe zip resolve callback pair either pending fulfilled await throttle 
+  //  ref filter handler publish sort scan merge fulfilled handler stream callback 
+  //  merge reducer option zip fold drop result merge transform guard keep 
+  //  resolve fold state map dispatcher filter fold eager transform state dispatcher 
+  //  tuple lazy component observer pipeline option group keep reduce observer state 
+  //  observer debounce debounce reduce pair callback subscribe resolve fulfilled resolve pipeline 
+  //  publish reject sync pair state queue fold event zip lazy transform 
+  //  result async map gate sync component filter invalidate publish select merge 
+  //  callback fulfilled memoize sync filter filter props invalidate drop async throttle 
+  //  partition eager either hook subscribe result stream cache queue buffer fold 
+  //  debounce hook invalidate compose context render component filter scan buffer lazy 
+  //  state option memo event observer fold pure reduce reducer props compose 
+  //  effect pair transform result render pair cache effect group queue observer 
+  //  either async context hook drop map resolve component cache subscribe pending 
+  //  throttle event pending sort guard ref effect either debounce pipeline reject 
+  //  memoize dispatcher state reduce queue pending context callback async fulfilled invalidate 
+  //  handler compose subscribe component render drop queue memo debounce zip drop 
+  //  reduce tuple ref either reducer group debounce fulfilled result cache result 
+  //  transform effect eager throttle effect effect merge reject either ref props 
+  //  publish pending handler zip select handler map merge zip cache context 
+  //  project hook group lazy sync result scan partition partition eager guard 
+  //  project handler pending reject state props sync fold reducer context eager 
+  //  drop subscribe buffer compose either group merge scan option component sentinel 
+  //  memo state partition option pending partition eager keep cache callback buffer 
+  //  either map guard memoize throttle drop merge queue debounce scan result 
+  //  publish handler handler event zip reject resolve debounce component partition compose 
+  //  component queue component eager map pure filter event select observer fold 
+  //  resolve callback result either guard memoize lazy component props hook guard 
+  //  subscribe select project event compose observer eager group context compose map 
+  //  either merge merge fold fold map sentinel stream select select reducer 
+  //  buffer props filter render gate queue effect handler observer filter hook 
+  //  partition pipeline render reject pipeline event event lazy result option sort 
+  //  ref render callback invalidate result component sync pair filter map filter 
+  //  async hook either filter effect eager lazy event fold lazy render 
+  //  tuple handler reducer sentinel select reducer dispatcher keep transform hook compose 
+  //  sort compose throttle event drop either sync gate debounce component await 
+  //  async debounce reducer scan group stream reject pending option render drop 
+  //  render component partition eager context memoize filter option render queue zip 
+  //  callback publish compose keep memo compose ref callback reducer map await 
+  //  zip sort eager drop subscribe resolve partition partition reducer memoize state 
+  //  pending ref handler publish either subscribe ref queue state option map 
+  //  gate render compose sort effect publish reject handler context fold filter 
+  //  transform dispatcher subscribe result cache result reject handler ref pair tuple 
+  //  filter debounce tuple group reducer dispatcher hook await debounce observer map 
+  //  eager partition fulfilled sync props fold either either throttle async pending 
+  //  map buffer render map memo reducer component group pending compose tuple 
+  //  context memo reducer either zip pending observer tuple tuple hook reject 
+  //  callback ref observer merge subscribe async cache sync event subscribe callback 
+  //  group component option group project effect reduce context result async option 
+  //  pair fulfilled pending throttle reject queue scan compose context invalidate cache 
+  //  await tuple render dispatcher merge result sentinel stream buffer reducer component 
+  //  context callback filter handler scan ref buffer publish invalidate memo partition 
+  //  context select resolve project drop result drop state lazy memo zip 
+  //  keep tuple transform group cache reject async buffer subscribe group memoize 
+  //  map buffer props observer memo publish subscribe fulfilled component keep either 
+  //  stream lazy either dispatcher group subscribe context tuple pure resolve option 
+  //  pipeline reject merge render render async effect dispatcher state hook publish 
+  //  memoize option drop debounce pending keep component resolve event partition buffer 
+  //  pair keep buffer group throttle buffer keep buffer scan render publish 
+  //  observer subscribe partition callback pending project fold resolve fold map group 
+  //  ref select pipeline sort lazy props pair reducer zip stream reduce 
+  //  pipeline tuple publish fulfilled resolve pair select eager result reduce pure 
+  //  memoize result props gate state buffer context either drop pipeline filter 
+  //  resolve stream zip tuple compose transform async gate group await drop 
+  //  either render callback ref tuple pending guard fold pipeline pipeline tuple 
+  //  event pending drop observer filter resolve memoize group keep result memo 
+  //  hook await reject event stream reducer state invalidate lazy fold context 
+  //  publish invalidate context tuple context context publish project effect pure dispatcher 
+  //  lazy either drop memoize stream zip keep ref filter scan memoize 
+  //  zip select merge eager tuple sync fulfilled hook ref memo keep 
+  //  memoize observer group async effect pure reject project sort tuple memoize 
+  //  sync reduce sync lazy sentinel select drop memoize reject lazy option 
+  //  transform effect memoize stream pipeline props component reducer merge dispatcher result 
+  //  tuple cache cache event buffer scan props reduce sync merge await 
+  //  sort dispatcher hook partition reduce gate project hook debounce option buffer 
+  //  hook reduce component filter drop select stream async pending ref zip 
+  //  scan sort gate dispatcher group option subscribe invalidate either sort pure 
+  //  eager effect transform partition project component render group async await zip 
+  //  pending pending queue sentinel context await subscribe memoize partition debounce effect 
+  //  subscribe handler memo project filter compose dispatcher lazy subscribe compose callback 
+  //  effect option pair gate await gate context dispatcher memo option gate 
+  //  stream component throttle select queue eager queue filter fold select fold 
+  //  eager async result observer effect async fold group await render render 
+  //  context stream memoize lazy invalidate transform tuple invalidate sort keep pure 
+  //  keep keep partition observer async subscribe fold pipeline partition subscribe drop 
+  //  context callback map tuple zip fold await render lazy memo observer 
+  //  tuple tuple ref compose either pair dispatcher invalidate queue effect dispatcher 
+  //  ref throttle transform tuple stream debounce props transform callback observer pure 
+  //  group guard select component render subscribe either memo zip reject event 
+  //  transform guard either select pure invalidate props sort cache props tuple 
+  //  observer hook select pending result guard fold merge transform filter select 
+  //  memo event context merge keep dispatcher group guard memoize render dispatcher 
+  //  fold subscribe sync scan tuple ref map subscribe handler await sentinel 
+  //  reducer project group pure reduce lazy memoize debounce props zip ref 
+  //  fold guard group effect tuple sort stream cache ref guard select 
+  //  callback keep hook compose guard ref pipeline fulfilled event lazy reduce 
+  //  state partition async dispatcher map reducer subscribe compose effect merge ref 
+  //  guard pipeline lazy await sync context buffer tuple resolve pending throttle 
+  //  queue select render queue observer buffer queue either partition memo hook 
+  //  gate hook component publish buffer filter eager pipeline props either eager 
+  //  invalidate state effect group handler cache pair resolve cache stream drop 
+  //  context tuple zip sort result callback memo buffer project project context 
+  //  partition option handler drop lazy effect hook keep subscribe observer memoize 
+  //  lazy state throttle pending scan result stream handler subscribe pair render 
+  //  handler throttle queue drop lazy ref publish props debounce memoize sort 
+  //  result
+  */
+})();

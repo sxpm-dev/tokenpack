@@ -1,0 +1,478 @@
+/* css-0035 -- synthetic stylesheet */
+.bench-0035-0 {
+  color: hsl(76 61% 58%);
+  background: hsl(256 61% 42%);
+  padding: 7px 14px;
+  margin: 4px;
+  border-radius: 8px;
+  border: 1px solid hsl(76 61% 48%);
+  font-weight: 300;
+}
+.bench-0035-1 {
+  color: hsl(211 42% 23%);
+  background: hsl(31 42% 77%);
+  padding: 9px 18px;
+  margin: 9px;
+  border-radius: 7px;
+  border: 1px solid hsl(211 42% 13%);
+  font-weight: 400;
+}
+.bench-0035-2 {
+  color: hsl(305 62% 47%);
+  background: hsl(125 62% 53%);
+  padding: 4px 8px;
+  margin: 4px;
+  border-radius: 2px;
+  border: 1px solid hsl(305 62% 37%);
+  font-weight: 500;
+}
+.bench-0035-3 {
+  color: hsl(116 48% 58%);
+  background: hsl(296 48% 42%);
+  padding: 3px 6px;
+  margin: 11px;
+  border-radius: 7px;
+  border: 1px solid hsl(116 48% 48%);
+  font-weight: 600;
+}
+.bench-0035-4 {
+  color: hsl(179 49% 38%);
+  background: hsl(359 49% 62%);
+  padding: 8px 16px;
+  margin: 7px;
+  border-radius: 7px;
+  border: 1px solid hsl(179 49% 28%);
+  font-weight: 700;
+}
+.bench-0035-5 {
+  color: hsl(4 58% 42%);
+  background: hsl(184 58% 58%);
+  padding: 2px 4px;
+  margin: 3px;
+  border-radius: 1px;
+  border: 1px solid hsl(4 58% 32%);
+  font-weight: 300;
+}
+.bench-0035-6 {
+  color: hsl(51 62% 23%);
+  background: hsl(231 62% 77%);
+  padding: 2px 4px;
+  margin: 1px;
+  border-radius: 2px;
+  border: 1px solid hsl(51 62% 13%);
+  font-weight: 400;
+}
+.bench-0035-7 {
+  color: hsl(35 65% 41%);
+  background: hsl(215 65% 59%);
+  padding: 6px 12px;
+  margin: 12px;
+  border-radius: 4px;
+  border: 1px solid hsl(35 65% 31%);
+  font-weight: 500;
+}
+.bench-0035-8 {
+  color: hsl(246 50% 56%);
+  background: hsl(66 50% 44%);
+  padding: 8px 16px;
+  margin: 8px;
+  border-radius: 8px;
+  border: 1px solid hsl(246 50% 46%);
+  font-weight: 600;
+}
+.bench-0035-9 {
+  color: hsl(225 43% 22%);
+  background: hsl(45 43% 78%);
+  padding: 7px 14px;
+  margin: 6px;
+  border-radius: 8px;
+  border: 1px solid hsl(225 43% 12%);
+  font-weight: 700;
+}
+.bench-0035-10 {
+  color: hsl(235 40% 53%);
+  background: hsl(55 40% 47%);
+  padding: 2px 4px;
+  margin: 7px;
+  border-radius: 1px;
+  border: 1px solid hsl(235 40% 43%);
+  font-weight: 300;
+}
+.bench-0035-11 {
+  color: hsl(168 47% 46%);
+  background: hsl(348 47% 54%);
+  padding: 5px 10px;
+  margin: 10px;
+  border-radius: 8px;
+  border: 1px solid hsl(168 47% 36%);
+  font-weight: 400;
+}
+.bench-0035-12 {
+  color: hsl(21 60% 50%);
+  background: hsl(201 60% 50%);
+  padding: 1px 2px;
+  margin: 11px;
+  border-radius: 1px;
+  border: 1px solid hsl(21 60% 40%);
+  font-weight: 500;
+}
+.bench-0035-13 {
+  color: hsl(158 41% 52%);
+  background: hsl(338 41% 48%);
+  padding: 3px 6px;
+  margin: 12px;
+  border-radius: 1px;
+  border: 1px solid hsl(158 41% 42%);
+  font-weight: 600;
+}
+.bench-0035-14 {
+  color: hsl(142 60% 31%);
+  background: hsl(322 60% 69%);
+  padding: 3px 6px;
+  margin: 8px;
+  border-radius: 4px;
+  border: 1px solid hsl(142 60% 21%);
+  font-weight: 700;
+}
+.bench-0035-15 {
+  color: hsl(91 53% 30%);
+  background: hsl(271 53% 70%);
+  padding: 5px 10px;
+  margin: 7px;
+  border-radius: 8px;
+  border: 1px solid hsl(91 53% 20%);
+  font-weight: 300;
+}
+.bench-0035-16 {
+  color: hsl(293 46% 23%);
+  background: hsl(113 46% 77%);
+  padding: 11px 22px;
+  margin: 10px;
+  border-radius: 7px;
+  border: 1px solid hsl(293 46% 13%);
+  font-weight: 400;
+}
+.bench-0035-17 {
+  color: hsl(128 48% 23%);
+  background: hsl(308 48% 77%);
+  padding: 3px 6px;
+  margin: 12px;
+  border-radius: 8px;
+  border: 1px solid hsl(128 48% 13%);
+  font-weight: 500;
+}
+.bench-0035-18 {
+  color: hsl(120 53% 44%);
+  background: hsl(300 53% 56%);
+  padding: 10px 20px;
+  margin: 7px;
+  border-radius: 3px;
+  border: 1px solid hsl(120 53% 34%);
+  font-weight: 600;
+}
+.bench-0035-19 {
+  color: hsl(5 57% 49%);
+  background: hsl(185 57% 51%);
+  padding: 4px 8px;
+  margin: 9px;
+  border-radius: 1px;
+  border: 1px solid hsl(5 57% 39%);
+  font-weight: 700;
+}
+.bench-0035-20 {
+  color: hsl(271 63% 31%);
+  background: hsl(91 63% 69%);
+  padding: 11px 22px;
+  margin: 11px;
+  border-radius: 7px;
+  border: 1px solid hsl(271 63% 21%);
+  font-weight: 300;
+}
+.bench-0035-21 {
+  color: hsl(339 57% 47%);
+  background: hsl(159 57% 53%);
+  padding: 9px 18px;
+  margin: 12px;
+  border-radius: 7px;
+  border: 1px solid hsl(339 57% 37%);
+  font-weight: 400;
+}
+.bench-0035-22 {
+  color: hsl(80 45% 21%);
+  background: hsl(260 45% 79%);
+  padding: 2px 4px;
+  margin: 2px;
+  border-radius: 6px;
+  border: 1px solid hsl(80 45% 11%);
+  font-weight: 500;
+}
+.bench-0035-23 {
+  color: hsl(98 56% 54%);
+  background: hsl(278 56% 46%);
+  padding: 4px 8px;
+  margin: 8px;
+  border-radius: 6px;
+  border: 1px solid hsl(98 56% 44%);
+  font-weight: 600;
+}
+.bench-0035-24 {
+  color: hsl(259 54% 40%);
+  background: hsl(79 54% 60%);
+  padding: 8px 16px;
+  margin: 8px;
+  border-radius: 3px;
+  border: 1px solid hsl(259 54% 30%);
+  font-weight: 700;
+}
+.bench-0035-25 {
+  color: hsl(285 42% 36%);
+  background: hsl(105 42% 64%);
+  padding: 12px 24px;
+  margin: 2px;
+  border-radius: 3px;
+  border: 1px solid hsl(285 42% 26%);
+  font-weight: 300;
+}
+.bench-0035-26 {
+  color: hsl(283 43% 51%);
+  background: hsl(103 43% 49%);
+  padding: 10px 20px;
+  margin: 4px;
+  border-radius: 4px;
+  border: 1px solid hsl(283 43% 41%);
+  font-weight: 400;
+}
+.bench-0035-27 {
+  color: hsl(268 40% 38%);
+  background: hsl(88 40% 62%);
+  padding: 7px 14px;
+  margin: 2px;
+  border-radius: 8px;
+  border: 1px solid hsl(268 40% 28%);
+  font-weight: 500;
+}
+.bench-0035-28 {
+  color: hsl(279 50% 25%);
+  background: hsl(99 50% 75%);
+  padding: 10px 20px;
+  margin: 11px;
+  border-radius: 1px;
+  border: 1px solid hsl(279 50% 15%);
+  font-weight: 600;
+}
+.bench-0035-29 {
+  color: hsl(300 52% 27%);
+  background: hsl(120 52% 73%);
+  padding: 1px 2px;
+  margin: 9px;
+  border-radius: 4px;
+  border: 1px solid hsl(300 52% 17%);
+  font-weight: 700;
+}
+.bench-0035-30 {
+  color: hsl(98 53% 53%);
+  background: hsl(278 53% 47%);
+  padding: 10px 20px;
+  margin: 4px;
+  border-radius: 1px;
+  border: 1px solid hsl(98 53% 43%);
+  font-weight: 300;
+}
+.bench-0035-31 {
+  color: hsl(55 68% 22%);
+  background: hsl(235 68% 78%);
+  padding: 6px 12px;
+  margin: 2px;
+  border-radius: 7px;
+  border: 1px solid hsl(55 68% 12%);
+  font-weight: 400;
+}
+.bench-0035-32 {
+  color: hsl(143 46% 36%);
+  background: hsl(323 46% 64%);
+  padding: 2px 4px;
+  margin: 10px;
+  border-radius: 7px;
+  border: 1px solid hsl(143 46% 26%);
+  font-weight: 500;
+}
+.bench-0035-33 {
+  color: hsl(261 66% 44%);
+  background: hsl(81 66% 56%);
+  padding: 8px 16px;
+  margin: 3px;
+  border-radius: 3px;
+  border: 1px solid hsl(261 66% 34%);
+  font-weight: 600;
+}
+.bench-0035-34 {
+  color: hsl(334 57% 32%);
+  background: hsl(154 57% 68%);
+  padding: 4px 8px;
+  margin: 12px;
+  border-radius: 5px;
+  border: 1px solid hsl(334 57% 22%);
+  font-weight: 700;
+}
+.bench-0035-35 {
+  color: hsl(203 52% 36%);
+  background: hsl(23 52% 64%);
+  padding: 10px 20px;
+  margin: 7px;
+  border-radius: 5px;
+  border: 1px solid hsl(203 52% 26%);
+  font-weight: 300;
+}
+.bench-0035-36 {
+  color: hsl(172 47% 22%);
+  background: hsl(352 47% 78%);
+  padding: 8px 16px;
+  margin: 12px;
+  border-radius: 5px;
+  border: 1px solid hsl(172 47% 12%);
+  font-weight: 400;
+}
+.bench-0035-37 {
+  color: hsl(86 62% 37%);
+  background: hsl(266 62% 63%);
+  padding: 11px 22px;
+  margin: 11px;
+  border-radius: 4px;
+  border: 1px solid hsl(86 62% 27%);
+  font-weight: 500;
+}
+.bench-0035-38 {
+  color: hsl(153 59% 22%);
+  background: hsl(333 59% 78%);
+  padding: 9px 18px;
+  margin: 11px;
+  border-radius: 8px;
+  border: 1px solid hsl(153 59% 12%);
+  font-weight: 600;
+}
+.bench-0035-39 {
+  color: hsl(262 54% 51%);
+  background: hsl(82 54% 49%);
+  padding: 5px 10px;
+  margin: 11px;
+  border-radius: 6px;
+  border: 1px solid hsl(262 54% 41%);
+  font-weight: 700;
+}
+.bench-0035-40 {
+  color: hsl(248 40% 26%);
+  background: hsl(68 40% 74%);
+  padding: 3px 6px;
+  margin: 4px;
+  border-radius: 7px;
+  border: 1px solid hsl(248 40% 16%);
+  font-weight: 300;
+}
+.bench-0035-41 {
+  color: hsl(206 55% 50%);
+  background: hsl(26 55% 50%);
+  padding: 9px 18px;
+  margin: 9px;
+  border-radius: 5px;
+  border: 1px solid hsl(206 55% 40%);
+  font-weight: 400;
+}
+.bench-0035-42 {
+  color: hsl(322 68% 23%);
+  background: hsl(142 68% 77%);
+  padding: 2px 4px;
+  margin: 2px;
+  border-radius: 5px;
+  border: 1px solid hsl(322 68% 13%);
+  font-weight: 500;
+}
+.bench-0035-43 {
+  color: hsl(136 41% 58%);
+  background: hsl(316 41% 42%);
+  padding: 7px 14px;
+  margin: 3px;
+  border-radius: 1px;
+  border: 1px solid hsl(136 41% 48%);
+  font-weight: 600;
+}
+.bench-0035-44 {
+  color: hsl(206 59% 40%);
+  background: hsl(26 59% 60%);
+  padding: 12px 24px;
+  margin: 12px;
+  border-radius: 7px;
+  border: 1px solid hsl(206 59% 30%);
+  font-weight: 700;
+}
+.bench-0035-45 {
+  color: hsl(336 56% 55%);
+  background: hsl(156 56% 45%);
+  padding: 12px 24px;
+  margin: 11px;
+  border-radius: 2px;
+  border: 1px solid hsl(336 56% 45%);
+  font-weight: 300;
+}
+.bench-0035-46 {
+  color: hsl(306 61% 25%);
+  background: hsl(126 61% 75%);
+  padding: 1px 2px;
+  margin: 6px;
+  border-radius: 5px;
+  border: 1px solid hsl(306 61% 15%);
+  font-weight: 400;
+}
+.bench-0035-47 {
+  color: hsl(190 61% 45%);
+  background: hsl(10 61% 55%);
+  padding: 4px 8px;
+  margin: 6px;
+  border-radius: 8px;
+  border: 1px solid hsl(190 61% 35%);
+  font-weight: 500;
+}
+.bench-0035-48 {
+  color: hsl(267 45% 49%);
+  background: hsl(87 45% 51%);
+  padding: 5px 10px;
+  margin: 2px;
+  border-radius: 5px;
+  border: 1px solid hsl(267 45% 39%);
+  font-weight: 600;
+}
+.bench-0035-49 {
+  color: hsl(315 46% 40%);
+  background: hsl(135 46% 60%);
+  padding: 3px 6px;
+  margin: 2px;
+  border-radius: 1px;
+  border: 1px solid hsl(315 46% 30%);
+  font-weight: 700;
+}
+.bench-0035-50 {
+  color: hsl(253 67% 49%);
+  background: hsl(73 67% 51%);
+  padding: 12px 24px;
+  margin: 7px;
+  border-radius: 2px;
+  border: 1px solid hsl(253 67% 39%);
+  font-weight: 300;
+}
+.bench-0035-51 {
+  color: hsl(46 52% 51%);
+  background: hsl(226 52% 49%);
+  padding: 9px 18px;
+  margin: 5px;
+  border-radius: 4px;
+  border: 1px solid hsl(46 52% 41%);
+  font-weight: 400;
+}
+.bench-0035-52 {
+  color: hsl(47 62% 37%);
+  background: hsl(227 62% 63%);
+  padding: 11px 22px;
+  margin: 12px;
+  border-radius: 8px;
+  border: 1px solid hsl(47 62% 27%);
+  font-weight: 500;
+}

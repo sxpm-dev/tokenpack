@@ -1,0 +1,138 @@
+# Quickstart
+
+Encode something. Decode it back. Both in roughly five lines.
+
+## Install
+
+```bash
+yarn add @tokenpack/node      # Node
+yarn add @tokenpack/browser   # Browser / React
+```
+
+Both packages re-export the same `encode` / `decode` / `Pack` shapes; they
+differ in input types (paths/Buffers vs. URLs/Blobs) and platform bindings
+(fs/sharp vs. Canvas/`createImageBitmap`).
+
+## Encode one file
+
+```ts
+import { encode, decode } from '@tokenpack/node'
+
+const r = await encode(Buffer.from('hello world'))
+const pack = await decode(r.bytes)
+
+console.log(await pack.text()) // → "hello world"
+```
+
+The anonymous case puts your bytes inside an image with `list[0] === ''`. To
+preserve a file name, pass `name`:
+
+```ts
+const named = await encode(Buffer.from('hi'), { name: 'greeting.txt' })
+const namedPack = await decode(named.bytes)
+console.log(namedPack.list) // → ['greeting.txt']
+```
+
+## Encode many files (pack format)
+
+```ts
+import { encode, decode, NodePackBuilder } from '@tokenpack/node'
+
+const r = await encode(
+  new NodePackBuilder()
+    .withFile('readme.md', '# my pack')
+    .withFileSystem('./src', { exclude: ['*.test.ts'] })
+    .withGlob('docs/**/*.md'),
+)
+
+const pack = await decode(r.bytes)
+console.log(await pack.list())
+const main = await pack.text('readme.md')
+const bytes = await pack.extract('src/index.ts')
+```
+
+`PackBuilder` validates paths at `build()` time: forward slashes only,
+no `..`, no absolute paths, no duplicates.
+
+## Decode anything
+
+`@tokenpack/node`:
+
+```ts
+await decode('./tokens/snapshot.png')
+await decode('https://example.com/asset.png')
+await decode(new URL('file:///abs/path/x.png'))
+await decode(Buffer.from(/* …token bytes… */))
+```
+
+`@tokenpack/browser`:
+
+```ts
+await decode('/api/snapshot.png') // URL → fetch + decode
+await decode(blob) // Blob from <input type="file">
+await decode(uint8Array)
+await decode(arrayBuffer)
+await decode(htmlImageElement) // already-rendered <img>
+await decode(imageBitmap)
+```
+
+## Streaming decode (browser)
+
+```ts
+import { decodeStream } from '@tokenpack/browser'
+
+const response = await fetch('/big-pack.png')
+const pack = await decodeStream(response.body!) // pulls bytes as they arrive
+```
+
+For non-PNG surfaces (WebP/AVIF) the helper transparently falls back to the
+buffered path — no streaming WebP decoder exists in browsers today.
+
+## Encrypted packs
+
+```ts
+const r = await encode(new PackBuilder().withFile('secret.txt', 'classified'), {
+  key: 'super-secret-passphrase',
+})
+const pack = await decode(r.bytes, { key: 'super-secret-passphrase' })
+```
+
+Wrong key throws; missing key on an encrypted token throws.
+
+## Diff two pack tokens
+
+```ts
+const v1 = await encode(new PackBuilder().withFile('a.js', 'aa').withFile('b.js', 'bb'))
+const v2 = await encode(new PackBuilder().withFile('a.js', 'AA').withFile('c.js', 'cc'))
+
+const prev = await decode(v1.bytes)
+const next = await decode(v2.bytes)
+
+const diffResult = await prev.diffTo(next)
+const diffPack = await decode(diffResult.bytes)
+
+console.log(diffPack.entries.map(e => `${e.op} ${e.path}`))
+// → ['modify a.js', 'add c.js', 'delete b.js']
+
+const reconstructed = await prev.apply(diffPack)
+```
+
+## React component
+
+```tsx
+import { TokenImage } from '@tokenpack/browser/components'
+;<TokenImage
+  src="/data.png"
+  fallback={<Spinner />}
+  onDecoded={async pack => {
+    const config = await pack.json('config.json')
+  }}
+/>
+```
+
+## What's next
+
+- [API reference](/docs/api) — full Node, browser, and CLI surfaces.
+- [Linear Token](/linear-token) — payload bytes stored directly in image pixels.
+- [Pixel Range Token](/pixel-range-token) — payload bytes stored in the image `tpAK` side channel.
+- [Router Token](/router-tokens) — manifest + chunks + range-fetch for larger bundles.

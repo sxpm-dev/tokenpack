@@ -1,5 +1,4 @@
 import { enumOption, type OptionsSchema } from '../components/options'
-
 import { rsDecode, rsEncode } from './rs'
 import { AbstractFec, FecDecodeError, type FecMode, type FecResult } from './types'
 

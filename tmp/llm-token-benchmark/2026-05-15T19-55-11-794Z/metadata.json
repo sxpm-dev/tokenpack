@@ -1,0 +1,22 @@
+{
+  "startedAt": "2026-05-15T19:55:11.795Z",
+  "jsonPath": "/Users/valerii/Develop/codeart/tmp/llm-token-fixture/big-dataset.json",
+  "tokenPath": "/Users/valerii/Develop/codeart/tmp/llm-token-fixture/big-dataset-token.png",
+  "expectedPath": "/Users/valerii/Develop/codeart/tmp/llm-token-fixture/expected-answer.json",
+  "jsonBytes": 58913,
+  "tokenBytes": 5192,
+  "question": "In the provided dataset, filter records where region is APAC, product is Token Pack, and tier is enterprise. Return the matching record count, total revenue, total refunds, net revenue, and total monthly active users. Group the answer under the key apacEnterpriseTokenPackNetRevenue.",
+  "providers": [
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-mini"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5-20250929"
+    }
+  ],
+  "maxOutput": 22000,
+  "temperature": 0,
+  "tokenDecodeMatchedJson": true
+}

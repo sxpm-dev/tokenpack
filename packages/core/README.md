@@ -277,7 +277,7 @@ tokens.
 | Subpath                             | Purpose                                                              |
 | ----------------------------------- | -------------------------------------------------------------------- |
 | `tokenpack/algorithms`              | Algorithm registry + codec composition                               |
-| `tokenpack/codecs`                  | Codec interfaces (linear, bitshuffle, etc.)                          |
+| `tokenpack/codecs`                  | Linear codec and codec interfaces                          |
 | `tokenpack/compressors`             | Compressor interfaces — env packages register concrete impls         |
 | `tokenpack/drawers`                 | Pixel drawer interfaces (dense, dot)                                 |
 | `tokenpack/surfaces`                | Surface format adapters (PNG/WebP/AVIF — registered by env packages) |

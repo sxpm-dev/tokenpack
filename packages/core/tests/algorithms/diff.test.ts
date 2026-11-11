@@ -1,8 +1,8 @@
 import { decode, encode } from '@tokenpack/node'
 import { PackBuilder } from '@tokenpack/node'
+import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 import { describe, expect, it } from 'vitest'
 
-import { nodeAlgorithmCatalog as algorithmCatalog } from '@tokenpack/node/algorithms/catalog'
 import type { DiffPack, DirPack } from '../../src/pack/types'
 
 async function buildLinearToken(...files: Array<[string, string]>): Promise<Buffer> {

@@ -1,0 +1,49 @@
+# CLI
+
+A small CLI lives in `packages/cli` and is exposed via the
+`tokenpack-cli` workspace.
+
+```bash
+yarn workspace tokenpack-cli run tokenpack pack ./src -o my.png
+yarn workspace tokenpack-cli run tokenpack open my.png ./extracted/
+yarn workspace tokenpack-cli run tokenpack diff-pack v1.png v2.png -o diff.png
+yarn workspace tokenpack-cli run tokenpack apply-diff <id> diff.png
+```
+
+## Commands
+
+### `pack <path> -o <out.png> [--algo <name>] [--key <pass>]`
+
+Encode a file or directory into a TokenPack image. Algorithm defaults to
+`linear`; pass `--algo pixel-range-deflate` for tpAK-chunk encoding.
+
+### `open <token.png> <dest-dir>`
+
+Decode a token and extract every file to a destination directory. Works on
+file tokens, pack tokens, and router tokens. For routers, chunk images are
+resolved relative to the entry path.
+
+### `diff-pack <v1.png> <v2.png> -o <diff.png>`
+
+Compute a diff between two pack tokens and write a diff token. The diff
+contains only the changed regions and the file-level op metadata.
+
+### `apply-diff <base.png> <diff.png> [-o out.png]`
+
+Apply a diff token against its base pack and (optionally) write the result
+as a new token.
+
+## Embedding the CLI in your own scripts
+
+The CLI is a thin wrapper around `@tokenpack/node`. If you need
+programmatic control (custom validation, integration with other tools),
+import the node package directly. The CLI is convenience for shell users.
+
+## Related scripts in the repo
+
+| Script                    | Purpose                                                   |
+| ------------------------- | --------------------------------------------------------- |
+| `yarn bench:llm-token`    | Compare raw-JSON vs. Image Token-attached LLM benchmarks  |
+| `yarn bench:llm-tpak`     | Variant that asks the LLM to decode the tpAK chunk        |
+| `yarn bench:pixel-matrix` | Probe LLM pixel-decode capability with synthetic matrices |
+| `yarn benchmark`          | Network-simulation encode/decode benchmark suite          |

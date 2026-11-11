@@ -10,7 +10,6 @@
 //   - listFamilies()        — Ctors only (for class-level metadata in dashboard)
 
 import type { OptionsSchema } from '../components/options'
-
 import { NoneCompressor } from './none-compressor'
 import { AbstractCompressor, type CompressionMode } from './types'
 

@@ -5,7 +5,7 @@
 // catalog stores algorithm Ctors (classes); consumers `new Ctor(opts)` to use one.
 //
 // There is no longer a generic codec-wrapper Algorithm; every algorithm is its
-// own subclass (LinearPngBrotli, BitshufflePngBrotli, PixelRangePngBrotli, etc).
+// own subclass (LinearPngBrotli, LinearPngDeflate, PixelRangePngBrotli, etc).
 
 import type { AbstractCodec } from '../codecs/types'
 import { composeEnvironments, composeOptions } from '../components/compose'

@@ -11,17 +11,45 @@ import type {
 } from './types'
 
 export const DEFAULT_ROUTER_TARGET_CHUNK_BYTES = 1024 * 1024
-export const DEFAULT_ROUTER_MAX_SEGMENTS_PER_FILE = 5
-export const DEFAULT_ROUTER_MIN_SPLIT_RATIO = 2
+// Allow more segments per huge file so they can fan out across the
+// chunk-concurrency pool. The 12 cap matches the Phase 1.4 4g-fast default,
+// so a single huge file can saturate all parallel slots in one wave.
+export const DEFAULT_ROUTER_MAX_SEGMENTS_PER_FILE = 12
+// Split a file when its compressed payload exceeds `targetChunkBytes ×
+// minSplitRatio`. 0.5 means ">= 512KB compressed" splits — the threshold
+// where parallel-fetched segments meaningfully overlap the network. Below
+// that, the per-segment HTTP overhead (TTFB + headers) costs more than the
+// parallelism saves.
+export const DEFAULT_ROUTER_MIN_SPLIT_RATIO = 0.5
 export const DEFAULT_ROUTER_FILE_COMPRESSOR = 'deflate-9'
 export const DEFAULT_ROUTER_CHUNK_LAYOUT = 'tiny-files-clustered'
 export const DEFAULT_ROUTER_TINY_FILE_BYTES = 32 * 1024
 
+type ChunkBoxKind = 'per-file-deflate' | 'concat-deflate'
+
+interface BoxAssignment {
+  source: CompressedSourceFile
+  /**
+   * Present when this assignment is one slice of a split large file. The
+   * box that holds it is forced to per-file-deflate (split semantics rely on
+   * per-file compressed offsets). Absent for whole-payload small-box files.
+   */
+  payloadSlice?: { offset: number; length: number }
+}
+
 interface ChunkBox {
   id: string
   href: string
-  parts: Uint8Array[]
-  byteLength: number
+  assignments: BoxAssignment[]
+  /** Sum of per-file-compressed bytes assigned to this box (sizing input). */
+  payloadBytes: number
+  /**
+   * True when the box was created from the large-file split path. Such a box
+   * stays per-file-deflate regardless of file size — the split routes through
+   * per-file compressed offsets that the concat-deflate emit shape doesn't
+   * preserve.
+   */
+  fromLargeSplit: boolean
 }
 
 interface SourceFileWithChunk {
@@ -34,7 +62,6 @@ interface CompressedSourceFile extends SourceFileWithChunk {
   index: number
   compressed: Awaited<ReturnType<typeof compressRaw>>
   payload: Uint8Array
-  segments: RouterFileSegment[]
 }
 
 export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedRouterBundle> {
@@ -60,7 +87,6 @@ export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedR
         index,
         compressed,
         payload: compressed.bytes,
-        segments: [],
       }
     }),
   )
@@ -68,78 +94,76 @@ export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedR
     chunkLayout,
     tinyFileBytes,
   })
-  const chunks: ChunkBox[] = []
+  // When all files in a small-box are tiny we emit it as one shared deflate
+  // frame (concat-deflate) — eliminates the per-file DecompressionStream setup
+  // tax that dominates router cold path at runtime. Mixed boxes (any non-tiny
+  // file) and large-split chunks stay per-file-deflate so range fetches still
+  // work where useful. 'source-order' opts out of the concat-deflate emit
+  // entirely.
+  const useConcatDeflateForSmallBoxes = chunkLayout === 'tiny-files-clustered'
+  const boxes: ChunkBox[] = []
   const usedChunkIds = new Set<string>()
-  const files: RouterFileManifestEntry[] = new Array(sourceFiles.length)
   let currentSmallBox: ChunkBox | null = null
 
   for (const source of layoutFiles) {
-    const bytes = source.file.bytes
     const payload = source.payload
     let compressedOffset = 0
 
     if (payload.byteLength > targetChunkBytes * minSplitRatio) {
       currentSmallBox = null
+      // Segment floor matches the split threshold (targetChunkBytes ×
+      // minSplitRatio) — segments can now be smaller than a full small-box
+      // chunk when minSplitRatio < 1. A 1MB file with the default thresholds
+      // (targetChunkBytes=1MB, minSplitRatio=0.5) splits into 2 × 512KB
+      // segments fetched in parallel, instead of staying as a single 1MB
+      // serial fetch.
+      const segmentFloor = Math.max(1, Math.ceil(targetChunkBytes * minSplitRatio))
       const segmentBytes = roundUpToNiceSize(
-        Math.max(targetChunkBytes, Math.ceil(payload.byteLength / maxSegmentsPerFile)),
+        Math.max(segmentFloor, Math.ceil(payload.byteLength / maxSegmentsPerFile)),
       )
 
       while (compressedOffset < payload.byteLength) {
         const length = Math.min(segmentBytes, payload.byteLength - compressedOffset)
-        const box = createChunkBox(chunks.length, usedChunkIds, source.chunkId, source.href)
-        const segmentBytesView = sliceBytes(payload, compressedOffset, compressedOffset + length)
+        const box = createChunkBox(boxes.length, usedChunkIds, true, source.chunkId, source.href)
 
-        box.parts.push(segmentBytesView)
-        box.byteLength += segmentBytesView.byteLength
-        chunks.push(box)
-        source.segments.push({
-          chunkId: box.id,
-          offset: 0,
-          length: segmentBytesView.byteLength,
-          fileOffset: compressedOffset,
+        box.assignments.push({
+          source,
+          payloadSlice: { offset: compressedOffset, length },
         })
+        box.payloadBytes += length
+        boxes.push(box)
         compressedOffset += length
       }
     } else {
       if (
         !currentSmallBox ||
-        currentSmallBox.byteLength + payload.byteLength > targetChunkBytes ||
+        currentSmallBox.payloadBytes + payload.byteLength > targetChunkBytes ||
         (source.chunkId && currentSmallBox.id !== source.chunkId)
       ) {
-        currentSmallBox = createChunkBox(chunks.length, usedChunkIds, source.chunkId, source.href)
-        chunks.push(currentSmallBox)
+        currentSmallBox = createChunkBox(
+          boxes.length,
+          usedChunkIds,
+          false,
+          source.chunkId,
+          source.href,
+        )
+        boxes.push(currentSmallBox)
       }
-      const offset = currentSmallBox.byteLength
-      const segmentBytesView = sliceBytes(payload, 0, payload.byteLength)
-
-      currentSmallBox.parts.push(segmentBytesView)
-      currentSmallBox.byteLength += segmentBytesView.byteLength
-      source.segments.push({
-        chunkId: currentSmallBox.id,
-        offset,
-        length: segmentBytesView.byteLength,
-        fileOffset: 0,
-      })
-    }
-
-    files[source.index] = {
-      url: source.file.url,
-      path: source.file.path,
-      status: source.file.status ?? 200,
-      headers: source.file.headers ?? {},
-      compressor: source.compressed.compressor,
-      level: source.compressed.level,
-      byteLength: bytes.byteLength,
-      compressedByteLength: payload.byteLength,
-      segments: source.segments,
+      currentSmallBox.assignments.push({ source })
+      currentSmallBox.payloadBytes += payload.byteLength
     }
   }
 
-  const plannedChunks: PlannedRouterChunk[] = chunks.map(box => ({
-    id: box.id,
-    href: box.href,
-    bytes: concatBytes(box.parts, box.byteLength),
-  }))
+  const files: RouterFileManifestEntry[] = new Array(sourceFiles.length)
+  const plannedChunks = await emitBoxes(
+    boxes,
+    files,
+    fileCompressor,
+    tinyFileBytes,
+    useConcatDeflateForSmallBoxes,
+  )
+
+  assignChunkPriorities(boxes, plannedChunks, input.options.bootFiles)
   const manifest: RouterTokenManifest = {
     version: 1,
     variant: input.options.variant,
@@ -147,11 +171,184 @@ export async function planRouterBundle(input: RouterTokenPack): Promise<PlannedR
       id: chunk.id,
       href: chunk.href,
       byteLength: chunk.bytes.byteLength,
+      ...(chunk.kind ? { kind: chunk.kind } : {}),
+      ...(chunk.uncompressedByteLength !== undefined
+        ? { uncompressedByteLength: chunk.uncompressedByteLength }
+        : {}),
+      ...(chunk.compressor ? { compressor: chunk.compressor } : {}),
+      ...(chunk.level !== undefined ? { level: chunk.level } : {}),
+      ...(chunk.priority !== undefined ? { priority: chunk.priority } : {}),
     })),
     files: assertCompleteManifestFiles(files),
   }
 
   return { manifest, chunks: plannedChunks }
+}
+
+/**
+ * For each chunk, find the lowest position any of its files holds in the
+ * `bootFiles` URL list and use that as the chunk's `priority`. Chunks that
+ * contain no boot files stay priority-less.
+ */
+function assignChunkPriorities(
+  boxes: readonly ChunkBox[],
+  plannedChunks: PlannedRouterChunk[],
+  bootFiles: readonly string[] | undefined,
+): void {
+  if (!bootFiles || bootFiles.length === 0) return
+  const positionByUrl = new Map<string, number>()
+
+  for (let i = 0; i < bootFiles.length; i++) {
+    const url = bootFiles[i]
+
+    if (typeof url === 'string' && !positionByUrl.has(url)) positionByUrl.set(url, i)
+  }
+
+  for (let i = 0; i < boxes.length; i++) {
+    let priority: number | undefined
+
+    for (const a of boxes[i]!.assignments) {
+      const pos = positionByUrl.get(a.source.file.url)
+
+      if (pos === undefined) continue
+      if (priority === undefined || pos < priority) priority = pos
+    }
+    if (priority !== undefined) plannedChunks[i]!.priority = priority
+  }
+}
+
+async function emitBoxes(
+  boxes: readonly ChunkBox[],
+  files: RouterFileManifestEntry[],
+  fileCompressor: string,
+  tinyFileBytes: number,
+  useConcatDeflateForSmallBoxes: boolean,
+): Promise<PlannedRouterChunk[]> {
+  return Promise.all(
+    boxes.map(async (box): Promise<PlannedRouterChunk> => {
+      const kind = chooseBoxKind(box, tinyFileBytes, useConcatDeflateForSmallBoxes)
+
+      return kind === 'concat-deflate'
+        ? emitConcatDeflateBox(box, files, fileCompressor)
+        : emitPerFileDeflateBox(box, files)
+    }),
+  )
+}
+
+function chooseBoxKind(
+  box: ChunkBox,
+  tinyFileBytes: number,
+  useConcatDeflateForSmallBoxes: boolean,
+): ChunkBoxKind {
+  if (!useConcatDeflateForSmallBoxes) return 'per-file-deflate'
+  if (box.fromLargeSplit) return 'per-file-deflate'
+
+  for (const assignment of box.assignments) {
+    if (assignment.payloadSlice) return 'per-file-deflate'
+    if (assignment.source.payload.byteLength > tinyFileBytes) return 'per-file-deflate'
+  }
+
+  return 'concat-deflate'
+}
+
+async function emitConcatDeflateBox(
+  box: ChunkBox,
+  files: RouterFileManifestEntry[],
+  fileCompressor: string,
+): Promise<PlannedRouterChunk> {
+  const rawParts: Uint8Array[] = []
+  let rawByteLength = 0
+
+  for (const assignment of box.assignments) {
+    const { source } = assignment
+    const bytes = source.file.bytes
+    const offset = rawByteLength
+
+    rawParts.push(bytes)
+    rawByteLength += bytes.byteLength
+    files[source.index] = {
+      url: source.file.url,
+      path: source.file.path,
+      status: source.file.status ?? 200,
+      headers: source.file.headers ?? {},
+      byteLength: bytes.byteLength,
+      segments: [
+        {
+          chunkId: box.id,
+          offset,
+          length: bytes.byteLength,
+          fileOffset: 0,
+        },
+      ],
+    }
+  }
+
+  const raw = concatBytes(rawParts, rawByteLength)
+  const compressed = await compressRaw(raw, fileCompressor)
+
+  return {
+    id: box.id,
+    href: box.href,
+    bytes: compressed.bytes,
+    kind: 'concat-deflate',
+    uncompressedByteLength: raw.byteLength,
+    compressor: compressed.compressor,
+    level: compressed.level,
+  }
+}
+
+function emitPerFileDeflateBox(
+  box: ChunkBox,
+  files: RouterFileManifestEntry[],
+): PlannedRouterChunk {
+  const parts: Uint8Array[] = []
+  let byteLength = 0
+  const segmentsBySource = new Map<number, RouterFileSegment[]>()
+
+  for (const assignment of box.assignments) {
+    const { source, payloadSlice } = assignment
+    const slice = payloadSlice
+      ? sliceBytes(source.payload, payloadSlice.offset, payloadSlice.offset + payloadSlice.length)
+      : sliceBytes(source.payload, 0, source.payload.byteLength)
+    const offset = byteLength
+
+    parts.push(slice)
+    byteLength += slice.byteLength
+    const segments = segmentsBySource.get(source.index) ?? []
+
+    segments.push({
+      chunkId: box.id,
+      offset,
+      length: slice.byteLength,
+      fileOffset: payloadSlice ? payloadSlice.offset : 0,
+    })
+    segmentsBySource.set(source.index, segments)
+  }
+
+  for (const [index, segments] of segmentsBySource) {
+    const existing = files[index]
+    const source = box.assignments.find(a => a.source.index === index)!.source
+
+    files[index] = existing
+      ? { ...existing, segments: [...existing.segments, ...segments] }
+      : {
+          url: source.file.url,
+          path: source.file.path,
+          status: source.file.status ?? 200,
+          headers: source.file.headers ?? {},
+          compressor: source.compressed.compressor,
+          level: source.compressed.level,
+          byteLength: source.file.bytes.byteLength,
+          compressedByteLength: source.payload.byteLength,
+          segments,
+        }
+  }
+
+  return {
+    id: box.id,
+    href: box.href,
+    bytes: concatBytes(parts, byteLength),
+  }
 }
 
 interface RouterLayoutOptions {
@@ -232,13 +429,14 @@ function packEntryToSourceFile(entry: PackEntry): RouterSourceFile {
 function createChunkBox(
   index: number,
   usedIds: Set<string>,
+  fromLargeSplit: boolean,
   preferredId?: string,
   preferredHref?: string,
 ): ChunkBox {
   const id = uniqueChunkId(preferredId ?? `chunk-${String(index + 1).padStart(4, '0')}`, usedIds)
   const href = preferredHref && id === preferredId ? preferredHref : `${id}.png`
 
-  return { id, href, parts: [], byteLength: 0 }
+  return { id, href, assignments: [], payloadBytes: 0, fromLargeSplit }
 }
 
 function uniqueChunkId(baseId: string, usedIds: Set<string>): string {

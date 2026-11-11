@@ -63,6 +63,7 @@ export class BrowserDeflateCompressor extends AbstractCompressor {
 
   static fromOptions(opts: { level?: number } = {}): BrowserDeflateCompressor {
     const level = opts.level ?? 9
+
     return new BrowserDeflateCompressor(`deflate-${level}` as DeflateMode)
   }
 
@@ -110,6 +111,8 @@ export class BrowserDeflateCompressor extends AbstractCompressor {
   override decompressWebStream(input: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
     // True streaming: caller can read decompressed bytes as soon as the
     // first deflate window is satisfied — no buffering on either side.
-    return input.pipeThrough(new DecompressionStream('deflate') as any) as ReadableStream<Uint8Array>
+    return input.pipeThrough(
+      new DecompressionStream('deflate') as any,
+    ) as ReadableStream<Uint8Array>
   }
 }

@@ -31,9 +31,9 @@ describe('composeOptions', () => {
 
 describe('composeEnvironments', () => {
   it('intersects environment sets across components', () => {
-    expect(composeEnvironments([{ environments: ['node', 'browser'] }, { environments: ['node'] }])).toEqual([
-      'node',
-    ])
+    expect(
+      composeEnvironments([{ environments: ['node', 'browser'] }, { environments: ['node'] }]),
+    ).toEqual(['node'])
   })
 
   it('treats undefined environments as both', () => {

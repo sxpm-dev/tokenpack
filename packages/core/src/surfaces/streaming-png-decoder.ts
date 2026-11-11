@@ -179,11 +179,9 @@ interface InflateHandle {
 }
 
 function makeInflate(onChunk: (chunk: Uint8Array<ArrayBufferLike>) => void): InflateHandle {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ds = new (DecompressionStream as any)('deflate')
   const writer = ds.writable.getWriter() as WritableStreamDefaultWriter
-  const reader =
-    ds.readable.getReader() as ReadableStreamDefaultReader<Uint8Array<ArrayBufferLike>>
+  const reader = ds.readable.getReader() as ReadableStreamDefaultReader<Uint8Array<ArrayBufferLike>>
   const pump = (async () => {
     while (true) {
       const { done, value } = await reader.read()
@@ -200,7 +198,6 @@ async function writeChunk(
   writer: WritableStreamDefaultWriter,
   chunk: Uint8Array<ArrayBufferLike>,
 ): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await writer.write(chunk as any)
 }
 

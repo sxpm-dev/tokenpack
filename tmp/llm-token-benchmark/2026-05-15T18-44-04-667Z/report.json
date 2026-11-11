@@ -1,0 +1,300 @@
+{
+  "metadata": {
+    "startedAt": "2026-05-15T18:44:04.668Z",
+    "jsonPath": "/Users/valerii/Develop/codeart/tmp/llm-token-fixture/big-dataset.json",
+    "tokenPath": "/Users/valerii/Develop/codeart/tmp/llm-token-fixture/big-dataset-token.png",
+    "jsonBytes": 1288326,
+    "tokenBytes": 67158,
+    "question": "In the provided dataset, filter records where region is APAC, product is Token Pack, and tier is enterprise. Return the matching record count, total revenue, total refunds, net revenue, and total monthly active users. Group the answer under the key apacEnterpriseTokenPackNetRevenue.",
+    "providers": [
+      {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      {
+        "provider": "anthropic",
+        "model": "claude-sonnet-4-5-20250929"
+      }
+    ],
+    "maxOutput": 2000,
+    "temperature": 0,
+    "tokenDecodeMatchedJson": true
+  },
+  "results": [
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-mini",
+      "mode": "raw-json",
+      "ok": false,
+      "elapsedMs": 5769,
+      "promptChars": 1289026,
+      "promptBytes": 1289026,
+      "imageBytes": 0,
+      "error": "Your input exceeds the context window of this model. Please adjust your input and try again."
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-mini",
+      "mode": "token-image",
+      "ok": true,
+      "elapsedMs": 3704,
+      "finishReason": "stop",
+      "usage": {
+        "inputTokens": 867,
+        "outputTokens": 174,
+        "totalTokens": 1041,
+        "reasoningTokens": 0,
+        "cachedInputTokens": 0
+      },
+      "totalUsage": {
+        "inputTokens": 867,
+        "outputTokens": 174,
+        "totalTokens": 1041,
+        "reasoningTokens": 0,
+        "cachedInputTokens": 0
+      },
+      "providerMetadata": {
+        "openai": {
+          "responseId": "resp_00537a5248dd6f12006a07697be5e08199a9cdb3ed328b8116",
+          "serviceTier": "default"
+        }
+      },
+      "responseId": "resp_00537a5248dd6f12006a07697be5e08199a9cdb3ed328b8116",
+      "responseModelId": "gpt-5.4-mini-2026-03-17",
+      "stepsCount": 1,
+      "promptChars": 2871,
+      "promptBytes": 2873,
+      "imageBytes": 67158,
+      "text": "{\n  \"answer\": {\n    \"apacEnterpriseTokenPackNetRevenue\": {\n      \"matchingRecordCount\": null,\n      \"totalRevenue\": null,\n      \"totalRefunds\": null,\n      \"netRevenue\": null,\n      \"totalMonthlyActiveUsers\": null\n    }\n  },\n  \"extractedValues\": {},\n  \"evidence\": [\n    \"Unable to decode embedded PNG data in this environment.\",\n    \"No JSON payload could be recovered for filtering.\"\n  ],\n  \"confidence\": \"low\",\n  \"notes\": [\n    \"The provided image appears as visually random noise, but I cannot perform the required lossless PNG-to-RGB extraction and Brotli/header decoding here.\",\n    \"Because the underlying dataset JSON was not recovered, the requested APAC / Token Pack / enterprise aggregation could not be computed.\"\n  ]\n}",
+      "warnings": [
+        {
+          "type": "unsupported-setting",
+          "setting": "temperature",
+          "details": "temperature is not supported for reasoning models"
+        }
+      ]
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5-20250929",
+      "mode": "raw-json",
+      "ok": false,
+      "elapsedMs": 7633,
+      "promptChars": 1289026,
+      "promptBytes": 1289026,
+      "imageBytes": 0,
+      "error": "Failed after 3 attempts. Last error: Failed to process error response"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5-20250929",
+      "mode": "token-image",
+      "ok": false,
+      "elapsedMs": 2822,
+      "promptChars": 2871,
+      "promptBytes": 2873,
+      "imageBytes": 67158,
+      "error": "Failed after 2 attempts with non-retryable error: 'invalid x-api-key'"
+    }
+  ],
+  "validations": {
+    "openai": {
+      "ok": false,
+      "reason": "one or both calls failed",
+      "tokenDecodeMatchedJson": true
+    },
+    "anthropic": {
+      "ok": false,
+      "reason": "one or both calls failed",
+      "tokenDecodeMatchedJson": true
+    }
+  },
+  "usage": {
+    "perCall": [
+      {
+        "provider": "openai",
+        "mode": "raw-json",
+        "usage": {
+          "calls": 1,
+          "elapsedMs": 5769,
+          "promptBytes": 1289026,
+          "imageBytes": 0
+        }
+      },
+      {
+        "provider": "openai",
+        "mode": "token-image",
+        "usage": {
+          "inputTokens": 867,
+          "outputTokens": 174,
+          "totalTokens": 1041,
+          "reasoningTokens": 0,
+          "cachedInputTokens": 0,
+          "calls": 1,
+          "elapsedMs": 3704,
+          "promptBytes": 2873,
+          "imageBytes": 67158
+        }
+      },
+      {
+        "provider": "anthropic",
+        "mode": "raw-json",
+        "usage": {
+          "calls": 1,
+          "elapsedMs": 7633,
+          "promptBytes": 1289026,
+          "imageBytes": 0
+        }
+      },
+      {
+        "provider": "anthropic",
+        "mode": "token-image",
+        "usage": {
+          "calls": 1,
+          "elapsedMs": 2822,
+          "promptBytes": 2873,
+          "imageBytes": 67158
+        }
+      }
+    ],
+    "perProvider": {
+      "openai": {
+        "calls": 2,
+        "elapsedMs": 9473,
+        "promptBytes": 1291899,
+        "imageBytes": 67158,
+        "inputTokens": 867,
+        "outputTokens": 174,
+        "totalTokens": 1041,
+        "reasoningTokens": 0,
+        "cachedInputTokens": 0
+      },
+      "anthropic": {
+        "calls": 2,
+        "elapsedMs": 10455,
+        "promptBytes": 1291899,
+        "imageBytes": 67158
+      }
+    },
+    "perMode": {
+      "raw-json": {
+        "calls": 2,
+        "elapsedMs": 13402,
+        "promptBytes": 2578052,
+        "imageBytes": 0
+      },
+      "token-image": {
+        "inputTokens": 867,
+        "outputTokens": 174,
+        "totalTokens": 1041,
+        "reasoningTokens": 0,
+        "cachedInputTokens": 0,
+        "calls": 2,
+        "elapsedMs": 6526,
+        "promptBytes": 5746,
+        "imageBytes": 134316
+      }
+    },
+    "perProviderMode": {
+      "openai/raw-json": {
+        "calls": 1,
+        "elapsedMs": 5769,
+        "promptBytes": 1289026,
+        "imageBytes": 0
+      },
+      "openai/token-image": {
+        "inputTokens": 867,
+        "outputTokens": 174,
+        "totalTokens": 1041,
+        "reasoningTokens": 0,
+        "cachedInputTokens": 0,
+        "calls": 1,
+        "elapsedMs": 3704,
+        "promptBytes": 2873,
+        "imageBytes": 67158
+      },
+      "anthropic/raw-json": {
+        "calls": 1,
+        "elapsedMs": 7633,
+        "promptBytes": 1289026,
+        "imageBytes": 0
+      },
+      "anthropic/token-image": {
+        "calls": 1,
+        "elapsedMs": 2822,
+        "promptBytes": 2873,
+        "imageBytes": 67158
+      }
+    },
+    "grandTotal": {
+      "calls": 4,
+      "elapsedMs": 19928,
+      "promptBytes": 2583798,
+      "imageBytes": 134316,
+      "inputTokens": 867,
+      "outputTokens": 174,
+      "totalTokens": 1041,
+      "reasoningTokens": 0,
+      "cachedInputTokens": 0
+    },
+    "inputBytes": {
+      "perCall": [
+        {
+          "provider": "openai",
+          "mode": "raw-json",
+          "promptBytes": 1289026,
+          "imageBytes": 0
+        },
+        {
+          "provider": "openai",
+          "mode": "token-image",
+          "promptBytes": 2873,
+          "imageBytes": 67158
+        },
+        {
+          "provider": "anthropic",
+          "mode": "raw-json",
+          "promptBytes": 1289026,
+          "imageBytes": 0
+        },
+        {
+          "provider": "anthropic",
+          "mode": "token-image",
+          "promptBytes": 2873,
+          "imageBytes": 67158
+        }
+      ],
+      "grandTotalPromptBytes": 2583798,
+      "grandTotalImageBytes": 134316
+    },
+    "efficiency": [
+      {
+        "provider": "openai",
+        "mode": "raw-json",
+        "promptBytes": 1289026,
+        "imageBytes": 0
+      },
+      {
+        "provider": "openai",
+        "mode": "token-image",
+        "promptBytes": 2873,
+        "imageBytes": 67158,
+        "inputTokens": 867,
+        "bytesPerInputToken": 80.77
+      },
+      {
+        "provider": "anthropic",
+        "mode": "raw-json",
+        "promptBytes": 1289026,
+        "imageBytes": 0
+      },
+      {
+        "provider": "anthropic",
+        "mode": "token-image",
+        "promptBytes": 2873,
+        "imageBytes": 67158
+      }
+    ]
+  },
+  "completedAt": "2026-05-15T18:44:24.598Z"
+}

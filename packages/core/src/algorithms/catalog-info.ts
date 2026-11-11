@@ -1,7 +1,6 @@
 import type { CodecMetadata, Friendliness } from '../codecs/types'
 import { compressorRegistry } from '../compressors/registry'
 import { IMAGE_FORMATS, SURFACE_INFOS } from '../surfaces/info'
-
 import type { AlgorithmCatalog } from './catalog'
 import type { AlgorithmCtor } from './types'
 

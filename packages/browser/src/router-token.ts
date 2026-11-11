@@ -18,6 +18,8 @@ import {
   type PixelRangePayloadHandle,
 } from './fetch-pack'
 import {
+  type NetworkProfile,
+  type PlannerTuningSnapshot,
   planRouterLoad,
   type RouterChunkRange,
   type RouterLoadPlan,
@@ -42,6 +44,49 @@ export interface DecodeRouterOptions extends DecodeOptions {
    */
   singleLoadBatchWindowMs?: number
   debug?: RouterDebugCallback
+  /**
+   * Per-decode default planner overrides applied to every plan call from this
+   * router. Per-call `MaterializeOptions.planner` still wins. Used by the
+   * benchmark harness to sweep planner tuning empirically without rebuilding
+   * the planner constants.
+   */
+  plannerDefaults?: Partial<
+    Pick<
+      RouterLoadPlannerOptions,
+      | 'rangeRequestPenaltyBytes'
+      | 'mergeRangeGapBytes'
+      | 'maxRangesPerChunk'
+      | 'tinyFileBytes'
+      | 'tinyFileBurstFileCount'
+      | 'tinyFileRequestPenaltyBytes'
+      | 'tinyFileMaxRangesPerChunk'
+      | 'largeFileWholeChunkBytes'
+      | 'largeFileWholeChunkMaxWasteRatio'
+      | 'maxParallelChunkRequests'
+      | 'maxParallelSegmentRequests'
+    >
+  >
+  /**
+   * Speculative chunk prefetch at router init. When enabled, the runtime
+   * fetches chunks into the chunkBytes cache before any file is requested
+   * — file requests then hit cached promises instead of waiting for the
+   * planner to schedule the fetch.
+   *
+   * - `count` (default 16) — how many chunks to prefetch.
+   * - `concurrency` (default planner chunk concurrency) — max parallel.
+   * - `strategy` — which chunks to pick:
+   *   - 'priority'  → chunks with `priority` field, lowest first (encoder
+   *     stamps via bootFiles option); skips chunks without priority.
+   *   - 'manifest'  → first N chunks by manifest order (works regardless of
+   *     encoder priority hints).
+   *   - 'all'       → every chunk in the manifest.
+   *   Default: 'priority' if any chunk has a priority, else 'manifest'.
+   */
+  prefetchOnInit?: {
+    count?: number
+    concurrency?: number
+    strategy?: 'priority' | 'manifest' | 'all'
+  }
 }
 
 export interface RouterFileEntry extends RouterFileManifestEntry {
@@ -125,6 +170,8 @@ export type RouterDebugEvent =
       selectedBytes: number
       fetchedBytes: number
       concurrency: number
+      profile: NetworkProfile
+      tuning: PlannerTuningSnapshot
     }
   | {
       type: 'batch'
@@ -155,6 +202,10 @@ export type RouterDebugEvent =
       durationMs: number
       pngBytes?: number
       payloadBytes: number
+      /** Encoding format. Absent = legacy per-file deflate. */
+      kind?: 'concat-deflate'
+      /** Time spent inflating the concat-deflate frame; 0 for legacy chunks. */
+      inflateMs?: number
     }
   | {
       type: 'payload-handle'
@@ -198,6 +249,22 @@ export type RouterDebugEvent =
       decodeMs: number
       executeMs: number
       bytes: number
+    }
+  | {
+      type: 'prefetch-start'
+      startMs: number
+      strategy: 'priority' | 'manifest' | 'all'
+      requested: 'priority' | 'manifest' | 'all' | null
+      count: number
+      concurrency: number
+      totalChunkCount: number
+      chunkIds: string[]
+    }
+  | {
+      type: 'prefetch-end'
+      startMs: number
+      durationMs: number
+      count: number
     }
 
 export type RouterDebugCallback = (event: RouterDebugEvent) => void
@@ -286,6 +353,7 @@ export class RouterToken {
   private bytesCache = new Map<string, Promise<Uint8Array>>()
   private singleLoadBatches = new Map<string, SingleLoadBatch>()
   private nextBatchId = 0
+  private firstBatchFlushScheduled = false
 
   constructor(
     private readonly source: DecodeSource,
@@ -296,6 +364,66 @@ export class RouterToken {
     if (manifest) this.manifestPromise = Promise.resolve(manifest)
     this.list = Object.assign(async () => this.files(), [] as string[])
     this.stream = new RouterTokenStreamApi(this)
+    if (options.prefetchOnInit) this.kickOffPrefetch(options.prefetchOnInit)
+  }
+
+  private kickOffPrefetch(opts: NonNullable<DecodeRouterOptions['prefetchOnInit']>): void {
+    // Errors are swallowed — a prefetch failure shouldn't break the router;
+    // the on-demand fetch path will retry naturally when a file is requested.
+    void this.prefetchChunksInBackground(opts).catch(() => undefined)
+  }
+
+  private async prefetchChunksInBackground(
+    opts: NonNullable<DecodeRouterOptions['prefetchOnInit']>,
+  ): Promise<void> {
+    const manifest = await this.manifest()
+    const chunksById = await this.chunkById()
+    const chunkList = [...chunksById.values()]
+    const requestedStrategy = opts.strategy
+    const anyPriority = chunkList.some(c => typeof c.priority === 'number')
+    const strategy: 'priority' | 'manifest' | 'all' =
+      requestedStrategy ?? (anyPriority ? 'priority' : 'manifest')
+    const ordered =
+      strategy === 'priority'
+        ? chunkList
+            .filter(c => typeof c.priority === 'number')
+            .sort((a, b) => (a.priority ?? Infinity) - (b.priority ?? Infinity))
+        : chunkList
+
+    const count = strategy === 'all' ? ordered.length : (opts.count ?? 16)
+    const selected = ordered.slice(0, count)
+    const concurrency =
+      opts.concurrency ?? this.options.plannerDefaults?.maxParallelChunkRequests ?? 8
+    const startMs = now()
+
+    this.emitDebug({
+      type: 'prefetch-start',
+      startMs,
+      strategy,
+      requested: requestedStrategy ?? null,
+      count: selected.length,
+      concurrency,
+      totalChunkCount: manifest.chunks.length,
+      chunkIds: selected.map(c => c.id),
+    })
+    // Fire chunkBytes() with controlled concurrency. Each call returns the
+    // in-flight promise and populates chunkBytesCache; subsequent
+    // file-request-driven calls hit the cache instead of starting a new
+    // fetch. Don't await individual results — we want the prefetch to run
+    // entirely in the background.
+    await mapWithConcurrency(selected, concurrency, async chunk => {
+      try {
+        await this.chunkBytes(chunk, 'stream')
+      } catch {
+        // ignored — file-request retry will surface the error
+      }
+    })
+    this.emitDebug({
+      type: 'prefetch-end',
+      startMs,
+      durationMs: now() - startMs,
+      count: selected.length,
+    })
   }
 
   isPack(): this is DirPack {
@@ -711,14 +839,33 @@ export class RouterToken {
     })
 
     try {
-      const loaded = await this.executeLoadMany(files, batch.mode, batch.options)
+      const load = await this.startProgressiveLoad(files, batch.mode, batch.options)
 
-      for (const item of batch.items) {
-        const bytes = loaded.get(item.file)
+      await Promise.all(
+        batch.items.map(async item => {
+          const filePromise = load.ready.get(item.file)
 
-        if (!bytes) throw new Error(`router batch did not load file: ${item.file.path}`)
-        item.deferred.resolve(bytes)
-      }
+          if (!filePromise) {
+            const cacheKey = item.cacheKey
+
+            if (this.bytesCache.get(cacheKey) === item.deferred.promise) {
+              this.bytesCache.delete(cacheKey)
+            }
+            item.deferred.reject(new Error(`router batch did not include file: ${item.file.path}`))
+
+            return
+          }
+          try {
+            item.deferred.resolve(await filePromise)
+          } catch (error) {
+            if (this.bytesCache.get(item.cacheKey) === item.deferred.promise) {
+              this.bytesCache.delete(item.cacheKey)
+            }
+            item.deferred.reject(error)
+          }
+        }),
+      )
+      await load.done.catch(() => undefined)
     } catch (error) {
       for (const item of batch.items) {
         if (this.bytesCache.get(item.cacheKey) === item.deferred.promise) {
@@ -738,6 +885,20 @@ export class RouterToken {
   }
 
   private scheduleSingleLoadBatchFlush(batchKey: string, batch: SingleLoadBatch): void {
+    // The very first batch of this router's lifetime flushes on
+    // queueMicrotask — no point waiting the SINGLE_LOAD_BATCH_WINDOW_MS for
+    // requests that haven't been issued yet when there's nothing in flight.
+    // Synchronous bursts (page parse firing many fetches before yielding)
+    // still batch via the singleLoadBatches map, which de-duplicates by key
+    // until the microtask runs. Subsequent batches keep the normal window
+    // so late lazy-load bursts can amortize a plan across multiple files.
+    if (!this.firstBatchFlushScheduled) {
+      this.firstBatchFlushScheduled = true
+      queueMicrotask(() => this.flushSingleLoadBatch(batchKey, batch))
+
+      return
+    }
+
     const batchWindowMs = this.singleLoadBatchWindowMs(batch.options)
 
     if (batchWindowMs <= 0) {
@@ -763,43 +924,18 @@ export class RouterToken {
     mode: RouterReadMode,
     options: MaterializeOptions = {},
   ): Promise<Map<RouterFileEntry, Uint8Array>> {
-    const plan = await this.createLoadPlan(files, mode, options)
-
-    if (plan.kind === 'whole-chunks') {
-      return this.loadFromWholeChunks(files, plan.chunks, plan.mode, plan.concurrency)
-    }
-
-    if (plan.kind === 'merged-ranges' || plan.kind === 'single-merged') {
-      return this.loadFromRanges(files, plan.ranges, plan.mode, plan.concurrency)
-    }
-
-    const compressedByFile = new Map<RouterFileEntry, Uint8Array>()
-    const directCompressedByFile = new Map<RouterFileEntry, Uint8Array>()
-
-    await mapWithConcurrency(plan.segments, plan.concurrency, async item => {
-      const bytes = await this.segmentBytes(item.chunk, item.segment, plan.mode)
-
-      this.addCompressedSegment(
-        item.file,
-        item.segment,
-        bytes,
-        compressedByFile,
-        directCompressedByFile,
-      )
-    })
-
+    const load = await this.startProgressiveLoad(files, mode, options)
     const entries = await Promise.all(
-      files.map(
-        async file =>
-          [
-            file,
-            await this.decompressFile(
-              file,
-              directCompressedByFile.get(file) ?? compressedByFile.get(file)!,
-            ),
-          ] as const,
-      ),
+      files.map(async file => {
+        const promise = load.ready.get(file)
+
+        if (!promise) throw new Error(`router progressive load missing file: ${file.path}`)
+
+        return [file, await promise] as const
+      }),
     )
+
+    await load.done.catch(() => undefined)
 
     return new Map(entries)
   }
@@ -974,6 +1110,7 @@ export class RouterToken {
     const plan = planRouterLoad(files, await this.chunkById(), {
       allFiles: await this.list(),
       mode,
+      ...(this.options.plannerDefaults ?? {}),
       ...(options.planner ?? {}),
       strategy,
     })
@@ -996,113 +1133,11 @@ export class RouterToken {
       selectedBytes: plan.estimate.selectedBytes,
       fetchedBytes: plan.estimate.fetchedBytes,
       concurrency: plan.concurrency,
+      profile: plan.profile,
+      tuning: plan.tuning,
     })
 
     return plan
-  }
-
-  private async loadFromWholeChunks(
-    files: readonly RouterFileEntry[],
-    chunks: readonly ChunkEntry[],
-    mode: RouterReadMode,
-    concurrency: number,
-  ): Promise<Map<RouterFileEntry, Uint8Array>> {
-    const compressedByFile = new Map<RouterFileEntry, Uint8Array>()
-    const directCompressedByFile = new Map<RouterFileEntry, Uint8Array>()
-    const chunkBytesById = new Map<string, Uint8Array>()
-
-    await mapWithConcurrency(chunks, concurrency, async chunk => {
-      chunkBytesById.set(chunk.id, await this.chunkBytes(chunk, mode))
-    })
-
-    for (const file of files) {
-      for (const segment of file.segments) {
-        const chunkBytes = chunkBytesById.get(segment.chunkId)!
-        const bytes = chunkBytes.subarray(segment.offset, segment.offset + segment.length)
-
-        this.addCompressedSegment(file, segment, bytes, compressedByFile, directCompressedByFile)
-      }
-    }
-
-    const entries = await Promise.all(
-      files.map(
-        async file =>
-          [
-            file,
-            await this.decompressFile(
-              file,
-              directCompressedByFile.get(file) ?? compressedByFile.get(file)!,
-            ),
-          ] as const,
-      ),
-    )
-
-    return new Map(entries)
-  }
-
-  private async loadFromRanges(
-    files: readonly RouterFileEntry[],
-    ranges: readonly RouterChunkRange[],
-    mode: RouterReadMode,
-    concurrency: number,
-  ): Promise<Map<RouterFileEntry, Uint8Array>> {
-    const compressedByFile = new Map<RouterFileEntry, Uint8Array>()
-    const directCompressedByFile = new Map<RouterFileEntry, Uint8Array>()
-
-    await mapWithConcurrency(ranges, concurrency, async range => {
-      const bytes = await this.rangeBytes(range.chunk, range.offset, range.length, mode)
-
-      for (const item of range.segments) {
-        const localOffset = item.segment.offset - range.offset
-        const segmentBytes = bytes.subarray(localOffset, localOffset + item.segment.length)
-
-        this.addCompressedSegment(
-          item.file,
-          item.segment,
-          segmentBytes,
-          compressedByFile,
-          directCompressedByFile,
-        )
-      }
-    })
-
-    const entries = await Promise.all(
-      files.map(
-        async file =>
-          [
-            file,
-            await this.decompressFile(
-              file,
-              directCompressedByFile.get(file) ?? compressedByFile.get(file)!,
-            ),
-          ] as const,
-      ),
-    )
-
-    return new Map(entries)
-  }
-
-  private addCompressedSegment(
-    file: RouterFileEntry,
-    segment: RouterFileSegment,
-    bytes: Uint8Array,
-    compressedByFile: Map<RouterFileEntry, Uint8Array>,
-    directCompressedByFile: Map<RouterFileEntry, Uint8Array>,
-  ): void {
-    if (this.isCompleteCompressedFileSegment(file, segment, bytes)) {
-      directCompressedByFile.set(file, bytes)
-
-      return
-    }
-
-    directCompressedByFile.delete(file)
-    let compressed = compressedByFile.get(file)
-
-    if (!compressed) {
-      compressed = new Uint8Array(this.compressedLength(file))
-      compressedByFile.set(file, compressed)
-    }
-    compressed.set(bytes, segment.fileOffset ?? 0)
   }
 
   private isCompleteCompressedFileSegment(
@@ -1145,7 +1180,7 @@ export class RouterToken {
   }
 
   private chunkBytes(chunk: ChunkEntry, mode: RouterReadMode): Promise<Uint8Array> {
-    const cacheKey = `${mode}:${chunk.id}`
+    const cacheKey = chunk.id
     let cached = this.chunkBytesCache.get(cacheKey)
     const startMs = now()
     const cacheState: 'miss' | 'pending' | 'hit' = !cached
@@ -1155,10 +1190,25 @@ export class RouterToken {
         : 'pending'
 
     if (!cached) {
-      const promise = this.decodeChunkBytes(chunk, mode)
+      const promise = (async () => {
+        const raw = await this.decodeChunkBytes(chunk, mode)
+
+        if (chunk.kind !== 'concat-deflate') {
+          return { bytes: raw, inflateMs: 0 }
+        }
+
+        const compressor = chunk.compressor ?? 'deflate-9'
+        const inflateStart = now()
+        const inflated = await decompressRaw(raw, compressor, {
+          level: chunk.level ?? 0,
+          uncompressedLength: chunk.uncompressedByteLength ?? 0,
+        })
+
+        return { bytes: inflated, inflateMs: now() - inflateStart }
+      })()
 
       cached = promise
-        .then(bytes => {
+        .then(({ bytes, inflateMs }) => {
           this.chunkBytesSettled.add(cacheKey)
           this.emitDebug({
             type: 'chunk',
@@ -1170,6 +1220,8 @@ export class RouterToken {
             durationMs: now() - startMs,
             pngBytes: chunk.byteLength,
             payloadBytes: bytes.byteLength,
+            kind: chunk.kind,
+            inflateMs,
           })
 
           return bytes
@@ -1196,6 +1248,7 @@ export class RouterToken {
             durationMs: now() - startMs,
             pngBytes: chunk.byteLength,
             payloadBytes: bytes.byteLength,
+            kind: chunk.kind,
           })
         },
         () => undefined,
@@ -1210,7 +1263,10 @@ export class RouterToken {
     segment: RouterFileSegment,
     mode: RouterReadMode,
   ): Promise<Uint8Array> {
-    if (segmentCoversChunkPayload(chunk, segment)) {
+    // concat-deflate chunks store one shared deflate stream; segment offsets
+    // index into the inflated buffer, not the on-wire payload. The whole chunk
+    // must be fetched and inflated before any slice is valid.
+    if (chunk.kind === 'concat-deflate' || segmentCoversChunkPayload(chunk, segment)) {
       const bytes = await this.chunkBytes(chunk, mode)
 
       return bytes.byteLength === segment.length
@@ -1260,6 +1316,12 @@ export class RouterToken {
     length: number,
     mode: RouterReadMode,
   ): Promise<Uint8Array> {
+    if (chunk.kind === 'concat-deflate') {
+      const bytes = await this.chunkBytes(chunk, mode)
+
+      return bytes.subarray(offset, offset + length)
+    }
+
     try {
       const handle = await this.chunkPayloadHandle(chunk)
 

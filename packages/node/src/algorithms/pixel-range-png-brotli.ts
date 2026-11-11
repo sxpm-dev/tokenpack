@@ -9,7 +9,6 @@ import { DenseDrawer } from 'tokenpack/drawers'
 
 import { BrotliCompressor } from '../compressors/brotli-compressor'
 import { PngSurface } from '../surfaces/png'
-
 import { extractTpakChunk, insertTpakChunk } from './pixel-range-png-base'
 
 export class PixelRangePngBrotli extends PixelRangeAlgorithm {

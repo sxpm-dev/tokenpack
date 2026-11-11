@@ -9,4 +9,3 @@ for (const Ctor of ALL_BROWSER_ALGORITHMS) {
 }
 
 export const algorithmCatalog = browserAlgorithmCatalog
-
