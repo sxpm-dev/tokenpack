@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "editable-recipe",
+  "title": "Keep an exported chart editable",
+  "synthetic": true,
+  "files": [
+    "data.json",
+    "recipe.json",
+    "preview.svg"
+  ]
+}

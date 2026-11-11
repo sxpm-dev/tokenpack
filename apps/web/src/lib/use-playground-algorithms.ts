@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react'
 
 import { ALGO_CATALOG, type AlgoMeta, mergeNodeCatalog } from './algo-catalog'
+import { isStaticSite } from './site-path'
 
 let cachedCatalog: AlgoMeta[] | null = null
 let catalogPromise: Promise<AlgoMeta[]> | null = null
 
 async function loadCatalog(): Promise<AlgoMeta[]> {
+  if (isStaticSite) return ALGO_CATALOG
   if (cachedCatalog) return cachedCatalog
   if (!catalogPromise) {
     catalogPromise = fetch('/api/algorithms')

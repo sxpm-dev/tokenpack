@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "offline-workspace",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "90f9154b528bbf7dd3f575270e6827256dc823c54f9d3468a2e179dcfe6ef2b2",
+  "byteLength": 1412,
+  "files": [
+    {
+      "path": "assets/site.json",
+      "byteLength": 93,
+      "sha256": "94eb3d27d5869737604e27c204ca8638c0e7400c5fdc8e5a145aeb93aac731eb"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 242,
+      "sha256": "370731a9a080145e11de0c3b8374e1d2404390b7bb51566779af0e30b8d5e66b"
+    },
+    {
+      "path": "notes/draft.md",
+      "byteLength": 77,
+      "sha256": "865d01510c76fb8f4faa881a4b3291434c90a210172bc50f8c6e302b73681bde"
+    },
+    {
+      "path": "reference/checklist.json",
+      "byteLength": 114,
+      "sha256": "052e1773e3c2ff981830e755c1f8e6efa2e704e347be5d25ef96e688b60a1c37"
+    },
+    {
+      "path": "workspace.json",
+      "byteLength": 129,
+      "sha256": "18f4282f468a4324aebd8fcdcfb07a1519282cf0357e94bbf7ae3b51ed8f159e"
+    }
+  ]
+}

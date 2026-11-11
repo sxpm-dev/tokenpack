@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-checkpoint",
+  "title": "Resume work from an explicit agent checkpoint",
+  "synthetic": true,
+  "files": [
+    "task.json",
+    "outputs/totals.json",
+    "evidence.csv",
+    "decisions.md",
+    "handoff.md"
+  ]
+}

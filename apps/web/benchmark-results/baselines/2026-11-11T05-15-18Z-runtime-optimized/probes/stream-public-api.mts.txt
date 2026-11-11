@@ -1,0 +1,32 @@
+import '/Users/valerii/Develop/codeart/packages/node/src/index.ts'
+import fs from 'node:fs'
+import { createServer } from 'node:http'
+import { performance } from 'node:perf_hooks'
+import { decodeStream } from '/Users/valerii/Develop/codeart/packages/node/src/decode-stream.ts'
+import { StreamingPngSurface } from '/Users/valerii/Develop/codeart/packages/node/src/surfaces/streaming-png.ts'
+import { decodeStreamingPng as before } from '/tmp/codeart-baseline-stream-decoder.mts'
+const root='/Users/valerii/Develop/codeart/apps/web/'
+const rows=JSON.parse(fs.readFileSync(root+'benchmark-results/encode-times.json','utf8'))
+const entry=rows.find((r:any)=>r.sourceId==='chunk-5mb'&&r.algorithm==='linear-stream-deflate'&&r.channels===3)
+const bytes=fs.readFileSync(root+'benchmark-fixtures/node/'+entry.tokenFile)
+const server=createServer((_req,res)=>{res.writeHead(200,{'Content-Length':bytes.length});res.end(bytes)})
+await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve))
+const url=`http://127.0.0.1:${(server.address() as any).port}/token.png`
+const current=StreamingPngSurface.prototype.decodeStream
+const result:Record<string,number[]>={before:[],after:[]}
+try {
+ for(let i=-3;i<30;i++)for(const name of (i%2?['before','after']:['after','before'])) {
+  StreamingPngSurface.prototype.decodeStream=name==='before'?before:current
+  const start=performance.now()
+  const pack=await decodeStream(url)
+  if(pack.isPack()||pack.isDiff())throw new Error('expected file')
+  const content=await pack.content()
+  const text=new TextDecoder().decode(content)
+  const elapsed=performance.now()-start
+  if(content.length!==entry.originalBytes||!text.length)throw new Error('length mismatch')
+  if(i>=0)result[name].push(elapsed)
+ }
+} finally {StreamingPngSurface.prototype.decodeStream=current; await new Promise<void>(resolve=>server.close(()=>resolve()))}
+const summary=Object.fromEntries(Object.entries(result).map(([k,v])=>{const sorted=[...v].sort((a,b)=>a-b);return[k,{medianMs:(sorted[14]+sorted[15])/2,p95Ms:sorted[28],samples:v}]}))
+fs.writeFileSync(process.argv[2],JSON.stringify({description:'Alternating original/current PNG surface inside full public Node decodeStream over local HTTP, large JS C3 deflate, content + text materialization; 3 warmups + 30 samples. Other runtime code identical.',result:summary},null,2))
+console.log(JSON.stringify(summary,(_k,v)=>Array.isArray(v)?undefined:v,2))

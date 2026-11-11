@@ -9,6 +9,7 @@
 // available in that runtime.
 
 import { isCompactToken, readCompactHeader, readHeader } from '../header'
+import type { SurfacePixels } from '../surfaces/types'
 import type { AbstractAlgorithm, AlgorithmCtor } from './types'
 
 export class AlgorithmCatalog {
@@ -51,12 +52,20 @@ export class AlgorithmCatalog {
    *   3. Throw.
    */
   async detectFromBuffer(buffer: Buffer, ext?: string): Promise<AlgorithmCtor> {
+    return (await this.detectWithImage(buffer, ext)).Ctor
+  }
+
+  /** Return detection pixels for reuse by the decode pipeline; no global buffer cache. */
+  async detectWithImage(
+    buffer: Buffer,
+    ext?: string,
+  ): Promise<{ Ctor: AlgorithmCtor; image?: SurfacePixels }> {
     for (const Ctor of this.byName.values()) {
       try {
         // Construct a probe instance to call canHandle (instance method).
         const probe = new Ctor()
 
-        if (probe.canHandle(buffer, ext)) return Ctor
+        if (probe.canHandle(buffer, ext)) return { Ctor }
       } catch {
         // ignore — keep iterating
       }
@@ -78,7 +87,7 @@ export class AlgorithmCatalog {
             : readHeader(image.pixels).algorithmId
           const DetectedCtor = this.byId.get(id)
 
-          if (DetectedCtor) return DetectedCtor
+          if (DetectedCtor) return { Ctor: DetectedCtor, image }
         } catch {
           // surface couldn't decode or header was garbage — try the next one
         }

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "offline-workspace",
+  "title": "Restore a small offline workspace",
+  "synthetic": true,
+  "files": [
+    "workspace.json",
+    "notes/draft.md",
+    "reference/checklist.json",
+    "assets/site.json"
+  ]
+}

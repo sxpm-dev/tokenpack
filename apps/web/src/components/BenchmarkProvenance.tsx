@@ -1,10 +1,15 @@
 'use client'
+
 import { useEffect, useState } from 'react'
+
+import { isStaticSite, sitePath } from '@/lib/site-path'
 export function BenchmarkProvenance() {
   const [run, setRun] = useState<{ createdAt: string; node: string } | null>(null)
 
   useEffect(() => {
-    fetch('/api/benchmark/provenance')
+    fetch(
+      isStaticSite ? sitePath('/saved-benchmarks/provenance.json') : '/api/benchmark/provenance',
+    )
       .then(response => response.json())
       .then(setRun)
       .catch(() => setRun(null))

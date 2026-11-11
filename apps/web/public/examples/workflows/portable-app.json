@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "portable-app",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "bee8b0f3f283dffd3a9ab263265dac87155e695b07ede302cb0eaded6f96c2ab",
+  "byteLength": 1326,
+  "files": [
+    {
+      "path": "app/index.html",
+      "byteLength": 406,
+      "sha256": "fb2da9b1b066c01e0686f0c783d6fa51066a75388d668fa1d707958e117063e5"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 205,
+      "sha256": "7ef21ba1e7160a7e92dd3343b6ee2ad85c25dd4e08b6d4c773c3427e56137a92"
+    },
+    {
+      "path": "README.txt",
+      "byteLength": 117,
+      "sha256": "bba6479bd7e7cc37d561fde55ec3b0d415cc58ef509b472da0d6c714bf412c62"
+    },
+    {
+      "path": "state.json",
+      "byteLength": 42,
+      "sha256": "31e2f62f2b88a29a9ba7256de0a4f42f4ca62d5265324a652d27d1a1814784b2"
+    }
+  ]
+}

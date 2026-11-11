@@ -106,3 +106,12 @@ swappable:
   entirely.
 
 The principle keeps the entity types load-bearing instead of decorative.
+
+### Detection reuse
+
+The environment decode entry points use `AlgorithmCatalog.detectWithImage` to
+receive both the selected constructor and any pixels decoded during detection.
+For pixel algorithms they pass those pixels to `decodeFromImages`, avoiding a
+second container decode. Byte-sniffed algorithms keep their normal decode path.
+No global image/input cache is retained. The shared PNG stream surface queues
+fragmented input and notifies row consumers directly, rather than polling timers.

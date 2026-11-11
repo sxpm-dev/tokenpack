@@ -2,17 +2,8 @@ import { existsSync, readFileSync } from 'fs'
 import { NextResponse } from 'next/server'
 import { join } from 'path'
 
-export interface ArchiveTimeEntry {
-  source: string
-  sourceId?: string
-  chunkCount?: number
-  chunkIndex?: number
-  format: string
-  encodeMs: number
-  decodeMs: number
-  bytes: number
-  originalBytes: number
-}
+import type { ArchiveTimeEntry } from '@/lib/bench-types'
+export type { ArchiveTimeEntry } from '@/lib/bench-types'
 
 export async function GET() {
   const filePath = join(process.cwd(), 'benchmark-results', 'archive-times.json')

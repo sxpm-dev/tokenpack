@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-11-11T04:40:23.484Z",
+  "createdAt": "2026-11-11T05:16:37.274Z",
   "browser": "147.0.7727.15",
   "base": "http://localhost:3003",
   "status": "passed",
@@ -37,7 +37,7 @@
         "packMode": "lazy",
         "throttle": "local"
       },
-      "createdAt": "2026-11-11T04:38:21.089Z",
+      "createdAt": "2026-11-11T05:14:34.341Z",
       "resultCount": 10
     },
     {
@@ -48,7 +48,7 @@
         "packMode": "lazy",
         "throttle": "local"
       },
-      "createdAt": "2026-11-11T04:38:22.170Z",
+      "createdAt": "2026-11-11T05:14:35.389Z",
       "resultCount": 10
     },
     {
@@ -63,7 +63,7 @@
         "deselectedExact": [],
         "deselectedScript": []
       },
-      "createdAt": "2026-11-11T04:38:23.289Z",
+      "createdAt": "2026-11-11T05:14:36.480Z",
       "resultCount": 3
     },
     {
@@ -78,7 +78,7 @@
         "deselectedExact": [],
         "deselectedScript": []
       },
-      "createdAt": "2026-11-11T04:38:24.452Z",
+      "createdAt": "2026-11-11T05:14:37.622Z",
       "resultCount": 3
     },
     {
@@ -93,7 +93,7 @@
         "deselectedExact": [],
         "deselectedScript": []
       },
-      "createdAt": "2026-11-11T04:38:25.881Z",
+      "createdAt": "2026-11-11T05:14:38.961Z",
       "resultCount": 3
     },
     {
@@ -108,7 +108,7 @@
         "deselectedExact": [],
         "deselectedScript": []
       },
-      "createdAt": "2026-11-11T04:38:27.701Z",
+      "createdAt": "2026-11-11T05:14:40.646Z",
       "resultCount": 3
     },
     {
@@ -118,7 +118,7 @@
         "iterations": 5,
         "throttle": "local"
       },
-      "createdAt": "2026-11-11T04:38:29.217Z",
+      "createdAt": "2026-11-11T05:14:42.115Z",
       "resultCount": 25
     },
     {
@@ -128,7 +128,7 @@
         "iterations": 5,
         "throttle": "local"
       },
-      "createdAt": "2026-11-11T04:38:31.656Z",
+      "createdAt": "2026-11-11T05:14:44.390Z",
       "resultCount": 25
     },
     {
@@ -137,7 +137,7 @@
         "iterations": 3,
         "throttle": "local"
       },
-      "createdAt": "2026-11-11T04:38:44.359Z",
+      "createdAt": "2026-11-11T05:14:55.367Z",
       "resultCount": 30
     },
     {
@@ -149,7 +149,7 @@
         "throttle": "local",
         "runSkipped": false
       },
-      "createdAt": "2026-11-11T04:38:45.287Z",
+      "createdAt": "2026-11-11T05:14:56.307Z",
       "resultCount": 6
     },
     {
@@ -161,7 +161,7 @@
         "throttle": "local",
         "runSkipped": false
       },
-      "createdAt": "2026-11-11T04:38:46.097Z",
+      "createdAt": "2026-11-11T05:14:57.106Z",
       "resultCount": 5
     },
     {
@@ -173,7 +173,7 @@
         "throttle": "local",
         "runSkipped": false
       },
-      "createdAt": "2026-11-11T04:38:46.874Z",
+      "createdAt": "2026-11-11T05:14:57.890Z",
       "resultCount": 5
     },
     {
@@ -182,55 +182,19 @@
         "scenario": "ssr-streaming",
         "iterations": 5
       },
-      "createdAt": "2026-11-11T04:38:47.602Z",
+      "createdAt": "2026-11-11T05:14:58.611Z",
       "resultCount": 2
     },
     {
       "route": "/scenarios/inline-data-uri",
       "config": {
         "scenario": "inline-data-uri",
-        "size": 10,
-        "iterations": 5,
-        "throttle": "local",
-        "runSkipped": false
-      },
-      "createdAt": "2026-11-11T04:40:04.541Z",
-      "resultCount": 6
-    },
-    {
-      "route": "/scenarios/stream-boot",
-      "config": {
-        "scenario": "stream-boot",
-        "size": 10,
-        "iterations": 5,
-        "throttle": "local",
-        "runSkipped": false
-      },
-      "createdAt": "2026-11-11T04:40:05.343Z",
-      "resultCount": 5
-    },
-    {
-      "route": "/scenarios/sw-cache",
-      "config": {
-        "scenario": "sw-cache",
-        "size": 10,
-        "iterations": 5,
-        "throttle": "local",
-        "runSkipped": false
-      },
-      "createdAt": "2026-11-11T04:40:06.114Z",
-      "resultCount": 5
-    },
-    {
-      "route": "/scenarios/inline-data-uri",
-      "config": {
-        "scenario": "inline-data-uri",
         "size": 1000,
         "iterations": 5,
         "throttle": "local",
         "runSkipped": false
       },
-      "createdAt": "2026-11-11T04:40:06.968Z",
+      "createdAt": "2026-11-11T05:14:59.464Z",
       "resultCount": 6
     },
     {
@@ -242,7 +206,7 @@
         "throttle": "local",
         "runSkipped": false
       },
-      "createdAt": "2026-11-11T04:40:07.831Z",
+      "createdAt": "2026-11-11T05:15:00.364Z",
       "resultCount": 5
     },
     {
@@ -254,7 +218,7 @@
         "throttle": "local",
         "runSkipped": false
       },
-      "createdAt": "2026-11-11T04:40:08.703Z",
+      "createdAt": "2026-11-11T05:15:01.292Z",
       "resultCount": 5
     },
     {
@@ -264,7 +228,7 @@
         "iterations": 5,
         "throttle": "local"
       },
-      "createdAt": "2026-11-11T04:40:12.849Z",
+      "createdAt": "2026-11-11T05:15:05.284Z",
       "resultCount": 32
     },
     {
@@ -273,7 +237,7 @@
         "mode": "text-fetch",
         "target": "module-03.js"
       },
-      "createdAt": "2026-11-11T04:40:13.577Z",
+      "createdAt": "2026-11-11T05:15:06.025Z",
       "resultCount": 4
     },
     {
@@ -282,7 +246,7 @@
         "mode": "js-fetch",
         "target": "module-03.js"
       },
-      "createdAt": "2026-11-11T04:40:14.235Z",
+      "createdAt": "2026-11-11T05:15:06.690Z",
       "resultCount": 4
     },
     {
@@ -293,8 +257,8 @@
         "cacheMode": "cold",
         "repeats": 3
       },
-      "createdAt": "2026-11-11T04:40:15.874Z",
-      "resultCount": 1
+      "createdAt": "2026-11-11T05:16:30.066Z",
+      "resultCount": 5
     },
     {
       "route": "/benchmarks/app",
@@ -304,8 +268,8 @@
         "cacheMode": "cold",
         "repeats": 3
       },
-      "createdAt": "2026-11-11T04:40:17.732Z",
-      "resultCount": 2
+      "createdAt": "2026-11-11T05:16:31.784Z",
+      "resultCount": 5
     },
     {
       "route": "/benchmarks/app",
@@ -315,8 +279,8 @@
         "cacheMode": "cold",
         "repeats": 3
       },
-      "createdAt": "2026-11-11T04:40:19.331Z",
-      "resultCount": 3
+      "createdAt": "2026-11-11T05:16:33.265Z",
+      "resultCount": 5
     },
     {
       "route": "/benchmarks/app",
@@ -326,8 +290,8 @@
         "cacheMode": "cold",
         "repeats": 3
       },
-      "createdAt": "2026-11-11T04:40:21.510Z",
-      "resultCount": 4
+      "createdAt": "2026-11-11T05:16:35.337Z",
+      "resultCount": 5
     },
     {
       "route": "/benchmarks/app",
@@ -337,7 +301,7 @@
         "cacheMode": "cold",
         "repeats": 3
       },
-      "createdAt": "2026-11-11T04:40:23.412Z",
+      "createdAt": "2026-11-11T05:16:37.201Z",
       "resultCount": 5
     }
   ],

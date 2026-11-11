@@ -50,7 +50,7 @@ export function SiteNav({ contextLabel = '· v0.1 · alpha' }: SiteNavProps) {
           )}
           <a
             className={navLinkClass}
-            href="https://github.com/anthropics/codeart"
+            href="https://github.com/sxpm-dev/tokenpack"
             rel="noreferrer"
             target="_blank"
           >

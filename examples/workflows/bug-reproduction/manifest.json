@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "bug-reproduction",
+  "title": "Share a minimal bug reproduction",
+  "synthetic": true,
+  "files": [
+    "input.json",
+    "expected.json",
+    "environment.json",
+    "steps.md"
+  ]
+}

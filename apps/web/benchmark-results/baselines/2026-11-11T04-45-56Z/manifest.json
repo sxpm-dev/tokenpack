@@ -1,0 +1,47 @@
+{
+  "createdAt": "2026-11-11T04:45:56.904771+00:00",
+  "commit": "ba6b240a4a705e6db560a883fb272f8113c946af",
+  "platform": "macOS-15.7.3-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "status": "complete-with-verification-failures",
+  "scope": {
+    "static": "all registered static benchmark cases, all four network presets",
+    "playgrounds": "all available fixture cases at local network; supported browser variants; default repeated samples"
+  },
+  "finishedAt": "2026-11-11T05:03:28.556218+00:00",
+  "node": "v22.16.0",
+  "browser": "147.0.7727.15",
+  "hardware": "Apple M2 Max",
+  "playgroundJobs": 683,
+  "staticRows": {
+    "fetch": 300,
+    "codec": 60,
+    "encode": 60,
+    "archive": 15,
+    "units": 20
+  },
+  "persistence": {
+    "checked": 555,
+    "matched": 555,
+    "mismatches": []
+  },
+  "limitations": [
+    "Single host, headless Chromium; playground network=local only.",
+    "Static fetch: 2 warmups + 10 samples. Codec decode: 2 warmups + 10 samples. Encode/archive: single samples. Units: 3 warmups + 30 samples.",
+    "JSON and diff matrix use 3 iterations; browser fetch/apply diff/scenarios generally 5; app benchmark 3; partial-fetch 5 independent single runs per target/mode.",
+    "Not every UI stores raw samples: JSON, diff matrix and app store aggregates.",
+    "NDJSON wireBytes is response Content-Length even when scanning stops early; not measured consumed wire bytes.",
+    "SSR playground times decode after page load, not server rendering or first paint.",
+    "Small differences and sub-millisecond results are noisy. Fixed variant order is not randomized.",
+    "The high-entropy generated script has an ID mismatch; all six delivery variants fail and are excluded from timing rankings.",
+    "Static JSON is minified by splitJsonObject; JSON playground uses the original pretty-printed document. Compare methods within each workload, not between suites."
+  ],
+  "compatibility": {
+    "decompressionStream": {
+      "br": false,
+      "brotli": false,
+      "deflate": true
+    },
+    "skippedVariantMeasurements": 18
+  }
+}

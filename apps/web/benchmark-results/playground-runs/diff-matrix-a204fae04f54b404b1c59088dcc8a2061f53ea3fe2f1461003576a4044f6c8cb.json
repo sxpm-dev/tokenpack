@@ -1,0 +1,1000 @@
+{
+  "scope": "diff-matrix",
+  "config": "{\"iterations\":3,\"throttle\":\"fast-cdn\"}",
+  "result": [
+    [
+      "100_1",
+      {
+        "sizeKB": 100,
+        "ratePct": 1,
+        "nextTokenMs": 17.799999952316284,
+        "nextTokenBytes": 14897,
+        "diffMs": 16,
+        "diffBytes": 548,
+        "jsBundledMsByEnc": {
+          "identity": 28.5,
+          "gzip": 21.700000047683716,
+          "brotli": 19.5
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 102494,
+          "gzip": 28316,
+          "brotli": 26513
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 25.299999952316284,
+          "gzip": 21.5,
+          "brotli": 19.200000047683716
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 101156,
+          "gzip": 29435,
+          "brotli": 27897
+        },
+        "jsChunkedFileCount": 5,
+        "ok": true
+      }
+    ],
+    [
+      "100_5",
+      {
+        "sizeKB": 100,
+        "ratePct": 5,
+        "nextTokenMs": 18.5,
+        "nextTokenBytes": 15239,
+        "diffMs": 19.799999952316284,
+        "diffBytes": 1112,
+        "jsBundledMsByEnc": {
+          "identity": 31.90000009536743,
+          "gzip": 22.09999990463257,
+          "brotli": 20.799999952316284
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 102494,
+          "gzip": 28316,
+          "brotli": 26513
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 27.40000009536743,
+          "gzip": 18.5,
+          "brotli": 18.600000143051147
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 101156,
+          "gzip": 29435,
+          "brotli": 27897
+        },
+        "jsChunkedFileCount": 5,
+        "ok": true
+      }
+    ],
+    [
+      "100_20",
+      {
+        "sizeKB": 100,
+        "ratePct": 20,
+        "nextTokenMs": 17.5,
+        "nextTokenBytes": 15121,
+        "diffMs": 17.300000190734863,
+        "diffBytes": 3172,
+        "jsBundledMsByEnc": {
+          "identity": 33.39999985694885,
+          "gzip": 22,
+          "brotli": 20
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 102494,
+          "gzip": 28316,
+          "brotli": 26513
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 24.59999990463257,
+          "gzip": 23.700000047683716,
+          "brotli": 21
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 101156,
+          "gzip": 29435,
+          "brotli": 27897
+        },
+        "jsChunkedFileCount": 5,
+        "ok": true
+      }
+    ],
+    [
+      "100_50",
+      {
+        "sizeKB": 100,
+        "ratePct": 50,
+        "nextTokenMs": 18.90000009536743,
+        "nextTokenBytes": 15029,
+        "diffMs": 17.899999856948853,
+        "diffBytes": 7441,
+        "jsBundledMsByEnc": {
+          "identity": 33,
+          "gzip": 21.799999952316284,
+          "brotli": 22.5
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 102494,
+          "gzip": 28316,
+          "brotli": 26513
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 25.40000009536743,
+          "gzip": 19.700000047683716,
+          "brotli": 21.799999952316284
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 101156,
+          "gzip": 29435,
+          "brotli": 27897
+        },
+        "jsChunkedFileCount": 5,
+        "ok": true
+      }
+    ],
+    [
+      "100_70",
+      {
+        "sizeKB": 100,
+        "ratePct": 70,
+        "nextTokenMs": 20.100000143051147,
+        "nextTokenBytes": 15134,
+        "diffMs": 19.40000009536743,
+        "diffBytes": 10049,
+        "jsBundledMsByEnc": {
+          "identity": 31.299999952316284,
+          "gzip": 21.799999952316284,
+          "brotli": 22.799999952316284
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 102494,
+          "gzip": 28316,
+          "brotli": 26513
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 27.40000009536743,
+          "gzip": 24.100000143051147,
+          "brotli": 24
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 101156,
+          "gzip": 29435,
+          "brotli": 27897
+        },
+        "jsChunkedFileCount": 5,
+        "ok": true
+      }
+    ],
+    [
+      "100_90",
+      {
+        "sizeKB": 100,
+        "ratePct": 90,
+        "nextTokenMs": 19.200000047683716,
+        "nextTokenBytes": 14889,
+        "diffMs": 20.09999990463257,
+        "diffBytes": 13362,
+        "jsBundledMsByEnc": {
+          "identity": 31.299999952316284,
+          "gzip": 19.200000047683716,
+          "brotli": 21.59999990463257
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 102494,
+          "gzip": 28316,
+          "brotli": 26513
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 25.09999990463257,
+          "gzip": 21.100000143051147,
+          "brotli": 22.40000009536743
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 101156,
+          "gzip": 29435,
+          "brotli": 27897
+        },
+        "jsChunkedFileCount": 5,
+        "ok": true
+      }
+    ],
+    [
+      "500_1",
+      {
+        "sizeKB": 500,
+        "ratePct": 1,
+        "nextTokenMs": 30.100000143051147,
+        "nextTokenBytes": 66294,
+        "diffMs": 19.5,
+        "diffBytes": 1475,
+        "jsBundledMsByEnc": {
+          "identity": 88.5,
+          "gzip": 42.299999952316284,
+          "brotli": 36.799999952316284
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 512079,
+          "gzip": 120788,
+          "brotli": 106842
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 49,
+          "gzip": 34.59999990463257,
+          "brotli": 33.59999990463257
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 510756,
+          "gzip": 106494,
+          "brotli": 100124
+        },
+        "jsChunkedFileCount": 10,
+        "ok": true
+      }
+    ],
+    [
+      "500_5",
+      {
+        "sizeKB": 500,
+        "ratePct": 5,
+        "nextTokenMs": 25.700000047683716,
+        "nextTokenBytes": 70787,
+        "diffMs": 18.299999952316284,
+        "diffBytes": 4008,
+        "jsBundledMsByEnc": {
+          "identity": 87.80000019073486,
+          "gzip": 39.5,
+          "brotli": 35.799999952316284
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 512079,
+          "gzip": 120788,
+          "brotli": 106842
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 49.39999985694885,
+          "gzip": 35.799999952316284,
+          "brotli": 35.200000047683716
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 510756,
+          "gzip": 106494,
+          "brotli": 100124
+        },
+        "jsChunkedFileCount": 10,
+        "ok": true
+      }
+    ],
+    [
+      "500_20",
+      {
+        "sizeKB": 500,
+        "ratePct": 20,
+        "nextTokenMs": 27.300000190734863,
+        "nextTokenBytes": 68579,
+        "diffMs": 17.799999952316284,
+        "diffBytes": 14118,
+        "jsBundledMsByEnc": {
+          "identity": 87.80000019073486,
+          "gzip": 40,
+          "brotli": 38.700000047683716
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 512079,
+          "gzip": 120788,
+          "brotli": 106842
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 51.5,
+          "gzip": 34.700000047683716,
+          "brotli": 33.69999980926514
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 510756,
+          "gzip": 106494,
+          "brotli": 100124
+        },
+        "jsChunkedFileCount": 10,
+        "ok": true
+      }
+    ],
+    [
+      "500_50",
+      {
+        "sizeKB": 500,
+        "ratePct": 50,
+        "nextTokenMs": 28,
+        "nextTokenBytes": 73149,
+        "diffMs": 23.299999952316284,
+        "diffBytes": 34910,
+        "jsBundledMsByEnc": {
+          "identity": 86.40000009536743,
+          "gzip": 40.30000019073486,
+          "brotli": 36.69999980926514
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 512079,
+          "gzip": 120788,
+          "brotli": 106842
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 51.59999990463257,
+          "gzip": 35.19999980926514,
+          "brotli": 33.10000014305115
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 510756,
+          "gzip": 106494,
+          "brotli": 100124
+        },
+        "jsChunkedFileCount": 10,
+        "ok": true
+      }
+    ],
+    [
+      "500_70",
+      {
+        "sizeKB": 500,
+        "ratePct": 70,
+        "nextTokenMs": 30.5,
+        "nextTokenBytes": 75316,
+        "diffMs": 24.5,
+        "diffBytes": 46622,
+        "jsBundledMsByEnc": {
+          "identity": 89.10000014305115,
+          "gzip": 41.09999990463257,
+          "brotli": 37.200000047683716
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 512079,
+          "gzip": 120788,
+          "brotli": 106842
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 51.89999985694885,
+          "gzip": 34.30000019073486,
+          "brotli": 32.299999952316284
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 510756,
+          "gzip": 106494,
+          "brotli": 100124
+        },
+        "jsChunkedFileCount": 10,
+        "ok": true
+      }
+    ],
+    [
+      "500_90",
+      {
+        "sizeKB": 500,
+        "ratePct": 90,
+        "nextTokenMs": 28.40000009536743,
+        "nextTokenBytes": 74058,
+        "diffMs": 27.699999809265137,
+        "diffBytes": 57109,
+        "jsBundledMsByEnc": {
+          "identity": 88.70000004768372,
+          "gzip": 41.299999952316284,
+          "brotli": 36.59999990463257
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 512079,
+          "gzip": 120788,
+          "brotli": 106842
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 50.09999990463257,
+          "gzip": 33.40000009536743,
+          "brotli": 33.89999985694885
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 510756,
+          "gzip": 106494,
+          "brotli": 100124
+        },
+        "jsChunkedFileCount": 10,
+        "ok": true
+      }
+    ],
+    [
+      "1000_1",
+      {
+        "sizeKB": 1000,
+        "ratePct": 1,
+        "nextTokenMs": 35,
+        "nextTokenBytes": 105114,
+        "diffMs": 20.299999952316284,
+        "diffBytes": 2588,
+        "jsBundledMsByEnc": {
+          "identity": 155.80000019073486,
+          "gzip": 57.90000009536743,
+          "brotli": 54.200000047683716
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 1024134,
+          "gzip": 235199,
+          "brotli": 201525
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 73.5,
+          "gzip": 59.299999952316284,
+          "brotli": 57.09999990463257
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 1022756,
+          "gzip": 209850,
+          "brotli": 197126
+        },
+        "jsChunkedFileCount": 20,
+        "ok": true
+      }
+    ],
+    [
+      "1000_5",
+      {
+        "sizeKB": 1000,
+        "ratePct": 5,
+        "nextTokenMs": 38,
+        "nextTokenBytes": 137985,
+        "diffMs": 18.09999990463257,
+        "diffBytes": 7738,
+        "jsBundledMsByEnc": {
+          "identity": 160.20000004768372,
+          "gzip": 57.19999980926514,
+          "brotli": 51.90000009536743
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 1024134,
+          "gzip": 235199,
+          "brotli": 201525
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 72.79999995231628,
+          "gzip": 55.60000014305115,
+          "brotli": 56.799999952316284
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 1022756,
+          "gzip": 209850,
+          "brotli": 197126
+        },
+        "jsChunkedFileCount": 20,
+        "ok": true
+      }
+    ],
+    [
+      "1000_20",
+      {
+        "sizeKB": 1000,
+        "ratePct": 20,
+        "nextTokenMs": 45.5,
+        "nextTokenBytes": 160833,
+        "diffMs": 20,
+        "diffBytes": 24539,
+        "jsBundledMsByEnc": {
+          "identity": 152.09999990463257,
+          "gzip": 57.40000009536743,
+          "brotli": 55.799999952316284
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 1024134,
+          "gzip": 235199,
+          "brotli": 201525
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 76.79999995231628,
+          "gzip": 56,
+          "brotli": 58.39999985694885
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 1022756,
+          "gzip": 209850,
+          "brotli": 197126
+        },
+        "jsChunkedFileCount": 20,
+        "ok": true
+      }
+    ],
+    [
+      "1000_50",
+      {
+        "sizeKB": 1000,
+        "ratePct": 50,
+        "nextTokenMs": 41.60000014305115,
+        "nextTokenBytes": 140028,
+        "diffMs": 29,
+        "diffBytes": 64355,
+        "jsBundledMsByEnc": {
+          "identity": 158.90000009536743,
+          "gzip": 59.89999985694885,
+          "brotli": 51.90000009536743
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 1024134,
+          "gzip": 235199,
+          "brotli": 201525
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 74,
+          "gzip": 56.40000009536743,
+          "brotli": 57.69999980926514
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 1022756,
+          "gzip": 209850,
+          "brotli": 197126
+        },
+        "jsChunkedFileCount": 20,
+        "ok": true
+      }
+    ],
+    [
+      "1000_70",
+      {
+        "sizeKB": 1000,
+        "ratePct": 70,
+        "nextTokenMs": 39.200000047683716,
+        "nextTokenBytes": 142212,
+        "diffMs": 31.09999990463257,
+        "diffBytes": 89219,
+        "jsBundledMsByEnc": {
+          "identity": 149.5,
+          "gzip": 53.80000019073486,
+          "brotli": 48.39999985694885
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 1024134,
+          "gzip": 235199,
+          "brotli": 201525
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 70.60000014305115,
+          "gzip": 55.799999952316284,
+          "brotli": 57.200000047683716
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 1022756,
+          "gzip": 209850,
+          "brotli": 197126
+        },
+        "jsChunkedFileCount": 20,
+        "ok": true
+      }
+    ],
+    [
+      "1000_90",
+      {
+        "sizeKB": 1000,
+        "ratePct": 90,
+        "nextTokenMs": 38.200000047683716,
+        "nextTokenBytes": 151036,
+        "diffMs": 33.89999985694885,
+        "diffBytes": 117087,
+        "jsBundledMsByEnc": {
+          "identity": 150.10000014305115,
+          "gzip": 54.09999990463257,
+          "brotli": 48.60000014305115
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 1024134,
+          "gzip": 235199,
+          "brotli": 201525
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 69.79999995231628,
+          "gzip": 55.40000009536743,
+          "brotli": 55
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 1022756,
+          "gzip": 209850,
+          "brotli": 197126
+        },
+        "jsChunkedFileCount": 20,
+        "ok": true
+      }
+    ],
+    [
+      "2000_1",
+      {
+        "sizeKB": 2000,
+        "ratePct": 1,
+        "nextTokenMs": 55.40000009536743,
+        "nextTokenBytes": 249500,
+        "diffMs": 19.199999809265137,
+        "diffBytes": 4795,
+        "jsBundledMsByEnc": {
+          "identity": 291.90000009536743,
+          "gzip": 108.90000009536743,
+          "brotli": 98
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 2048106,
+          "gzip": 515151,
+          "brotli": 454808
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 121.59999990463257,
+          "gzip": 76.5,
+          "brotli": 74.70000004768372
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 2046732,
+          "gzip": 402762,
+          "brotli": 378361
+        },
+        "jsChunkedFileCount": 30,
+        "ok": true
+      }
+    ],
+    [
+      "2000_5",
+      {
+        "sizeKB": 2000,
+        "ratePct": 5,
+        "nextTokenMs": 57.90000009536743,
+        "nextTokenBytes": 269562,
+        "diffMs": 18.5,
+        "diffBytes": 15520,
+        "jsBundledMsByEnc": {
+          "identity": 299.89999985694885,
+          "gzip": 107.59999990463257,
+          "brotli": 97.59999990463257
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 2048106,
+          "gzip": 515151,
+          "brotli": 454808
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 122,
+          "gzip": 73.90000009536743,
+          "brotli": 75.79999995231628
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 2046732,
+          "gzip": 402762,
+          "brotli": 378361
+        },
+        "jsChunkedFileCount": 30,
+        "ok": true
+      }
+    ],
+    [
+      "2000_20",
+      {
+        "sizeKB": 2000,
+        "ratePct": 20,
+        "nextTokenMs": 65.20000004768372,
+        "nextTokenBytes": 340893,
+        "diffMs": 25.299999952316284,
+        "diffBytes": 56107,
+        "jsBundledMsByEnc": {
+          "identity": 289.2999999523163,
+          "gzip": 108.70000004768372,
+          "brotli": 99.79999995231628
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 2048106,
+          "gzip": 515151,
+          "brotli": 454808
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 125.5,
+          "gzip": 74.70000004768372,
+          "brotli": 75.39999985694885
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 2046732,
+          "gzip": 402762,
+          "brotli": 378361
+        },
+        "jsChunkedFileCount": 30,
+        "ok": true
+      }
+    ],
+    [
+      "2000_50",
+      {
+        "sizeKB": 2000,
+        "ratePct": 50,
+        "nextTokenMs": 86.30000019073486,
+        "nextTokenBytes": 445903,
+        "diffMs": 37.09999990463257,
+        "diffBytes": 126002,
+        "jsBundledMsByEnc": {
+          "identity": 297.40000009536743,
+          "gzip": 103.79999995231628,
+          "brotli": 96.09999990463257
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 2048106,
+          "gzip": 515151,
+          "brotli": 454808
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 125.20000004768372,
+          "gzip": 74.09999990463257,
+          "brotli": 77.79999995231628
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 2046732,
+          "gzip": 402762,
+          "brotli": 378361
+        },
+        "jsChunkedFileCount": 30,
+        "ok": true
+      }
+    ],
+    [
+      "2000_70",
+      {
+        "sizeKB": 2000,
+        "ratePct": 70,
+        "nextTokenMs": 72.90000009536743,
+        "nextTokenBytes": 358815,
+        "diffMs": 48.5,
+        "diffBytes": 182114,
+        "jsBundledMsByEnc": {
+          "identity": 301.09999990463257,
+          "gzip": 112.60000014305115,
+          "brotli": 97.5
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 2048106,
+          "gzip": 515151,
+          "brotli": 454808
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 125.70000004768372,
+          "gzip": 80.5,
+          "brotli": 80.29999995231628
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 2046732,
+          "gzip": 402762,
+          "brotli": 378361
+        },
+        "jsChunkedFileCount": 30,
+        "ok": true
+      }
+    ],
+    [
+      "2000_90",
+      {
+        "sizeKB": 2000,
+        "ratePct": 90,
+        "nextTokenMs": 64.59999990463257,
+        "nextTokenBytes": 282244,
+        "diffMs": 56.09999990463257,
+        "diffBytes": 225487,
+        "jsBundledMsByEnc": {
+          "identity": 315.40000009536743,
+          "gzip": 120.20000004768372,
+          "brotli": 103.40000009536743
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 2048106,
+          "gzip": 515151,
+          "brotli": 454808
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 130.5,
+          "gzip": 82.19999980926514,
+          "brotli": 85
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 2046732,
+          "gzip": 402762,
+          "brotli": 378361
+        },
+        "jsChunkedFileCount": 30,
+        "ok": true
+      }
+    ],
+    [
+      "5000_1",
+      {
+        "sizeKB": 5000,
+        "ratePct": 1,
+        "nextTokenMs": 213.10000014305115,
+        "nextTokenBytes": 1138677,
+        "diffMs": 25,
+        "diffBytes": 10509,
+        "jsBundledMsByEnc": {
+          "identity": 768.2999999523163,
+          "gzip": 307.89999985694885,
+          "brotli": 261.59999990463257
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 5120105,
+          "gzip": 1219350,
+          "brotli": 1040191
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 297.40000009536743,
+          "gzip": 170.79999995231628,
+          "brotli": 161.70000004768372
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 5118716,
+          "gzip": 958067,
+          "brotli": 893052
+        },
+        "jsChunkedFileCount": 50,
+        "ok": true
+      }
+    ],
+    [
+      "5000_5",
+      {
+        "sizeKB": 5000,
+        "ratePct": 5,
+        "nextTokenMs": 207.39999985694885,
+        "nextTokenBytes": 1142013,
+        "diffMs": 35.90000009536743,
+        "diffBytes": 52343,
+        "jsBundledMsByEnc": {
+          "identity": 772.2999999523163,
+          "gzip": 288.7999999523163,
+          "brotli": 262.2999999523163
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 5120105,
+          "gzip": 1219350,
+          "brotli": 1040191
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 271.7999999523163,
+          "gzip": 153.90000009536743,
+          "brotli": 150.70000004768372
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 5118716,
+          "gzip": 958067,
+          "brotli": 893052
+        },
+        "jsChunkedFileCount": 50,
+        "ok": true
+      }
+    ],
+    [
+      "5000_20",
+      {
+        "sizeKB": 5000,
+        "ratePct": 20,
+        "nextTokenMs": 209.29999995231628,
+        "nextTokenBytes": 1149057,
+        "diffMs": 59.09999990463257,
+        "diffBytes": 226737,
+        "jsBundledMsByEnc": {
+          "identity": 772.1000001430511,
+          "gzip": 283.60000014305115,
+          "brotli": 262.2999999523163
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 5120105,
+          "gzip": 1219350,
+          "brotli": 1040191
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 266.19999980926514,
+          "gzip": 152.70000004768372,
+          "brotli": 154.39999985694885
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 5118716,
+          "gzip": 958067,
+          "brotli": 893052
+        },
+        "jsChunkedFileCount": 50,
+        "ok": true
+      }
+    ],
+    [
+      "5000_50",
+      {
+        "sizeKB": 5000,
+        "ratePct": 50,
+        "nextTokenMs": 211.70000004768372,
+        "nextTokenBytes": 1156526,
+        "diffMs": 110.59999990463257,
+        "diffBytes": 570882,
+        "jsBundledMsByEnc": {
+          "identity": 767.9000000953674,
+          "gzip": 277.09999990463257,
+          "brotli": 252.70000004768372
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 5120105,
+          "gzip": 1219350,
+          "brotli": 1040191
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 261.59999990463257,
+          "gzip": 149.79999995231628,
+          "brotli": 150.90000009536743
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 5118716,
+          "gzip": 958067,
+          "brotli": 893052
+        },
+        "jsChunkedFileCount": 50,
+        "ok": true
+      }
+    ],
+    [
+      "5000_70",
+      {
+        "sizeKB": 5000,
+        "ratePct": 70,
+        "nextTokenMs": 209.39999985694885,
+        "nextTokenBytes": 1156556,
+        "diffMs": 149.60000014305115,
+        "diffBytes": 798079,
+        "jsBundledMsByEnc": {
+          "identity": 754.0999999046326,
+          "gzip": 272.2999999523163,
+          "brotli": 235.59999990463257
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 5120105,
+          "gzip": 1219350,
+          "brotli": 1040191
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 253.29999995231628,
+          "gzip": 139.09999990463257,
+          "brotli": 140.89999985694885
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 5118716,
+          "gzip": 958067,
+          "brotli": 893052
+        },
+        "jsChunkedFileCount": 50,
+        "ok": true
+      }
+    ],
+    [
+      "5000_90",
+      {
+        "sizeKB": 5000,
+        "ratePct": 90,
+        "nextTokenMs": 186.90000009536743,
+        "nextTokenBytes": 1145660,
+        "diffMs": 171.89999985694885,
+        "diffBytes": 1025349,
+        "jsBundledMsByEnc": {
+          "identity": 706.7999999523163,
+          "gzip": 232.89999985694885,
+          "brotli": 211.29999995231628
+        },
+        "jsBundledBytesByEnc": {
+          "identity": 5120105,
+          "gzip": 1219350,
+          "brotli": 1040191
+        },
+        "jsChunkedMsByEnc": {
+          "identity": 239.69999980926514,
+          "gzip": 129.39999985694885,
+          "brotli": 133.70000004768372
+        },
+        "jsChunkedBytesByEnc": {
+          "identity": 5118716,
+          "gzip": 958067,
+          "brotli": 893052
+        },
+        "jsChunkedFileCount": 50,
+        "ok": true
+      }
+    ]
+  ],
+  "fingerprint": "ada97bff8f389fcef619fda8d3010eeac8213a21b2ce7e21ffb06f8ccf3a1a84",
+  "createdAt": "2026-11-11T05:59:02.375Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+  "mode": "production"
+}

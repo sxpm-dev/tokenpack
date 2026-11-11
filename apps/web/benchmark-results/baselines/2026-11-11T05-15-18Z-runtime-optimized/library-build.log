@@ -1,0 +1,30 @@
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Target: es2022
+ESM Build start
+ESM dist/index.js 18.79 KB
+ESM ⚡️ Build success in 13ms
+DTS Build start
+DTS ⚡️ Build success in 402ms
+DTS dist/index.d.ts 9.97 KB
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Target: es2022
+ESM Build start
+ESM dist/index.js 124.11 KB
+ESM ⚡️ Build success in 22ms
+DTS Build start
+DTS ⚡️ Build success in 739ms
+DTS dist/index.d.ts 6.46 KB
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Target: es2022
+ESM Build start
+ESM dist/index.js 109.09 KB
+ESM ⚡️ Build success in 19ms
+DTS Build start
+DTS ⚡️ Build success in 1072ms
+DTS dist/index.d.ts 20.27 KB

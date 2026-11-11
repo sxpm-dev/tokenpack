@@ -1,0 +1,50 @@
+{
+  "scope": "partial-fetch",
+  "config": "{\"mode\":\"js-fetch\",\"target\":\"module-00.js\"}",
+  "result": [
+    {
+      "id": "tokenpack-partial",
+      "label": "A. tokenpack range-fetch one file",
+      "detail": "fetchPackManifest reads the manifest header, then fetchPackFile issues a Range header for the target region. No pixel decode. Two HTTP calls.",
+      "totalMs": 7,
+      "wireBytes": 8192,
+      "result": "imported and ran. sentinel: partial-fetch-0",
+      "error": null,
+      "running": false
+    },
+    {
+      "id": "tokenpack-whole",
+      "label": "B. tokenpack whole pack + decode",
+      "detail": "fetch(packUrl).blob() then decode(blob) → DirPack → pack.extract(path). Whole pack downloaded; full pixel decode; one file extracted.",
+      "totalMs": 3.3999998569488525,
+      "wireBytes": 23375,
+      "result": "imported and ran. sentinel: partial-fetch-0",
+      "error": null,
+      "running": false
+    },
+    {
+      "id": "http-single",
+      "label": "C. http single file (no pack)",
+      "detail": "Plain fetch(fileUrl) for the target file only. Baseline for one file.",
+      "totalMs": 1.5,
+      "wireBytes": 5269,
+      "result": "imported and ran. sentinel: partial-fetch-0",
+      "error": null,
+      "running": false
+    },
+    {
+      "id": "http-multi",
+      "label": "D. http all files (no pack)",
+      "detail": "Parallel fetch(...) for every file in the pack. Baseline for \"no pack at all\".",
+      "totalMs": 5.700000047683716,
+      "wireBytes": 52705,
+      "result": "imported and ran. sentinel: partial-fetch-0",
+      "error": null,
+      "running": false
+    }
+  ],
+  "fingerprint": "ada97bff8f389fcef619fda8d3010eeac8213a21b2ce7e21ffb06f8ccf3a1a84",
+  "createdAt": "2026-11-11T05:00:50.455Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "mode": "production"
+}

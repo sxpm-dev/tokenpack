@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "artifact-data",
+  "title": "Give an interactive artifact its own data package",
+  "synthetic": true,
+  "files": [
+    "data/expenses.json",
+    "view.json",
+    "provenance.json"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "web-delivery",
+  "title": "Load selected files through a router",
+  "synthetic": true,
+  "files": [
+    "app/main.js",
+    "app/reports.js",
+    "data/report.json",
+    "app/styles.css"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "bug-reproduction",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "fd0e4b07948b24a3a27795a04a4fb69785dcbe132350dcf773641c37c08361ef",
+  "byteLength": 1354,
+  "files": [
+    {
+      "path": "environment.json",
+      "byteLength": 78,
+      "sha256": "114d05ff62a970aa930ee856711079e3f8bce40205ab0ca2e98a85f0fc6fe824"
+    },
+    {
+      "path": "expected.json",
+      "byteLength": 25,
+      "sha256": "4384d5a6bde73eab2932b5828c57ce2975bce3db072345bd38c4aa06af3eae54"
+    },
+    {
+      "path": "input.json",
+      "byteLength": 92,
+      "sha256": "c42b9b64ecee23a771e9f878bf4e2f98f1e8972f5a22d71ecc92690973022360"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 219,
+      "sha256": "ac105528dbe013c3a131ee7b78379c1fce3ec2059a95e0641d0863c7b55c149f"
+    },
+    {
+      "path": "steps.md",
+      "byteLength": 193,
+      "sha256": "08539582cf162a109a35305b659a89448d72527227da8ddc8ec3dc1c323d19e6"
+    }
+  ]
+}

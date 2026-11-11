@@ -6,6 +6,7 @@ import { useState } from 'react'
 
 import { DEFAULT_ENCODE_CONFIG, type EncodeConfig, EncodeForm } from '@/components/EncodeForm'
 import { Section } from '@/components/EncodeForm/components/Section'
+import { isStaticSite } from '@/lib/site-path'
 
 import { EntryList } from './components/EntryList'
 import { TokenResult } from './components/TokenResult'
@@ -30,7 +31,8 @@ export function BuildToken({ onOpenInExplorer }: BuildTokenProps) {
     await encodeApi.run(entriesApi.entries, config)
   }
 
-  const canEncode = entriesApi.entries.length > 0 && !encodeApi.loading
+  const canEncode =
+    entriesApi.entries.length > 0 && !encodeApi.loading && (!isStaticSite || eligibility.ok)
 
   return (
     <div className="flex flex-col gap-3">
@@ -69,7 +71,12 @@ export function BuildToken({ onOpenInExplorer }: BuildTokenProps) {
         {!eligibility.ok && (
           <Chip color="warning" size="sm" variant="soft">
             <CloudIcon size={12} />
-            <span className="ml-1">{eligibility.reason}</span>
+            <span className="ml-1">
+              {eligibility.reason}
+              {isStaticSite
+                ? '. Run locally for server codecs; choose a deflate or uncompressed codec here.'
+                : ''}
+            </span>
           </Chip>
         )}
       </div>

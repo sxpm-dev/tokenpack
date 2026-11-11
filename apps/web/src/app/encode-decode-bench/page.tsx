@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { SortDescriptor } from 'react-aria-components'
 
 import type { ExtBenchRow } from '@/lib/bench-types'
+import { isStaticSite, sitePath } from '@/lib/site-path'
 
 import { MetricLegend } from './components/MetricLegend'
 import { ResultsTable } from './components/ResultsTable'
@@ -34,7 +35,7 @@ export default function BenchmarkExtendedPage() {
   useEffect(() => {
     let cancelled = false
 
-    fetch('/api/benchmark/extended')
+    fetch(isStaticSite ? sitePath('/saved-benchmarks/extended.json') : '/api/benchmark/extended')
       .then(r => r.json())
       .then((data: ExtendedResponse | { error: string }) => {
         if (cancelled) return

@@ -4,6 +4,8 @@ import { Button, Surface } from '@heroui/react'
 import { CaretUpIcon } from '@phosphor-icons/react'
 import { useEffect, useMemo, useState } from 'react'
 
+import { isStaticSite, sitePath } from '@/lib/site-path'
+
 import { BenchmarkFilters } from './components/BenchmarkFilters'
 import { BestComparison } from './components/BestComparison'
 import { BreakdownChart } from './components/BreakdownChart'
@@ -24,7 +26,7 @@ export default function BenchmarkPage() {
   const [rawOpen, setRawOpen] = useState(false)
 
   useEffect(() => {
-    fetch('/api/benchmark')
+    fetch(isStaticSite ? sitePath('/saved-benchmarks/results.json') : '/api/benchmark')
       .then(r => r.json())
       .then(d => {
         if (d.error) setError(d.error)

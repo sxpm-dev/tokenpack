@@ -1,6 +1,8 @@
 import { decompressRaw } from 'tokenpack/compressors'
 import type { DecompressFn, DecompressMeta } from 'tokenpack/pack-format/decompress'
 
+import { isStaticSite } from '@/lib/site-path'
+
 /**
  * FE-first / server-fallback decompressor. Tries the env-registered browser
  * decompressor first; if it throws (e.g. older browsers without
@@ -11,6 +13,10 @@ export const smartDecompress: DecompressFn = async (bytes, compressor, meta) => 
   try {
     return await decompressRaw(bytes, compressor, meta)
   } catch (clientErr) {
+    if (isStaticSite)
+      throw new Error(
+        `This browser cannot decode this file. Try a deflate example or run locally for the server fallback. ${clientErr instanceof Error ? clientErr.message : String(clientErr)}`,
+      )
     try {
       return await serverDecompress(bytes, compressor, meta)
     } catch (serverErr) {

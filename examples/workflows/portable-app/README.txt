@@ -1,0 +1,1 @@
+Self-contained illustrative calculator. No external requests. Open the extracted HTML in an isolated browser context.

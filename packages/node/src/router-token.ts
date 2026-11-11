@@ -209,12 +209,22 @@ export class RouterToken {
 
   private async loadWithMode(pathOrUrl: string, stream: boolean): Promise<Uint8Array> {
     const entry = await this.resolveFile(pathOrUrl)
-    const cacheKey = `${stream ? 'stream' : 'buffer'}:${entry.url}`
+
+    return this.loadEntry(entry, stream)
+  }
+
+  private loadEntry(entry: RouterFileEntry, stream: boolean): Promise<Uint8Array> {
+    const cacheKey = entry.url
     let cached = this.bytesCache.get(cacheKey)
 
     if (!cached) {
       cached = this.loadOne(entry, stream)
       this.bytesCache.set(cacheKey, cached)
+      const pending = cached
+
+      pending.catch(() => {
+        if (this.bytesCache.get(cacheKey) === pending) this.bytesCache.delete(cacheKey)
+      })
     }
 
     return cached
@@ -288,19 +298,24 @@ export class RouterToken {
     stream: boolean,
   ): Promise<Map<RouterFileEntry, Uint8Array>> {
     const entries = await Promise.all(
-      files.map(async file => [file, await this.loadOne(file, stream)] as const),
+      files.map(async file => [file, await this.loadEntry(file, stream)] as const),
     )
 
     return new Map(entries)
   }
 
   private async chunkBytes(chunk: ChunkEntry, stream: boolean): Promise<Uint8Array> {
-    const cacheKey = `${stream ? 'stream' : 'buffer'}:${chunk.id}`
+    const cacheKey = chunk.id
     let cached = this.chunkBytesCache.get(cacheKey)
 
     if (!cached) {
       cached = this.decodeChunkBytes(chunk, stream)
       this.chunkBytesCache.set(cacheKey, cached)
+      const pending = cached
+
+      pending.catch(() => {
+        if (this.chunkBytesCache.get(cacheKey) === pending) this.chunkBytesCache.delete(cacheKey)
+      })
     }
 
     return cached

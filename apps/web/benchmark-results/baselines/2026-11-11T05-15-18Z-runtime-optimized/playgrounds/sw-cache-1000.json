@@ -1,0 +1,111 @@
+{
+  "scope": "scenario",
+  "config": "{\"scenario\":\"sw-cache\",\"size\":1000,\"iterations\":5,\"throttle\":\"local\",\"runSkipped\":false}",
+  "result": [
+    [
+      "raw-json",
+      {
+        "state": "done",
+        "row": {
+          "variantId": "raw-json",
+          "iterations": 5,
+          "totalMs": {
+            "median": 2.1999998092651367,
+            "p95": 2.200000047683716,
+            "min": 2,
+            "max": 2.200000047683716
+          },
+          "wireBytes": 1024174,
+          "fingerprint": {
+            "hash": "bb88f70511a19fcb",
+            "bytes": 1024174,
+            "head": "{\"items\":[{\"id\":0,\"name\":\"Sofia Lopez\",\"email\":\"sofia.lo"
+          },
+          "perRunTotalMs": [
+            2.1999998092651367,
+            2.200000047683716,
+            2.200000047683716,
+            2.1999998092651367,
+            2
+          ]
+        }
+      }
+    ],
+    [
+      "deflate",
+      {
+        "state": "done",
+        "row": {
+          "variantId": "deflate",
+          "iterations": 5,
+          "totalMs": {
+            "median": 2.799999952316284,
+            "p95": 2.8000001907348633,
+            "min": 2.6999998092651367,
+            "max": 2.8000001907348633
+          },
+          "wireBytes": 82452,
+          "fingerprint": {
+            "hash": "bb88f70511a19fcb",
+            "bytes": 1024174,
+            "head": "{\"items\":[{\"id\":0,\"name\":\"Sofia Lopez\",\"email\":\"sofia.lo"
+          },
+          "perRunTotalMs": [
+            2.700000047683716,
+            2.6999998092651367,
+            2.799999952316284,
+            2.799999952316284,
+            2.8000001907348633
+          ]
+        }
+      }
+    ],
+    [
+      "brotli",
+      {
+        "state": "skipped",
+        "reason": "Partial-compat — needs DecompressionStream('br'). Toggle \"Run skipped cases\" to include."
+      }
+    ],
+    [
+      "tokenpack-deflate",
+      {
+        "state": "done",
+        "row": {
+          "variantId": "tokenpack-deflate",
+          "iterations": 5,
+          "totalMs": {
+            "median": 3.299999952316284,
+            "p95": 3.5999999046325684,
+            "min": 3.299999952316284,
+            "max": 3.5999999046325684
+          },
+          "wireBytes": 82782,
+          "fingerprint": {
+            "hash": "bb88f70511a19fcb",
+            "bytes": 1024174,
+            "head": "{\"items\":[{\"id\":0,\"name\":\"Sofia Lopez\",\"email\":\"sofia.lo"
+          },
+          "perRunTotalMs": [
+            3.5999999046325684,
+            3.299999952316284,
+            3.3000001907348633,
+            3.299999952316284,
+            3.299999952316284
+          ]
+        }
+      }
+    ],
+    [
+      "tokenpack-brotli",
+      {
+        "state": "skipped",
+        "reason": "Partial-compat — needs DecompressionStream('br'). Toggle \"Run skipped cases\" to include."
+      }
+    ]
+  ],
+  "fingerprint": "ada97bff8f389fcef619fda8d3010eeac8213a21b2ce7e21ffb06f8ccf3a1a84",
+  "createdAt": "2026-11-11T05:30:43.823Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "mode": "production"
+}

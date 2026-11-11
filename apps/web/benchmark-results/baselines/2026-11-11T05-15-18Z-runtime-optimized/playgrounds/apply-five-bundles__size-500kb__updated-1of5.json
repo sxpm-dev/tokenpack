@@ -1,0 +1,957 @@
+{
+  "scope": "apply-diff",
+  "config": "{\"caseId\":\"five-bundles__size-500kb__updated-1of5\",\"iterations\":5,\"throttle\":\"local\"}",
+  "result": [
+    [
+      "http-raw-full",
+      {
+        "state": "done",
+        "row": {
+          "id": "http-raw-full",
+          "label": "http raw full 1.0.1",
+          "kind": "native-full",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.6000001430511475,
+            "transferMs": 1.7999999523162842,
+            "decodeMs": 0,
+            "applyMs": 0,
+            "totalMs": 1.7999999523162842,
+            "wireBytes": 291369
+          },
+          "p95": {
+            "ttfbMs": 2.200000047683716,
+            "transferMs": 2.3999998569488525,
+            "decodeMs": 0,
+            "applyMs": 0,
+            "totalMs": 2.3999998569488525,
+            "wireBytes": 291369
+          },
+          "perRunTotal": [
+            2.3999998569488525,
+            1.7999999523162842,
+            2,
+            1.5,
+            1.3999998569488525
+          ],
+          "verifyHash": "31735f479c190469",
+          "verifyBytes": 291369
+        }
+      }
+    ],
+    [
+      "http-deflate-full",
+      {
+        "state": "done",
+        "row": {
+          "id": "http-deflate-full",
+          "label": "http deflate full 1.0.1",
+          "kind": "native-full",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.6000001430511475,
+            "transferMs": 2,
+            "decodeMs": 0,
+            "applyMs": 0,
+            "totalMs": 2,
+            "wireBytes": 36823
+          },
+          "p95": {
+            "ttfbMs": 2,
+            "transferMs": 2.4000000953674316,
+            "decodeMs": 0,
+            "applyMs": 0,
+            "totalMs": 2.4000000953674316,
+            "wireBytes": 36823
+          },
+          "perRunTotal": [
+            2,
+            2.4000000953674316,
+            1.8000001907348633,
+            2,
+            2
+          ],
+          "verifyHash": "31735f479c190469",
+          "verifyBytes": 291369
+        }
+      }
+    ],
+    [
+      "http-brotli-full",
+      {
+        "state": "done",
+        "row": {
+          "id": "http-brotli-full",
+          "label": "http brotli full 1.0.1",
+          "kind": "native-full",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5999999046325684,
+            "transferMs": 2.0999999046325684,
+            "decodeMs": 0,
+            "applyMs": 0,
+            "totalMs": 2.0999999046325684,
+            "wireBytes": 20952
+          },
+          "p95": {
+            "ttfbMs": 4.5,
+            "transferMs": 4.700000047683716,
+            "decodeMs": 0,
+            "applyMs": 0,
+            "totalMs": 4.700000047683716,
+            "wireBytes": 20952
+          },
+          "perRunTotal": [
+            2.0999999046325684,
+            1.7000000476837158,
+            1.8000001907348633,
+            4.700000047683716,
+            2.799999952316284
+          ],
+          "verifyHash": "31735f479c190469",
+          "verifyBytes": 291369
+        }
+      }
+    ],
+    [
+      "token-full-linear-deflate-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "token-full-linear-deflate-c3",
+          "label": "linear-deflate-c3 full 1.0.1",
+          "kind": "token-full",
+          "tokenId": "linear-deflate-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5999999046325684,
+            "transferMs": 1.5999999046325684,
+            "decodeMs": 1.9000000953674316,
+            "applyMs": 0,
+            "totalMs": 3.5,
+            "wireBytes": 45003
+          },
+          "p95": {
+            "ttfbMs": 2.5,
+            "transferMs": 2.700000047683716,
+            "decodeMs": 2,
+            "applyMs": 0,
+            "totalMs": 4.700000047683716,
+            "wireBytes": 45003
+          },
+          "perRunTotal": [
+            3.6000001430511475,
+            3.200000047683716,
+            4.700000047683716,
+            3.5,
+            3.200000047683716
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "token-full-linear-stream-deflate-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "token-full-linear-stream-deflate-c3",
+          "label": "linear-stream-deflate-c3 full 1.0.1",
+          "kind": "token-full",
+          "tokenId": "linear-stream-deflate-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5,
+            "transferMs": 3.1000001430511475,
+            "decodeMs": 2.1000001430511475,
+            "applyMs": 0,
+            "totalMs": 3.6000001430511475,
+            "wireBytes": 45753
+          },
+          "p95": {
+            "ttfbMs": 1.7000000476837158,
+            "transferMs": 3.4000000953674316,
+            "decodeMs": 2.299999952316284,
+            "applyMs": 0,
+            "totalMs": 4,
+            "wireBytes": 45753
+          },
+          "perRunTotal": [
+            3.9000000953674316,
+            3.5,
+            3.5,
+            4,
+            3.6000001430511475
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "token-full-linear-stream-deflate-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "token-full-linear-stream-deflate-c4",
+          "label": "linear-stream-deflate-c4 full 1.0.1",
+          "kind": "token-full",
+          "tokenId": "linear-stream-deflate-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5999999046325684,
+            "transferMs": 3.200000047683716,
+            "decodeMs": 2,
+            "applyMs": 0,
+            "totalMs": 3.700000047683716,
+            "wireBytes": 45663
+          },
+          "p95": {
+            "ttfbMs": 3.9000000953674316,
+            "transferMs": 5.5,
+            "decodeMs": 2.200000047683716,
+            "applyMs": 0,
+            "totalMs": 6.1000001430511475,
+            "wireBytes": 45663
+          },
+          "perRunTotal": [
+            3.700000047683716,
+            3.700000047683716,
+            6.1000001430511475,
+            4.299999952316284,
+            3.5
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "token-full-pixel-range-deflate-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "token-full-pixel-range-deflate-c3",
+          "label": "pixel-range-deflate-c3 full 1.0.1",
+          "kind": "token-full",
+          "tokenId": "pixel-range-deflate-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.8000001907348633,
+            "transferMs": 1.9000000953674316,
+            "decodeMs": 0.7999999523162842,
+            "applyMs": 0,
+            "totalMs": 2.700000047683716,
+            "wireBytes": 45006
+          },
+          "p95": {
+            "ttfbMs": 2.0999999046325684,
+            "transferMs": 2.299999952316284,
+            "decodeMs": 0.7999999523162842,
+            "applyMs": 0,
+            "totalMs": 3.0999999046325684,
+            "wireBytes": 45006
+          },
+          "perRunTotal": [
+            2.700000047683716,
+            3.0999999046325684,
+            2.6000001430511475,
+            2.4000000953674316,
+            2.700000047683716
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "token-full-pixel-range-deflate-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "token-full-pixel-range-deflate-c4",
+          "label": "pixel-range-deflate-c4 full 1.0.1",
+          "kind": "token-full",
+          "tokenId": "pixel-range-deflate-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5,
+            "transferMs": 1.6999998092651367,
+            "decodeMs": 0.9000000953674316,
+            "applyMs": 0,
+            "totalMs": 2.5999999046325684,
+            "wireBytes": 45006
+          },
+          "p95": {
+            "ttfbMs": 1.8999998569488525,
+            "transferMs": 2.0999999046325684,
+            "decodeMs": 0.9000000953674316,
+            "applyMs": 0,
+            "totalMs": 3,
+            "wireBytes": 45006
+          },
+          "perRunTotal": [
+            3,
+            2.8999998569488525,
+            2.5999999046325684,
+            2.299999952316284,
+            2.5
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "token-full-pixel-range-none-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "token-full-pixel-range-none-c3",
+          "label": "pixel-range-none-c3 full 1.0.1",
+          "kind": "token-full",
+          "tokenId": "pixel-range-none-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.4000000953674316,
+            "transferMs": 1.4000000953674316,
+            "decodeMs": 0.7000000476837158,
+            "applyMs": 0,
+            "totalMs": 2.1000001430511475,
+            "wireBytes": 61718
+          },
+          "p95": {
+            "ttfbMs": 1.5,
+            "transferMs": 1.7000000476837158,
+            "decodeMs": 0.5,
+            "applyMs": 0,
+            "totalMs": 2.200000047683716,
+            "wireBytes": 61718
+          },
+          "perRunTotal": [
+            2.1000001430511475,
+            2,
+            2.200000047683716,
+            2.1000001430511475,
+            2
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "token-full-pixel-range-none-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "token-full-pixel-range-none-c4",
+          "label": "pixel-range-none-c4 full 1.0.1",
+          "kind": "token-full",
+          "tokenId": "pixel-range-none-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.7999999523162842,
+            "transferMs": 2,
+            "decodeMs": 0.5,
+            "applyMs": 0,
+            "totalMs": 2.5,
+            "wireBytes": 61718
+          },
+          "p95": {
+            "ttfbMs": 4.900000095367432,
+            "transferMs": 5.1000001430511475,
+            "decodeMs": 0.5999999046325684,
+            "applyMs": 0,
+            "totalMs": 5.700000047683716,
+            "wireBytes": 61718
+          },
+          "perRunTotal": [
+            5.700000047683716,
+            2.799999952316284,
+            1.7999999523162842,
+            2.5,
+            2.5
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "token-full-pixel-range-stream-deflate-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "token-full-pixel-range-stream-deflate-c3",
+          "label": "pixel-range-stream-deflate-c3 full 1.0.1",
+          "kind": "token-full",
+          "tokenId": "pixel-range-stream-deflate-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5,
+            "transferMs": 1.8999998569488525,
+            "decodeMs": 0.8999998569488525,
+            "applyMs": 0,
+            "totalMs": 2.3999998569488525,
+            "wireBytes": 57332
+          },
+          "p95": {
+            "ttfbMs": 2.1000001430511475,
+            "transferMs": 2.4000000953674316,
+            "decodeMs": 0.7999999523162842,
+            "applyMs": 0,
+            "totalMs": 2.9000000953674316,
+            "wireBytes": 57332
+          },
+          "perRunTotal": [
+            2.9000000953674316,
+            2.3999998569488525,
+            2.5,
+            2,
+            2.299999952316284
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "token-full-pixel-range-stream-deflate-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "token-full-pixel-range-stream-deflate-c4",
+          "label": "pixel-range-stream-deflate-c4 full 1.0.1",
+          "kind": "token-full",
+          "tokenId": "pixel-range-stream-deflate-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5,
+            "transferMs": 1.9000000953674316,
+            "decodeMs": 0.9000000953674316,
+            "applyMs": 0,
+            "totalMs": 2.4000000953674316,
+            "wireBytes": 57332
+          },
+          "p95": {
+            "ttfbMs": 2.1000001430511475,
+            "transferMs": 2.4000000953674316,
+            "decodeMs": 0.8999998569488525,
+            "applyMs": 0,
+            "totalMs": 3,
+            "wireBytes": 57332
+          },
+          "perRunTotal": [
+            3,
+            2.3999998569488525,
+            2.5,
+            2.299999952316284,
+            2.4000000953674316
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "diff-apply-linear-deflate-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "diff-apply-linear-deflate-c3",
+          "label": "linear-deflate-c3 diff apply",
+          "kind": "diff-apply",
+          "tokenId": "linear-deflate-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.2999999523162842,
+            "transferMs": 1.4000000953674316,
+            "decodeMs": 1.0999999046325684,
+            "applyMs": 0.9000000953674316,
+            "totalMs": 3.4000000953674316,
+            "wireBytes": 24865
+          },
+          "p95": {
+            "ttfbMs": 3.8999998569488525,
+            "transferMs": 4.099999904632568,
+            "decodeMs": 2.1000001430511475,
+            "applyMs": 0.7999999523162842,
+            "totalMs": 7,
+            "wireBytes": 24865
+          },
+          "perRunTotal": [
+            3.4000000953674316,
+            3.3000001907348633,
+            7,
+            3.700000047683716,
+            3.1999998092651367
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "diff-apply-linear-stream-deflate-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "diff-apply-linear-stream-deflate-c3",
+          "label": "linear-stream-deflate-c3 diff apply",
+          "kind": "diff-apply",
+          "tokenId": "linear-stream-deflate-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 2,
+            "transferMs": 3.299999952316284,
+            "decodeMs": 1.2999999523162842,
+            "applyMs": 0.7000000476837158,
+            "totalMs": 4,
+            "wireBytes": 25302
+          },
+          "p95": {
+            "ttfbMs": 3.799999952316284,
+            "transferMs": 5.099999904632568,
+            "decodeMs": 1.2999999523162842,
+            "applyMs": 0.7000000476837158,
+            "totalMs": 5.799999952316284,
+            "wireBytes": 25302
+          },
+          "perRunTotal": [
+            4,
+            3.8000001907348633,
+            3.799999952316284,
+            5.799999952316284,
+            4.099999904632568
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "diff-apply-linear-stream-deflate-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "diff-apply-linear-stream-deflate-c4",
+          "label": "linear-stream-deflate-c4 diff apply",
+          "kind": "diff-apply",
+          "tokenId": "linear-stream-deflate-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.7999999523162842,
+            "transferMs": 2.799999952316284,
+            "decodeMs": 1,
+            "applyMs": 0.7999999523162842,
+            "totalMs": 3.5999999046325684,
+            "wireBytes": 25302
+          },
+          "p95": {
+            "ttfbMs": 2.1000001430511475,
+            "transferMs": 3.299999952316284,
+            "decodeMs": 1.1999998092651367,
+            "applyMs": 0.9000000953674316,
+            "totalMs": 4.200000047683716,
+            "wireBytes": 25302
+          },
+          "perRunTotal": [
+            3.5999999046325684,
+            4.200000047683716,
+            3.6000001430511475,
+            3.3000001907348633,
+            3.5
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "diff-apply-pixel-range-deflate-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "diff-apply-pixel-range-deflate-c3",
+          "label": "pixel-range-deflate-c3 diff apply",
+          "kind": "diff-apply",
+          "tokenId": "pixel-range-deflate-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.8000001907348633,
+            "transferMs": 1.9000000953674316,
+            "decodeMs": 0.09999990463256836,
+            "applyMs": 0.8000001907348633,
+            "totalMs": 2.8000001907348633,
+            "wireBytes": 24906
+          },
+          "p95": {
+            "ttfbMs": 4.799999952316284,
+            "transferMs": 4.8999998569488525,
+            "decodeMs": 0.40000009536743164,
+            "applyMs": 0.7999999523162842,
+            "totalMs": 6.099999904632568,
+            "wireBytes": 24906
+          },
+          "perRunTotal": [
+            6.099999904632568,
+            2.8000001907348633,
+            2.8999998569488525,
+            2.799999952316284,
+            2.5
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "diff-apply-pixel-range-deflate-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "diff-apply-pixel-range-deflate-c4",
+          "label": "pixel-range-deflate-c4 diff apply",
+          "kind": "diff-apply",
+          "tokenId": "pixel-range-deflate-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.2999999523162842,
+            "transferMs": 1.3999998569488525,
+            "decodeMs": 0.3000001907348633,
+            "applyMs": 0.7999999523162842,
+            "totalMs": 2.5,
+            "wireBytes": 24906
+          },
+          "p95": {
+            "ttfbMs": 2,
+            "transferMs": 2.0999999046325684,
+            "decodeMs": 0.20000004768371582,
+            "applyMs": 0.9000000953674316,
+            "totalMs": 3.200000047683716,
+            "wireBytes": 24906
+          },
+          "perRunTotal": [
+            3.200000047683716,
+            2.700000047683716,
+            2.3999998569488525,
+            2.5,
+            2.4000000953674316
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "diff-apply-pixel-range-none-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "diff-apply-pixel-range-none-c3",
+          "label": "pixel-range-none-c3 diff apply",
+          "kind": "diff-apply",
+          "tokenId": "pixel-range-none-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5999999046325684,
+            "transferMs": 1.5999999046325684,
+            "decodeMs": 0,
+            "applyMs": 0.9000000953674316,
+            "totalMs": 2.5,
+            "wireBytes": 35529
+          },
+          "p95": {
+            "ttfbMs": 4,
+            "transferMs": 4.199999809265137,
+            "decodeMs": 0.10000014305114746,
+            "applyMs": 0.7999999523162842,
+            "totalMs": 5.099999904632568,
+            "wireBytes": 35529
+          },
+          "perRunTotal": [
+            2.299999952316284,
+            2.5,
+            5.099999904632568,
+            2.799999952316284,
+            2.0999999046325684
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "diff-apply-pixel-range-none-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "diff-apply-pixel-range-none-c4",
+          "label": "pixel-range-none-c4 diff apply",
+          "kind": "diff-apply",
+          "tokenId": "pixel-range-none-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5,
+            "transferMs": 1.6000001430511475,
+            "decodeMs": 0,
+            "applyMs": 0.8999998569488525,
+            "totalMs": 2.5,
+            "wireBytes": 35529
+          },
+          "p95": {
+            "ttfbMs": 3.6000001430511475,
+            "transferMs": 3.799999952316284,
+            "decodeMs": 0.10000014305114746,
+            "applyMs": 0.7999999523162842,
+            "totalMs": 4.700000047683716,
+            "wireBytes": 35529
+          },
+          "perRunTotal": [
+            3.799999952316284,
+            2.5,
+            2.3999998569488525,
+            2.299999952316284,
+            4.700000047683716
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "diff-apply-pixel-range-stream-deflate-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "diff-apply-pixel-range-stream-deflate-c3",
+          "label": "pixel-range-stream-deflate-c3 diff apply",
+          "kind": "diff-apply",
+          "tokenId": "pixel-range-stream-deflate-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.7999999523162842,
+            "transferMs": 2,
+            "decodeMs": 0.20000004768371582,
+            "applyMs": 0.7999999523162842,
+            "totalMs": 2.799999952316284,
+            "wireBytes": 37232
+          },
+          "p95": {
+            "ttfbMs": 2.200000047683716,
+            "transferMs": 2.5,
+            "decodeMs": 0.2999999523162842,
+            "applyMs": 0.7000000476837158,
+            "totalMs": 3.200000047683716,
+            "wireBytes": 37232
+          },
+          "perRunTotal": [
+            3.200000047683716,
+            2.799999952316284,
+            2.799999952316284,
+            2.4000000953674316,
+            2.5999999046325684
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "diff-apply-pixel-range-stream-deflate-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "diff-apply-pixel-range-stream-deflate-c4",
+          "label": "pixel-range-stream-deflate-c4 diff apply",
+          "kind": "diff-apply",
+          "tokenId": "pixel-range-stream-deflate-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.9000000953674316,
+            "transferMs": 2.200000047683716,
+            "decodeMs": 0.2999999523162842,
+            "applyMs": 0.7000000476837158,
+            "totalMs": 2.9000000953674316,
+            "wireBytes": 37232
+          },
+          "p95": {
+            "ttfbMs": 3.700000047683716,
+            "transferMs": 4,
+            "decodeMs": 0.2999999523162842,
+            "applyMs": 0.7000000476837158,
+            "totalMs": 4.700000047683716,
+            "wireBytes": 37232
+          },
+          "perRunTotal": [
+            3,
+            2.9000000953674316,
+            4.700000047683716,
+            2.4000000953674316,
+            2.5999999046325684
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "range-fetch-pixel-range-none-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "range-fetch-pixel-range-none-c3",
+          "label": "pixel-range-none-c3 range changed fetch",
+          "kind": "range-changed-fetch",
+          "tokenId": "pixel-range-none-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.2999999523162842,
+            "transferMs": 2.8999998569488525,
+            "decodeMs": 0.2999999523162842,
+            "applyMs": 0.20000004768371582,
+            "totalMs": 3.3999998569488525,
+            "wireBytes": 35756
+          },
+          "p95": {
+            "ttfbMs": 2,
+            "transferMs": 3.700000047683716,
+            "decodeMs": 0.20000004768371582,
+            "applyMs": 0.2999999523162842,
+            "totalMs": 4.200000047683716,
+            "wireBytes": 35756
+          },
+          "perRunTotal": [
+            4.200000047683716,
+            3.3999998569488525,
+            3.3999998569488525,
+            3.6000001430511475,
+            3.299999952316284
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "range-stream-pixel-range-none-c3",
+      {
+        "state": "done",
+        "row": {
+          "id": "range-stream-pixel-range-none-c3",
+          "label": "pixel-range-none-c3 range changed stream",
+          "kind": "range-changed-stream",
+          "tokenId": "pixel-range-none-c3",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5999999046325684,
+            "transferMs": 3.200000047683716,
+            "decodeMs": 1.6000001430511475,
+            "applyMs": 0.39999985694885254,
+            "totalMs": 3.5999999046325684,
+            "wireBytes": 35756
+          },
+          "p95": {
+            "ttfbMs": 2.1000001430511475,
+            "transferMs": 3.8000001907348633,
+            "decodeMs": 1.7000000476837158,
+            "applyMs": 0.2999999523162842,
+            "totalMs": 4.1000001430511475,
+            "wireBytes": 35756
+          },
+          "perRunTotal": [
+            4.1000001430511475,
+            3.8999998569488525,
+            3.5,
+            3.4000000953674316,
+            3.5999999046325684
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "range-fetch-pixel-range-none-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "range-fetch-pixel-range-none-c4",
+          "label": "pixel-range-none-c4 range changed fetch",
+          "kind": "range-changed-fetch",
+          "tokenId": "pixel-range-none-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5,
+            "transferMs": 3,
+            "decodeMs": 0.2999999523162842,
+            "applyMs": 0.2999999523162842,
+            "totalMs": 3.5999999046325684,
+            "wireBytes": 35756
+          },
+          "p95": {
+            "ttfbMs": 4.199999809265137,
+            "transferMs": 5.8999998569488525,
+            "decodeMs": 0.2999999523162842,
+            "applyMs": 0.3000001907348633,
+            "totalMs": 6.5,
+            "wireBytes": 35756
+          },
+          "perRunTotal": [
+            4,
+            3.5999999046325684,
+            3.200000047683716,
+            3.4000000953674316,
+            6.5
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ],
+    [
+      "range-stream-pixel-range-none-c4",
+      {
+        "state": "done",
+        "row": {
+          "id": "range-stream-pixel-range-none-c4",
+          "label": "pixel-range-none-c4 range changed stream",
+          "kind": "range-changed-stream",
+          "tokenId": "pixel-range-none-c4",
+          "iterations": 5,
+          "median": {
+            "ttfbMs": 1.5,
+            "transferMs": 3.5,
+            "decodeMs": 2,
+            "applyMs": 0.2999999523162842,
+            "totalMs": 3.799999952316284,
+            "wireBytes": 35756
+          },
+          "p95": {
+            "ttfbMs": 1.7999999523162842,
+            "transferMs": 4,
+            "decodeMs": 2.200000047683716,
+            "applyMs": 0.39999985694885254,
+            "totalMs": 4.3999998569488525,
+            "wireBytes": 35756
+          },
+          "perRunTotal": [
+            4.3999998569488525,
+            3.6000001430511475,
+            3.799999952316284,
+            3.9000000953674316,
+            3.5
+          ],
+          "verifyHash": "a4c369b4d6b0ca1a",
+          "verifyBytes": 512000
+        }
+      }
+    ]
+  ],
+  "fingerprint": "ada97bff8f389fcef619fda8d3010eeac8213a21b2ce7e21ffb06f8ccf3a1a84",
+  "createdAt": "2026-11-11T05:30:18.610Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "mode": "production"
+}

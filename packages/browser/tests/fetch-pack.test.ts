@@ -1,6 +1,6 @@
 import { createServer, type Server } from 'node:http'
 
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 let server: Server | null = null
 
@@ -13,10 +13,54 @@ describe('fetch-pack', () => {
     await new Promise<void>((resolve, reject) => s.close(err => (err ? reject(err) : resolve())))
   })
 
+  it('coalesces an array of adjacent files and permits HTTP cache reuse', async () => {
+    const { RemoteRangePack } = await import('../src/fetch-pack')
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
+      const [start, end] = String((init?.headers as Record<string, string>).Range)
+        .slice(6)
+        .split('-')
+        .map(Number)
+
+      return new Response(Uint8Array.of(65, 66, 67, 68).slice(start - 100, end - 99), {
+        status: 206,
+      })
+    })
+    const files = ['a', 'b'].map((path, i) => ({
+      path,
+      offset: i * 2,
+      compressedSize: 2,
+      originalSize: 2,
+      compressor: 'none',
+      level: 0,
+    }))
+    const pack = new RemoteRangePack({
+      url: 'https://example.test/pack.png',
+      manifest: { version: 1, files },
+      fileByPath: new Map(files.map(f => [f.path, f])),
+      prefetchedBytes: new Uint8Array(0),
+      regionsAbsOffset: 100,
+    })
+
+    try {
+      expect(await pack.text(['b', 'a'])).toEqual(
+        new Map([
+          ['b', 'CD'],
+          ['a', 'AB'],
+        ]),
+      )
+      expect(fetchSpy).toHaveBeenCalledTimes(1)
+      expect(fetchSpy.mock.calls[0][1]?.cache).not.toBe('no-store')
+      fetchSpy.mockClear()
+      expect(await pack.text(['a', 'a'])).toEqual(new Map([['a', 'AB']]))
+      expect(fetchSpy).toHaveBeenCalledTimes(1)
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
+
   it('decompresses deflate pack files when imported as a direct browser subpath', async () => {
-    const { fetchPackFile, fetchPackFileStream, fetchPackManifest } = await import(
-      '../src/fetch-pack'
-    )
+    const { fetchPackFile, fetchPackFileStream, fetchPackManifest } =
+      await import('../src/fetch-pack')
     const { decompressRaw } = await import('tokenpack/compressors')
     const { encode, PackBuilder } = await import('@tokenpack/node')
     const source = new TextEncoder().encode('export const value = "range-fetch coverage";')

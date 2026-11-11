@@ -24,7 +24,8 @@ export async function decodeStreamingPng(
   const reader = stream.getReader()
 
   // ── PNG-container state ────────────────────────────────────────────
-  let pngBuf: Uint8Array<ArrayBufferLike> = new Uint8Array(0)
+  const input = new ByteQueue()
+  let chunkHeader: { length: number; type: string } | null = null
   let pngState: 'sig' | 'chunk' | 'done' = 'sig'
 
   let width = 0
@@ -65,6 +66,14 @@ export async function decodeStreamingPng(
 
   const readyRows: Uint8Array[] = []
   let pngDone = false
+  let failure: unknown
+  let wake: (() => void) | undefined
+  const notify = () => {
+    const resolve = wake
+
+    wake = undefined
+    resolve?.()
+  }
 
   let idatInflate: InflateHandle | null = null
 
@@ -87,25 +96,38 @@ export async function decodeStreamingPng(
 
       prevLine = line
       readyRows.push(line)
+      notify()
     }
   }
 
   async function parsePng() {
     while (true) {
       if (pngState === 'sig') {
-        if (pngBuf.byteLength < 8) return
-        pngBuf = pngBuf.subarray(8)
+        if (input.length < 8) return
+        const signature = input.take(8)
+
+        if (!signature.every((byte, index) => byte === [137, 80, 78, 71, 13, 10, 26, 10][index])) {
+          throw new Error('decodeStreamingPng: invalid PNG signature')
+        }
         pngState = 'chunk'
       }
       if (pngState === 'chunk') {
-        if (pngBuf.byteLength < 8) return
-        const len = readUint32BE(pngBuf, 0)
+        if (!chunkHeader) {
+          if (input.length < 8) return
+          const header = input.take(8)
 
-        if (pngBuf.byteLength < 12 + len) return
-        const type = String.fromCharCode(pngBuf[4], pngBuf[5], pngBuf[6], pngBuf[7])
-        const data = pngBuf.subarray(8, 8 + len)
+          chunkHeader = {
+            length: readUint32BE(header, 0),
+            type: String.fromCharCode(...header.subarray(4, 8)),
+          }
+        }
+        const { length: len, type } = chunkHeader
 
-        pngBuf = pngBuf.subarray(12 + len)
+        if (input.length < len + 4) return
+        const data = input.take(len)
+
+        input.take(4) // CRC; validation remains the same as the existing streaming surface.
+        chunkHeader = null
 
         if (type === 'IHDR') {
           width = readUint32BE(data, 0)
@@ -135,38 +157,50 @@ export async function decodeStreamingPng(
   }
 
   const pumpDone = (async () => {
-    while (true) {
-      const { done, value } = await reader.read()
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
 
-      if (done) break
-      pngBuf = concat(pngBuf, value)
-      await parsePng()
-      if ((pngState as string) === 'done') break
-    }
-    const handle = idatInflate as InflateHandle | null
-
-    if ((pngState as string) !== 'done' && handle) {
-      try {
-        await handle.writer.close()
-      } catch {
-        /* already closed */
+        if (done) break
+        input.push(value)
+        await parsePng()
+        if ((pngState as string) === 'done') break
       }
-      await handle.pump.catch(() => undefined)
+      if ((pngState as string) !== 'done')
+        throw new Error('decodeStreamingPng: truncated PNG before IEND')
+    } catch (error) {
+      failure = error
+      const handle = idatInflate as InflateHandle | null
+
+      if (handle) await handle.writer.abort(error).catch(() => undefined)
+    } finally {
+      pngDone = true
+      notify()
+      await reader.cancel().catch(() => undefined)
+      reader.releaseLock()
     }
-    pngDone = true
   })()
 
   await Promise.race([ihdrReady, pumpDone])
-  if (!ihdrSeen) throw new Error('decodeStreamingPng: input ended before PNG IHDR')
+  if (!ihdrSeen) throw failure ?? new Error('decodeStreamingPng: input ended before PNG IHDR')
 
   const rows = (async function* () {
-    while (true) {
-      while (readyRows.length > 0) {
-        yield readyRows.shift()!
+    try {
+      while (true) {
+        if (failure) throw failure
+        // Drain a batch without shifting the array for every scanline.
+        const batch = readyRows.splice(0)
+
+        for (const row of batch) yield row
+        if (failure) throw failure
+        if (pngDone && readyRows.length === 0) return
+        if (readyRows.length === 0)
+          await new Promise<void>(resolve => {
+            wake = resolve
+          })
       }
-      if (pngDone) return
-      await Promise.resolve()
-      await new Promise(r => setTimeout(r, 0))
+    } finally {
+      if (!pngDone) await reader.cancel().catch(() => undefined)
     }
   })()
 
@@ -190,6 +224,8 @@ function makeInflate(onChunk: (chunk: Uint8Array<ArrayBufferLike>) => void): Inf
       onChunk(value)
     }
   })()
+
+  pump.catch(() => undefined) // Writer/consumer observes the failure; avoid an unhandled parallel rejection.
 
   return { writer, pump }
 }
@@ -240,16 +276,51 @@ function readUint32BE(buf: Uint8Array<ArrayBufferLike>, offset: number): number 
   )
 }
 
-function concat(
-  a: Uint8Array<ArrayBufferLike>,
-  b: Uint8Array<ArrayBufferLike>,
-): Uint8Array<ArrayBufferLike> {
-  if (a.byteLength === 0) return b
-  if (b.byteLength === 0) return a
-  const out = new Uint8Array(a.byteLength + b.byteLength)
+/** Retain fragmented input until a complete chunk is available; copy each byte at most once. */
+class ByteQueue {
+  private chunks: Uint8Array[] = []
+  private index = 0
+  length = 0
 
-  out.set(a, 0)
-  out.set(b, a.byteLength)
+  push(bytes: Uint8Array): void {
+    if (bytes.length) {
+      this.chunks.push(bytes)
+      this.length += bytes.length
+    }
+  }
 
-  return out
+  take(size: number): Uint8Array {
+    if (size === 0) return new Uint8Array(0)
+    const head = this.chunks[this.index]
+    let out: Uint8Array
+
+    if (head.length >= size) {
+      out = head.subarray(0, size)
+      if (head.length === size) this.index++
+      else this.chunks[this.index] = head.subarray(size)
+    } else {
+      out = new Uint8Array(size)
+      let written = 0
+
+      while (written < size) {
+        const chunk = this.chunks[this.index]
+        const count = Math.min(chunk.length, size - written)
+
+        out.set(chunk.subarray(0, count), written)
+        written += count
+        if (count === chunk.length) this.index++
+        else this.chunks[this.index] = chunk.subarray(count)
+      }
+    }
+    this.length -= size
+    if (this.index === this.chunks.length) {
+      this.chunks = []
+      this.index = 0
+    } else if (this.index > 1024) {
+      this.chunks = this.chunks.slice(this.index)
+      this.index = 0
+    }
+
+    return out
+  }
 }

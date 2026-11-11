@@ -1,0 +1,43 @@
+{
+  "createdAt": "2026-11-11T05:27:07.051Z",
+  "node": "v22.16.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "sources": [
+    {
+      "id": "client-spec-map",
+      "file": "client-spec-map.json",
+      "bytes": 3767658,
+      "sha256": "b0e341d38a53b1f4ba4755d4c066a1c5209ace75412884251191254e69b43509"
+    },
+    {
+      "id": "react-dom-client-production",
+      "file": "react-dom-client.production.js",
+      "bytes": 532912,
+      "sha256": "f7129ddad3865dd75a2a08218a3dcedbefa1acb1da6b813314a234fa09f244e8"
+    },
+    {
+      "id": "chunk-5mb",
+      "file": "chunk-5mb.js",
+      "bytes": 4917882,
+      "sha256": "0649c3efc50b72038fe6065dcef753f20a0906861d175f4483e9aa0ec678b26d"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "results.json",
+      "rows": 300,
+      "sha256": "073497ac94c954b35ae8666c0e7c36e69fbc0d9f072813c07f0d10f21ed6f17f"
+    },
+    {
+      "file": "results-extended.json",
+      "rows": 60,
+      "sha256": "55cb9f18d8784bcda3f40ba4e50c58f08d8f8b6275e3332de2f4689d10197e5a"
+    },
+    {
+      "file": "archive-times.json",
+      "rows": 15,
+      "sha256": "4719834b4be49ce2c2a6258a5ba2ceb2660c02cb945f82c6542e44e83e20a483"
+    }
+  ]
+}

@@ -350,6 +350,7 @@ export class RouterToken {
   private chunkBytesCache = new Map<string, Promise<Uint8Array>>()
   private chunkBytesSettled = new Set<string>()
   private chunkPayloadHandleSettled = new Set<string>()
+  private fileContentCache = new Map<RouterFileEntry, Promise<Uint8Array>>()
   private bytesCache = new Map<string, Promise<Uint8Array>>()
   private singleLoadBatches = new Map<string, SingleLoadBatch>()
   private nextBatchId = 0
@@ -945,22 +946,39 @@ export class RouterToken {
     mode: RouterReadMode,
     options: MaterializeOptions = {},
   ): Promise<ProgressiveLoad> {
-    const plan = await this.createLoadPlan(files, mode, options)
-    const states = new Map(
-      files.map(file => [
-        file,
-        {
-          file,
-          pendingSegments: file.segments.length,
-          deferred: createDeferred<Uint8Array>(),
-        } satisfies ProgressiveFileState,
-      ]),
-    )
-    const ready = new Map([...states].map(([file, state]) => [file, state.deferred.promise]))
+    const ready = new Map<RouterFileEntry, Promise<Uint8Array>>()
+    const states = new Map<RouterFileEntry, ProgressiveFileState>()
+
+    // Register promises before awaiting planning so concurrent batches share work.
+    for (const file of files) {
+      let pending = this.fileContentCache.get(file)
+
+      if (!pending) {
+        const deferred = createDeferred<Uint8Array>()
+
+        pending = deferred.promise
+        states.set(file, { file, pendingSegments: file.segments.length, deferred })
+        this.fileContentCache.set(file, pending)
+        pending.catch(() => {
+          if (this.fileContentCache.get(file) === pending) this.fileContentCache.delete(file)
+        })
+      }
+      ready.set(file, pending)
+    }
+    const missing = [...states.keys()]
     const done = (async () => {
       try {
+        if (missing.length === 0) return
+        const plan = await this.createLoadPlan(missing, mode, options)
+
         if (plan.kind === 'whole-chunks') {
-          await this.progressiveWholeChunks(files, plan.chunks, plan.mode, plan.concurrency, states)
+          await this.progressiveWholeChunks(
+            missing,
+            plan.chunks,
+            plan.mode,
+            plan.concurrency,
+            states,
+          )
         } else if (plan.kind === 'merged-ranges' || plan.kind === 'single-merged') {
           await this.progressiveRanges(plan.ranges, plan.mode, plan.concurrency, states)
         } else {

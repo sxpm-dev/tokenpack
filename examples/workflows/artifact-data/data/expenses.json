@@ -1,0 +1,14 @@
+[
+  {
+    "id": "exp-101",
+    "department": "Design",
+    "amountMinor": 12500,
+    "currency": "USD"
+  },
+  {
+    "id": "exp-102",
+    "department": "Engineering",
+    "amountMinor": 24000,
+    "currency": "USD"
+  }
+]

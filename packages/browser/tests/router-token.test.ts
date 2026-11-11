@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { createServer, type Server } from 'node:http'
 
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { RouterDebugEvent } from '../src/router-token'
 
@@ -543,6 +543,36 @@ describe('router token', () => {
     expect(chunkRequests.length).toBeGreaterThan(0)
     expect(chunkRequests.every(request => request.range?.startsWith('bytes='))).toBe(true)
     expect(chunkRequests.some(request => /^bytes=(?!0-)/.test(request.range ?? ''))).toBe(true)
+    const beforeRepeat = requests.length
+    const [again, concurrent] = await Promise.all([
+      pack.stream.blob([partialEntry!.path]),
+      pack.stream.blob([partialEntry!.path]),
+    ])
+
+    expect(await blobToBytes([...again.values()][0]!)).toEqual(expected)
+    expect(await blobToBytes([...concurrent.values()][0]!)).toEqual(expected)
+    expect(requests.length).toBe(beforeRepeat)
+    const retryPack = await decodeRouter(`${baseUrl}/router.png`)
+    const nativeFetch = globalThis.fetch
+    let failChunk = true
+    const failingFetch = vi.spyOn(globalThis, 'fetch').mockImplementation((url, init) => {
+      if (failChunk && String(url).endsWith('/shared.png'))
+        return Promise.reject(new Error('temporary fetch failure'))
+
+      return nativeFetch(url, init)
+    })
+
+    try {
+      await expect(retryPack.stream.blob([partialEntry!.path])).rejects.toThrow(
+        'temporary fetch failure',
+      )
+      failChunk = false
+      const recovered = await retryPack.stream.blob([partialEntry!.path])
+
+      expect(await blobToBytes([...recovered.values()][0]!)).toEqual(expected)
+    } finally {
+      failingFetch.mockRestore()
+    }
   })
 
   it('allows explicit full strategy to fetch whole chunk tokens for partial reads', async () => {

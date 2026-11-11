@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "kind": "configuration",
+  "title": "Export and restore a dashboard configuration",
+  "synthetic": true,
+  "files": [
+    "config.json",
+    "assets/palette.json"
+  ]
+}

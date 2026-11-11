@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "review-snapshot",
+  "title": "Review an exact version of an artifact",
+  "synthetic": true,
+  "files": [
+    "proposal.md",
+    "evidence.json",
+    "review.json"
+  ]
+}

@@ -33,7 +33,9 @@
     "bench:llm-tpak": "tsx scripts/llm-tpak-decode-benchmark.ts",
     "bench:pixel-matrix": "tsx scripts/test-pixel-matrix.ts",
     "bench:pixel-matrix:direct": "tsx scripts/test-pixel-matrix-direct.ts",
-    "bench:unit": "tsx scripts/benchmark-units.ts"
+    "bench:unit": "tsx scripts/benchmark-units.ts",
+    "pages:build": "node apps/web/scripts/build-pages.mjs",
+    "pages:verify": "yarn workspace tokenpack-web exec node scripts/verify-pages.mjs"
   },
   "devDependencies": {
     "@ai-sdk/anthropic": "^2.0.0",

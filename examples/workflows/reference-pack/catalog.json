@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "version": "2026-11",
+  "products": [
+    {
+      "id": "tea-01",
+      "labelKey": "tea",
+      "priceMinor": 450
+    }
+  ]
+}

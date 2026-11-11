@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "kind": "bar-chart",
+  "x": "month",
+  "y": "revenue",
+  "unit": "USD thousands",
+  "color": "#2563eb"
+}

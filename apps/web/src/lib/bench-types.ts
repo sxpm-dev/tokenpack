@@ -56,3 +56,15 @@ export interface ExtBenchRow {
   /** Path actually taken by the runner. Lets the UI confirm dispatch was correct. */
   pathTaken?: 'stream' | 'batch'
 }
+
+export interface ArchiveTimeEntry {
+  source: string
+  sourceId?: string
+  chunkCount?: number
+  chunkIndex?: number
+  format: string
+  encodeMs: number
+  decodeMs: number
+  bytes: number
+  originalBytes: number
+}

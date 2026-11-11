@@ -557,12 +557,12 @@ export class RemoteRangePackStreamApi {
     }
 
     if (Array.isArray(pathOrPaths)) {
+      const paths = [...new Set(pathOrPaths)]
+      const streams = await fetchPackFilesStream(this.pack.remote, paths)
       const files = await Promise.all(
-        pathOrPaths.map(async path => {
-          const file = await fetchPackFileStream(this.pack.remote, path)
-
-          return [path, await readStreamBytes(file.stream)] as const
-        }),
+        streams.map(
+          async (file, index) => [paths[index], await readStreamBytes(file.stream)] as const,
+        ),
       )
 
       return new Map(files)
@@ -818,7 +818,7 @@ async function extendHead(url: string, head: Uint8Array, targetBytes: number): P
 
 async function fetchRangeResponse(url: string, start: number, end: number): Promise<Response> {
   const r = await fetch(url, {
-    cache: 'no-store',
+    cache: 'default',
     credentials: 'omit',
     headers: { Range: `bytes=${start}-${end}` },
     mode: 'cors',
@@ -899,6 +899,7 @@ async function pumpStream(
 }
 
 function concatBytes(chunks: readonly Uint8Array[]): Uint8Array {
+  if (chunks.length === 1) return chunks[0]
   const total = chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0)
   const out = new Uint8Array(total)
   let offset = 0

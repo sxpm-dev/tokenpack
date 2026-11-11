@@ -32,7 +32,7 @@ export function Hero() {
             </Link>
             <a
               className="ml-1 inline-flex items-center gap-1 text-[13px] text-tp-muted hover:text-tp-fg"
-              href="https://github.com/anthropics/codeart"
+              href="https://github.com/sxpm-dev/tokenpack"
             >
               github.com/anthropics/codeart →
             </a>

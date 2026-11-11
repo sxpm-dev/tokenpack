@@ -31,6 +31,7 @@ async function run(route, name, setup) {
   await visit(route)
   if (setup) await setup()
   const savedResponse = page.waitForResponse(response => response.url().endsWith('/api/bench-runs') && response.request().method() === 'POST', { timeout: 300000 })
+  savedResponse.catch(() => {})
   await page.getByRole('button', { name, exact: typeof name === 'string' }).click()
   const response = await savedResponse
   assert(response.ok(), `Saving ${route}: ${response.status()}`)
@@ -112,7 +113,7 @@ try {
   await run('/partial-fetch', 'Run all strategies')
   await run('/partial-fetch', 'Run all strategies', async () => page.locator('select').nth(1).selectOption('js-fetch'))
   for (const label of ['Router materialize', 'Manifest chunks', 'Manifest bundle', 'Native chunks', 'Native single']) {
-    await run('/benchmarks/app', 'Run bench', async () => page.getByRole('button', { name: new RegExp('^' + label) }).click())
+    await run('/benchmarks/app', /^(Re-run|Run) bench$/i, async () => page.getByRole('button', { name: new RegExp('^' + label) }).click())
   }
 } catch (error) {
   failure = error.message

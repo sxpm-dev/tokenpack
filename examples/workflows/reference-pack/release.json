@@ -1,0 +1,8 @@
+{
+  "version": "2026-11",
+  "previousVersion": "2026-10",
+  "changed": [
+    "catalog.json",
+    "locales/fr.json"
+  ]
+}

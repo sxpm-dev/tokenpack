@@ -2,8 +2,8 @@
 
 **TokenPack** is a container format. Arbitrary bytes are compressed (brotli or
 deflate) then written into the pixel data of an Image Token. The
-image is a normal image — viewable, downloadable, shareable through any pipe
-that handles images. The _payload_ is your data.
+image is viewable and downloadable. Transport must preserve the original
+file: resizing, screenshots and image conversion can invalidate the payload. The _payload_ is your data.
 
 ```
 encode(files) → image
@@ -49,3 +49,10 @@ only relevant if you're building a third adapter or composing custom codecs.
 - **[Router tokens](/router-tokens)** — manifest + chunks + range-fetch for larger bundles.
 - **[Use cases](/use-cases)** — agent skills, codebase context, eval suites, agent-to-agent handoff.
 - **[API](/docs/api)** — full reference for `@tokenpack/node` and `@tokenpack/browser`.
+
+## Runnable workflow guides
+
+Start with [configuration export/import](/use-cases/configuration),
+[artifact data](/use-cases/artifact-data), or a [portable HTML app](/use-cases/portable-app).
+The [workflow index](/use-cases) includes ten concrete examples with downloadable
+packs, browser verification and application-specific acceptance checks.

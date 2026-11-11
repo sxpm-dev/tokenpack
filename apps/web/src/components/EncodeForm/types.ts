@@ -1,5 +1,7 @@
 import type { ImageFormat as CoreImageFormat } from 'tokenpack/types'
 
+import { isStaticSite } from '@/lib/site-path'
+
 import type { DefaultPresetName } from './default-presets'
 
 export type ImageFormat = CoreImageFormat
@@ -25,7 +27,7 @@ export interface EncodeConfig {
 
 export const DEFAULT_ENCODE_CONFIG: EncodeConfig = {
   configMode: 'default',
-  defaultPreset: 'best-compression',
+  defaultPreset: isStaticSite ? 'best-compression-browser' : 'best-compression',
   algo: '',
   algoOptions: {},
   key: '',

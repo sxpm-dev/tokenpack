@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "web-delivery",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "258bc9737a0788fbd9b976612fa72cd78ab23fda2230394bc112df66f70823c6",
+  "byteLength": 1229,
+  "files": [
+    {
+      "path": "app/main.js",
+      "byteLength": 43,
+      "sha256": "7b8d6e21ee2f4faf6c595de4c8ba3d17752812a3939db0f29c614d074d689e5d"
+    },
+    {
+      "path": "app/reports.js",
+      "byteLength": 73,
+      "sha256": "b454647dd53eaa681a60d70b2dd08b3f2ab7bfd5918d5ab300ce69824e792e18"
+    },
+    {
+      "path": "app/styles.css",
+      "byteLength": 33,
+      "sha256": "7ddccf448e3d17c4deda892ff80d2cdb99e84e301ae95017122d080a94f8856c"
+    },
+    {
+      "path": "data/report.json",
+      "byteLength": 45,
+      "sha256": "45370ab8b29c77c40d1bba6a73f42da7c5aabd0dcf1c898f4a8d567c026df029"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 227,
+      "sha256": "1b54ed73b846fea7aaca6ad125cb45b675fec9990e7aca33cf58e9e6994f6d7f"
+    }
+  ]
+}

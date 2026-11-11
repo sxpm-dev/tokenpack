@@ -1,6 +1,6 @@
 import { Table } from '@heroui/react'
 
-import type { ArchiveTimeEntry } from '@/app/api/benchmark/archives/route'
+import type { ArchiveTimeEntry } from '@/lib/bench-types'
 
 import { fmtArchiveBytes, fmtArchiveMs } from '../utils'
 

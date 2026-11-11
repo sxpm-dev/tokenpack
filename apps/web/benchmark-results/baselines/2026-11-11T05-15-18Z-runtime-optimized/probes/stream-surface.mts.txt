@@ -1,0 +1,28 @@
+import fs from 'node:fs'
+import { performance } from 'node:perf_hooks'
+import { decodeStreamingPng as current } from '/Users/valerii/Develop/codeart/packages/core/src/surfaces/streaming-png-decoder.ts'
+import { decodeStreamingPng as baseline } from '/tmp/codeart-baseline-stream-decoder.mts'
+const root = '/Users/valerii/Develop/codeart/apps/web/benchmark-results/baselines/2026-11-11T04-45-56Z'
+const entries = JSON.parse(fs.readFileSync(root + '/encode-times.json', 'utf8'))
+const samples: Record<string, number[]> = {}
+for (const source of ['react-dom-client-production', 'chunk-5mb']) {
+  const entry = entries.find((e: any) => e.sourceId === source && e.algorithm === 'linear-stream-deflate' && e.channels === 3)
+  const bytes = fs.readFileSync('/Users/valerii/Develop/codeart/apps/web/benchmark-fixtures/node/' + entry.tokenFile)
+  for (let iteration = -3; iteration < 30; iteration++) {
+    const order = iteration % 2 ? [['before', baseline], ['after', current]] : [['after', current], ['before', baseline]]
+    for (const [name, decode] of order as [string, typeof current][]) {
+      let offset = 0
+      const stream = new ReadableStream<Uint8Array>({pull(c) {if(offset === bytes.length) return c.close(); c.enqueue(bytes.subarray(offset, offset + 16384)); offset = Math.min(bytes.length, offset + 16384)}})
+      const start = performance.now()
+      const handle = await decode(stream)
+      let rows = 0
+      for await (const row of handle.rows) { if(row.length !== handle.width * handle.fileChannels) throw new Error('row mismatch'); rows++ }
+      if(rows !== handle.height) throw new Error('missing rows')
+      const elapsed = performance.now() - start
+      if(iteration >= 0) (samples[source + '/' + name] ??= []).push(elapsed)
+    }
+  }
+}
+const result = Object.fromEntries(Object.entries(samples).map(([k, v]) => { const sorted = [...v].sort((a,b)=>a-b); return [k, {medianMs: (sorted[14]+sorted[15])/2, p95Ms: sorted[28], samples:v}]}))
+fs.writeFileSync(process.argv[2], JSON.stringify({description:'Alternating old/new shared PNG surface, same fixtures and 16 KiB fragments; 3 warmups + 30 samples',result},null,2))
+console.log(JSON.stringify(result, (_k,v)=>Array.isArray(v)?undefined:v,2))

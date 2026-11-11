@@ -5,9 +5,9 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "zip",
-    "encodeMs": 143,
-    "decodeMs": 42,
-    "bytes": 105396,
+    "encodeMs": 13.7,
+    "decodeMs": 5.2,
+    "bytes": 104509,
     "originalBytes": 1422167
   },
   {
@@ -16,9 +16,9 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "gzip",
-    "encodeMs": 67.6,
-    "decodeMs": 7,
-    "bytes": 105246,
+    "encodeMs": 7.3,
+    "decodeMs": 1.1,
+    "bytes": 104359,
     "originalBytes": 1422167
   },
   {
@@ -27,8 +27,8 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "deflate",
-    "encodeMs": 38.6,
-    "decodeMs": 2.3,
+    "encodeMs": 7.3,
+    "decodeMs": 1.1,
     "bytes": 104347,
     "originalBytes": 1422167
   },
@@ -38,8 +38,8 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "brotli-11",
-    "encodeMs": 6849.8,
-    "decodeMs": 9,
+    "encodeMs": 781.7,
+    "decodeMs": 1.3,
     "bytes": 58590,
     "originalBytes": 1422167
   },
@@ -49,9 +49,9 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "brotli-6",
-    "encodeMs": 48.6,
-    "decodeMs": 4.5,
-    "bytes": 66826,
+    "encodeMs": 7,
+    "decodeMs": 1.1,
+    "bytes": 66550,
     "originalBytes": 1422167
   },
   {
@@ -60,11 +60,10 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "zip",
-    "encodeMs": 12.2,
-    "decodeMs": 2.6,
+    "encodeMs": 11.5,
+    "decodeMs": 2.4,
     "bytes": 95573,
-    "originalBytes": 532912,
-    "fileName": "zip__react-dom-client-production__chunks-1__chunk-00.zip"
+    "originalBytes": 532912
   },
   {
     "source": "react-dom-client-production__chunks-1__chunk-00",
@@ -72,11 +71,10 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "gzip",
-    "encodeMs": 7.9,
-    "decodeMs": 0.8,
+    "encodeMs": 8.1,
+    "decodeMs": 1.1,
     "bytes": 95399,
-    "originalBytes": 532912,
-    "fileName": "targz__react-dom-client-production__chunks-1__chunk-00.gzip"
+    "originalBytes": 532912
   },
   {
     "source": "react-dom-client-production__chunks-1__chunk-00",
@@ -85,10 +83,9 @@
     "chunkIndex": 0,
     "format": "deflate",
     "encodeMs": 7.9,
-    "decodeMs": 0.8,
+    "decodeMs": 0.7,
     "bytes": 95387,
-    "originalBytes": 532912,
-    "fileName": "deflate__react-dom-client-production__chunks-1__chunk-00.deflate"
+    "originalBytes": 532912
   },
   {
     "source": "react-dom-client-production__chunks-1__chunk-00",
@@ -96,11 +93,10 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "brotli-11",
-    "encodeMs": 587,
-    "decodeMs": 1.1,
+    "encodeMs": 614.3,
+    "decodeMs": 0.9,
     "bytes": 77216,
-    "originalBytes": 532912,
-    "fileName": "br11__react-dom-client-production__chunks-1__chunk-00.br"
+    "originalBytes": 532912
   },
   {
     "source": "react-dom-client-production__chunks-1__chunk-00",
@@ -108,11 +104,10 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "brotli-6",
-    "encodeMs": 7.3,
+    "encodeMs": 6.8,
     "decodeMs": 0.8,
     "bytes": 88358,
-    "originalBytes": 532912,
-    "fileName": "br6__react-dom-client-production__chunks-1__chunk-00.br"
+    "originalBytes": 532912
   },
   {
     "source": "chunk-5mb__chunks-1__chunk-00",
@@ -120,9 +115,9 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "zip",
-    "encodeMs": 957.6,
-    "decodeMs": 180.4,
-    "bytes": 1322795,
+    "encodeMs": 90,
+    "decodeMs": 21.2,
+    "bytes": 1325491,
     "originalBytes": 4917882
   },
   {
@@ -131,9 +126,9 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "gzip",
-    "encodeMs": 579.1,
-    "decodeMs": 76.5,
-    "bytes": 1322657,
+    "encodeMs": 77.5,
+    "decodeMs": 8.8,
+    "bytes": 1325353,
     "originalBytes": 4917882
   },
   {
@@ -142,8 +137,8 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "deflate",
-    "encodeMs": 352.5,
-    "decodeMs": 39,
+    "encodeMs": 76.4,
+    "decodeMs": 8.8,
     "bytes": 1325341,
     "originalBytes": 4917882
   },
@@ -153,8 +148,8 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "brotli-11",
-    "encodeMs": 19256,
-    "decodeMs": 30.5,
+    "encodeMs": 6332.5,
+    "decodeMs": 10.2,
     "bytes": 998831,
     "originalBytes": 4917882
   },
@@ -164,9 +159,9 @@
     "chunkCount": 1,
     "chunkIndex": 0,
     "format": "brotli-6",
-    "encodeMs": 514.7,
-    "decodeMs": 27.3,
-    "bytes": 1125999,
+    "encodeMs": 102.4,
+    "decodeMs": 10.2,
+    "bytes": 1126608,
     "originalBytes": 4917882
   }
 ]

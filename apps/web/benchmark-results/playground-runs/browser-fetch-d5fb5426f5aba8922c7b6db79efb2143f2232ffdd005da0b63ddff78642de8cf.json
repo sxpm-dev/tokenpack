@@ -1,0 +1,672 @@
+{
+  "scope": "browser-fetch",
+  "config": "{\"source\":\"large-js__chunks-1\",\"activeTab\":\"source\",\"iterations\":5,\"throttle\":\"local\",\"runSkipped\":false,\"deselectedText\":[],\"deselectedExact\":[],\"deselectedScript\":[]}",
+  "result": {
+    "text": [
+      [
+        "http-brotli",
+        {
+          "state": "done",
+          "row": {
+            "variantId": "http-brotli",
+            "iterations": 5,
+            "median": {
+              "ttfbMs": 3.799999952316284,
+              "transferMs": 19.40000009536743,
+              "decodeMs": 4,
+              "executeMs": null,
+              "totalMs": 24,
+              "wireBytes": 1126608,
+              "requestCount": 1,
+              "routerPlan": null
+            },
+            "p95": {
+              "ttfbMs": 5.099999904632568,
+              "transferMs": 19.600000143051147,
+              "decodeMs": 4.200000047683716,
+              "executeMs": null,
+              "totalMs": 24.09999990463257,
+              "wireBytes": 1126608,
+              "requestCount": 1,
+              "routerPlan": null
+            },
+            "min": {
+              "ttfbMs": 3.200000047683716,
+              "transferMs": 19.200000047683716,
+              "decodeMs": 3.799999952316284,
+              "executeMs": null,
+              "totalMs": 23.700000047683716,
+              "wireBytes": 1126608,
+              "requestCount": 1,
+              "routerPlan": null
+            },
+            "max": {
+              "ttfbMs": 5.099999904632568,
+              "transferMs": 19.600000143051147,
+              "decodeMs": 4.200000047683716,
+              "executeMs": null,
+              "totalMs": 24.09999990463257,
+              "wireBytes": 1126608,
+              "requestCount": 1,
+              "routerPlan": null
+            },
+            "perRunTotal": [
+              24.09999990463257,
+              23.700000047683716,
+              24,
+              23.799999952316284,
+              24
+            ],
+            "routerPlan": null,
+            "fingerprint": {
+              "hash": "0649c3efc50b7203",
+              "bytes": 4917882,
+              "head": "import{$a as K1e,$d as sn,$f as bse,$h as $se,Ab as C2,A"
+            }
+          }
+        }
+      ],
+      [
+        "pixel-range-range-fetch-all",
+        {
+          "state": "done",
+          "row": {
+            "variantId": "pixel-range-range-fetch-all",
+            "iterations": 5,
+            "median": {
+              "ttfbMs": 3.3000001907348633,
+              "transferMs": 20,
+              "decodeMs": 12,
+              "executeMs": null,
+              "totalMs": 20,
+              "wireBytes": 1321847,
+              "requestCount": 2,
+              "routerPlan": null
+            },
+            "p95": {
+              "ttfbMs": 3.9000000953674316,
+              "transferMs": 21.40000009536743,
+              "decodeMs": 12.5,
+              "executeMs": null,
+              "totalMs": 21.40000009536743,
+              "wireBytes": 1321847,
+              "requestCount": 2,
+              "routerPlan": null
+            },
+            "min": {
+              "ttfbMs": 2.6999998092651367,
+              "transferMs": 19.100000143051147,
+              "decodeMs": 11.400000095367432,
+              "executeMs": null,
+              "totalMs": 19.100000143051147,
+              "wireBytes": 1321847,
+              "requestCount": 2,
+              "routerPlan": null
+            },
+            "max": {
+              "ttfbMs": 3.9000000953674316,
+              "transferMs": 21.40000009536743,
+              "decodeMs": 12.5,
+              "executeMs": null,
+              "totalMs": 21.40000009536743,
+              "wireBytes": 1321847,
+              "requestCount": 2,
+              "routerPlan": null
+            },
+            "perRunTotal": [
+              21.40000009536743,
+              20.200000047683716,
+              19.699999809265137,
+              20,
+              19.100000143051147
+            ],
+            "routerPlan": null,
+            "fingerprint": {
+              "hash": "0649c3efc50b7203",
+              "bytes": 4917882,
+              "head": "import{$a as K1e,$d as sn,$f as bse,$h as $se,Ab as C2,A"
+            }
+          }
+        }
+      ],
+      [
+        "pixel-range-range-stream-all",
+        {
+          "state": "done",
+          "row": {
+            "variantId": "pixel-range-range-stream-all",
+            "iterations": 5,
+            "median": {
+              "ttfbMs": 3,
+              "transferMs": 20.100000143051147,
+              "decodeMs": 3.799999952316284,
+              "executeMs": null,
+              "totalMs": 20.100000143051147,
+              "wireBytes": 1321847,
+              "requestCount": 2,
+              "routerPlan": null
+            },
+            "p95": {
+              "ttfbMs": 5.300000190734863,
+              "transferMs": 21.09999990463257,
+              "decodeMs": 4.5,
+              "executeMs": null,
+              "totalMs": 21.09999990463257,
+              "wireBytes": 1321847,
+              "requestCount": 2,
+              "routerPlan": null
+            },
+            "min": {
+              "ttfbMs": 2.3999998569488525,
+              "transferMs": 18.299999952316284,
+              "decodeMs": 3.5,
+              "executeMs": null,
+              "totalMs": 18.299999952316284,
+              "wireBytes": 1321847,
+              "requestCount": 2,
+              "routerPlan": null
+            },
+            "max": {
+              "ttfbMs": 5.300000190734863,
+              "transferMs": 21.09999990463257,
+              "decodeMs": 4.5,
+              "executeMs": null,
+              "totalMs": 21.09999990463257,
+              "wireBytes": 1321847,
+              "requestCount": 2,
+              "routerPlan": null
+            },
+            "perRunTotal": [
+              21.09999990463257,
+              21,
+              18.899999856948853,
+              20.100000143051147,
+              18.299999952316284
+            ],
+            "routerPlan": null,
+            "fingerprint": {
+              "hash": "0649c3efc50b7203",
+              "bytes": 4917882,
+              "head": "import{$a as K1e,$d as sn,$f as bse,$h as $se,Ab as C2,A"
+            }
+          }
+        }
+      ],
+      [
+        "router-token-text-all",
+        {
+          "state": "done",
+          "row": {
+            "variantId": "router-token-text-all",
+            "iterations": 5,
+            "median": {
+              "ttfbMs": 3.5,
+              "transferMs": 21.299999952316284,
+              "decodeMs": 3.8000001907348633,
+              "executeMs": null,
+              "totalMs": 25.59999990463257,
+              "wireBytes": 1322497,
+              "requestCount": 4,
+              "routerPlan": {
+                "kind": "whole-chunks",
+                "mode": "stream",
+                "reason": "complete-file-set",
+                "requestCount": 3,
+                "selectedBytes": 1321638,
+                "fetchedBytes": 1321638,
+                "chunkCount": 3,
+                "segmentCount": 0,
+                "concurrency": 3,
+                "chunks": [
+                  {
+                    "id": "chunk-0001",
+                    "href": "chunk-0001.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0002",
+                    "href": "chunk-0002.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0003",
+                    "href": "chunk-0003.png",
+                    "byteLength": 273062
+                  }
+                ],
+                "ranges": []
+              }
+            },
+            "p95": {
+              "ttfbMs": 6.200000047683716,
+              "transferMs": 21.799999952316284,
+              "decodeMs": 3.8999998569488525,
+              "executeMs": null,
+              "totalMs": 26.100000143051147,
+              "wireBytes": 1322497,
+              "requestCount": 4,
+              "routerPlan": {
+                "kind": "whole-chunks",
+                "mode": "stream",
+                "reason": "complete-file-set",
+                "requestCount": 3,
+                "selectedBytes": 1321638,
+                "fetchedBytes": 1321638,
+                "chunkCount": 3,
+                "segmentCount": 0,
+                "concurrency": 3,
+                "chunks": [
+                  {
+                    "id": "chunk-0001",
+                    "href": "chunk-0001.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0002",
+                    "href": "chunk-0002.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0003",
+                    "href": "chunk-0003.png",
+                    "byteLength": 273062
+                  }
+                ],
+                "ranges": []
+              }
+            },
+            "min": {
+              "ttfbMs": 3.200000047683716,
+              "transferMs": 20.09999990463257,
+              "decodeMs": 3.5999999046325684,
+              "executeMs": null,
+              "totalMs": 24.5,
+              "wireBytes": 1322497,
+              "requestCount": 4,
+              "routerPlan": {
+                "kind": "whole-chunks",
+                "mode": "stream",
+                "reason": "complete-file-set",
+                "requestCount": 3,
+                "selectedBytes": 1321638,
+                "fetchedBytes": 1321638,
+                "chunkCount": 3,
+                "segmentCount": 0,
+                "concurrency": 3,
+                "chunks": [
+                  {
+                    "id": "chunk-0001",
+                    "href": "chunk-0001.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0002",
+                    "href": "chunk-0002.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0003",
+                    "href": "chunk-0003.png",
+                    "byteLength": 273062
+                  }
+                ],
+                "ranges": []
+              }
+            },
+            "max": {
+              "ttfbMs": 6.200000047683716,
+              "transferMs": 21.799999952316284,
+              "decodeMs": 3.8999998569488525,
+              "executeMs": null,
+              "totalMs": 26.100000143051147,
+              "wireBytes": 1322497,
+              "requestCount": 4,
+              "routerPlan": {
+                "kind": "whole-chunks",
+                "mode": "stream",
+                "reason": "complete-file-set",
+                "requestCount": 3,
+                "selectedBytes": 1321638,
+                "fetchedBytes": 1321638,
+                "chunkCount": 3,
+                "segmentCount": 0,
+                "concurrency": 3,
+                "chunks": [
+                  {
+                    "id": "chunk-0001",
+                    "href": "chunk-0001.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0002",
+                    "href": "chunk-0002.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0003",
+                    "href": "chunk-0003.png",
+                    "byteLength": 273062
+                  }
+                ],
+                "ranges": []
+              }
+            },
+            "perRunTotal": [
+              25.59999990463257,
+              26.100000143051147,
+              25,
+              24.5,
+              25.799999952316284
+            ],
+            "routerPlan": {
+              "kind": "whole-chunks",
+              "mode": "stream",
+              "reason": "complete-file-set",
+              "requestCount": 3,
+              "selectedBytes": 1321638,
+              "fetchedBytes": 1321638,
+              "chunkCount": 3,
+              "segmentCount": 0,
+              "concurrency": 3,
+              "chunks": [
+                {
+                  "id": "chunk-0001",
+                  "href": "chunk-0001.png",
+                  "byteLength": 524288
+                },
+                {
+                  "id": "chunk-0002",
+                  "href": "chunk-0002.png",
+                  "byteLength": 524288
+                },
+                {
+                  "id": "chunk-0003",
+                  "href": "chunk-0003.png",
+                  "byteLength": 273062
+                }
+              ],
+              "ranges": []
+            },
+            "fingerprint": {
+              "hash": "0649c3efc50b7203",
+              "bytes": 4917882,
+              "head": "import{$a as K1e,$d as sn,$f as bse,$h as $se,Ab as C2,A"
+            }
+          }
+        }
+      ],
+      [
+        "router-token-text-fetch-all",
+        {
+          "state": "done",
+          "row": {
+            "variantId": "router-token-text-fetch-all",
+            "iterations": 5,
+            "median": {
+              "ttfbMs": 3.299999952316284,
+              "transferMs": 19.799999952316284,
+              "decodeMs": 3.700000047683716,
+              "executeMs": null,
+              "totalMs": 24.09999990463257,
+              "wireBytes": 1322497,
+              "requestCount": 4,
+              "routerPlan": {
+                "kind": "whole-chunks",
+                "mode": "buffered",
+                "reason": "forced-full-chunks",
+                "requestCount": 3,
+                "selectedBytes": 1321638,
+                "fetchedBytes": 1321638,
+                "chunkCount": 3,
+                "segmentCount": 0,
+                "concurrency": 3,
+                "chunks": [
+                  {
+                    "id": "chunk-0001",
+                    "href": "chunk-0001.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0002",
+                    "href": "chunk-0002.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0003",
+                    "href": "chunk-0003.png",
+                    "byteLength": 273062
+                  }
+                ],
+                "ranges": []
+              }
+            },
+            "p95": {
+              "ttfbMs": 7.400000095367432,
+              "transferMs": 22.300000190734863,
+              "decodeMs": 4,
+              "executeMs": null,
+              "totalMs": 26.700000047683716,
+              "wireBytes": 1322497,
+              "requestCount": 4,
+              "routerPlan": {
+                "kind": "whole-chunks",
+                "mode": "buffered",
+                "reason": "forced-full-chunks",
+                "requestCount": 3,
+                "selectedBytes": 1321638,
+                "fetchedBytes": 1321638,
+                "chunkCount": 3,
+                "segmentCount": 0,
+                "concurrency": 3,
+                "chunks": [
+                  {
+                    "id": "chunk-0001",
+                    "href": "chunk-0001.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0002",
+                    "href": "chunk-0002.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0003",
+                    "href": "chunk-0003.png",
+                    "byteLength": 273062
+                  }
+                ],
+                "ranges": []
+              }
+            },
+            "min": {
+              "ttfbMs": 3,
+              "transferMs": 19.100000143051147,
+              "decodeMs": 3.6000001430511475,
+              "executeMs": null,
+              "totalMs": 23.299999952316284,
+              "wireBytes": 1322497,
+              "requestCount": 4,
+              "routerPlan": {
+                "kind": "whole-chunks",
+                "mode": "buffered",
+                "reason": "forced-full-chunks",
+                "requestCount": 3,
+                "selectedBytes": 1321638,
+                "fetchedBytes": 1321638,
+                "chunkCount": 3,
+                "segmentCount": 0,
+                "concurrency": 3,
+                "chunks": [
+                  {
+                    "id": "chunk-0001",
+                    "href": "chunk-0001.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0002",
+                    "href": "chunk-0002.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0003",
+                    "href": "chunk-0003.png",
+                    "byteLength": 273062
+                  }
+                ],
+                "ranges": []
+              }
+            },
+            "max": {
+              "ttfbMs": 7.400000095367432,
+              "transferMs": 22.300000190734863,
+              "decodeMs": 4,
+              "executeMs": null,
+              "totalMs": 26.700000047683716,
+              "wireBytes": 1322497,
+              "requestCount": 4,
+              "routerPlan": {
+                "kind": "whole-chunks",
+                "mode": "buffered",
+                "reason": "forced-full-chunks",
+                "requestCount": 3,
+                "selectedBytes": 1321638,
+                "fetchedBytes": 1321638,
+                "chunkCount": 3,
+                "segmentCount": 0,
+                "concurrency": 3,
+                "chunks": [
+                  {
+                    "id": "chunk-0001",
+                    "href": "chunk-0001.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0002",
+                    "href": "chunk-0002.png",
+                    "byteLength": 524288
+                  },
+                  {
+                    "id": "chunk-0003",
+                    "href": "chunk-0003.png",
+                    "byteLength": 273062
+                  }
+                ],
+                "ranges": []
+              }
+            },
+            "perRunTotal": [
+              26.700000047683716,
+              24.09999990463257,
+              26.09999990463257,
+              23.299999952316284,
+              23.799999952316284
+            ],
+            "routerPlan": {
+              "kind": "whole-chunks",
+              "mode": "buffered",
+              "reason": "forced-full-chunks",
+              "requestCount": 3,
+              "selectedBytes": 1321638,
+              "fetchedBytes": 1321638,
+              "chunkCount": 3,
+              "segmentCount": 0,
+              "concurrency": 3,
+              "chunks": [
+                {
+                  "id": "chunk-0001",
+                  "href": "chunk-0001.png",
+                  "byteLength": 524288
+                },
+                {
+                  "id": "chunk-0002",
+                  "href": "chunk-0002.png",
+                  "byteLength": 524288
+                },
+                {
+                  "id": "chunk-0003",
+                  "href": "chunk-0003.png",
+                  "byteLength": 273062
+                }
+              ],
+              "ranges": []
+            },
+            "fingerprint": {
+              "hash": "0649c3efc50b7203",
+              "bytes": 4917882,
+              "head": "import{$a as K1e,$d as sn,$f as bse,$h as $se,Ab as C2,A"
+            }
+          }
+        }
+      ],
+      [
+        "linear-upng-deflate-c3",
+        {
+          "state": "done",
+          "row": {
+            "variantId": "linear-upng-deflate-c3",
+            "iterations": 5,
+            "median": {
+              "ttfbMs": 3.8999998569488525,
+              "transferMs": 5.599999904632568,
+              "decodeMs": 17.600000143051147,
+              "executeMs": null,
+              "totalMs": 24.09999990463257,
+              "wireBytes": 1322844,
+              "requestCount": 1,
+              "routerPlan": null
+            },
+            "p95": {
+              "ttfbMs": 4.799999952316284,
+              "transferMs": 6.099999904632568,
+              "decodeMs": 21,
+              "executeMs": null,
+              "totalMs": 26.5,
+              "wireBytes": 1322844,
+              "requestCount": 1,
+              "routerPlan": null
+            },
+            "min": {
+              "ttfbMs": 3.5999999046325684,
+              "transferMs": 5,
+              "decodeMs": 15.200000047683716,
+              "executeMs": null,
+              "totalMs": 20.799999952316284,
+              "wireBytes": 1322844,
+              "requestCount": 1,
+              "routerPlan": null
+            },
+            "max": {
+              "ttfbMs": 4.799999952316284,
+              "transferMs": 6.099999904632568,
+              "decodeMs": 21,
+              "executeMs": null,
+              "totalMs": 26.5,
+              "wireBytes": 1322844,
+              "requestCount": 1,
+              "routerPlan": null
+            },
+            "perRunTotal": [
+              24.200000047683716,
+              26.5,
+              23,
+              20.799999952316284,
+              24.09999990463257
+            ],
+            "routerPlan": null,
+            "fingerprint": {
+              "hash": "0649c3efc50b7203",
+              "bytes": 4917882,
+              "head": "import{$a as K1e,$d as sn,$f as bse,$h as $se,Ab as C2,A"
+            }
+          }
+        }
+      ]
+    ],
+    "exact": [],
+    "script": []
+  },
+  "fingerprint": "ada97bff8f389fcef619fda8d3010eeac8213a21b2ce7e21ffb06f8ccf3a1a84",
+  "createdAt": "2026-11-11T05:29:17.642Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "mode": "production"
+}

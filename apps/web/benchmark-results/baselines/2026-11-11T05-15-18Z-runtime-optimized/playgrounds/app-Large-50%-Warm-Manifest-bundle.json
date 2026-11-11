@@ -1,0 +1,102 @@
+{
+  "scope": "bench-app",
+  "config": "{\"size\":\"large\",\"scope\":\"random\",\"cacheMode\":\"warm\",\"repeats\":3}",
+  "result": {
+    "large:random:warm:router": {
+      "runs": 3,
+      "totalMs": 133.79999995231628,
+      "minMs": 126.09999990463257,
+      "maxMs": 138.09999990463257,
+      "phases": {
+        "manifestMs": 2.799999952316284,
+        "materializeMs": 84.10000014305115,
+        "imagesMs": 41.200000047683716,
+        "loadMs": 125.40000009536743,
+        "renderMs": 1.1999998092651367
+      },
+      "bytes": {
+        "requests": 36,
+        "transferBytes": 12476,
+        "encodedBytes": 21587976,
+        "decodedBytes": 21710214
+      }
+    },
+    "large:random:warm:multi": {
+      "runs": 3,
+      "totalMs": 86.80000019073486,
+      "minMs": 83.29999995231628,
+      "maxMs": 87.29999995231628,
+      "phases": {
+        "manifestMs": 1.5,
+        "jsCssMs": 68.80000019073486,
+        "imagesMs": 79.90000009536743,
+        "loadMs": 79.90000009536743,
+        "renderMs": 0.39999985694885254
+      },
+      "bytes": {
+        "requests": 383,
+        "transferBytes": 116576,
+        "encodedBytes": 7953,
+        "decodedBytes": 130191
+      }
+    },
+    "large:random:warm:single": {
+      "runs": 3,
+      "totalMs": 35.90000009536743,
+      "minMs": 33.19999980926514,
+      "maxMs": 43,
+      "phases": {
+        "manifestMs": 1.7000000476837158,
+        "jsCssMs": 11.300000190734863,
+        "imagesMs": 27.899999856948853,
+        "loadMs": 27.899999856948853,
+        "renderMs": 0.3000001907348633
+      },
+      "bytes": {
+        "requests": 135,
+        "transferBytes": 42176,
+        "encodedBytes": 7953,
+        "decodedBytes": 130191
+      }
+    },
+    "large:random:warm:native-chunks": {
+      "runs": 3,
+      "totalMs": 160.29999995231628,
+      "minMs": 154.70000004768372,
+      "maxMs": 170.79999995231628,
+      "phases": {
+        "jsCssMs": 157.40000009536743,
+        "renderMs": 0.39999985694885254,
+        "imagesMs": 160.29999995231628
+      },
+      "bytes": {
+        "requests": 381,
+        "transferBytes": 120600,
+        "encodedBytes": 6300,
+        "decodedBytes": 71163
+      }
+    },
+    "large:random:warm:native-single": {
+      "runs": 3,
+      "totalMs": 33.5,
+      "minMs": 33.30000019073486,
+      "maxMs": 40.40000009536743,
+      "phases": {
+        "jsCssMs": 19.799999952316284,
+        "styleMs": 0.10000014305114746,
+        "renderMs": 3.299999952316284,
+        "imagesMs": 33.5
+      },
+      "bytes": {
+        "requests": 133,
+        "transferBytes": 42224,
+        "encodedBytes": 2324,
+        "decodedBytes": 25023
+      }
+    }
+  },
+  "fingerprint": "ada97bff8f389fcef619fda8d3010eeac8213a21b2ce7e21ffb06f8ccf3a1a84",
+  "createdAt": "2026-11-11T05:32:12.495Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "mode": "production"
+}

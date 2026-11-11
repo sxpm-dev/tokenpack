@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "reference-pack",
+  "title": "Distribute a versioned reference catalog",
+  "synthetic": true,
+  "files": [
+    "catalog.json",
+    "locales/en.json",
+    "locales/fr.json",
+    "release.json"
+  ]
+}

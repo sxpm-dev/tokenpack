@@ -1,0 +1,8 @@
+{
+  "name": "Warehouse A",
+  "zones": [
+    "Loading bay",
+    "Storage",
+    "Office"
+  ]
+}

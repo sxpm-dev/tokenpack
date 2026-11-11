@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "groupBy": "department",
+  "currency": "USD",
+  "selectedExpense": "exp-102"
+}

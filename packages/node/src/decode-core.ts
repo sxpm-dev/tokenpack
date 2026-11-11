@@ -1,3 +1,4 @@
+import { PixelAlgorithm } from 'tokenpack/algorithms/pixel-algorithm'
 import type { AbstractAlgorithm } from 'tokenpack/algorithms/types'
 import { decompressRaw } from 'tokenpack/compressors'
 import { fromBytes } from 'tokenpack/pack/from-bytes'
@@ -22,9 +23,13 @@ export async function decodeSourceToPayload(
   options: DecodeOptions = {},
 ): Promise<{ bytes: Uint8Array; algorithm: AbstractAlgorithm }> {
   const { bytes, ext } = await loadSource(source)
-  const Ctor = await algorithmCatalog.detectFromBuffer(bytes, ext)
+  const { Ctor, image } = await algorithmCatalog.detectWithImage(bytes, ext)
   const algorithm = new Ctor({ key: options.key })
-  const payload = await algorithm.decode(bytes, { key: options.key, ext })
+  const decodeOptions = { key: options.key, ext }
+  const payload =
+    image && algorithm instanceof PixelAlgorithm
+      ? await algorithm.decodeFromImages([image], decodeOptions)
+      : await algorithm.decode(bytes, decodeOptions)
   const payloadBytes = new Uint8Array(payload.buffer, payload.byteOffset, payload.byteLength)
 
   return { bytes: payloadBytes, algorithm }

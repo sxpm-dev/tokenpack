@@ -2,3 +2,8 @@
 /.yarn/releases/*    binary
 /.yarn/plugins/**/*  binary
 /.pnp.*              binary linguist-generated
+
+# Immutable benchmark evidence: preserve checksummed bytes on every platform.
+/apps/web/benchmark-results/baselines/** -text
+/apps/web/benchmark-results/baselines/**/*.log -whitespace
+/apps/web/benchmark-results/baselines/**/*.patch -whitespace

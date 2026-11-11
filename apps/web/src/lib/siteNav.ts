@@ -26,7 +26,7 @@ export const siteNavItems: SiteNavItem[] = [
       { href: '/docs/quickstart', label: 'Quickstart' },
       { href: '/docs/api', label: 'API' },
       { href: '/ai-docs', label: 'AI Docs' },
-      { href: '/use-cases', label: 'Use Cases' },
+      { href: '/use-cases', label: 'Workflow guides' },
     ],
   },
   {
@@ -67,7 +67,7 @@ export const footerNavGroups: SiteNavGroup[] = [
   {
     label: 'Explore',
     items: [
-      { href: '/use-cases', label: 'Use Cases' },
+      { href: '/use-cases', label: 'Workflow guides' },
       { href: '/server-fetch-bench', label: 'Server fetch stats' },
       { href: '/browser-fetch-bench', label: 'Browser fetch' },
       { href: '/apply-diff-bench', label: 'Apply diff' },
@@ -77,7 +77,7 @@ export const footerNavGroups: SiteNavGroup[] = [
       { href: '/experiments', label: 'Runtime playgrounds' },
       { href: '/encode-decode-bench', label: 'Encode / decode stats' },
       { href: '/benchmarks/app', label: 'Bench app' },
-      { href: 'https://github.com/anthropics/codeart', label: 'GitHub', external: true },
+      { href: 'https://github.com/sxpm-dev/tokenpack', label: 'GitHub', external: true },
     ],
   },
 ]

@@ -1,5 +1,9 @@
 # Use Cases — First-Principles Rethink
 
+> Historical concept notes, not verified integration or transport guarantees.
+> See [the runnable workflow guides](guides/README.md) for current examples and limitations.
+> In particular, image-only channels, inline images, screenshots and printed copies must not be assumed to preserve a TokenPack payload.
+
 > From-scratch analysis of where data-inside-an-image genuinely earns its keep,
 > abstracted away from the existing docs/landing narrative. Source material for
 > the next landing-page "featured use cases" revision.

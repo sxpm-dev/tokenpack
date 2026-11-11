@@ -1,0 +1,684 @@
+Verified 4251 fixture files; 0 obsolete generated files removed.
+Tokenpack Benchmark Fixture Generator
+=====================================
+
+
+[cache] algorithm source mtime changed (1794367216770 → 1794374014038); invalidating all entries
+
+Source corpus: 3 sources × chunk counts [1] = 3 content cases
+
+
+[client-spec-map__chunks-1__chunk-00]  1.36MB  (client-spec-map, chunks=1, index=0)
+  zip (cached)                             102KB   92.7% smaller
+  gzip (cached)                            102KB   92.7% smaller
+  deflate (cached)                         102KB   92.7% smaller
+  brotli-11 (cached)                        57KB   95.9% smaller
+  brotli-6 (cached)                         65KB   95.3% smaller
+
+[react-dom-client-production__chunks-1__chunk-00]  520KB  (react-dom-client-production, chunks=1, index=0)
+  zip (cached)                              93KB   82.1% smaller
+  gzip (cached)                             93KB   82.1% smaller
+  deflate (cached)                          93KB   82.1% smaller
+  brotli-11 (cached)                        75KB   85.5% smaller
+  brotli-6 (cached)                         86KB   83.4% smaller
+
+[chunk-5mb__chunks-1__chunk-00]  4.69MB  (chunk-5mb, chunks=1, index=0)
+  zip (cached)                            1.26MB   73.0% smaller
+  gzip (cached)                           1.26MB   73.1% smaller
+  deflate (cached)                        1.26MB   73.1% smaller
+  brotli-11 (cached)                       975KB   79.7% smaller
+  brotli-6 (cached)                       1.07MB   77.1% smaller
+
+
+═══ Token matrix: 11 algorithms × advertised channels × 3 sources = 60 files ═══
+
+── client-spec-map__chunks-1__chunk-00 (1.36MB, hash=a9c640b54689b578) ──
+  [1/60] linear c3                                  57KB   95.9% smaller  751ms
+  [2/60] linear c4                                  57KB   95.9% smaller  736ms
+  [3/60] pixel-range c3                             57KB   95.9% smaller  739ms
+  [4/60] pixel-range c4                             57KB   95.9% smaller  738ms
+  [5/60] pixel-range-deflate c3                     99KB   92.9% smaller  13ms
+  [6/60] pixel-range-deflate c4                     99KB   92.9% smaller  14ms
+  [7/60] pixel-range-none c3                      1.36MB   -0.0% smaller  5ms
+  [8/60] pixel-range-none c4                      1.36MB   -0.0% smaller  5ms
+  [9/60] pixel-range-stream-deflate c3             111KB   92.0% smaller  14ms
+  [10/60] pixel-range-stream-deflate c4            111KB   92.0% smaller  12ms
+  [11/60] linear-deflate c3                         99KB   92.9% smaller  14ms
+  [12/60] linear-deflate c4                         99KB   92.9% smaller  13ms
+  [13/60] linear-stream-deflate c3                 101KB   92.8% smaller  17ms
+  [14/60] linear-stream-deflate c4                 101KB   92.7% smaller  16ms
+  [15/60] linear-stream c3                          58KB   95.8% smaller  737ms
+  [16/60] linear-stream c4                          59KB   95.8% smaller  741ms
+  [17/60] linear-webp c3                            57KB   95.9% smaller  826ms
+  [18/60] linear-webp c4                            57KB   95.9% smaller  819ms
+  [19/60] linear-upng c3                            57KB   95.9% smaller  786ms
+  [20/60] linear-upng-deflate c3                    98KB   92.9% smaller  37ms
+
+── react-dom-client-production__chunks-1__chunk-00 (520KB, hash=f7129ddad3865dd7) ──
+  [21/60] linear c3                                 76KB   85.5% smaller  572ms
+  [22/60] linear c4                                 76KB   85.5% smaller  574ms
+  [23/60] pixel-range c3                            76KB   85.5% smaller  567ms
+  [24/60] pixel-range c4                            76KB   85.5% smaller  579ms
+  [25/60] pixel-range-deflate c3                    93KB   82.2% smaller  33ms
+  [26/60] pixel-range-deflate c4                    93KB   82.2% smaller  33ms
+  [27/60] pixel-range-none c3                      521KB   -0.1% smaller  2ms
+  [28/60] pixel-range-none c4                      521KB   -0.1% smaller  2ms
+  [29/60] pixel-range-stream-deflate c3            105KB   79.9% smaller  34ms
+  [30/60] pixel-range-stream-deflate c4            105KB   79.9% smaller  33ms
+  [31/60] linear-deflate c3                         93KB   82.2% smaller  35ms
+  [32/60] linear-deflate c4                         93KB   82.2% smaller  34ms
+  [33/60] linear-stream-deflate c3                  94KB   81.9% smaller  35ms
+  [34/60] linear-stream-deflate c4                  94KB   81.9% smaller  34ms
+  [35/60] linear-stream c3                          77KB   85.3% smaller  568ms
+  [36/60] linear-stream c4                          77KB   85.3% smaller  575ms
+  [37/60] linear-webp c3                            76KB   85.5% smaller  689ms
+  [38/60] linear-webp c4                            76KB   85.5% smaller  694ms
+  [39/60] linear-upng c3                            76KB   85.5% smaller  586ms
+  [40/60] linear-upng-deflate c3                    93KB   82.2% smaller  50ms
+
+── chunk-5mb__chunks-1__chunk-00 (4.69MB, hash=0649c3efc50b7203) ──
+  [41/60] linear c3                                976KB   79.7% smaller  5910ms
+  [42/60] linear c4                                976KB   79.7% smaller  5945ms
+  [43/60] pixel-range c3                           976KB   79.7% smaller  6021ms
+  [44/60] pixel-range c4                           976KB   79.7% smaller  5902ms
+  [45/60] pixel-range-deflate c3                  1.26MB   73.1% smaller  104ms
+  [46/60] pixel-range-deflate c4                  1.26MB   73.1% smaller  102ms
+  [47/60] pixel-range-none c3                     4.69MB   -0.0% smaller  15ms
+  [48/60] pixel-range-none c4                     4.69MB   -0.0% smaller  15ms
+  [49/60] pixel-range-stream-deflate c3           1.27MB   72.9% smaller  105ms
+  [50/60] pixel-range-stream-deflate c4           1.27MB   72.9% smaller  104ms
+  [51/60] linear-deflate c3                       1.26MB   73.1% smaller  152ms
+  [52/60] linear-deflate c4                       1.26MB   73.1% smaller  134ms
+  [53/60] linear-stream-deflate c3                1.28MB   72.8% smaller  135ms
+  [54/60] linear-stream-deflate c4                1.28MB   72.8% smaller  130ms
+  [55/60] linear-stream c3                         989KB   79.4% smaller  5957ms
+  [56/60] linear-stream c4                         989KB   79.4% smaller  5937ms
+  [57/60] linear-webp c3                           976KB   79.7% smaller  6802ms
+  [58/60] linear-webp c4                           976KB   79.7% smaller  6809ms
+  [59/60] linear-upng c3                           976KB   79.7% smaller  6012ms
+  [60/60] linear-upng-deflate c3                  1.26MB   73.1% smaller  218ms
+
+[cache] 0 reused · 60 re-encoded · index → /Users/valerii/Develop/codeart/apps/web/benchmark-fixtures/node/.cache.json
+
+[slow tasks] ≥5s — top offenders this run:
+  6.8s  chunk-5mb__chunks-1__chunk-00 · linear-webp c4
+  6.8s  chunk-5mb__chunks-1__chunk-00 · linear-webp c3
+  6.0s  chunk-5mb__chunks-1__chunk-00 · pixel-range c3
+  6.0s  chunk-5mb__chunks-1__chunk-00 · linear-upng c3
+  6.0s  chunk-5mb__chunks-1__chunk-00 · linear-stream c3
+  5.9s  chunk-5mb__chunks-1__chunk-00 · linear c4
+  5.9s  chunk-5mb__chunks-1__chunk-00 · linear-stream c4
+  5.9s  chunk-5mb__chunks-1__chunk-00 · linear c3
+  5.9s  chunk-5mb__chunks-1__chunk-00 · pixel-range c4
+Encode times saved → /Users/valerii/Develop/codeart/apps/web/benchmark-results/encode-times.json  (60 entries)
+Archive times saved → /Users/valerii/Develop/codeart/apps/web/benchmark-results/archive-times.json  (15 entries)
+
+Done. Run `yarn benchmark` to continue through node + runtime measurements.
+Tokenpack Benchmark
+===================
+
+── dispatch ──
+  [batch] linear-c3
+  [batch] linear-c4
+  [batch] pixel-range-c3
+  [batch] pixel-range-c4
+  [batch] pixel-range-deflate-c3
+  [batch] pixel-range-deflate-c4
+  [batch] pixel-range-none-c3
+  [batch] pixel-range-none-c4
+  [stream] pixel-range-stream-deflate-c3
+  [stream] pixel-range-stream-deflate-c4
+  [batch] linear-deflate-c3
+  [batch] linear-deflate-c4
+  [stream] linear-stream-deflate-c3
+  [stream] linear-stream-deflate-c4
+  [stream] linear-stream-c3
+  [stream] linear-stream-c4
+  [batch] linear-webp-c3
+  [batch] linear-webp-c4
+  [batch] linear-upng-c3
+  [batch] linear-upng-deflate-c3
+
+── local  (latency=0ms  bw=∞) ──
+
+  [client-spec-map__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb=   0.9ms  total=   9.7ms  1st=   9.6ms  decode=   8.6ms  size=   57KB  139.6MB/s
+    linear-c4      ww..........  ttfb=   0.5ms  total=   8.7ms  1st=   8.6ms  decode=   8.0ms  size=   57KB  156.5MB/s
+    pixel-range-c3 ww..........  ttfb=   0.4ms  total=   7.7ms  1st=   7.7ms  decode=   7.2ms  size=   57KB  175.6MB/s
+    pixel-range-c4 ww..........  ttfb=   0.4ms  total=   7.6ms  1st=   7.6ms  decode=   7.2ms  size=   57KB  178.2MB/s
+    pixel-range-deflate-c3 ww..........  ttfb=   0.4ms  total=   7.6ms  1st=   7.6ms  decode=   7.1ms  size=   99KB  178.6MB/s
+    pixel-range-deflate-c4 ww..........  ttfb=   0.4ms  total=   7.6ms  1st=   7.5ms  decode=   7.0ms  size=   99KB  179.6MB/s
+    pixel-range-none-c3 ww..........  ttfb=   0.4ms  total=   7.6ms  1st=   7.6ms  decode=   6.3ms  size= 1.36MB  178.2MB/s
+    pixel-range-none-c4 ww..........  ttfb=   0.4ms  total=   7.5ms  1st=   7.5ms  decode=   6.3ms  size= 1.36MB  180.2MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb=   0.4ms  total=   1.8ms  1st=   1.3ms  decode=   1.7ms  size=  111KB  770.3MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb=   0.3ms  total=   1.5ms  1st=   1.2ms  decode=   1.4ms  size=  111KB  932.9MB/s
+    linear-deflate-c3 ww..........  ttfb=   0.4ms  total=   9.0ms  1st=   9.0ms  decode=   8.5ms  size=   99KB  150.8MB/s
+    linear-deflate-c4 ww..........  ttfb=   0.4ms  total=   8.8ms  1st=   8.8ms  decode=   8.3ms  size=   99KB  153.8MB/s
+    linear-stream-deflate-c3 ww..........  ttfb=   0.6ms  total=   4.2ms  1st=   4.1ms  decode=   3.1ms  size=  101KB  321.4MB/s
+    linear-stream-deflate-c4 ww..........  ttfb=   0.4ms  total=   4.1ms  1st=   4.0ms  decode=   2.7ms  size=  101KB  328.3MB/s
+    linear-stream-c3 ww..........  ttfb=   0.5ms  total=   2.7ms  1st=   2.5ms  decode=   2.1ms  size=   58KB  494.4MB/s
+    linear-stream-c4 ww..........  ttfb=   0.3ms  total=   2.3ms  1st=   2.2ms  decode=   1.7ms  size=   59KB  592.8MB/s
+    linear-webp-c3 ww..........  ttfb=   0.4ms  total=   9.4ms  1st=   9.4ms  decode=   8.8ms  size=   57KB  144.1MB/s
+    linear-webp-c4 ww..........  ttfb=   0.4ms  total=   9.2ms  1st=   9.2ms  decode=   8.6ms  size=   57KB  147.1MB/s
+    linear-upng-c3 ww..........  ttfb=   0.4ms  total=   8.3ms  1st=   8.3ms  decode=   7.8ms  size=   57KB  163.3MB/s
+    linear-upng-deflate-c3 ww..........  ttfb=   0.4ms  total=   8.8ms  1st=   8.8ms  decode=   8.3ms  size=   98KB  154.3MB/s
+    zip            ww..........  ttfb=   0.3ms  total=   4.6ms  1st=   4.6ms  decode=   4.2ms  size=  102KB  295.8MB/s
+    gzip           ww..........  ttfb=   0.2ms  total=   1.1ms  1st=   1.0ms  decode=   0.8ms  size=  102KB  1272.0MB/s
+    deflate        ww..........  ttfb=   0.2ms  total=   1.1ms  1st=   1.1ms  decode=   0.8ms  size=  102KB  1255.7MB/s
+    brotli-11      ww..........  ttfb=   0.3ms  total=   1.2ms  1st=   1.2ms  decode=   0.8ms  size=   57KB  1146.0MB/s
+    brotli-6       ww..........  ttfb=   0.3ms  total=   1.2ms  1st=   1.2ms  decode=   0.9ms  size=   65KB  1119.7MB/s
+
+  [react-dom-client-production__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb=   0.3ms  total=   2.1ms  1st=   2.1ms  decode=   1.8ms  size=   76KB  243.0MB/s
+    linear-c4      ww..........  ttfb=   0.3ms  total=   2.0ms  1st=   2.0ms  decode=   1.7ms  size=   76KB  257.5MB/s
+    pixel-range-c3 ww..........  ttfb=   0.3ms  total=   1.1ms  1st=   1.1ms  decode=   0.8ms  size=   76KB  463.0MB/s
+    pixel-range-c4 ww..........  ttfb=   0.2ms  total=   1.1ms  1st=   1.0ms  decode=   0.8ms  size=   76KB  478.8MB/s
+    pixel-range-deflate-c3 ww..........  ttfb=   0.2ms  total=   1.0ms  1st=   0.9ms  decode=   0.7ms  size=   93KB  527.9MB/s
+    pixel-range-deflate-c4 ww..........  ttfb=   0.3ms  total=   1.2ms  1st=   1.2ms  decode=   0.8ms  size=   93KB  432.0MB/s
+    pixel-range-none-c3 ww..........  ttfb=   0.4ms  total=   0.8ms  1st=   0.8ms  decode=   0.1ms  size=  521KB  654.7MB/s
+    pixel-range-none-c4 ww..........  ttfb=   0.3ms  total=   0.6ms  1st=   0.6ms  decode=   0.1ms  size=  521KB  878.3MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb=   0.3ms  total=   1.1ms  1st=   1.0ms  decode=   1.1ms  size=  105KB  455.9MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb=   0.3ms  total=   1.1ms  1st=   1.0ms  decode=   1.1ms  size=  105KB  453.8MB/s
+    linear-deflate-c3 ww..........  ttfb=   0.3ms  total=   2.3ms  1st=   2.3ms  decode=   2.0ms  size=   93KB  217.7MB/s
+    linear-deflate-c4 ww..........  ttfb=   0.3ms  total=   2.3ms  1st=   2.2ms  decode=   1.9ms  size=   93KB  222.6MB/s
+    linear-stream-deflate-c3 ww..........  ttfb=   0.3ms  total=   2.7ms  1st=   2.6ms  decode=   2.1ms  size=   94KB  191.3MB/s
+    linear-stream-deflate-c4 ww..........  ttfb=   0.3ms  total=   2.3ms  1st=   2.2ms  decode=   1.8ms  size=   94KB  221.9MB/s
+    linear-stream-c3 ww..........  ttfb=   0.4ms  total=   2.5ms  1st=   2.4ms  decode=   2.0ms  size=   77KB  203.8MB/s
+    linear-stream-c4 ww..........  ttfb=   0.4ms  total=   2.3ms  1st=   2.3ms  decode=   1.8ms  size=   77KB  217.2MB/s
+    linear-webp-c3 ww..........  ttfb=   0.3ms  total=   2.9ms  1st=   2.9ms  decode=   2.6ms  size=   76KB  173.6MB/s
+    linear-webp-c4 ww..........  ttfb=   0.3ms  total=   2.9ms  1st=   2.8ms  decode=   2.5ms  size=   76KB  178.0MB/s
+    linear-upng-c3 ww..........  ttfb=   0.3ms  total=   2.0ms  1st=   1.9ms  decode=   1.6ms  size=   76KB  258.8MB/s
+    linear-upng-deflate-c3 ww..........  ttfb=   0.3ms  total=   2.0ms  1st=   2.0ms  decode=   1.7ms  size=   93KB  248.1MB/s
+    zip            ww..........  ttfb=   0.3ms  total=   2.2ms  1st=   2.2ms  decode=   1.9ms  size=   93KB  233.1MB/s
+    gzip           ww..........  ttfb=   0.2ms  total=   0.8ms  1st=   0.8ms  decode=   0.6ms  size=   93KB  609.7MB/s
+    deflate        ww..........  ttfb=   0.2ms  total=   0.8ms  1st=   0.8ms  decode=   0.6ms  size=   93KB  605.4MB/s
+    brotli-11      ww..........  ttfb=   0.2ms  total=   0.9ms  1st=   0.9ms  decode=   0.7ms  size=   75KB  544.7MB/s
+    brotli-6       ww..........  ttfb=   0.2ms  total=   0.9ms  1st=   0.9ms  decode=   0.7ms  size=   86KB  572.6MB/s
+
+  [chunk-5mb__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb=   0.5ms  total=  23.6ms  1st=  23.5ms  decode=  22.3ms  size=  976KB  198.9MB/s
+    linear-c4      ww..........  ttfb=   0.5ms  total=  22.6ms  1st=  22.5ms  decode=  21.5ms  size=  976KB  207.7MB/s
+    pixel-range-c3 ww..........  ttfb=   0.4ms  total=  12.1ms  1st=  12.0ms  decode=  11.2ms  size=  976KB  389.1MB/s
+    pixel-range-c4 ww..........  ttfb=   0.4ms  total=  11.8ms  1st=  11.7ms  decode=  11.0ms  size=  976KB  399.0MB/s
+    pixel-range-deflate-c3 ww..........  ttfb=   0.4ms  total=  10.9ms  1st=  10.8ms  decode=  10.0ms  size= 1.26MB  431.5MB/s
+    pixel-range-deflate-c4 ww..........  ttfb=   0.5ms  total=  11.4ms  1st=  11.4ms  decode=  10.2ms  size= 1.26MB  411.3MB/s
+    pixel-range-none-c3 ww..........  ttfb=   0.3ms  total=   4.4ms  1st=   4.4ms  decode=   1.8ms  size= 4.69MB  1063.7MB/s
+    pixel-range-none-c4 ww..........  ttfb=   0.4ms  total=   4.7ms  1st=   4.6ms  decode=   1.9ms  size= 4.69MB  1005.7MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb=   0.6ms  total=  11.8ms  1st=  10.7ms  decode=  11.8ms  size= 1.27MB  397.6MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb=   0.9ms  total=  11.8ms  1st=  10.9ms  decode=  11.8ms  size= 1.27MB  397.8MB/s
+    linear-deflate-c3 ww..........  ttfb=   0.8ms  total=  29.6ms  1st=  29.0ms  decode=  26.7ms  size= 1.26MB  158.7MB/s
+    linear-deflate-c4 ww..........  ttfb=   0.6ms  total=  28.5ms  1st=  28.4ms  decode=  27.1ms  size= 1.26MB  164.5MB/s
+    linear-stream-deflate-c3 ww..........  ttfb=   0.8ms  total=  31.1ms  1st=  30.6ms  decode=  10.6ms  size= 1.28MB  150.9MB/s
+    linear-stream-deflate-c4 ww..........  ttfb=   0.6ms  total=  27.2ms  1st=  26.6ms  decode=  10.8ms  size= 1.28MB  172.4MB/s
+    linear-stream-c3 ww..........  ttfb=   0.6ms  total=  24.6ms  1st=  24.1ms  decode=  11.9ms  size=  989KB  190.4MB/s
+    linear-stream-c4 ww..........  ttfb=   0.6ms  total=  21.5ms  1st=  21.0ms  decode=  12.3ms  size=  989KB  217.8MB/s
+    linear-webp-c3 ww..........  ttfb=   0.5ms  total=  21.4ms  1st=  21.4ms  decode=  20.3ms  size=  976KB  218.7MB/s
+    linear-webp-c4 ww..........  ttfb=   0.5ms  total=  21.0ms  1st=  21.0ms  decode=  20.1ms  size=  976KB  223.1MB/s
+    linear-upng-c3 ww..........  ttfb=   0.5ms  total=  21.2ms  1st=  21.2ms  decode=  20.1ms  size=  976KB  221.3MB/s
+    linear-upng-deflate-c3 ww..........  ttfb=   0.4ms  total=  22.6ms  1st=  22.6ms  decode=  21.6ms  size= 1.26MB  207.4MB/s
+    zip            ww..........  ttfb=   0.4ms  total=  21.0ms  1st=  21.0ms  decode=  20.0ms  size= 1.26MB  223.0MB/s
+    gzip           ww..........  ttfb=   0.5ms  total=   9.7ms  1st=   9.6ms  decode=   8.4ms  size= 1.26MB  485.3MB/s
+    deflate        ww..........  ttfb=   0.6ms  total=  10.1ms  1st=  10.0ms  decode=   8.4ms  size= 1.26MB  466.1MB/s
+    brotli-11      ww..........  ttfb=   0.5ms  total=  11.0ms  1st=  11.0ms  decode=   9.7ms  size=  975KB  424.7MB/s
+    brotli-6       ww..........  ttfb=   0.6ms  total=  10.8ms  1st=  10.8ms  decode=   9.2ms  size= 1.07MB  433.5MB/s
+
+── fast-cdn  (latency=10ms  bw=100.00MB/s) ──
+
+  [client-spec-map__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb=  12.5ms  total=  21.8ms  1st=  21.8ms  decode=   9.7ms  size=   57KB  62.2MB/s
+    linear-c4      ww..........  ttfb=  12.4ms  total=  21.4ms  1st=  21.4ms  decode=   8.9ms  size=   57KB  63.4MB/s
+    pixel-range-c3 ww..........  ttfb=  12.5ms  total=  20.9ms  1st=  20.8ms  decode=   8.2ms  size=   57KB  64.9MB/s
+    pixel-range-c4 ww..........  ttfb=  12.8ms  total=  21.7ms  1st=  21.7ms  decode=   8.8ms  size=   57KB  62.5MB/s
+    pixel-range-deflate-c3 ww..........  ttfb=  12.6ms  total=  21.7ms  1st=  21.6ms  decode=   8.8ms  size=   99KB  62.4MB/s
+    pixel-range-deflate-c4 ww..........  ttfb=  12.5ms  total=  20.6ms  1st=  20.6ms  decode=   8.2ms  size=   99KB  65.8MB/s
+    pixel-range-none-c3 ww..........  ttfb=  12.5ms  total=  33.3ms  1st=  33.2ms  decode=   8.2ms  size= 1.36MB  40.8MB/s
+    pixel-range-none-c4 ww..........  ttfb=  12.6ms  total=  33.5ms  1st=  33.4ms  decode=   8.5ms  size= 1.36MB  40.5MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb=  12.3ms  total=  13.8ms  1st=  13.5ms  decode=  13.8ms  size=  111KB  98.2MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb=  12.7ms  total=  14.5ms  1st=  14.0ms  decode=  14.4ms  size=  111KB  93.7MB/s
+    linear-deflate-c3 ww..........  ttfb=  12.6ms  total=  22.8ms  1st=  22.7ms  decode=  10.1ms  size=   99KB  59.5MB/s
+    linear-deflate-c4 ww..........  ttfb=  12.4ms  total=  22.4ms  1st=  22.4ms  decode=  10.0ms  size=   99KB  60.5MB/s
+    linear-stream-deflate-c3 ww..........  ttfb=  12.5ms  total=  15.8ms  1st=  15.6ms  decode=   3.0ms  size=  101KB  85.6MB/s
+    linear-stream-deflate-c4 ww..........  ttfb=  12.0ms  total=  15.7ms  1st=  15.5ms  decode=   3.0ms  size=  101KB  86.2MB/s
+    linear-stream-c3 ww..........  ttfb=  12.5ms  total=  15.4ms  1st=  15.2ms  decode=   2.4ms  size=   58KB  88.1MB/s
+    linear-stream-c4 ww..........  ttfb=  11.7ms  total=  14.8ms  1st=  14.7ms  decode=   2.7ms  size=   59KB  91.4MB/s
+    linear-webp-c3 ww..........  ttfb=  12.4ms  total=  22.1ms  1st=  22.1ms  decode=  10.0ms  size=   57KB  61.4MB/s
+    linear-webp-c4 ww..........  ttfb=  12.4ms  total=  22.0ms  1st=  21.9ms  decode=   9.5ms  size=   57KB  61.8MB/s
+    linear-upng-c3 ww..........  ttfb=  12.4ms  total=  21.3ms  1st=  21.2ms  decode=   8.8ms  size=   57KB  63.7MB/s
+    linear-upng-deflate-c3 ww..........  ttfb=  12.4ms  total=  21.6ms  1st=  21.6ms  decode=   9.3ms  size=   98KB  62.8MB/s
+    zip            ww..........  ttfb=  12.4ms  total=  17.6ms  1st=  17.6ms  decode=   5.1ms  size=  102KB  77.0MB/s
+    gzip           ww..........  ttfb=  12.5ms  total=  13.7ms  1st=  13.7ms  decode=   1.3ms  size=  102KB  98.8MB/s
+    deflate        ww..........  ttfb=  12.4ms  total=  14.0ms  1st=  14.0ms  decode=   1.6ms  size=  102KB  96.9MB/s
+    brotli-11      ww..........  ttfb=  12.5ms  total=  14.2ms  1st=  14.1ms  decode=   1.7ms  size=   57KB  95.7MB/s
+    brotli-6       ww..........  ttfb=  12.5ms  total=  14.2ms  1st=  14.2ms  decode=   1.7ms  size=   65KB  95.4MB/s
+
+  [react-dom-client-production__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb=  12.6ms  total=  15.4ms  1st=  15.4ms  decode=   2.7ms  size=   76KB  32.9MB/s
+    linear-c4      ww..........  ttfb=  12.5ms  total=  15.5ms  1st=  15.4ms  decode=   2.9ms  size=   76KB  32.8MB/s
+    pixel-range-c3 ww..........  ttfb=  12.5ms  total=  13.9ms  1st=  13.9ms  decode=   1.5ms  size=   76KB  36.4MB/s
+    pixel-range-c4 ww..........  ttfb=  11.8ms  total=  14.1ms  1st=  14.0ms  decode=   1.8ms  size=   76KB  36.1MB/s
+    pixel-range-deflate-c3 ww..........  ttfb=  12.7ms  total=  14.4ms  1st=  14.4ms  decode=   1.7ms  size=   93KB  35.2MB/s
+    pixel-range-deflate-c4 ww..........  ttfb=  12.7ms  total=  14.8ms  1st=  14.8ms  decode=   2.0ms  size=   93KB  34.2MB/s
+    pixel-range-none-c3 ww..........  ttfb=  13.6ms  total=  18.5ms  1st=  18.2ms  decode=   0.7ms  size=  521KB  27.4MB/s
+    pixel-range-none-c4 ww..........  ttfb=  13.2ms  total=  19.0ms  1st=  18.9ms  decode=   0.6ms  size=  521KB  26.8MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb=  13.7ms  total=  16.1ms  1st=  15.8ms  decode=  16.1ms  size=  105KB  31.6MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb=  14.2ms  total=  16.3ms  1st=  16.1ms  decode=  16.3ms  size=  105KB  31.1MB/s
+    linear-deflate-c3 ww..........  ttfb=  12.7ms  total=  17.3ms  1st=  17.3ms  decode=   4.5ms  size=   93KB  29.3MB/s
+    linear-deflate-c4 ww..........  ttfb=  12.6ms  total=  15.4ms  1st=  15.3ms  decode=   3.1ms  size=   93KB  33.1MB/s
+    linear-stream-deflate-c3 ww..........  ttfb=  12.6ms  total=  15.9ms  1st=  15.7ms  decode=   3.2ms  size=   94KB  32.0MB/s
+    linear-stream-deflate-c4 ww..........  ttfb=  11.8ms  total=  15.2ms  1st=  15.1ms  decode=   2.7ms  size=   94KB  33.4MB/s
+    linear-stream-c3 ww..........  ttfb=  12.6ms  total=  15.3ms  1st=  15.1ms  decode=   2.7ms  size=   77KB  33.3MB/s
+    linear-stream-c4 ww..........  ttfb=  12.5ms  total=  15.6ms  1st=  15.5ms  decode=   2.9ms  size=   77KB  32.6MB/s
+    linear-webp-c3 ww..........  ttfb=  12.5ms  total=  17.7ms  1st=  17.7ms  decode=   5.1ms  size=   76KB  28.7MB/s
+    linear-webp-c4 ww..........  ttfb=  12.5ms  total=  17.0ms  1st=  16.9ms  decode=   4.3ms  size=   76KB  29.9MB/s
+    linear-upng-c3 ww..........  ttfb=  12.7ms  total=  16.1ms  1st=  16.0ms  decode=   3.4ms  size=   76KB  31.6MB/s
+    linear-upng-deflate-c3 ww..........  ttfb=  12.7ms  total=  16.7ms  1st=  16.7ms  decode=   3.8ms  size=   93KB  30.4MB/s
+    zip            ww..........  ttfb=  12.6ms  total=  16.5ms  1st=  16.4ms  decode=   3.8ms  size=   93KB  30.9MB/s
+    gzip           ww..........  ttfb=  12.7ms  total=  14.5ms  1st=  14.4ms  decode=   1.4ms  size=   93KB  35.1MB/s
+    deflate        ww..........  ttfb=  13.0ms  total=  14.7ms  1st=  14.7ms  decode=   1.7ms  size=   93KB  34.5MB/s
+    brotli-11      ww..........  ttfb=  12.8ms  total=  14.7ms  1st=  14.7ms  decode=   1.7ms  size=   75KB  34.5MB/s
+    brotli-6       ww..........  ttfb=  12.9ms  total=  15.0ms  1st=  14.9ms  decode=   1.6ms  size=   86KB  33.9MB/s
+
+  [chunk-5mb__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb=  12.4ms  total=  43.9ms  1st=  43.8ms  decode=  23.5ms  size=  976KB  106.9MB/s
+    linear-c4      ww..........  ttfb=  12.4ms  total=  41.6ms  1st=  41.6ms  decode=  22.3ms  size=  976KB  112.7MB/s
+    pixel-range-c3 ww..........  ttfb=  12.5ms  total=  32.8ms  1st=  32.8ms  decode=  13.0ms  size=  976KB  142.9MB/s
+    pixel-range-c4 ww..........  ttfb=  12.7ms  total=  33.2ms  1st=  33.2ms  decode=  12.9ms  size=  976KB  141.2MB/s
+    pixel-range-deflate-c3 ww..........  ttfb=  12.2ms  total=  37.3ms  1st=  37.2ms  decode=  12.9ms  size= 1.26MB  125.8MB/s
+    pixel-range-deflate-c4 ww..........  ttfb=  12.5ms  total=  37.4ms  1st=  37.4ms  decode=  12.8ms  size= 1.26MB  125.3MB/s
+    pixel-range-none-c3 ww..........  ttfb=  12.8ms  total=  62.6ms  1st=  62.2ms  decode=   3.9ms  size= 4.69MB  74.9MB/s
+    pixel-range-none-c4 ww..........  ttfb=  12.6ms  total=  63.7ms  1st=  63.6ms  decode=   3.5ms  size= 4.69MB  73.6MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb=  12.7ms  total=  37.0ms  1st=  35.7ms  decode=  37.0ms  size= 1.27MB  126.7MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb=  11.6ms  total=  35.8ms  1st=  34.7ms  decode=  35.7ms  size= 1.27MB  131.1MB/s
+    linear-deflate-c3 ww..........  ttfb=  12.5ms  total=  49.9ms  1st=  49.9ms  decode=  25.8ms  size= 1.26MB  94.0MB/s
+    linear-deflate-c4 ww..........  ttfb=  12.6ms  total=  49.9ms  1st=  49.9ms  decode=  25.2ms  size= 1.26MB  93.9MB/s
+    linear-stream-deflate-c3 ww..........  ttfb=  12.5ms  total=  33.6ms  1st=  33.1ms  decode=  10.6ms  size= 1.28MB  139.6MB/s
+    linear-stream-deflate-c4 ww..........  ttfb=  12.6ms  total=  44.0ms  1st=  43.5ms  decode=  11.4ms  size= 1.28MB  106.6MB/s
+    linear-stream-c3 ww..........  ttfb=  12.7ms  total=  39.9ms  1st=  39.5ms  decode=  12.2ms  size=  989KB  117.4MB/s
+    linear-stream-c4 ww..........  ttfb=  12.6ms  total=  40.7ms  1st=  40.2ms  decode=  12.5ms  size=  989KB  115.4MB/s
+    linear-webp-c3 ww..........  ttfb=  12.5ms  total=  40.8ms  1st=  40.7ms  decode=  21.3ms  size=  976KB  115.0MB/s
+    linear-webp-c4 ww..........  ttfb=  12.4ms  total=  41.0ms  1st=  41.0ms  decode=  21.6ms  size=  976KB  114.3MB/s
+    linear-upng-c3 ww..........  ttfb=  12.1ms  total=  40.3ms  1st=  40.2ms  decode=  20.9ms  size=  976KB  116.5MB/s
+    linear-upng-deflate-c3 ww..........  ttfb=  12.5ms  total=  47.5ms  1st=  47.4ms  decode=  23.7ms  size= 1.26MB  98.8MB/s
+    zip            ww..........  ttfb=  12.6ms  total=  47.7ms  1st=  47.7ms  decode=  22.9ms  size= 1.26MB  98.3MB/s
+    gzip           ww..........  ttfb=  12.2ms  total=  35.1ms  1st=  35.1ms  decode=  11.0ms  size= 1.26MB  133.5MB/s
+    deflate        ww..........  ttfb=  12.7ms  total=  36.2ms  1st=  36.1ms  decode=  11.3ms  size= 1.26MB  129.5MB/s
+    brotli-11      ww..........  ttfb=  12.6ms  total=  31.7ms  1st=  31.6ms  decode=  11.8ms  size=  975KB  147.8MB/s
+    brotli-6       ww..........  ttfb=  12.5ms  total=  33.5ms  1st=  33.4ms  decode=  11.4ms  size= 1.07MB  140.0MB/s
+
+── average  (latency=50ms  bw=10.00MB/s) ──
+
+  [client-spec-map__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb=  52.6ms  total=  66.5ms  1st=  66.4ms  decode=  13.1ms  size=   57KB  20.4MB/s
+    linear-c4      ww..........  ttfb=  53.1ms  total=  67.2ms  1st=  67.0ms  decode=  13.1ms  size=   57KB  20.2MB/s
+    pixel-range-c3 ww..........  ttfb=  52.8ms  total=  66.7ms  1st=  66.7ms  decode=  13.4ms  size=   57KB  20.3MB/s
+    pixel-range-c4 ww..........  ttfb=  53.2ms  total=  65.8ms  1st=  65.7ms  decode=  12.4ms  size=   57KB  20.6MB/s
+    pixel-range-deflate-c3 ww..........  ttfb=  52.9ms  total=  64.7ms  1st=  64.6ms  decode=  11.7ms  size=   99KB  21.0MB/s
+    pixel-range-deflate-c4 ww..........  ttfb=  53.1ms  total=  67.0ms  1st=  66.8ms  decode=  13.2ms  size=   99KB  20.3MB/s
+    pixel-range-none-c3 ww..........  ttfb=  54.3ms  total= 202.6ms  1st= 202.4ms  decode=  13.8ms  size= 1.36MB  6.7MB/s
+    pixel-range-none-c4 ww..........  ttfb=  54.5ms  total= 208.0ms  1st= 207.7ms  decode=  17.5ms  size= 1.36MB  6.5MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb=  54.2ms  total=  57.6ms  1st=  57.1ms  decode=  57.5ms  size=  111KB  23.6MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb=  54.1ms  total=  57.2ms  1st=  56.7ms  decode=  57.2ms  size=  111KB  23.7MB/s
+    linear-deflate-c3 ww..........  ttfb=  52.8ms  total=  67.7ms  1st=  67.6ms  decode=  14.0ms  size=   99KB  20.0MB/s
+    linear-deflate-c4 ww..........  ttfb=  52.7ms  total=  69.2ms  1st=  69.1ms  decode=  16.0ms  size=   99KB  19.6MB/s
+    linear-stream-deflate-c3 ww..........  ttfb=  53.0ms  total=  58.0ms  1st=  57.8ms  decode=   4.2ms  size=  101KB  23.4MB/s
+    linear-stream-deflate-c4 ww..........  ttfb=  53.0ms  total=  58.2ms  1st=  58.0ms  decode=   4.6ms  size=  101KB  23.3MB/s
+    linear-stream-c3 ww..........  ttfb=  53.0ms  total=  56.8ms  1st=  56.5ms  decode=   3.3ms  size=   58KB  23.9MB/s
+    linear-stream-c4 ww..........  ttfb=  53.7ms  total=  57.9ms  1st=  57.7ms  decode=   3.8ms  size=   59KB  23.4MB/s
+    linear-webp-c3 ww..........  ttfb=  52.7ms  total=  64.4ms  1st=  64.3ms  decode=  11.6ms  size=   57KB  21.1MB/s
+    linear-webp-c4 ww..........  ttfb=  53.1ms  total=  68.8ms  1st=  68.7ms  decode=  14.9ms  size=   57KB  19.7MB/s
+    linear-upng-c3 ww..........  ttfb=  52.7ms  total=  66.7ms  1st=  66.6ms  decode=  14.0ms  size=   57KB  20.3MB/s
+    linear-upng-deflate-c3 ww..........  ttfb=  52.7ms  total=  68.7ms  1st=  68.6ms  decode=  15.3ms  size=   98KB  19.7MB/s
+    zip            ww..........  ttfb=  53.6ms  total=  63.9ms  1st=  63.8ms  decode=  10.1ms  size=  102KB  21.2MB/s
+    gzip           ww..........  ttfb=  54.7ms  total=  58.1ms  1st=  57.8ms  decode=   2.1ms  size=  102KB  23.4MB/s
+    deflate        ww..........  ttfb=  54.3ms  total=  57.4ms  1st=  57.1ms  decode=   2.1ms  size=  102KB  23.6MB/s
+    brotli-11      ww..........  ttfb=  54.1ms  total=  56.9ms  1st=  56.6ms  decode=   2.7ms  size=   57KB  23.9MB/s
+    brotli-6       ww..........  ttfb=  53.9ms  total=  57.3ms  1st=  57.0ms  decode=   2.5ms  size=   65KB  23.7MB/s
+
+  [react-dom-client-production__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb=  53.9ms  total=  60.4ms  1st=  60.2ms  decode=   5.8ms  size=   76KB  8.4MB/s
+    linear-c4      ww..........  ttfb=  54.1ms  total=  59.7ms  1st=  59.5ms  decode=   5.4ms  size=   76KB  8.5MB/s
+    pixel-range-c3 ww..........  ttfb=  53.5ms  total=  56.2ms  1st=  56.1ms  decode=   2.6ms  size=   76KB  9.0MB/s
+    pixel-range-c4 ww..........  ttfb=  54.0ms  total=  57.9ms  1st=  57.7ms  decode=   2.8ms  size=   76KB  8.8MB/s
+    pixel-range-deflate-c3 ww..........  ttfb=  54.3ms  total=  57.1ms  1st=  56.9ms  decode=   2.4ms  size=   93KB  8.9MB/s
+    pixel-range-deflate-c4 ww..........  ttfb=  53.9ms  total=  56.2ms  1st=  56.0ms  decode=   1.9ms  size=   93KB  9.0MB/s
+    pixel-range-none-c3 ww..........  ttfb=  54.7ms  total= 111.2ms  1st= 110.6ms  decode=   0.8ms  size=  521KB  4.6MB/s
+    pixel-range-none-c4 ww..........  ttfb=  55.1ms  total= 110.0ms  1st= 109.7ms  decode=   0.9ms  size=  521KB  4.6MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb=  55.0ms  total=  57.3ms  1st=  57.0ms  decode=  57.2ms  size=  105KB  8.9MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb=  53.8ms  total=  56.3ms  1st=  56.0ms  decode=  56.2ms  size=  105KB  9.0MB/s
+    linear-deflate-c3 ww..........  ttfb=  53.4ms  total=  58.0ms  1st=  57.8ms  decode=   4.6ms  size=   93KB  8.8MB/s
+    linear-deflate-c4 ww..........  ttfb=  53.9ms  total=  59.5ms  1st=  59.3ms  decode=   5.0ms  size=   93KB  8.5MB/s
+    linear-stream-deflate-c3 ww..........  ttfb=  53.6ms  total=  58.5ms  1st=  58.3ms  decode=   4.0ms  size=   94KB  8.7MB/s
+    linear-stream-deflate-c4 ww..........  ttfb=  53.4ms  total=  59.3ms  1st=  58.9ms  decode=   4.5ms  size=   94KB  8.6MB/s
+    linear-stream-c3 ww..........  ttfb=  53.4ms  total=  60.1ms  1st=  60.0ms  decode=   4.5ms  size=   77KB  8.4MB/s
+    linear-stream-c4 ww..........  ttfb=  53.5ms  total=  58.3ms  1st=  58.2ms  decode=   3.4ms  size=   77KB  8.7MB/s
+    linear-webp-c3 ww..........  ttfb=  53.5ms  total=  62.5ms  1st=  62.3ms  decode=   8.3ms  size=   76KB  8.1MB/s
+    linear-webp-c4 ww..........  ttfb=  54.1ms  total=  62.3ms  1st=  62.1ms  decode=   8.2ms  size=   76KB  8.2MB/s
+    linear-upng-c3 ww..........  ttfb=  53.8ms  total=  59.5ms  1st=  59.2ms  decode=   5.0ms  size=   76KB  8.5MB/s
+    linear-upng-deflate-c3 ww..........  ttfb=  54.1ms  total=  59.4ms  1st=  59.2ms  decode=   4.9ms  size=   93KB  8.6MB/s
+    zip            ww..........  ttfb=  54.0ms  total=  58.8ms  1st=  58.5ms  decode=   4.2ms  size=   93KB  8.6MB/s
+    gzip           ww..........  ttfb=  52.8ms  total=  54.8ms  1st=  54.6ms  decode=   1.4ms  size=   93KB  9.3MB/s
+    deflate        ww..........  ttfb=  54.2ms  total=  55.9ms  1st=  55.7ms  decode=   1.6ms  size=   93KB  9.1MB/s
+    brotli-11      ww..........  ttfb=  54.2ms  total=  56.5ms  1st=  56.2ms  decode=   2.1ms  size=   75KB  9.0MB/s
+    brotli-6       ww..........  ttfb=  54.5ms  total=  57.5ms  1st=  57.2ms  decode=   2.4ms  size=   86KB  8.8MB/s
+
+  [chunk-5mb__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb=  53.2ms  total= 175.3ms  1st= 175.1ms  decode=  40.7ms  size=  976KB  26.8MB/s
+    linear-c4      ww..........  ttfb=  52.9ms  total= 176.8ms  1st= 176.5ms  decode=  41.0ms  size=  976KB  26.5MB/s
+    pixel-range-c3 ww..........  ttfb=  53.4ms  total= 162.8ms  1st= 162.5ms  decode=  26.6ms  size=  976KB  28.8MB/s
+    pixel-range-c4 ww..........  ttfb=  53.5ms  total= 162.4ms  1st= 162.2ms  decode=  26.7ms  size=  976KB  28.9MB/s
+    pixel-range-deflate-c3 ww..........  ttfb=  53.6ms  total= 212.0ms  1st= 211.8ms  decode=  23.1ms  size= 1.26MB  22.1MB/s
+    pixel-range-deflate-c4 ww..........  ttfb=  53.5ms  total= 213.7ms  1st= 213.5ms  decode=  24.2ms  size= 1.26MB  21.9MB/s
+    pixel-range-none-c3 ww..........  ttfb=  54.2ms  total= 546.3ms  1st= 546.1ms  decode=   5.1ms  size= 4.69MB  8.6MB/s
+    pixel-range-none-c4 ww..........  ttfb=  54.8ms  total= 546.9ms  1st= 546.7ms  decode=   5.5ms  size= 4.69MB  8.6MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb=  53.8ms  total= 209.9ms  1st= 208.0ms  decode= 209.8ms  size= 1.27MB  22.3MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb=  53.7ms  total= 210.6ms  1st= 208.9ms  decode= 210.4ms  size= 1.27MB  22.3MB/s
+    linear-deflate-c3 ww..........  ttfb=  53.2ms  total= 236.8ms  1st= 236.5ms  decode=  47.0ms  size= 1.26MB  19.8MB/s
+    linear-deflate-c4 ww..........  ttfb=  53.3ms  total= 233.2ms  1st= 233.0ms  decode=  44.7ms  size= 1.26MB  20.1MB/s
+    linear-stream-deflate-c3 ww..........  ttfb=  53.0ms  total= 202.8ms  1st= 202.1ms  decode=  15.8ms  size= 1.28MB  23.1MB/s
+    linear-stream-deflate-c4 ww..........  ttfb=  53.3ms  total= 204.9ms  1st= 204.2ms  decode=  17.9ms  size= 1.28MB  22.9MB/s
+    linear-stream-c3 ww..........  ttfb=  53.0ms  total= 152.3ms  1st= 151.5ms  decode=  18.1ms  size=  989KB  30.8MB/s
+    linear-stream-c4 ww..........  ttfb=  52.7ms  total= 151.7ms  1st= 151.2ms  decode=  17.7ms  size=  989KB  30.9MB/s
+    linear-webp-c3 ww..........  ttfb=  53.0ms  total= 174.3ms  1st= 174.1ms  decode=  40.3ms  size=  976KB  26.9MB/s
+    linear-webp-c4 ww..........  ttfb=  52.8ms  total= 170.5ms  1st= 170.4ms  decode=  37.1ms  size=  976KB  27.5MB/s
+    linear-upng-c3 ww..........  ttfb=  52.9ms  total= 170.7ms  1st= 170.6ms  decode=  36.1ms  size=  976KB  27.5MB/s
+    linear-upng-deflate-c3 ww..........  ttfb=  53.1ms  total= 231.4ms  1st= 231.2ms  decode=  42.9ms  size= 1.26MB  20.3MB/s
+    zip            ww..........  ttfb=  53.4ms  total= 228.7ms  1st= 228.4ms  decode=  39.1ms  size= 1.26MB  20.5MB/s
+    gzip           ww..........  ttfb=  53.9ms  total= 206.4ms  1st= 206.1ms  decode=  17.7ms  size= 1.26MB  22.7MB/s
+    deflate        ww..........  ttfb=  54.0ms  total= 208.2ms  1st= 207.9ms  decode=  18.4ms  size= 1.26MB  22.5MB/s
+    brotli-11      ww..........  ttfb=  53.1ms  total= 157.3ms  1st= 157.0ms  decode=  22.2ms  size=  975KB  29.8MB/s
+    brotli-6       ww..........  ttfb=  53.6ms  total= 182.6ms  1st= 182.3ms  decode=  22.1ms  size= 1.07MB  25.7MB/s
+
+── slow  (latency=100ms  bw=2.00MB/s) ──
+
+  [client-spec-map__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb= 104.0ms  total= 121.2ms  1st= 121.1ms  decode=  17.3ms  size=   57KB  11.2MB/s
+    linear-c4      ww..........  ttfb= 104.8ms  total= 124.4ms  1st= 124.2ms  decode=  19.8ms  size=   57KB  10.9MB/s
+    pixel-range-c3 ww..........  ttfb= 104.1ms  total= 123.0ms  1st= 122.8ms  decode=  18.3ms  size=   57KB  11.0MB/s
+    pixel-range-c4 ww..........  ttfb= 104.2ms  total= 123.2ms  1st= 122.9ms  decode=  18.2ms  size=   57KB  11.0MB/s
+    pixel-range-deflate-c3 ww..........  ttfb= 103.7ms  total= 122.6ms  1st= 122.4ms  decode=  17.8ms  size=   99KB  11.1MB/s
+    pixel-range-deflate-c4 ww..........  ttfb= 104.3ms  total= 122.5ms  1st= 122.3ms  decode=  17.8ms  size=   99KB  11.1MB/s
+    pixel-range-none-c3 ww..........  ttfb= 104.3ms  total= 756.5ms  1st= 756.3ms  decode=  16.4ms  size= 1.36MB  1.8MB/s
+    pixel-range-none-c4 ww..........  ttfb= 104.6ms  total= 755.3ms  1st= 755.0ms  decode=  16.7ms  size= 1.36MB  1.8MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb= 104.4ms  total= 107.5ms  1st= 106.7ms  decode= 107.3ms  size=  111KB  12.6MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb= 105.2ms  total= 109.1ms  1st= 108.2ms  decode= 109.0ms  size=  111KB  12.4MB/s
+    linear-deflate-c3 ww..........  ttfb= 103.7ms  total= 124.9ms  1st= 124.7ms  decode=  20.5ms  size=   99KB  10.9MB/s
+    linear-deflate-c4 ww..........  ttfb= 104.2ms  total= 124.5ms  1st= 124.3ms  decode=  19.9ms  size=   99KB  10.9MB/s
+    linear-stream-deflate-c3 ww..........  ttfb= 103.7ms  total= 111.9ms  1st= 111.6ms  decode=   6.2ms  size=  101KB  12.1MB/s
+    linear-stream-deflate-c4 ww..........  ttfb= 103.3ms  total= 109.5ms  1st= 109.3ms  decode=   4.3ms  size=  101KB  12.4MB/s
+    linear-stream-c3 ww..........  ttfb= 104.7ms  total= 110.6ms  1st= 110.2ms  decode=   5.1ms  size=   58KB  12.3MB/s
+    linear-stream-c4 ww..........  ttfb= 104.8ms  total= 110.6ms  1st= 110.3ms  decode=   5.0ms  size=   59KB  12.3MB/s
+    linear-webp-c3 ww..........  ttfb= 104.2ms  total= 125.3ms  1st= 125.1ms  decode=  21.5ms  size=   57KB  10.8MB/s
+    linear-webp-c4 ww..........  ttfb= 104.2ms  total= 125.3ms  1st= 125.1ms  decode=  21.7ms  size=   57KB  10.8MB/s
+    linear-upng-c3 ww..........  ttfb= 104.3ms  total= 124.2ms  1st= 123.9ms  decode=  19.6ms  size=   57KB  10.9MB/s
+    linear-upng-deflate-c3 ww..........  ttfb= 104.7ms  total= 125.6ms  1st= 125.3ms  decode=  20.7ms  size=   98KB  10.8MB/s
+    zip            ww..........  ttfb= 103.8ms  total= 114.5ms  1st= 114.3ms  decode=  10.1ms  size=  102KB  11.8MB/s
+    gzip           ww..........  ttfb= 104.6ms  total= 107.5ms  1st= 107.1ms  decode=   2.1ms  size=  102KB  12.6MB/s
+    deflate        ww..........  ttfb= 103.7ms  total= 106.6ms  1st= 106.2ms  decode=   2.2ms  size=  102KB  12.7MB/s
+    brotli-11      ww..........  ttfb= 104.3ms  total= 107.9ms  1st= 107.6ms  decode=   2.5ms  size=   57KB  12.6MB/s
+    brotli-6       ww..........  ttfb= 104.7ms  total= 108.2ms  1st= 107.9ms  decode=   2.8ms  size=   65KB  12.5MB/s
+
+  [react-dom-client-production__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb= 104.5ms  total= 111.0ms  1st= 110.8ms  decode=   5.9ms  size=   76KB  4.6MB/s
+    linear-c4      ww..........  ttfb= 104.1ms  total= 110.6ms  1st= 110.3ms  decode=   5.8ms  size=   76KB  4.6MB/s
+    pixel-range-c3 ww..........  ttfb= 103.7ms  total= 107.1ms  1st= 106.8ms  decode=   2.9ms  size=   76KB  4.7MB/s
+    pixel-range-c4 ww..........  ttfb= 104.0ms  total= 107.2ms  1st= 106.9ms  decode=   2.8ms  size=   76KB  4.7MB/s
+    pixel-range-deflate-c3 ww..........  ttfb= 104.1ms  total= 106.6ms  1st= 106.4ms  decode=   2.1ms  size=   93KB  4.8MB/s
+    pixel-range-deflate-c4 ww..........  ttfb= 103.8ms  total= 106.4ms  1st= 106.2ms  decode=   2.0ms  size=   93KB  4.8MB/s
+    pixel-range-none-c3 ww..........  ttfb= 104.1ms  total= 359.4ms  1st= 359.1ms  decode=   1.1ms  size=  521KB  1.4MB/s
+    pixel-range-none-c4 ww..........  ttfb= 105.3ms  total= 359.8ms  1st= 359.4ms  decode=   1.0ms  size=  521KB  1.4MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb= 105.1ms  total= 107.8ms  1st= 107.4ms  decode= 107.6ms  size=  105KB  4.7MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb= 104.8ms  total= 107.6ms  1st= 107.1ms  decode= 107.4ms  size=  105KB  4.7MB/s
+    linear-deflate-c3 ww..........  ttfb= 103.1ms  total= 109.3ms  1st= 109.0ms  decode=   5.6ms  size=   93KB  4.7MB/s
+    linear-deflate-c4 ww..........  ttfb= 104.2ms  total= 110.3ms  1st= 110.1ms  decode=   5.4ms  size=   93KB  4.6MB/s
+    linear-stream-deflate-c3 ww..........  ttfb= 104.2ms  total= 110.8ms  1st= 110.4ms  decode=   5.3ms  size=   94KB  4.6MB/s
+    linear-stream-deflate-c4 ww..........  ttfb= 104.3ms  total= 111.4ms  1st= 111.2ms  decode=   4.8ms  size=   94KB  4.6MB/s
+    linear-stream-c3 ww..........  ttfb= 104.1ms  total= 110.5ms  1st= 110.2ms  decode=   4.6ms  size=   77KB  4.6MB/s
+    linear-stream-c4 ww..........  ttfb= 103.8ms  total= 110.0ms  1st= 109.8ms  decode=   4.7ms  size=   77KB  4.6MB/s
+    linear-webp-c3 ww..........  ttfb= 104.2ms  total= 113.4ms  1st= 113.2ms  decode=   9.0ms  size=   76KB  4.5MB/s
+    linear-webp-c4 ww..........  ttfb= 103.6ms  total= 112.0ms  1st= 111.8ms  decode=   8.0ms  size=   76KB  4.5MB/s
+    linear-upng-c3 ww..........  ttfb= 103.7ms  total= 109.1ms  1st= 108.9ms  decode=   4.9ms  size=   76KB  4.7MB/s
+    linear-upng-deflate-c3 ww..........  ttfb= 103.8ms  total= 109.3ms  1st= 108.9ms  decode=   5.0ms  size=   93KB  4.7MB/s
+    zip            ww..........  ttfb= 104.3ms  total= 109.2ms  1st= 108.9ms  decode=   4.5ms  size=   93KB  4.7MB/s
+    gzip           ww..........  ttfb= 104.4ms  total= 106.7ms  1st= 106.4ms  decode=   1.7ms  size=   93KB  4.8MB/s
+    deflate        ww..........  ttfb= 104.4ms  total= 106.3ms  1st= 106.0ms  decode=   1.5ms  size=   93KB  4.8MB/s
+    brotli-11      ww..........  ttfb= 103.9ms  total= 106.4ms  1st= 106.1ms  decode=   2.2ms  size=   75KB  4.8MB/s
+    brotli-6       ww..........  ttfb= 104.4ms  total= 106.7ms  1st= 106.5ms  decode=   1.8ms  size=   86KB  4.8MB/s
+
+  [chunk-5mb__chunks-1__chunk-00]
+    linear-c3      ww..........  ttfb= 103.7ms  total= 527.7ms  1st= 527.5ms  decode=  42.9ms  size=  976KB  8.9MB/s
+    linear-c4      ww..........  ttfb= 103.8ms  total= 527.0ms  1st= 526.8ms  decode=  41.9ms  size=  976KB  8.9MB/s
+    pixel-range-c3 ww..........  ttfb= 103.7ms  total= 511.5ms  1st= 511.3ms  decode=  25.7ms  size=  976KB  9.2MB/s
+    pixel-range-c4 ww..........  ttfb= 104.1ms  total= 511.7ms  1st= 511.4ms  decode=  26.0ms  size=  976KB  9.2MB/s
+    pixel-range-deflate-c3 ww..........  ttfb= 104.1ms  total= 762.8ms  1st= 762.6ms  decode=  23.0ms  size= 1.26MB  6.1MB/s
+    pixel-range-deflate-c4 ww..........  ttfb= 103.8ms  total= 762.8ms  1st= 762.4ms  decode=  23.2ms  size= 1.26MB  6.1MB/s
+    pixel-range-none-c3 ww..........  ttfb= 104.8ms  total=   2.40s  1st=   2.40s  decode=   5.1ms  size= 4.69MB  2.0MB/s
+    pixel-range-none-c4 ww..........  ttfb= 104.7ms  total=   2.40s  1st=   2.40s  decode=   5.1ms  size= 4.69MB  2.0MB/s
+    pixel-range-stream-deflate-c3 ww..........  ttfb= 104.4ms  total= 760.3ms  1st= 758.4ms  decode= 760.2ms  size= 1.27MB  6.2MB/s
+    pixel-range-stream-deflate-c4 ww..........  ttfb= 105.2ms  total= 760.0ms  1st= 758.4ms  decode= 759.9ms  size= 1.27MB  6.2MB/s
+    linear-deflate-c3 ww..........  ttfb= 103.3ms  total= 785.9ms  1st= 785.7ms  decode=  47.5ms  size= 1.26MB  6.0MB/s
+    linear-deflate-c4 ww..........  ttfb= 103.5ms  total= 783.5ms  1st= 783.3ms  decode=  45.0ms  size= 1.26MB  6.0MB/s
+    linear-stream-deflate-c3 ww..........  ttfb= 104.2ms  total= 762.6ms  1st= 761.5ms  decode=  21.7ms  size= 1.28MB  6.2MB/s
+    linear-stream-deflate-c4 ww..........  ttfb= 105.6ms  total= 763.6ms  1st= 762.2ms  decode=  22.4ms  size= 1.28MB  6.1MB/s
+    linear-stream-c3 ww..........  ttfb= 103.9ms  total= 512.3ms  1st= 511.3ms  decode=  27.9ms  size=  989KB  9.2MB/s
+    linear-stream-c4 ww..........  ttfb= 103.4ms  total= 514.4ms  1st= 513.3ms  decode=  27.9ms  size=  989KB  9.1MB/s
+    linear-webp-c3 ww..........  ttfb= 103.2ms  total= 524.0ms  1st= 523.8ms  decode=  40.7ms  size=  976KB  9.0MB/s
+    linear-webp-c4 ww..........  ttfb= 103.5ms  total= 525.0ms  1st= 524.8ms  decode=  39.7ms  size=  976KB  8.9MB/s
+    linear-upng-c3 ww..........  ttfb= 103.3ms  total= 524.6ms  1st= 524.5ms  decode=  39.7ms  size=  976KB  8.9MB/s
+    linear-upng-deflate-c3 ww..........  ttfb= 104.1ms  total= 782.7ms  1st= 782.4ms  decode=  43.1ms  size= 1.26MB  6.0MB/s
+    zip            ww..........  ttfb= 103.9ms  total= 776.0ms  1st= 775.7ms  decode=  38.8ms  size= 1.26MB  6.0MB/s
+    gzip           ww..........  ttfb= 104.1ms  total= 756.4ms  1st= 756.1ms  decode=  17.5ms  size= 1.26MB  6.2MB/s
+    deflate        ww..........  ttfb= 104.3ms  total= 757.6ms  1st= 757.3ms  decode=  17.6ms  size= 1.26MB  6.2MB/s
+    brotli-11      ww..........  ttfb= 103.7ms  total= 506.2ms  1st= 506.0ms  decode=  21.8ms  size=  975KB  9.3MB/s
+    brotli-6       ww..........  ttfb= 104.3ms  total= 633.9ms  1st= 633.7ms  decode=  21.1ms  size= 1.07MB  7.4MB/s
+
+
+══ SUMMARY (avg across all sources) ══
+
+local:
+  scenario      ttfb          total         decode        transfer      MB/s          
+  ──────────────────────────────────────────────────────────────────────────────────────
+  linear-c3     0.6ms         11.8ms        10.9ms        370KB         193.9         
+  linear-c4     0.4ms         11.1ms        10.4ms        370KB         207.2         
+  pixel-range-c30.4ms         7.0ms         6.4ms         370KB         342.6         
+  pixel-range-c40.3ms         6.8ms         6.3ms         370KB         352.0         
+  pixel-range-deflate-c30.3ms         6.5ms         5.9ms         494KB         379.3         
+  pixel-range-deflate-c40.4ms         6.7ms         6.0ms         494KB         341.0         
+  pixel-range-none-c30.4ms         4.3ms         2.8ms         2.19MB        632.2         
+  pixel-range-none-c40.3ms         4.3ms         2.8ms         2.19MB        688.1         
+  pixel-range-stream-deflate-c30.4ms         4.9ms         4.9ms         506KB         541.3         
+  pixel-range-stream-deflate-c40.5ms         4.8ms         4.8ms         506KB         594.9         
+  linear-deflate-c30.5ms         13.6ms        12.4ms        495KB         175.7         
+  linear-deflate-c40.4ms         13.2ms        12.4ms        495KB         180.3         
+  linear-stream-deflate-c30.5ms         12.7ms        5.3ms         501KB         221.2         
+  linear-stream-deflate-c40.4ms         11.2ms        5.1ms         501KB         240.9         
+  linear-stream-c30.5ms         10.0ms        5.3ms         375KB         296.2         
+  linear-stream-c40.4ms         8.7ms         5.3ms         375KB         342.6         
+  linear-webp-c30.4ms         11.3ms        10.6ms        369KB         178.8         
+  linear-webp-c40.4ms         11.0ms        10.4ms        369KB         182.8         
+  linear-upng-c30.4ms         10.5ms        9.9ms         370KB         214.5         
+  linear-upng-deflate-c30.4ms         11.2ms        10.5ms        494KB         203.3         
+  zip           0.3ms         9.3ms         8.7ms         497KB         250.6         
+  gzip          0.3ms         3.9ms         3.2ms         496KB         789.0         
+  deflate       0.4ms         4.0ms         3.2ms         496KB         775.7         
+  brotli-11     0.3ms         4.4ms         3.7ms         369KB         705.1         
+  brotli-6      0.4ms         4.3ms         3.6ms         417KB         708.6         
+
+fast-cdn:
+  scenario      ttfb          total         decode        transfer      MB/s          
+  ──────────────────────────────────────────────────────────────────────────────────────
+  linear-c3     12.5ms        27.0ms        11.9ms        370KB         67.3          
+  linear-c4     12.5ms        26.2ms        11.3ms        370KB         69.6          
+  pixel-range-c312.5ms        22.6ms        7.6ms         370KB         81.4          
+  pixel-range-c412.4ms        23.0ms        7.9ms         370KB         79.9          
+  pixel-range-deflate-c312.5ms        24.5ms        7.8ms         494KB         74.5          
+  pixel-range-deflate-c412.6ms        24.3ms        7.7ms         494KB         75.1          
+  pixel-range-none-c313.0ms        38.1ms        4.3ms         2.19MB        47.7          
+  pixel-range-none-c412.8ms        38.7ms        4.2ms         2.19MB        47.0          
+  pixel-range-stream-deflate-c312.9ms        22.3ms        22.3ms        506KB         85.5          
+  pixel-range-stream-deflate-c412.8ms        22.2ms        22.2ms        506KB         85.3          
+  linear-deflate-c312.6ms        30.0ms        13.5ms        495KB         60.9          
+  linear-deflate-c412.5ms        29.2ms        12.8ms        495KB         62.5          
+  linear-stream-deflate-c312.6ms        21.8ms        5.6ms         501KB         85.8          
+  linear-stream-deflate-c412.1ms        25.0ms        5.7ms         501KB         75.4          
+  linear-stream-c312.6ms        23.5ms        5.7ms         375KB         79.6          
+  linear-stream-c412.3ms        23.7ms        6.0ms         375KB         79.8          
+  linear-webp-c312.5ms        26.9ms        12.1ms        369KB         68.4          
+  linear-webp-c412.5ms        26.7ms        11.8ms        369KB         68.7          
+  linear-upng-c312.4ms        25.9ms        11.0ms        370KB         70.6          
+  linear-upng-deflate-c312.5ms        28.6ms        12.3ms        494KB         64.0          
+  zip           12.5ms        27.3ms        10.6ms        497KB         68.7          
+  gzip          12.5ms        21.1ms        4.6ms         496KB         89.1          
+  deflate       12.7ms        21.6ms        4.8ms         496KB         87.0          
+  brotli-11     12.7ms        20.2ms        5.1ms         369KB         92.7          
+  brotli-6      12.7ms        20.9ms        4.9ms         417KB         89.8          
+
+average:
+  scenario      ttfb          total         decode        transfer      MB/s          
+  ──────────────────────────────────────────────────────────────────────────────────────
+  linear-c3     53.2ms        100.7ms       19.9ms        370KB         18.5          
+  linear-c4     53.3ms        101.2ms       19.8ms        370KB         18.4          
+  pixel-range-c353.2ms        95.2ms        14.2ms        370KB         19.4          
+  pixel-range-c453.6ms        95.4ms        14.0ms        370KB         19.4          
+  pixel-range-deflate-c353.6ms        111.3ms       12.4ms        494KB         17.3          
+  pixel-range-deflate-c453.5ms        112.3ms       13.1ms        494KB         17.1          
+  pixel-range-none-c354.4ms        286.7ms       6.6ms         2.19MB        6.6           
+  pixel-range-none-c454.8ms        288.3ms       7.9ms         2.19MB        6.6           
+  pixel-range-stream-deflate-c354.3ms        108.3ms       108.2ms       506KB         18.3          
+  pixel-range-stream-deflate-c453.9ms        108.0ms       107.9ms       506KB         18.3          
+  linear-deflate-c353.1ms        120.8ms       21.8ms        495KB         16.2          
+  linear-deflate-c453.3ms        120.6ms       21.9ms        495KB         16.1          
+  linear-stream-deflate-c353.2ms        106.4ms       8.0ms         501KB         18.4          
+  linear-stream-deflate-c453.2ms        107.5ms       9.0ms         501KB         18.2          
+  linear-stream-c353.1ms        89.8ms        8.7ms         375KB         21.0          
+  linear-stream-c453.3ms        89.3ms        8.3ms         375KB         21.0          
+  linear-webp-c353.1ms        100.4ms       20.1ms        369KB         18.7          
+  linear-webp-c453.3ms        100.5ms       20.1ms        369KB         18.5          
+  linear-upng-c353.1ms        99.0ms        18.4ms        370KB         18.8          
+  linear-upng-deflate-c353.3ms        119.8ms       21.0ms        494KB         16.2          
+  zip           53.6ms        117.1ms       17.8ms        497KB         16.8          
+  gzip          53.8ms        106.4ms       7.1ms         496KB         18.5          
+  deflate       54.2ms        107.2ms       7.4ms         496KB         18.4          
+  brotli-11     53.8ms        90.2ms        9.0ms         369KB         20.9          
+  brotli-6      54.0ms        99.1ms        9.0ms         417KB         19.4          
+
+slow:
+  scenario      ttfb          total         decode        transfer      MB/s          
+  ──────────────────────────────────────────────────────────────────────────────────────
+  linear-c3     104.1ms       253.3ms       22.0ms        370KB         8.2           
+  linear-c4     104.2ms       254.0ms       22.5ms        370KB         8.1           
+  pixel-range-c3103.8ms       247.2ms       15.6ms        370KB         8.3           
+  pixel-range-c4104.1ms       247.3ms       15.7ms        370KB         8.3           
+  pixel-range-deflate-c3104.0ms       330.7ms       14.3ms        494KB         7.3           
+  pixel-range-deflate-c4104.0ms       330.6ms       14.3ms        494KB         7.3           
+  pixel-range-none-c3104.4ms       1.17s         7.5ms         2.19MB        1.7           
+  pixel-range-none-c4104.9ms       1.17s         7.6ms         2.19MB        1.7           
+  pixel-range-stream-deflate-c3104.6ms       325.2ms       325.0ms       506KB         7.8           
+  pixel-range-stream-deflate-c4105.0ms       325.6ms       325.4ms       506KB         7.8           
+  linear-deflate-c3103.4ms       340.0ms       24.5ms        495KB         7.2           
+  linear-deflate-c4103.9ms       339.4ms       23.4ms        495KB         7.2           
+  linear-stream-deflate-c3104.0ms       328.4ms       11.1ms        501KB         7.6           
+  linear-stream-deflate-c4104.4ms       328.2ms       10.5ms        501KB         7.7           
+  linear-stream-c3104.2ms       244.5ms       12.5ms        375KB         8.7           
+  linear-stream-c4104.0ms       245.0ms       12.5ms        375KB         8.7           
+  linear-webp-c3103.9ms       254.2ms       23.7ms        369KB         8.1           
+  linear-webp-c4103.8ms       254.1ms       23.1ms        369KB         8.1           
+  linear-upng-c3103.7ms       252.7ms       21.4ms        370KB         8.2           
+  linear-upng-deflate-c3104.2ms       339.2ms       22.9ms        494KB         7.1           
+  zip           104.0ms       333.2ms       17.8ms        497KB         7.5           
+  gzip          104.4ms       323.5ms       7.1ms         496KB         7.9           
+  deflate       104.1ms       323.5ms       7.1ms         496KB         7.9           
+  brotli-11     104.0ms       240.2ms       8.8ms         369KB         8.9           
+  brotli-6      104.4ms       283.0ms       8.6ms         417KB         8.2           
+
+Results saved → /Users/valerii/Develop/codeart/apps/web/benchmark-results/results.json  (300 rows)
+
+═══ Codec perf: decoding 60 pre-generated tokens (warmup×2 + 10 samples) ═══
+
+── client-spec-map__chunks-1__chunk-00 ──
+  [1/60] linear c3                              [measure] globalThis.gc not available — invoke node with NODE_OPTIONS=--expose-gc for less variance
+enc=   751ms  dec=2.8ms ± 0.76 (p95=5.2ms)      ratio=  4.1%  57.5KB
+  [2/60] linear c4                              enc=   736ms  dec=2.4ms ± 0.21 (p95=2.9ms)      ratio=  4.1%  57.5KB
+  [3/60] pixel-range c3                         enc=   739ms  dec=0.90ms ± 0.11 (p95=1.1ms)     ratio=  4.1%  57.5KB
+  [4/60] pixel-range c4                         enc=   738ms  dec=1.0ms ± 0.53 (p95=2.3ms)      ratio=  4.1%  57.5KB
+  [5/60] pixel-range-deflate c3                 enc=    13ms  dec=0.87ms ± 0.07 (p95=1.0ms)     ratio=  7.1%  99.0KB
+  [6/60] pixel-range-deflate c4                 enc=    14ms  dec=0.77ms ± 0.10 (p95=1.0ms)     ratio=  7.1%  99.0KB
+  [7/60] pixel-range-none c3                    enc=     5ms  dec=0.01ms ± 0.00 (p95=0.02ms)    ratio=100.0%  1.36MB
+  [8/60] pixel-range-none c4                    enc=     5ms  dec=0.01ms ± 0.00 (p95=0.02ms)    ratio=100.0%  1.36MB
+  [9/60] pixel-range-stream-deflate c3          enc=    14ms  dec=0.75ms ± 0.09 (p95=0.97ms)    ratio=  8.0%  111.1KB
+  [10/60] pixel-range-stream-deflate c4         enc=    12ms  dec=0.78ms ± 0.05 (p95=0.93ms)    ratio=  8.0%  111.1KB
+  [11/60] linear-deflate c3                     enc=    14ms  dec=3.4ms ± 0.11 (p95=3.5ms)      ratio=  7.1%  99.0KB
+  [12/60] linear-deflate c4                     enc=    13ms  dec=3.0ms ± 0.09 (p95=3.2ms)      ratio=  7.1%  99.1KB
+  [13/60] linear-stream-deflate c3              enc=    17ms  dec=2.9ms ± 0.14 (p95=3.3ms)      ratio=  7.2%  100.6KB
+  [14/60] linear-stream-deflate c4              enc=    16ms  dec=2.6ms ± 0.08 (p95=2.8ms)      ratio=  7.3%  100.8KB
+  [15/60] linear-stream c3                      enc=   737ms  dec=2.0ms ± 0.05 (p95=2.0ms)      ratio=  4.2%  58.3KB
+  [16/60] linear-stream c4                      enc=   741ms  dec=1.9ms ± 0.08 (p95=2.1ms)      ratio=  4.2%  58.5KB
+  [17/60] linear-webp c3                        enc=   826ms  dec=3.5ms ± 0.08 (p95=3.6ms)      ratio=  4.1%  57.3KB
+  [18/60] linear-webp c4                        enc=   819ms  dec=3.4ms ± 0.13 (p95=3.8ms)      ratio=  4.1%  57.3KB
+  [19/60] linear-upng c3                        enc=   786ms  dec=2.5ms ± 0.27 (p95=3.2ms)      ratio=  4.1%  57.5KB
+  [20/60] linear-upng-deflate c3                enc=    37ms  dec=3.1ms ± 0.28 (p95=3.8ms)      ratio=  7.1%  98.2KB
+
+── react-dom-client-production__chunks-1__chunk-00 ──
+  [21/60] linear c3                             enc=   572ms  dec=2.5ms ± 0.10 (p95=2.8ms)      ratio= 14.5%  75.7KB
+  [22/60] linear c4                             enc=   574ms  dec=2.4ms ± 0.10 (p95=2.6ms)      ratio= 14.5%  75.7KB
+  [23/60] pixel-range c3                        enc=   567ms  dec=0.68ms ± 0.01 (p95=0.71ms)    ratio= 14.5%  75.7KB
+  [24/60] pixel-range c4                        enc=   579ms  dec=0.68ms ± 0.08 (p95=0.91ms)    ratio= 14.5%  75.7KB
+  [25/60] pixel-range-deflate c3                enc=    33ms  dec=0.61ms ± 0.01 (p95=0.62ms)    ratio= 17.8%  92.7KB
+  [26/60] pixel-range-deflate c4                enc=    33ms  dec=0.58ms ± 0.06 (p95=0.76ms)    ratio= 17.8%  92.7KB
+  [27/60] pixel-range-none c3                   enc=     2ms  dec=0.01ms ± 0.00 (p95=0.01ms)    ratio=100.1%  520.7KB
+  [28/60] pixel-range-none c4                   enc=     2ms  dec=0.01ms ± 0.00 (p95=0.01ms)    ratio=100.1%  520.7KB
+  [29/60] pixel-range-stream-deflate c3         enc=    34ms  dec=0.60ms ± 0.03 (p95=0.63ms)    ratio= 20.1%  104.7KB
+  [30/60] pixel-range-stream-deflate c4         enc=    33ms  dec=0.58ms ± 0.04 (p95=0.70ms)    ratio= 20.1%  104.7KB
+  [31/60] linear-deflate c3                     enc=    35ms  dec=2.9ms ± 0.08 (p95=3.1ms)      ratio= 17.8%  92.8KB
+  [32/60] linear-deflate c4                     enc=    34ms  dec=2.7ms ± 0.13 (p95=3.1ms)      ratio= 17.8%  92.8KB
+  [33/60] linear-stream-deflate c3              enc=    35ms  dec=2.4ms ± 0.04 (p95=2.5ms)      ratio= 18.1%  94.2KB
+  [34/60] linear-stream-deflate c4              enc=    34ms  dec=2.3ms ± 0.03 (p95=2.4ms)      ratio= 18.1%  94.0KB
+  [35/60] linear-stream c3                      enc=   568ms  dec=2.2ms ± 0.03 (p95=2.2ms)      ratio= 14.7%  76.6KB
+  [36/60] linear-stream c4                      enc=   575ms  dec=2.0ms ± 0.04 (p95=2.2ms)      ratio= 14.7%  76.6KB
+  [37/60] linear-webp c3                        enc=   689ms  dec=3.7ms ± 0.09 (p95=3.9ms)      ratio= 14.5%  75.5KB
+  [38/60] linear-webp c4                        enc=   694ms  dec=3.7ms ± 0.09 (p95=3.9ms)      ratio= 14.5%  75.5KB
+  [39/60] linear-upng c3                        enc=   586ms  dec=2.1ms ± 0.11 (p95=2.3ms)      ratio= 14.5%  75.7KB
+  [40/60] linear-upng-deflate c3                enc=    50ms  dec=2.3ms ± 0.09 (p95=2.5ms)      ratio= 17.8%  92.8KB
+
+── chunk-5mb__chunks-1__chunk-00 ──
+  [41/60] linear c3                             enc=  5910ms  dec=30.8ms ± 0.18 (p95=31.3ms)    ratio= 20.3%  976.4KB
+  [42/60] linear c4                             enc=  5945ms  dec=29.6ms ± 1.0 (p95=32.1ms)     ratio= 20.3%  976.3KB
+  [43/60] pixel-range c3                        enc=  6022ms  dec=9.6ms ± 0.38 (p95=10.3ms)     ratio= 20.3%  975.7KB
+  [44/60] pixel-range c4                        enc=  5902ms  dec=9.1ms ± 0.13 (p95=9.3ms)      ratio= 20.3%  975.7KB
+  [45/60] pixel-range-deflate c3                enc=   104ms  dec=8.1ms ± 0.21 (p95=8.3ms)      ratio= 26.9%  1.26MB
+  [46/60] pixel-range-deflate c4                enc=   102ms  dec=8.1ms ± 0.09 (p95=8.2ms)      ratio= 26.9%  1.26MB
+  [47/60] pixel-range-none c3                   enc=    15ms  dec=0.01ms ± 0.00 (p95=0.01ms)    ratio=100.0%  4.69MB
+  [48/60] pixel-range-none c4                   enc=    15ms  dec=0.01ms ± 0.00 (p95=0.01ms)    ratio=100.0%  4.69MB
+  [49/60] pixel-range-stream-deflate c3         enc=   105ms  dec=8.0ms ± 0.14 (p95=8.2ms)      ratio= 27.1%  1.27MB
+  [50/60] pixel-range-stream-deflate c4         enc=   104ms  dec=8.0ms ± 0.10 (p95=8.2ms)      ratio= 27.1%  1.27MB
+  [51/60] linear-deflate c3                     enc=   152ms  dec=37.9ms ± 1.5 (p95=41.0ms)     ratio= 26.9%  1.26MB
+  [52/60] linear-deflate c4                     enc=   134ms  dec=36.0ms ± 0.78 (p95=37.4ms)    ratio= 26.9%  1.26MB
+  [53/60] linear-stream-deflate c3              enc=   135ms  dec=32.6ms ± 0.12 (p95=32.7ms)    ratio= 27.2%  1.28MB
+  [54/60] linear-stream-deflate c4              enc=   130ms  dec=30.1ms ± 0.21 (p95=30.4ms)    ratio= 27.2%  1.28MB
+  [55/60] linear-stream c3                      enc=  5957ms  dec=28.1ms ± 0.75 (p95=29.7ms)    ratio= 20.6%  989.3KB
+  [56/60] linear-stream c4                      enc=  5937ms  dec=25.9ms ± 0.24 (p95=26.4ms)    ratio= 20.6%  988.7KB
+  [57/60] linear-webp c3                        enc=  6802ms  dec=26.1ms ± 0.88 (p95=27.9ms)    ratio= 20.3%  975.7KB
+  [58/60] linear-webp c4                        enc=  6809ms  dec=26.3ms ± 0.83 (p95=28.1ms)    ratio= 20.3%  975.7KB
+  [59/60] linear-upng c3                        enc=  6012ms  dec=25.1ms ± 0.83 (p95=26.8ms)    ratio= 20.3%  976.4KB
+  [60/60] linear-upng-deflate c3                enc=   218ms  dec=28.3ms ± 0.64 (p95=29.8ms)    ratio= 26.9%  1.26MB
+
+Codec perf saved → /Users/valerii/Develop/codeart/apps/web/benchmark-results/results-extended.json  (60 rows)
+node/tpak-insert 65536 bytes: median 0.169 ms, p95 0.199 ms
+node/tpak-extract 65536 bytes: median 0.001 ms, p95 0.003 ms
+browser/tpak-insert 65536 bytes: median 0.161 ms, p95 0.175 ms
+browser/tpak-extract 65536 bytes: median 0.001 ms, p95 0.005 ms
+node/pixel-range-none/encode 65536 bytes: median 0.484 ms, p95 0.876 ms
+node/pixel-range-none/decode 65536 bytes: median 0.225 ms, p95 0.301 ms
+node/pixel-range-deflate/encode 65536 bytes: median 1.164 ms, p95 1.293 ms
+node/pixel-range-deflate/decode 65536 bytes: median 0.252 ms, p95 0.276 ms
+node/linear-deflate/encode 65536 bytes: median 0.969 ms, p95 1.006 ms
+node/linear-deflate/decode 65536 bytes: median 0.356 ms, p95 0.489 ms
+node/tpak-insert 1048576 bytes: median 2.669 ms, p95 2.984 ms
+node/tpak-extract 1048576 bytes: median 0.001 ms, p95 0.001 ms
+browser/tpak-insert 1048576 bytes: median 2.605 ms, p95 2.699 ms
+browser/tpak-extract 1048576 bytes: median 0.001 ms, p95 0.006 ms
+node/pixel-range-none/encode 1048576 bytes: median 2.894 ms, p95 3.055 ms
+node/pixel-range-none/decode 1048576 bytes: median 3.068 ms, p95 3.297 ms
+node/pixel-range-deflate/encode 1048576 bytes: median 16.965 ms, p95 18.473 ms
+node/pixel-range-deflate/decode 1048576 bytes: median 3.386 ms, p95 3.914 ms
+node/linear-deflate/encode 1048576 bytes: median 17.058 ms, p95 17.251 ms
+node/linear-deflate/decode 1048576 bytes: median 3.614 ms, p95 3.907 ms

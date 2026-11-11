@@ -1,0 +1,88 @@
+{
+  "createdAt": "2026-11-11T05:15:18.060265+00:00",
+  "commit": "ba6b240a4a705e6db560a883fb272f8113c946af",
+  "workingTreeRuntimeChanges": true,
+  "baseline": "/Users/valerii/Develop/codeart/apps/web/benchmark-results/baselines/2026-11-11T04-45-56Z",
+  "platform": "macOS-15.7.3-arm64-arm-64bit-Mach-O",
+  "status": "complete-with-known-fixture-failure",
+  "scope": {
+    "static": "same 300 fetch/60 codec/15 archive/20 unit rows",
+    "playgrounds": "same 683 runs at local network; same default compatibility exclusions"
+  },
+  "runtimeSources": {
+    "packages/browser/README.md": "9f2645b210c6a701b6c99f168827a60140297275db3a2ca4ceae9e63773a51ab",
+    "packages/browser/src/compressors/deflate-compressor.ts": "0f87bcc2751887707c10040db961c0003812d6ec0e925f412a8679c1dbf3d235",
+    "packages/browser/src/decode-core.ts": "ac46059a38b568f08a558e9e5c751529f43dbb1f5fd0d0b6d618cbcde9f9fd89",
+    "packages/browser/src/fetch-pack.ts": "4253863e5b8b7820a79cd06b16aed148c812c0fa52c2bd8b4693165f069d7053",
+    "packages/browser/src/router-token.ts": "1cb57f20b350a512e5d5c487a5e8e90a57ced621a57ea8419d5af8357a8c9862",
+    "packages/browser/tests/fetch-pack.test.ts": "7817a123f3d709aa35ef71823df50ac409bbedf9ed57beae63e1c88f410eafd2",
+    "packages/browser/tests/router-token.test.ts": "cffd82400412cbbe710081553d28e14efd4c3469162b1321d0feac85c85ab630",
+    "packages/core/src/algorithms/catalog.ts": "32fb913e3072476c2f0c31dba0eb05bcd5d3b7fb85a444101d4d9c25ec94b7fc",
+    "packages/core/src/surfaces/streaming-png-decoder.ts": "f00cdc010d1added416edb4fc5a480e8852d0b42eec67a5f133c383947177b27",
+    "packages/node/README.md": "635c4eda3cf365b08d156a30aba007521576f7b6d99ea722e1963278ef81c84f",
+    "packages/node/src/decode-core.ts": "b35c7f6b16ebf293deb514a0c67863178390de62ac0ccd92e465c91680e76639",
+    "packages/node/src/router-token.ts": "9d2467b370e85cd5c6dbe591606bf34691b4f7d86dcbcdeeab801d47b7d13e8d",
+    "packages/core/tests/streaming-png-performance.test.ts": "272d0ae15037bc9c2f3191586107fae002461ea6e30a6aecdefb5ae96a725b31",
+    "packages/node/tests/decode-performance.test.ts": "7cd2eddfb519e01e78c767e4b5b9769eeadfdcdaaac95c791a4cb54f1e71a64e"
+  },
+  "finishedAt": "2026-11-11T05:39:39.860361+00:00",
+  "node": "v22.16.0",
+  "browser": "147.0.7727.15",
+  "hardware": "Apple M2 Max",
+  "playgroundJobs": 683,
+  "staticRows": {
+    "fetch": 300,
+    "codec": 60,
+    "encode": 60,
+    "archive": 15,
+    "units": 20
+  },
+  "persistence": {
+    "checked": 555,
+    "matched": 555,
+    "mismatches": []
+  },
+  "limitations": [
+    "Single host, headless Chromium; playground network=local only.",
+    "Static fetch: 2 warmups + 10 samples. Codec decode: 2 warmups + 10 samples. Encode/archive: single samples. Units: 3 warmups + 30 samples.",
+    "JSON and diff matrix use 3 iterations; browser fetch/apply diff/scenarios generally 5; app benchmark 3; partial-fetch 5 independent single runs per target/mode.",
+    "Not every UI stores raw samples: JSON, diff matrix and app store aggregates.",
+    "NDJSON wireBytes is response Content-Length even when scanning stops early; not measured consumed wire bytes.",
+    "SSR playground times decode after page load, not server rendering or first paint.",
+    "Small differences and sub-millisecond results are noisy. Fixed variant order is not randomized.",
+    "The high-entropy generated script has an ID mismatch; all six delivery variants fail and are excluded from timing rankings."
+  ],
+  "verification": {
+    "unitTests": {
+      "core": 110,
+      "node": 56,
+      "browser": 26,
+      "total": 192,
+      "status": "passed"
+    },
+    "libraryBuild": "passed",
+    "browserBundleSafety": "passed",
+    "websiteProductionBuild": "passed",
+    "playgroundVerification": "passed (saved-run button selector corrected)",
+    "samePlaygroundFixtureFingerprints": 683,
+    "savedConfigurationsReadBack": 555,
+    "knownFailedCase": "browser-Generated-less-compressible-large-js__chunks-1",
+    "knownFailedVariants": 6,
+    "compatibilitySkippedMeasurements": 18
+  },
+  "compatibility": {
+    "DecompressionStreamBr": false
+  },
+  "supplementalMeasurements": [
+    "stream-probe.json",
+    "stream-full-probe.json",
+    "router-reuse-probe.json"
+  ],
+  "measurementNotes": [
+    "Main matrix ran after shared/browser optimizations. Node-specific router cache change was added afterward and tested with the isolated router reuse probe; the matrix contains no Node router workloads.",
+    "Node router probe compares the old/new router implementations using the same current underlying decode pipeline, isolating file reuse.",
+    "App bootloaders were rebuilt to embed the optimized browser runtime; payload fixture manifests were unchanged.",
+    "Encoding algorithms and fixture content were unchanged. Server benchmark artifacts were regenerated and measurements refreshed.",
+    "All timings are observations on one host, not statistical significance claims."
+  ]
+}

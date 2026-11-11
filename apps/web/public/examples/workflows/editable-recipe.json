@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "editable-recipe",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "4269459d929a53f196bccf6155b237c879bf85ae2c924f7abc0b0937b8217b33",
+  "byteLength": 1245,
+  "files": [
+    {
+      "path": "data.json",
+      "byteLength": 99,
+      "sha256": "f70e0b34d4ea83bcaaea7ab702dbd39daaa2d94292d7b634e5b6bdced03ef0d1"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 193,
+      "sha256": "06243e03f8f5754563e2ad509f3c4bbaf2460ef7cea2041e51e24a880d76b60b"
+    },
+    {
+      "path": "preview.svg",
+      "byteLength": 276,
+      "sha256": "6c634ecbf1dbee91500e6a201b1b9b58a70cd47c3d6beb26a9b77dc6a46736a1"
+    },
+    {
+      "path": "recipe.json",
+      "byteLength": 131,
+      "sha256": "743756863a903e34f8850e08f94d8765089277548091edc6f0636171cccce979"
+    }
+  ]
+}

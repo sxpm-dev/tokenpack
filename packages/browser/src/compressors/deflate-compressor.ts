@@ -33,6 +33,7 @@ async function streamThrough(transform: ReadableStream<Uint8Array>): Promise<Uin
     total += value.byteLength
   }
 
+  if (chunks.length === 1) return chunks[0]
   const out = new Uint8Array(total)
   let offset = 0
 
@@ -92,7 +93,7 @@ export class BrowserDeflateCompressor extends AbstractCompressor {
     )
 
     return {
-      data: Buffer.from(compressed),
+      data: Buffer.from(compressed.buffer, compressed.byteOffset, compressed.byteLength),
       level: this.headerLevel,
       uncompressedLength: input.length,
     }
@@ -105,7 +106,7 @@ export class BrowserDeflateCompressor extends AbstractCompressor {
       stream.pipeThrough(new DecompressionStream('deflate') as any),
     )
 
-    return Buffer.from(decompressed)
+    return Buffer.from(decompressed.buffer, decompressed.byteOffset, decompressed.byteLength)
   }
 
   override decompressWebStream(input: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {

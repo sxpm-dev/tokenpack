@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "reference-pack",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "f3e1c6d5721e19e7cbd4c2f86d09185355bac5e3b68eafbeaaae9c964c681af6",
+  "byteLength": 1295,
+  "files": [
+    {
+      "path": "catalog.json",
+      "byteLength": 153,
+      "sha256": "96ab16af7490f8461cafd6ecd1c1e203a6473db6629f4eb50180708f31b2982d"
+    },
+    {
+      "path": "locales/en.json",
+      "byteLength": 25,
+      "sha256": "fc42f6782d463e0881fa7cf4edda3c1dd8d351ae445204d49da5800e06ad572d"
+    },
+    {
+      "path": "locales/fr.json",
+      "byteLength": 25,
+      "sha256": "e355c574cce71c13df17788db3bc28a6e686b40f4a3a9a4f2a1f3101eeeb377d"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 232,
+      "sha256": "6003e52bf35cda435867befdb59f71f1ddcc1eb3e3e7914e9462121ec647bbb2"
+    },
+    {
+      "path": "release.json",
+      "byteLength": 121,
+      "sha256": "1974fa81c0714d99f411735e95f58c7a4f5060f48d81bb37ec269e075fdd5311"
+    }
+  ]
+}

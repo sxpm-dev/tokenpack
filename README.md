@@ -54,3 +54,28 @@ Run `yarn web` (or `yarn app`) and open port 3003.
 - `/json-playground` compares access to indexed JSON records and previews range-fetched values.
 
 Generate JSON fixtures with `yarn workspace tokenpack-web benchmark:json-playground`. The JSON comparison also prepares missing packs before timing. Generate the diff matrix fixtures with `yarn workspace tokenpack-web generate:fixtures diff-versioning`. Existing benchmark commands now run in `tokenpack-web`, with fixtures and results under `apps/web`.
+
+### Recorded performance baselines
+
+The complete 2026-11-11 run is stored in `apps/web/benchmark-results/baselines/2026-11-11T04-45-56Z/`. Read its `REPORT.md` for findings and limitations, `manifest.json` for environment and coverage, and `analysis.json` for comparisons. Individual playground responses include failures; this baseline is not an all-green release check.
+
+With the production app running on port 3003, run `BASELINE_DIR=/absolute/path/to/new-baseline yarn workspace tokenpack-web exec node scripts/benchmark-playgrounds.mjs` to measure every playground fixture selection at local network settings. The runner uses each page's default iterations and repeats every partial-fetch target/mode five times. It writes individual JSON responses and a coverage index, and exits nonzero if verification fails. Run static benchmarks separately to avoid CPU contention. The dated baseline also includes fresh static results and isolated unit samples.
+
+## Workflow guides and runnable examples
+
+See [portable workflow guides](docs/guides/README.md) for configuration import/export,
+artifact data, portable HTML apps, reproducible bug reports, agent checkpoints,
+editable recipes, review snapshots, offline workspaces, reference catalogs and router delivery.
+Each guide includes synthetic source files, a runnable example, expected results and limits.
+The website presents the same guides at `/use-cases`, with downloads and browser verification.
+
+Regenerate and verify all ten examples (Node 22, installed workspace dependencies):
+
+```sh
+yarn workspace tokenpack-web exec tsx scripts/workflow-examples.ts
+```
+
+## GitHub Pages
+
+The static site is published at https://sxpm-dev.github.io/tokenpack/ from `main`.
+Run `yarn pages:build` to export it locally. See [deployment and static/local behavior](docs/github-pages.md).

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "artifact-data",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "01a5b807e878cbf64d4672ba8e9a30c3ce0a053361711cdbdab25288d8b26ec5",
+  "byteLength": 1217,
+  "files": [
+    {
+      "path": "data/expenses.json",
+      "byteLength": 220,
+      "sha256": "3aa30953f175a5ea7d4761bb2e78d6c788dd251e72fa7a5e8d58a19d9b110ac3"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 220,
+      "sha256": "365295d99eb7babe226297b1a293746564b226522be321ca8481b082fd5f5efa"
+    },
+    {
+      "path": "provenance.json",
+      "byteLength": 90,
+      "sha256": "e708235895e97ad491d6164c186a536e9b8d08770f47339ddb7aaf65dd8acdc0"
+    },
+    {
+      "path": "view.json",
+      "byteLength": 105,
+      "sha256": "8d506246fda5f743f2f5cbb692b4307f56da4fa3e63936160a7c5bb748511d37"
+    }
+  ]
+}

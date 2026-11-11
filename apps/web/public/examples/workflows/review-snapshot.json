@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "review-snapshot",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "df40158b333477974375bdbcb01ab8008afed3957e5e0bbd540efa185b20d143",
+  "byteLength": 1189,
+  "files": [
+    {
+      "path": "evidence.json",
+      "byteLength": 69,
+      "sha256": "8dd0a6c9643b84b791cc38b95e3be58b11e87b2a2e948c0e6f12b6ccf7019e6b"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 204,
+      "sha256": "216dbcdae49cb92bae5358b2bb9bc550a05f5a5619dbfe412b19c3063cff62ae"
+    },
+    {
+      "path": "proposal.md",
+      "byteLength": 104,
+      "sha256": "74697fb11df4412e2ab57c2ae725d4d291be0be692208f7877c4d8f2080f1d34"
+    },
+    {
+      "path": "review.json",
+      "byteLength": 182,
+      "sha256": "485c1b42af0ec81c946fd5c61bb4967ef0260ea246eaff553679de996f9d09af"
+    }
+  ]
+}

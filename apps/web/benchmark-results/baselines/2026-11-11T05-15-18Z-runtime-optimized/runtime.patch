@@ -1,0 +1,851 @@
+diff --git a/apps/web/scripts/verify-playgrounds.mjs b/apps/web/scripts/verify-playgrounds.mjs
+index 4bfce2a0..4d6d5991 100644
+--- a/apps/web/scripts/verify-playgrounds.mjs
++++ b/apps/web/scripts/verify-playgrounds.mjs
+@@ -31,6 +31,7 @@ async function run(route, name, setup) {
+   await visit(route)
+   if (setup) await setup()
+   const savedResponse = page.waitForResponse(response => response.url().endsWith('/api/bench-runs') && response.request().method() === 'POST', { timeout: 300000 })
++  savedResponse.catch(() => {})
+   await page.getByRole('button', { name, exact: typeof name === 'string' }).click()
+   const response = await savedResponse
+   assert(response.ok(), `Saving ${route}: ${response.status()}`)
+@@ -112,7 +113,7 @@ try {
+   await run('/partial-fetch', 'Run all strategies')
+   await run('/partial-fetch', 'Run all strategies', async () => page.locator('select').nth(1).selectOption('js-fetch'))
+   for (const label of ['Router materialize', 'Manifest chunks', 'Manifest bundle', 'Native chunks', 'Native single']) {
+-    await run('/benchmarks/app', 'Run bench', async () => page.getByRole('button', { name: new RegExp('^' + label) }).click())
++    await run('/benchmarks/app', /^(Re-run|Run) bench$/i, async () => page.getByRole('button', { name: new RegExp('^' + label) }).click())
+   }
+ } catch (error) {
+   failure = error.message
+diff --git a/packages/browser/README.md b/packages/browser/README.md
+index 9b326aa5..7e37a6d2 100644
+--- a/packages/browser/README.md
++++ b/packages/browser/README.md
+@@ -262,3 +262,21 @@ yarn workspace @tokenpack/browser verify:browser
+ ## License
+ 
+ MIT — see [LICENSE](../../LICENSE).
++
++## Runtime reuse and HTTP caching
++
++Buffered decode reuses the pixels read during algorithm detection. Typed-array inputs
++are read through byte views; treat input bytes as immutable while the decoded pack
++is in use (uncompressed payloads may share their backing storage).
++PNG streaming wakes consumers when rows arrive and rejects truncated streams.
++
++`RemoteRangePack.text(paths)` and `.blob(paths)` group adjacent byte ranges and
++preserve the requested order. Duplicate paths are read once. Range requests use
++normal browser HTTP cache semantics and honor the server's cache headers. Use
++versioned URLs or appropriate response cache headers when publishing changed packs.
++
++A router instance shares in-flight and decoded file bytes across single-file,
++multi-file, stream and materialization calls. Rejected loads are evicted so a later
++call can retry. Reuse a router instance for repeated access to an immutable artifact;
++create a new instance when the artifact changes. This cache lives only as long as
++the router instance. Repeated materialization still performs the requested DOM work.
+diff --git a/packages/browser/src/compressors/deflate-compressor.ts b/packages/browser/src/compressors/deflate-compressor.ts
+index 154e0a6d..5ab62e63 100644
+--- a/packages/browser/src/compressors/deflate-compressor.ts
++++ b/packages/browser/src/compressors/deflate-compressor.ts
+@@ -33,6 +33,7 @@ async function streamThrough(transform: ReadableStream<Uint8Array>): Promise<Uin
+     total += value.byteLength
+   }
+ 
++  if (chunks.length === 1) return chunks[0]
+   const out = new Uint8Array(total)
+   let offset = 0
+ 
+@@ -92,7 +93,7 @@ export class BrowserDeflateCompressor extends AbstractCompressor {
+     )
+ 
+     return {
+-      data: Buffer.from(compressed),
++      data: Buffer.from(compressed.buffer, compressed.byteOffset, compressed.byteLength),
+       level: this.headerLevel,
+       uncompressedLength: input.length,
+     }
+@@ -105,7 +106,7 @@ export class BrowserDeflateCompressor extends AbstractCompressor {
+       stream.pipeThrough(new DecompressionStream('deflate') as any),
+     )
+ 
+-    return Buffer.from(decompressed)
++    return Buffer.from(decompressed.buffer, decompressed.byteOffset, decompressed.byteLength)
+   }
+ 
+   override decompressWebStream(input: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+diff --git a/packages/browser/src/decode-core.ts b/packages/browser/src/decode-core.ts
+index dccdc5d6..d61c10fd 100644
+--- a/packages/browser/src/decode-core.ts
++++ b/packages/browser/src/decode-core.ts
+@@ -1,4 +1,5 @@
+ import { Buffer } from 'buffer'
++import { PixelAlgorithm } from 'tokenpack/algorithms/pixel-algorithm'
+ import type { AbstractAlgorithm } from 'tokenpack/algorithms/types'
+ import { decompressRaw } from 'tokenpack/compressors'
+ import { fromBytes } from 'tokenpack/pack/from-bytes'
+@@ -23,9 +24,13 @@ export async function decodeSourceToPayload(
+   options: DecodeOptions = {},
+ ): Promise<{ bytes: Uint8Array; algorithm: AbstractAlgorithm }> {
+   const buffer = await sourceToBytes(source)
+-  const Ctor = await algorithmCatalog.detectFromBuffer(buffer, '.png')
++  const { Ctor, image } = await algorithmCatalog.detectWithImage(buffer, '.png')
+   const algorithm = new Ctor({ key: options.key })
+-  const result = await algorithm.decode(buffer, { key: options.key, ext: '.png' })
++  const decodeOptions = { key: options.key, ext: '.png' }
++  const result =
++    image && algorithm instanceof PixelAlgorithm
++      ? await algorithm.decodeFromImages([image], decodeOptions)
++      : await algorithm.decode(buffer, decodeOptions)
+   const bytes = new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
+ 
+   return { bytes, algorithm }
+@@ -51,7 +56,7 @@ export function payloadToPack(
+ 
+ export async function sourceToBytes(source: DecodeSource): Promise<Buffer> {
+   if (source instanceof Uint8Array) {
+-    return Buffer.from(source)
++    return Buffer.from(source.buffer, source.byteOffset, source.byteLength)
+   }
+   if (source instanceof ArrayBuffer) {
+     return Buffer.from(source)
+diff --git a/packages/browser/src/fetch-pack.ts b/packages/browser/src/fetch-pack.ts
+index d59c06d0..43e0cf49 100644
+--- a/packages/browser/src/fetch-pack.ts
++++ b/packages/browser/src/fetch-pack.ts
+@@ -557,12 +557,12 @@ export class RemoteRangePackStreamApi {
+     }
+ 
+     if (Array.isArray(pathOrPaths)) {
++      const paths = [...new Set(pathOrPaths)]
++      const streams = await fetchPackFilesStream(this.pack.remote, paths)
+       const files = await Promise.all(
+-        pathOrPaths.map(async path => {
+-          const file = await fetchPackFileStream(this.pack.remote, path)
+-
+-          return [path, await readStreamBytes(file.stream)] as const
+-        }),
++        streams.map(
++          async (file, index) => [paths[index], await readStreamBytes(file.stream)] as const,
++        ),
+       )
+ 
+       return new Map(files)
+@@ -818,7 +818,7 @@ async function extendHead(url: string, head: Uint8Array, targetBytes: number): P
+ 
+ async function fetchRangeResponse(url: string, start: number, end: number): Promise<Response> {
+   const r = await fetch(url, {
+-    cache: 'no-store',
++    cache: 'default',
+     credentials: 'omit',
+     headers: { Range: `bytes=${start}-${end}` },
+     mode: 'cors',
+@@ -899,6 +899,7 @@ async function pumpStream(
+ }
+ 
+ function concatBytes(chunks: readonly Uint8Array[]): Uint8Array {
++  if (chunks.length === 1) return chunks[0]
+   const total = chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0)
+   const out = new Uint8Array(total)
+   let offset = 0
+diff --git a/packages/browser/src/router-token.ts b/packages/browser/src/router-token.ts
+index c421c39d..ccb83053 100644
+--- a/packages/browser/src/router-token.ts
++++ b/packages/browser/src/router-token.ts
+@@ -350,6 +350,7 @@ export class RouterToken {
+   private chunkBytesCache = new Map<string, Promise<Uint8Array>>()
+   private chunkBytesSettled = new Set<string>()
+   private chunkPayloadHandleSettled = new Set<string>()
++  private fileContentCache = new Map<RouterFileEntry, Promise<Uint8Array>>()
+   private bytesCache = new Map<string, Promise<Uint8Array>>()
+   private singleLoadBatches = new Map<string, SingleLoadBatch>()
+   private nextBatchId = 0
+@@ -945,22 +946,39 @@ export class RouterToken {
+     mode: RouterReadMode,
+     options: MaterializeOptions = {},
+   ): Promise<ProgressiveLoad> {
+-    const plan = await this.createLoadPlan(files, mode, options)
+-    const states = new Map(
+-      files.map(file => [
+-        file,
+-        {
+-          file,
+-          pendingSegments: file.segments.length,
+-          deferred: createDeferred<Uint8Array>(),
+-        } satisfies ProgressiveFileState,
+-      ]),
+-    )
+-    const ready = new Map([...states].map(([file, state]) => [file, state.deferred.promise]))
++    const ready = new Map<RouterFileEntry, Promise<Uint8Array>>()
++    const states = new Map<RouterFileEntry, ProgressiveFileState>()
++
++    // Register promises before awaiting planning so concurrent batches share work.
++    for (const file of files) {
++      let pending = this.fileContentCache.get(file)
++
++      if (!pending) {
++        const deferred = createDeferred<Uint8Array>()
++
++        pending = deferred.promise
++        states.set(file, { file, pendingSegments: file.segments.length, deferred })
++        this.fileContentCache.set(file, pending)
++        pending.catch(() => {
++          if (this.fileContentCache.get(file) === pending) this.fileContentCache.delete(file)
++        })
++      }
++      ready.set(file, pending)
++    }
++    const missing = [...states.keys()]
+     const done = (async () => {
+       try {
++        if (missing.length === 0) return
++        const plan = await this.createLoadPlan(missing, mode, options)
++
+         if (plan.kind === 'whole-chunks') {
+-          await this.progressiveWholeChunks(files, plan.chunks, plan.mode, plan.concurrency, states)
++          await this.progressiveWholeChunks(
++            missing,
++            plan.chunks,
++            plan.mode,
++            plan.concurrency,
++            states,
++          )
+         } else if (plan.kind === 'merged-ranges' || plan.kind === 'single-merged') {
+           await this.progressiveRanges(plan.ranges, plan.mode, plan.concurrency, states)
+         } else {
+diff --git a/packages/browser/tests/fetch-pack.test.ts b/packages/browser/tests/fetch-pack.test.ts
+index f4ef1c92..5264a4cf 100644
+--- a/packages/browser/tests/fetch-pack.test.ts
++++ b/packages/browser/tests/fetch-pack.test.ts
+@@ -1,6 +1,6 @@
+ import { createServer, type Server } from 'node:http'
+ 
+-import { afterEach, describe, expect, it } from 'vitest'
++import { afterEach, describe, expect, it, vi } from 'vitest'
+ 
+ let server: Server | null = null
+ 
+@@ -13,10 +13,54 @@ describe('fetch-pack', () => {
+     await new Promise<void>((resolve, reject) => s.close(err => (err ? reject(err) : resolve())))
+   })
+ 
++  it('coalesces an array of adjacent files and permits HTTP cache reuse', async () => {
++    const { RemoteRangePack } = await import('../src/fetch-pack')
++    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
++      const [start, end] = String((init?.headers as Record<string, string>).Range)
++        .slice(6)
++        .split('-')
++        .map(Number)
++
++      return new Response(Uint8Array.of(65, 66, 67, 68).slice(start - 100, end - 99), {
++        status: 206,
++      })
++    })
++    const files = ['a', 'b'].map((path, i) => ({
++      path,
++      offset: i * 2,
++      compressedSize: 2,
++      originalSize: 2,
++      compressor: 'none',
++      level: 0,
++    }))
++    const pack = new RemoteRangePack({
++      url: 'https://example.test/pack.png',
++      manifest: { version: 1, files },
++      fileByPath: new Map(files.map(f => [f.path, f])),
++      prefetchedBytes: new Uint8Array(0),
++      regionsAbsOffset: 100,
++    })
++
++    try {
++      expect(await pack.text(['b', 'a'])).toEqual(
++        new Map([
++          ['b', 'CD'],
++          ['a', 'AB'],
++        ]),
++      )
++      expect(fetchSpy).toHaveBeenCalledTimes(1)
++      expect(fetchSpy.mock.calls[0][1]?.cache).not.toBe('no-store')
++      fetchSpy.mockClear()
++      expect(await pack.text(['a', 'a'])).toEqual(new Map([['a', 'AB']]))
++      expect(fetchSpy).toHaveBeenCalledTimes(1)
++    } finally {
++      fetchSpy.mockRestore()
++    }
++  })
++
+   it('decompresses deflate pack files when imported as a direct browser subpath', async () => {
+-    const { fetchPackFile, fetchPackFileStream, fetchPackManifest } = await import(
+-      '../src/fetch-pack'
+-    )
++    const { fetchPackFile, fetchPackFileStream, fetchPackManifest } =
++      await import('../src/fetch-pack')
+     const { decompressRaw } = await import('tokenpack/compressors')
+     const { encode, PackBuilder } = await import('@tokenpack/node')
+     const source = new TextEncoder().encode('export const value = "range-fetch coverage";')
+diff --git a/packages/browser/tests/router-token.test.ts b/packages/browser/tests/router-token.test.ts
+index 5584faec..b8f48777 100644
+--- a/packages/browser/tests/router-token.test.ts
++++ b/packages/browser/tests/router-token.test.ts
+@@ -1,7 +1,7 @@
+ import { randomBytes } from 'node:crypto'
+ import { createServer, type Server } from 'node:http'
+ 
+-import { afterEach, describe, expect, it } from 'vitest'
++import { afterEach, describe, expect, it, vi } from 'vitest'
+ 
+ import type { RouterDebugEvent } from '../src/router-token'
+ 
+@@ -543,6 +543,36 @@ describe('router token', () => {
+     expect(chunkRequests.length).toBeGreaterThan(0)
+     expect(chunkRequests.every(request => request.range?.startsWith('bytes='))).toBe(true)
+     expect(chunkRequests.some(request => /^bytes=(?!0-)/.test(request.range ?? ''))).toBe(true)
++    const beforeRepeat = requests.length
++    const [again, concurrent] = await Promise.all([
++      pack.stream.blob([partialEntry!.path]),
++      pack.stream.blob([partialEntry!.path]),
++    ])
++
++    expect(await blobToBytes([...again.values()][0]!)).toEqual(expected)
++    expect(await blobToBytes([...concurrent.values()][0]!)).toEqual(expected)
++    expect(requests.length).toBe(beforeRepeat)
++    const retryPack = await decodeRouter(`${baseUrl}/router.png`)
++    const nativeFetch = globalThis.fetch
++    let failChunk = true
++    const failingFetch = vi.spyOn(globalThis, 'fetch').mockImplementation((url, init) => {
++      if (failChunk && String(url).endsWith('/shared.png'))
++        return Promise.reject(new Error('temporary fetch failure'))
++
++      return nativeFetch(url, init)
++    })
++
++    try {
++      await expect(retryPack.stream.blob([partialEntry!.path])).rejects.toThrow(
++        'temporary fetch failure',
++      )
++      failChunk = false
++      const recovered = await retryPack.stream.blob([partialEntry!.path])
++
++      expect(await blobToBytes([...recovered.values()][0]!)).toEqual(expected)
++    } finally {
++      failingFetch.mockRestore()
++    }
+   })
+ 
+   it('allows explicit full strategy to fetch whole chunk tokens for partial reads', async () => {
+diff --git a/packages/core/src/algorithms/catalog.ts b/packages/core/src/algorithms/catalog.ts
+index 1967e9f8..6697c1d9 100644
+--- a/packages/core/src/algorithms/catalog.ts
++++ b/packages/core/src/algorithms/catalog.ts
+@@ -9,6 +9,7 @@
+ // available in that runtime.
+ 
+ import { isCompactToken, readCompactHeader, readHeader } from '../header'
++import type { SurfacePixels } from '../surfaces/types'
+ import type { AbstractAlgorithm, AlgorithmCtor } from './types'
+ 
+ export class AlgorithmCatalog {
+@@ -51,12 +52,20 @@ export class AlgorithmCatalog {
+    *   3. Throw.
+    */
+   async detectFromBuffer(buffer: Buffer, ext?: string): Promise<AlgorithmCtor> {
++    return (await this.detectWithImage(buffer, ext)).Ctor
++  }
++
++  /** Return detection pixels for reuse by the decode pipeline; no global buffer cache. */
++  async detectWithImage(
++    buffer: Buffer,
++    ext?: string,
++  ): Promise<{ Ctor: AlgorithmCtor; image?: SurfacePixels }> {
+     for (const Ctor of this.byName.values()) {
+       try {
+         // Construct a probe instance to call canHandle (instance method).
+         const probe = new Ctor()
+ 
+-        if (probe.canHandle(buffer, ext)) return Ctor
++        if (probe.canHandle(buffer, ext)) return { Ctor }
+       } catch {
+         // ignore — keep iterating
+       }
+@@ -78,7 +87,7 @@ export class AlgorithmCatalog {
+             : readHeader(image.pixels).algorithmId
+           const DetectedCtor = this.byId.get(id)
+ 
+-          if (DetectedCtor) return DetectedCtor
++          if (DetectedCtor) return { Ctor: DetectedCtor, image }
+         } catch {
+           // surface couldn't decode or header was garbage — try the next one
+         }
+diff --git a/packages/core/src/surfaces/streaming-png-decoder.ts b/packages/core/src/surfaces/streaming-png-decoder.ts
+index ab731b85..43568330 100644
+--- a/packages/core/src/surfaces/streaming-png-decoder.ts
++++ b/packages/core/src/surfaces/streaming-png-decoder.ts
+@@ -24,7 +24,8 @@ export async function decodeStreamingPng(
+   const reader = stream.getReader()
+ 
+   // ── PNG-container state ────────────────────────────────────────────
+-  let pngBuf: Uint8Array<ArrayBufferLike> = new Uint8Array(0)
++  const input = new ByteQueue()
++  let chunkHeader: { length: number; type: string } | null = null
+   let pngState: 'sig' | 'chunk' | 'done' = 'sig'
+ 
+   let width = 0
+@@ -65,6 +66,14 @@ export async function decodeStreamingPng(
+ 
+   const readyRows: Uint8Array[] = []
+   let pngDone = false
++  let failure: unknown
++  let wake: (() => void) | undefined
++  const notify = () => {
++    const resolve = wake
++
++    wake = undefined
++    resolve?.()
++  }
+ 
+   let idatInflate: InflateHandle | null = null
+ 
+@@ -87,25 +96,38 @@ export async function decodeStreamingPng(
+ 
+       prevLine = line
+       readyRows.push(line)
++      notify()
+     }
+   }
+ 
+   async function parsePng() {
+     while (true) {
+       if (pngState === 'sig') {
+-        if (pngBuf.byteLength < 8) return
+-        pngBuf = pngBuf.subarray(8)
++        if (input.length < 8) return
++        const signature = input.take(8)
++
++        if (!signature.every((byte, index) => byte === [137, 80, 78, 71, 13, 10, 26, 10][index])) {
++          throw new Error('decodeStreamingPng: invalid PNG signature')
++        }
+         pngState = 'chunk'
+       }
+       if (pngState === 'chunk') {
+-        if (pngBuf.byteLength < 8) return
+-        const len = readUint32BE(pngBuf, 0)
++        if (!chunkHeader) {
++          if (input.length < 8) return
++          const header = input.take(8)
++
++          chunkHeader = {
++            length: readUint32BE(header, 0),
++            type: String.fromCharCode(...header.subarray(4, 8)),
++          }
++        }
++        const { length: len, type } = chunkHeader
+ 
+-        if (pngBuf.byteLength < 12 + len) return
+-        const type = String.fromCharCode(pngBuf[4], pngBuf[5], pngBuf[6], pngBuf[7])
+-        const data = pngBuf.subarray(8, 8 + len)
++        if (input.length < len + 4) return
++        const data = input.take(len)
+ 
+-        pngBuf = pngBuf.subarray(12 + len)
++        input.take(4) // CRC; validation remains the same as the existing streaming surface.
++        chunkHeader = null
+ 
+         if (type === 'IHDR') {
+           width = readUint32BE(data, 0)
+@@ -135,38 +157,50 @@ export async function decodeStreamingPng(
+   }
+ 
+   const pumpDone = (async () => {
+-    while (true) {
+-      const { done, value } = await reader.read()
+-
+-      if (done) break
+-      pngBuf = concat(pngBuf, value)
+-      await parsePng()
+-      if ((pngState as string) === 'done') break
+-    }
+-    const handle = idatInflate as InflateHandle | null
+-
+-    if ((pngState as string) !== 'done' && handle) {
+-      try {
+-        await handle.writer.close()
+-      } catch {
+-        /* already closed */
++    try {
++      while (true) {
++        const { done, value } = await reader.read()
++
++        if (done) break
++        input.push(value)
++        await parsePng()
++        if ((pngState as string) === 'done') break
+       }
+-      await handle.pump.catch(() => undefined)
++      if ((pngState as string) !== 'done')
++        throw new Error('decodeStreamingPng: truncated PNG before IEND')
++    } catch (error) {
++      failure = error
++      const handle = idatInflate as InflateHandle | null
++
++      if (handle) await handle.writer.abort(error).catch(() => undefined)
++    } finally {
++      pngDone = true
++      notify()
++      await reader.cancel().catch(() => undefined)
++      reader.releaseLock()
+     }
+-    pngDone = true
+   })()
+ 
+   await Promise.race([ihdrReady, pumpDone])
+-  if (!ihdrSeen) throw new Error('decodeStreamingPng: input ended before PNG IHDR')
++  if (!ihdrSeen) throw failure ?? new Error('decodeStreamingPng: input ended before PNG IHDR')
+ 
+   const rows = (async function* () {
+-    while (true) {
+-      while (readyRows.length > 0) {
+-        yield readyRows.shift()!
++    try {
++      while (true) {
++        if (failure) throw failure
++        // Drain a batch without shifting the array for every scanline.
++        const batch = readyRows.splice(0)
++
++        for (const row of batch) yield row
++        if (failure) throw failure
++        if (pngDone && readyRows.length === 0) return
++        if (readyRows.length === 0)
++          await new Promise<void>(resolve => {
++            wake = resolve
++          })
+       }
+-      if (pngDone) return
+-      await Promise.resolve()
+-      await new Promise(r => setTimeout(r, 0))
++    } finally {
++      if (!pngDone) await reader.cancel().catch(() => undefined)
+     }
+   })()
+ 
+@@ -191,6 +225,8 @@ function makeInflate(onChunk: (chunk: Uint8Array<ArrayBufferLike>) => void): Inf
+     }
+   })()
+ 
++  pump.catch(() => undefined) // Writer/consumer observes the failure; avoid an unhandled parallel rejection.
++
+   return { writer, pump }
+ }
+ 
+@@ -240,16 +276,51 @@ function readUint32BE(buf: Uint8Array<ArrayBufferLike>, offset: number): number
+   )
+ }
+ 
+-function concat(
+-  a: Uint8Array<ArrayBufferLike>,
+-  b: Uint8Array<ArrayBufferLike>,
+-): Uint8Array<ArrayBufferLike> {
+-  if (a.byteLength === 0) return b
+-  if (b.byteLength === 0) return a
+-  const out = new Uint8Array(a.byteLength + b.byteLength)
++/** Retain fragmented input until a complete chunk is available; copy each byte at most once. */
++class ByteQueue {
++  private chunks: Uint8Array[] = []
++  private index = 0
++  length = 0
++
++  push(bytes: Uint8Array): void {
++    if (bytes.length) {
++      this.chunks.push(bytes)
++      this.length += bytes.length
++    }
++  }
+ 
+-  out.set(a, 0)
+-  out.set(b, a.byteLength)
++  take(size: number): Uint8Array {
++    if (size === 0) return new Uint8Array(0)
++    const head = this.chunks[this.index]
++    let out: Uint8Array
++
++    if (head.length >= size) {
++      out = head.subarray(0, size)
++      if (head.length === size) this.index++
++      else this.chunks[this.index] = head.subarray(size)
++    } else {
++      out = new Uint8Array(size)
++      let written = 0
++
++      while (written < size) {
++        const chunk = this.chunks[this.index]
++        const count = Math.min(chunk.length, size - written)
++
++        out.set(chunk.subarray(0, count), written)
++        written += count
++        if (count === chunk.length) this.index++
++        else this.chunks[this.index] = chunk.subarray(count)
++      }
++    }
++    this.length -= size
++    if (this.index === this.chunks.length) {
++      this.chunks = []
++      this.index = 0
++    } else if (this.index > 1024) {
++      this.chunks = this.chunks.slice(this.index)
++      this.index = 0
++    }
+ 
+-  return out
++    return out
++  }
+ }
+diff --git a/packages/node/README.md b/packages/node/README.md
+index 0f0a31f3..69312df5 100644
+--- a/packages/node/README.md
++++ b/packages/node/README.md
+@@ -221,3 +221,10 @@ yarn workspace tokenpack-cli run tokenpack apply-diff <id> diff.png
+ ## License
+ 
+ MIT — see [LICENSE](../../LICENSE).
++
++### Router runtime reuse
++
++Reuse a decoded router instance for repeated access to the same immutable artifact.
++Single-file, multi-file and streaming reads share in-flight/decoded file bytes and
++chunk bytes. Failed loads are evicted so a later call can retry. These caches are
++scoped to the router instance; create a new instance when the artifact changes.
+diff --git a/packages/node/src/decode-core.ts b/packages/node/src/decode-core.ts
+index 771f0efe..f4bf572a 100644
+--- a/packages/node/src/decode-core.ts
++++ b/packages/node/src/decode-core.ts
+@@ -1,3 +1,4 @@
++import { PixelAlgorithm } from 'tokenpack/algorithms/pixel-algorithm'
+ import type { AbstractAlgorithm } from 'tokenpack/algorithms/types'
+ import { decompressRaw } from 'tokenpack/compressors'
+ import { fromBytes } from 'tokenpack/pack/from-bytes'
+@@ -22,9 +23,13 @@ export async function decodeSourceToPayload(
+   options: DecodeOptions = {},
+ ): Promise<{ bytes: Uint8Array; algorithm: AbstractAlgorithm }> {
+   const { bytes, ext } = await loadSource(source)
+-  const Ctor = await algorithmCatalog.detectFromBuffer(bytes, ext)
++  const { Ctor, image } = await algorithmCatalog.detectWithImage(bytes, ext)
+   const algorithm = new Ctor({ key: options.key })
+-  const payload = await algorithm.decode(bytes, { key: options.key, ext })
++  const decodeOptions = { key: options.key, ext }
++  const payload =
++    image && algorithm instanceof PixelAlgorithm
++      ? await algorithm.decodeFromImages([image], decodeOptions)
++      : await algorithm.decode(bytes, decodeOptions)
+   const payloadBytes = new Uint8Array(payload.buffer, payload.byteOffset, payload.byteLength)
+ 
+   return { bytes: payloadBytes, algorithm }
+diff --git a/packages/node/src/router-token.ts b/packages/node/src/router-token.ts
+index a132e228..19e3650d 100644
+--- a/packages/node/src/router-token.ts
++++ b/packages/node/src/router-token.ts
+@@ -209,12 +209,22 @@ export class RouterToken {
+ 
+   private async loadWithMode(pathOrUrl: string, stream: boolean): Promise<Uint8Array> {
+     const entry = await this.resolveFile(pathOrUrl)
+-    const cacheKey = `${stream ? 'stream' : 'buffer'}:${entry.url}`
++
++    return this.loadEntry(entry, stream)
++  }
++
++  private loadEntry(entry: RouterFileEntry, stream: boolean): Promise<Uint8Array> {
++    const cacheKey = entry.url
+     let cached = this.bytesCache.get(cacheKey)
+ 
+     if (!cached) {
+       cached = this.loadOne(entry, stream)
+       this.bytesCache.set(cacheKey, cached)
++      const pending = cached
++
++      pending.catch(() => {
++        if (this.bytesCache.get(cacheKey) === pending) this.bytesCache.delete(cacheKey)
++      })
+     }
+ 
+     return cached
+@@ -288,19 +298,24 @@ export class RouterToken {
+     stream: boolean,
+   ): Promise<Map<RouterFileEntry, Uint8Array>> {
+     const entries = await Promise.all(
+-      files.map(async file => [file, await this.loadOne(file, stream)] as const),
++      files.map(async file => [file, await this.loadEntry(file, stream)] as const),
+     )
+ 
+     return new Map(entries)
+   }
+ 
+   private async chunkBytes(chunk: ChunkEntry, stream: boolean): Promise<Uint8Array> {
+-    const cacheKey = `${stream ? 'stream' : 'buffer'}:${chunk.id}`
++    const cacheKey = chunk.id
+     let cached = this.chunkBytesCache.get(cacheKey)
+ 
+     if (!cached) {
+       cached = this.decodeChunkBytes(chunk, stream)
+       this.chunkBytesCache.set(cacheKey, cached)
++      const pending = cached
++
++      pending.catch(() => {
++        if (this.chunkBytesCache.get(cacheKey) === pending) this.chunkBytesCache.delete(cacheKey)
++      })
+     }
+ 
+     return cached
+diff --git a/packages/core/tests/streaming-png-performance.test.ts b/packages/core/tests/streaming-png-performance.test.ts
+new file mode 100644
+index 00000000..9296307a
+--- /dev/null
++++ b/packages/core/tests/streaming-png-performance.test.ts
+@@ -0,0 +1,77 @@
++import { encode } from '@tokenpack/node'
++import { expect, it, vi } from 'vitest'
++
++import { decodeStreamingPng } from '../src/surfaces/streaming-png-decoder'
++
++function source(bytes: Uint8Array, chunkSize: number) {
++  let offset = 0
++
++  return new ReadableStream<Uint8Array>({
++    pull(controller) {
++      if (offset === bytes.length) return controller.close()
++      controller.enqueue(bytes.subarray(offset, offset + chunkSize))
++      offset = Math.min(bytes.length, offset + chunkSize)
++    },
++  })
++}
++
++it('delivers fragmented PNG rows without timer polling', async () => {
++  const png = await encode(Buffer.from('fragmented streaming '.repeat(1000)), {
++    algo: 'linear-stream-deflate',
++  })
++  const timer = vi.spyOn(globalThis, 'setTimeout')
++
++  try {
++    const handle = await decodeStreamingPng(source(png, 13))
++    const rows = []
++
++    for await (const row of handle.rows) rows.push(row)
++    expect(rows).toHaveLength(handle.height)
++    expect(rows.every(row => row.length === handle.width * handle.fileChannels)).toBe(true)
++    expect(timer).not.toHaveBeenCalled()
++  } finally {
++    timer.mockRestore()
++  }
++})
++
++it('rejects a truncated PNG rather than returning partial success', async () => {
++  const png = await encode(Buffer.from('truncated'), { algo: 'linear-stream-deflate' })
++  const handle = await decodeStreamingPng(source(png.subarray(0, png.length - 12), 17))
++
++  await expect(
++    (async () => {
++      for await (const row of handle.rows) void row
++    })(),
++  ).rejects.toThrow(/truncated|IEND/)
++})
++
++it('propagates a transport error after the header without hanging', async () => {
++  const png = await encode(Buffer.from('transport error'), { algo: 'linear-stream-deflate' })
++  let controller!: ReadableStreamDefaultController<Uint8Array>
++  const input = new ReadableStream<Uint8Array>({
++    start(c) {
++      controller = c
++      c.enqueue(png.subarray(0, 33))
++    },
++  })
++  const handle = await decodeStreamingPng(input)
++  const pending = (async () => {
++    for await (const row of handle.rows) void row
++  })()
++
++  controller.error(new Error('transport failed'))
++  await expect(pending).rejects.toThrow('transport failed')
++})
++
++it('drains rows produced while a slow consumer yields', async () => {
++  const { randomBytes } = await import('node:crypto')
++  const png = await encode(randomBytes(100000), { algo: 'linear-stream-deflate' })
++  const handle = await decodeStreamingPng(source(png, 257))
++  let count = 0
++
++  for await (const row of handle.rows) {
++    expect(row.length).toBe(handle.width * handle.fileChannels)
++    if (count++ === 0) await new Promise(resolve => setTimeout(resolve, 20))
++  }
++  expect(count).toBe(handle.height)
++})
+diff --git a/packages/node/tests/decode-performance.test.ts b/packages/node/tests/decode-performance.test.ts
+new file mode 100644
+index 00000000..1caf695b
+--- /dev/null
++++ b/packages/node/tests/decode-performance.test.ts
+@@ -0,0 +1,66 @@
++import { expect, it, vi } from 'vitest'
++
++import { decode, encode } from '../src'
++import { PngSurface } from '../src/surfaces/png'
++
++it('reuses pixels from detection instead of decoding the PNG twice', async () => {
++  const source = Buffer.from('surface reuse '.repeat(1000))
++  const token = await encode(source, { algo: 'linear-deflate' })
++  const read = vi.spyOn(PngSurface.prototype, 'readBuffer')
++
++  try {
++    const pack = await decode(token)
++
++    if (pack.isPack() || pack.isDiff()) throw new Error('expected file')
++    expect(Buffer.from(await pack.content())).toEqual(source)
++    expect(read).toHaveBeenCalledTimes(1)
++  } finally {
++    read.mockRestore()
++  }
++})
++
++it('shares routed file decoding across single, array and stream access and retries failures', async () => {
++  const { mkdtemp, writeFile, rm } = await import('node:fs/promises')
++  const { tmpdir } = await import('node:os')
++  const { join } = await import('node:path')
++  const { decodeRouter, TokenPack } = await import('../src')
++  const { DeflateCompressor } = await import('../src/compressors/deflate-compressor')
++  const dir = await mkdtemp(join(tmpdir(), 'tokenpack-router-reuse-'))
++  const text = 'repeated routed data '.repeat(1000)
++  const artifacts = await encode(
++    new TokenPack()
++      .withFile('file.txt', text)
++      .router({ chunkLayout: 'source-order', fileCompressor: 'deflate-6' }),
++  )
++  let spy: ReturnType<typeof vi.spyOn> | undefined
++
++  try {
++    for (const artifact of artifacts)
++      await writeFile(
++        join(dir, artifact.filename),
++        new Uint8Array(await artifact.blob.arrayBuffer()),
++      )
++    const pack = await decodeRouter(join(dir, 'router.png'))
++
++    if (!pack.isRouter()) throw new Error('expected router')
++    expect(await pack.text('file.txt')).toBe(text)
++    spy = vi.spyOn(DeflateCompressor.prototype, 'decompress')
++    const [array, streamed] = await Promise.all([
++      pack.text(['file.txt']),
++      pack.stream.text(['file.txt']),
++    ])
++
++    expect([...array.values()]).toEqual([text])
++    expect([...streamed.values()]).toEqual([text])
++    expect(spy).not.toHaveBeenCalled()
++    const retry = await decodeRouter(join(dir, 'router.png'))
++
++    if (!retry.isRouter()) throw new Error('expected router')
++    spy.mockRejectedValueOnce(new Error('transient decode failure'))
++    await expect(retry.text('file.txt')).rejects.toThrow('transient decode failure')
++    expect(await retry.text('file.txt')).toBe(text)
++  } finally {
++    spy?.mockRestore()
++    await rm(dir, { recursive: true, force: true })
++  }
++})

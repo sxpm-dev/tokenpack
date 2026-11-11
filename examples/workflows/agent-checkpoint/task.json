@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "taskId": "invoice-review-42",
+  "status": "awaiting-verification",
+  "nextStep": "Verify totals against evidence.csv, then write report.md"
+}

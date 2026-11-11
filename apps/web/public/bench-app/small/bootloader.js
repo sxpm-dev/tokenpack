@@ -475,7 +475,7 @@
             return false;
         }
       };
-      Buffer4.concat = function concat2(list, length) {
+      Buffer4.concat = function concat(list, length) {
         if (!Array.isArray(list)) {
           throw new TypeError('"list" argument must be an Array of Buffers');
         }
@@ -6035,12 +6035,12 @@
   var require_UPNG = __commonJS({
     "../../node_modules/upng-js/UPNG.js"(exports, module) {
       (function() {
-        var UPNG2 = {};
+        var UPNG3 = {};
         var pako;
         if (typeof module == "object") {
-          module.exports = UPNG2;
+          module.exports = UPNG3;
         } else {
-          window.UPNG = UPNG2;
+          window.UPNG = UPNG3;
         }
         if (typeof __require == "function") {
           pako = require_pako();
@@ -6050,24 +6050,24 @@
         function log() {
           if (typeof process == "undefined" || true) console.log.apply(console, arguments);
         }
-        (function(UPNG3, pako2) {
-          UPNG3.toRGBA8 = function(out) {
+        (function(UPNG4, pako2) {
+          UPNG4.toRGBA8 = function(out) {
             var w = out.width, h = out.height;
-            if (out.tabs.acTL == null) return [UPNG3.toRGBA8.decodeImage(out.data, w, h, out).buffer];
+            if (out.tabs.acTL == null) return [UPNG4.toRGBA8.decodeImage(out.data, w, h, out).buffer];
             var frms = [];
             if (out.frames[0].data == null) out.frames[0].data = out.data;
             var img, empty = new Uint8Array(w * h * 4);
             for (var i = 0; i < out.frames.length; i++) {
               var frm = out.frames[i];
               var fx = frm.rect.x, fy = frm.rect.y, fw = frm.rect.width, fh = frm.rect.height;
-              var fdata = UPNG3.toRGBA8.decodeImage(frm.data, fw, fh, out);
+              var fdata = UPNG4.toRGBA8.decodeImage(frm.data, fw, fh, out);
               if (i == 0) img = fdata;
-              else if (frm.blend == 0) UPNG3._copyTile(fdata, fw, fh, img, w, h, fx, fy, 0);
-              else if (frm.blend == 1) UPNG3._copyTile(fdata, fw, fh, img, w, h, fx, fy, 1);
+              else if (frm.blend == 0) UPNG4._copyTile(fdata, fw, fh, img, w, h, fx, fy, 0);
+              else if (frm.blend == 1) UPNG4._copyTile(fdata, fw, fh, img, w, h, fx, fy, 1);
               frms.push(img.buffer);
               img = img.slice(0);
               if (frm.dispose == 0) {
-              } else if (frm.dispose == 1) UPNG3._copyTile(empty, fw, fh, img, w, h, fx, fy, 0);
+              } else if (frm.dispose == 1) UPNG4._copyTile(empty, fw, fh, img, w, h, fx, fy, 0);
               else if (frm.dispose == 2) {
                 var pi = i - 1;
                 while (out.frames[pi].dispose == 2) pi--;
@@ -6076,12 +6076,12 @@
             }
             return frms;
           };
-          UPNG3.toRGBA8.decodeImage = function(data, w, h, out) {
-            var area = w * h, bpp = UPNG3.decode._getBPP(out);
+          UPNG4.toRGBA8.decodeImage = function(data, w, h, out) {
+            var area = w * h, bpp = UPNG4.decode._getBPP(out);
             var bpl = Math.ceil(w * bpp / 8);
             var bf = new Uint8Array(area * 4), bf32 = new Uint32Array(bf.buffer);
             var ctype = out.ctype, depth = out.depth;
-            var rs = UPNG3._bin.readUshort;
+            var rs = UPNG4._bin.readUshort;
             if (ctype == 6) {
               var qarea = area << 2;
               if (depth == 8) for (var i = 0; i < qarea; i++) {
@@ -6192,8 +6192,8 @@
             }
             return bf;
           };
-          UPNG3.decode = function(buff) {
-            var data = new Uint8Array(buff), offset = 8, bin = UPNG3._bin, rUs = bin.readUshort, rUi = bin.readUint;
+          UPNG4.decode = function(buff) {
+            var data = new Uint8Array(buff), offset = 8, bin = UPNG4._bin, rUs = bin.readUshort, rUi = bin.readUint;
             var out = { tabs: {}, frames: [] };
             var dd = new Uint8Array(data.length), doff = 0;
             var fd, foff = 0;
@@ -6205,7 +6205,7 @@
               var type = bin.readASCII(data, offset, 4);
               offset += 4;
               if (type == "IHDR") {
-                UPNG3.decode._IHDR(data, offset, out);
+                UPNG4.decode._IHDR(data, offset, out);
               } else if (type == "IDAT") {
                 for (var i = 0; i < len; i++) dd[doff + i] = data[offset + i];
                 doff += len;
@@ -6215,7 +6215,7 @@
               } else if (type == "fcTL") {
                 if (foff != 0) {
                   var fr = out.frames[out.frames.length - 1];
-                  fr.data = UPNG3.decode._decompress(out, fd.slice(0, foff), fr.rect.width, fr.rect.height);
+                  fr.data = UPNG4.decode._decompress(out, fd.slice(0, foff), fr.rect.width, fr.rect.height);
                   foff = 0;
                 }
                 var rct = { x: rUi(data, offset + 12), y: rUi(data, offset + 16), width: rUi(data, offset + 4), height: rUi(data, offset + 8) };
@@ -6272,10 +6272,10 @@
               } else if (type == "IEND") {
                 if (foff != 0) {
                   var fr = out.frames[out.frames.length - 1];
-                  fr.data = UPNG3.decode._decompress(out, fd.slice(0, foff), fr.rect.width, fr.rect.height);
+                  fr.data = UPNG4.decode._decompress(out, fd.slice(0, foff), fr.rect.width, fr.rect.height);
                   foff = 0;
                 }
-                out.data = UPNG3.decode._decompress(out, dd, out.width, out.height);
+                out.data = UPNG4.decode._decompress(out, dd, out.width, out.height);
                 break;
               }
               offset += len;
@@ -6287,18 +6287,18 @@
             delete out.filter;
             return out;
           };
-          UPNG3.decode._decompress = function(out, dd, w, h) {
-            if (out.compress == 0) dd = UPNG3.decode._inflate(dd);
-            if (out.interlace == 0) dd = UPNG3.decode._filterZero(dd, out, 0, w, h);
-            else if (out.interlace == 1) dd = UPNG3.decode._readInterlace(dd, out);
+          UPNG4.decode._decompress = function(out, dd, w, h) {
+            if (out.compress == 0) dd = UPNG4.decode._inflate(dd);
+            if (out.interlace == 0) dd = UPNG4.decode._filterZero(dd, out, 0, w, h);
+            else if (out.interlace == 1) dd = UPNG4.decode._readInterlace(dd, out);
             return dd;
           };
-          UPNG3.decode._inflate = function(data) {
+          UPNG4.decode._inflate = function(data) {
             return pako2["inflate"](data);
           };
-          UPNG3.decode._readInterlace = function(data, out) {
+          UPNG4.decode._readInterlace = function(data, out) {
             var w = out.width, h = out.height;
-            var bpp = UPNG3.decode._getBPP(out), cbpp = bpp >> 3, bpl = Math.ceil(w * bpp / 8);
+            var bpp = UPNG4.decode._getBPP(out), cbpp = bpp >> 3, bpl = Math.ceil(w * bpp / 8);
             var img = new Uint8Array(h * bpl);
             var di = 0;
             var starting_row = [0, 0, 4, 0, 2, 0, 1];
@@ -6320,7 +6320,7 @@
                 sw++;
               }
               var bpll = Math.ceil(sw * bpp / 8);
-              UPNG3.decode._filterZero(data, out, di, sw, sh);
+              UPNG4.decode._filterZero(data, out, di, sw, sh);
               var y = 0, row = starting_row[pass];
               while (row < h) {
                 var col = starting_col[pass];
@@ -6356,12 +6356,12 @@
             }
             return img;
           };
-          UPNG3.decode._getBPP = function(out) {
+          UPNG4.decode._getBPP = function(out) {
             var noc = [1, null, 3, 1, 2, null, 4][out.ctype];
             return noc * out.depth;
           };
-          UPNG3.decode._filterZero = function(data, out, off, w, h) {
-            var bpp = UPNG3.decode._getBPP(out), bpl = Math.ceil(w * bpp / 8), paeth2 = UPNG3.decode._paeth;
+          UPNG4.decode._filterZero = function(data, out, off, w, h) {
+            var bpp = UPNG4.decode._getBPP(out), bpl = Math.ceil(w * bpp / 8), paeth2 = UPNG4.decode._paeth;
             bpp = Math.ceil(bpp / 8);
             for (var y = 0; y < h; y++) {
               var i = off + y * bpl, di = i + y + 1;
@@ -6391,14 +6391,14 @@
             }
             return data;
           };
-          UPNG3.decode._paeth = function(a, b, c) {
+          UPNG4.decode._paeth = function(a, b, c) {
             var p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
             if (pa <= pb && pa <= pc) return a;
             else if (pb <= pc) return b;
             return c;
           };
-          UPNG3.decode._IHDR = function(data, offset, out) {
-            var bin = UPNG3._bin;
+          UPNG4.decode._IHDR = function(data, offset, out) {
+            var bin = UPNG4._bin;
             out.width = bin.readUint(data, offset);
             offset += 4;
             out.height = bin.readUint(data, offset);
@@ -6414,7 +6414,7 @@
             out.interlace = data[offset];
             offset++;
           };
-          UPNG3._bin = {
+          UPNG4._bin = {
             nextZero: function(data, p) {
               while (data[p] != 0) p++;
               return p;
@@ -6453,16 +6453,16 @@
             },
             readUTF8: function(buff, p, l) {
               var s = "", ns;
-              for (var i = 0; i < l; i++) s += "%" + UPNG3._bin.pad(buff[p + i].toString(16));
+              for (var i = 0; i < l; i++) s += "%" + UPNG4._bin.pad(buff[p + i].toString(16));
               try {
                 ns = decodeURIComponent(s);
               } catch (e) {
-                return UPNG3._bin.readASCII(buff, p, l);
+                return UPNG4._bin.readASCII(buff, p, l);
               }
               return ns;
             }
           };
-          UPNG3._copyTile = function(sb, sw, sh, tb, tw, th, xoff, yoff, mode) {
+          UPNG4._copyTile = function(sb, sw, sh, tb, tw, th, xoff, yoff, mode) {
             var w = Math.min(sw, tw), h = Math.min(sh, th);
             var si = 0, ti = 0;
             for (var y = 0; y < h; y++)
@@ -6510,14 +6510,14 @@
               }
             return true;
           };
-          UPNG3.encode = function(bufs, w, h, ps, dels, forbidPlte) {
+          UPNG4.encode = function(bufs, w, h, ps, dels, forbidPlte) {
             if (ps == null) ps = 0;
             if (forbidPlte == null) forbidPlte = false;
             var data = new Uint8Array(bufs[0].byteLength * bufs.length + 100);
             var wr = [137, 80, 78, 71, 13, 10, 26, 10];
             for (var i = 0; i < 8; i++) data[i] = wr[i];
-            var offset = 8, bin = UPNG3._bin, crc = UPNG3.crc.crc, wUi = bin.writeUint, wUs = bin.writeUshort, wAs = bin.writeASCII;
-            var nimg = UPNG3.encode.compressPNG(bufs, w, h, ps, forbidPlte);
+            var offset = 8, bin = UPNG4._bin, crc = UPNG4.crc.crc, wUi = bin.writeUint, wUs = bin.writeUshort, wAs = bin.writeASCII;
+            var nimg = UPNG4.encode.compressPNG(bufs, w, h, ps, forbidPlte);
             wUi(data, offset, 13);
             offset += 4;
             wAs(data, offset, "IHDR");
@@ -6637,16 +6637,16 @@
             offset += 4;
             return data.buffer.slice(0, offset);
           };
-          UPNG3.encode.compressPNG = function(bufs, w, h, ps, forbidPlte) {
-            var out = UPNG3.encode.compress(bufs, w, h, ps, false, forbidPlte);
+          UPNG4.encode.compressPNG = function(bufs, w, h, ps, forbidPlte) {
+            var out = UPNG4.encode.compress(bufs, w, h, ps, false, forbidPlte);
             for (var i = 0; i < bufs.length; i++) {
               var frm = out.frames[i], nw = frm.rect.width, nh = frm.rect.height, bpl = frm.bpl, bpp = frm.bpp;
               var fdata = new Uint8Array(nh * bpl + nh);
-              frm.cimg = UPNG3.encode._filterZero(frm.img, nh, bpp, bpl, fdata);
+              frm.cimg = UPNG4.encode._filterZero(frm.img, nh, bpp, bpl, fdata);
             }
             return out;
           };
-          UPNG3.encode.compress = function(bufs, w, h, ps, forGIF, forbidPlte) {
+          UPNG4.encode.compress = function(bufs, w, h, ps, forGIF, forbidPlte) {
             if (forbidPlte == null) forbidPlte = false;
             var ctype = 6, depth = 8, bpp = 4, alphaAnd = 255;
             for (var j = 0; j < bufs.length; j++) {
@@ -6661,7 +6661,7 @@
               if (ps != 0) ps--;
             }
             if (ps != 0) {
-              var qres = UPNG3.quantize(bufs, ps, forGIF);
+              var qres = UPNG4.quantize(bufs, ps, forGIF);
               bufs = qres.bufs;
               for (var i = 0; i < qres.plte.length; i++) {
                 var c = qres.plte[i].est.rgba;
@@ -6729,12 +6729,12 @@
                 var pimg = new Uint8Array(bufs[j - 1 - tstp]);
                 if (tstp == 1) frms[frms.length - 1].dispose = 2;
                 var nimg = new Uint8Array(nw * nh * 4), nimg32 = new Uint32Array(nimg.buffer);
-                UPNG3._copyTile(pimg, w, h, nimg, nw, nh, -nx, -ny, 0);
-                if (UPNG3._copyTile(cimg, w, h, nimg, nw, nh, -nx, -ny, 3)) {
-                  UPNG3._copyTile(cimg, w, h, nimg, nw, nh, -nx, -ny, 2);
+                UPNG4._copyTile(pimg, w, h, nimg, nw, nh, -nx, -ny, 0);
+                if (UPNG4._copyTile(cimg, w, h, nimg, nw, nh, -nx, -ny, 3)) {
+                  UPNG4._copyTile(cimg, w, h, nimg, nw, nh, -nx, -ny, 2);
                   blend = 1;
                 } else {
-                  UPNG3._copyTile(cimg, w, h, nimg, nw, nh, -nx, -ny, 0);
+                  UPNG4._copyTile(cimg, w, h, nimg, nw, nh, -nx, -ny, 0);
                   blend = 0;
                 }
                 cimg = nimg;
@@ -6771,11 +6771,11 @@
             }
             return { ctype, depth, plte, gotAlpha, frames: frms };
           };
-          UPNG3.encode._filterZero = function(img, h, bpp, bpl, data) {
+          UPNG4.encode._filterZero = function(img, h, bpp, bpl, data) {
             var fls = [];
             for (var t = 0; t < 5; t++) {
               if (h * bpl > 5e5 && (t == 2 || t == 3 || t == 4)) continue;
-              for (var y = 0; y < h; y++) UPNG3.encode._filterLine(data, img, y, bpl, bpp, t);
+              for (var y = 0; y < h; y++) UPNG4.encode._filterLine(data, img, y, bpl, bpp, t);
               fls.push(pako2["deflate"](data));
               if (bpp == 1) break;
             }
@@ -6786,8 +6786,8 @@
             }
             return fls[ti];
           };
-          UPNG3.encode._filterLine = function(data, img, y, bpl, bpp, type) {
-            var i = y * bpl, di = i + y, paeth2 = UPNG3.decode._paeth;
+          UPNG4.encode._filterLine = function(data, img, y, bpl, bpp, type) {
+            var i = y * bpl, di = i + y, paeth2 = UPNG4.decode._paeth;
             data[di] = type;
             di++;
             if (type == 0) for (var x = 0; x < bpl; x++) data[di + x] = img[i + x];
@@ -6813,7 +6813,7 @@
               }
             }
           };
-          UPNG3.crc = {
+          UPNG4.crc = {
             table: function() {
               var tab = new Uint32Array(256);
               for (var n = 0; n < 256; n++) {
@@ -6827,17 +6827,17 @@
               return tab;
             }(),
             update: function(c, buf, off, len) {
-              for (var i = 0; i < len; i++) c = UPNG3.crc.table[(c ^ buf[off + i]) & 255] ^ c >>> 8;
+              for (var i = 0; i < len; i++) c = UPNG4.crc.table[(c ^ buf[off + i]) & 255] ^ c >>> 8;
               return c;
             },
             crc: function(b, o, l) {
-              return UPNG3.crc.update(4294967295, b, o, l) ^ 4294967295;
+              return UPNG4.crc.update(4294967295, b, o, l) ^ 4294967295;
             }
           };
-          UPNG3.quantize = function(bufs, ps, roundAlpha) {
+          UPNG4.quantize = function(bufs, ps, roundAlpha) {
             var imgs = [], totl = 0;
             for (var i = 0; i < bufs.length; i++) {
-              imgs.push(UPNG3.encode.alphaMul(new Uint8Array(bufs[i]), roundAlpha));
+              imgs.push(UPNG4.encode.alphaMul(new Uint8Array(bufs[i]), roundAlpha));
               totl += bufs[i].byteLength;
             }
             var nimg = new Uint8Array(totl), nimg32 = new Uint32Array(nimg.buffer), noff = 0;
@@ -6847,8 +6847,8 @@
               noff += il;
             }
             var root = { i0: 0, i1: nimg.length, bst: null, est: null, tdst: 0, left: null, right: null };
-            root.bst = UPNG3.quantize.stats(nimg, root.i0, root.i1);
-            root.est = UPNG3.quantize.estats(root.bst);
+            root.bst = UPNG4.quantize.stats(nimg, root.i0, root.i1);
+            root.est = UPNG4.quantize.estats(root.bst);
             var leafs = [root];
             while (leafs.length < ps) {
               var maxL = 0, mi = 0;
@@ -6858,15 +6858,15 @@
               }
               if (maxL < 1e-3) break;
               var node = leafs[mi];
-              var s0 = UPNG3.quantize.splitPixels(nimg, nimg32, node.i0, node.i1, node.est.e, node.est.eMq255);
+              var s0 = UPNG4.quantize.splitPixels(nimg, nimg32, node.i0, node.i1, node.est.e, node.est.eMq255);
               var ln = { i0: node.i0, i1: s0, bst: null, est: null, tdst: 0, left: null, right: null };
-              ln.bst = UPNG3.quantize.stats(nimg, ln.i0, ln.i1);
-              ln.est = UPNG3.quantize.estats(ln.bst);
+              ln.bst = UPNG4.quantize.stats(nimg, ln.i0, ln.i1);
+              ln.est = UPNG4.quantize.estats(ln.bst);
               var rn = { i0: s0, i1: node.i1, bst: null, est: null, tdst: 0, left: null, right: null };
               rn.bst = { R: [], m: [], N: node.bst.N - ln.bst.N };
               for (var i = 0; i < 16; i++) rn.bst.R[i] = node.bst.R[i] - ln.bst.R[i];
               for (var i = 0; i < 4; i++) rn.bst.m[i] = node.bst.m[i] - ln.bst.m[i];
-              rn.est = UPNG3.quantize.estats(rn.bst);
+              rn.est = UPNG4.quantize.estats(rn.bst);
               node.left = ln;
               node.right = rn;
               leafs[mi] = ln;
@@ -6876,7 +6876,7 @@
               return b2.bst.N - a2.bst.N;
             });
             for (var ii = 0; ii < imgs.length; ii++) {
-              var planeDst = UPNG3.quantize.planeDst;
+              var planeDst = UPNG4.quantize.planeDst;
               var sb = new Uint8Array(imgs[ii].buffer), tb = new Uint32Array(imgs[ii].buffer), len = sb.length;
               var stack = [], si = 0;
               for (var i = 0; i < len; i += 4) {
@@ -6889,32 +6889,32 @@
             }
             return { bufs: imgs, plte: leafs };
           };
-          UPNG3.quantize.getNearest = function(nd, r, g2, b, a) {
+          UPNG4.quantize.getNearest = function(nd, r, g2, b, a) {
             if (nd.left == null) {
-              nd.tdst = UPNG3.quantize.dist(nd.est.q, r, g2, b, a);
+              nd.tdst = UPNG4.quantize.dist(nd.est.q, r, g2, b, a);
               return nd;
             }
-            var planeDst = UPNG3.quantize.planeDst(nd.est, r, g2, b, a);
+            var planeDst = UPNG4.quantize.planeDst(nd.est, r, g2, b, a);
             var node0 = nd.left, node1 = nd.right;
             if (planeDst > 0) {
               node0 = nd.right;
               node1 = nd.left;
             }
-            var ln = UPNG3.quantize.getNearest(node0, r, g2, b, a);
+            var ln = UPNG4.quantize.getNearest(node0, r, g2, b, a);
             if (ln.tdst <= planeDst * planeDst) return ln;
-            var rn = UPNG3.quantize.getNearest(node1, r, g2, b, a);
+            var rn = UPNG4.quantize.getNearest(node1, r, g2, b, a);
             return rn.tdst < ln.tdst ? rn : ln;
           };
-          UPNG3.quantize.planeDst = function(est, r, g2, b, a) {
+          UPNG4.quantize.planeDst = function(est, r, g2, b, a) {
             var e = est.e;
             return e[0] * r + e[1] * g2 + e[2] * b + e[3] * a - est.eMq;
           };
-          UPNG3.quantize.dist = function(q, r, g2, b, a) {
+          UPNG4.quantize.dist = function(q, r, g2, b, a) {
             var d0 = r - q[0], d1 = g2 - q[1], d2 = b - q[2], d3 = a - q[3];
             return d0 * d0 + d1 * d1 + d2 * d2 + d3 * d3;
           };
-          UPNG3.quantize.splitPixels = function(nimg, nimg32, i0, i1, e, eMq) {
-            var vecDot = UPNG3.quantize.vecDot;
+          UPNG4.quantize.splitPixels = function(nimg, nimg32, i0, i1, e, eMq) {
+            var vecDot = UPNG4.quantize.vecDot;
             i1 -= 4;
             var shfs = 0;
             while (i0 < i1) {
@@ -6930,10 +6930,10 @@
             while (vecDot(nimg, i0, e) > eMq) i0 -= 4;
             return i0 + 4;
           };
-          UPNG3.quantize.vecDot = function(nimg, i, e) {
+          UPNG4.quantize.vecDot = function(nimg, i, e) {
             return nimg[i] * e[0] + nimg[i + 1] * e[1] + nimg[i + 2] * e[2] + nimg[i + 3] * e[3];
           };
-          UPNG3.quantize.stats = function(nimg, i0, i1) {
+          UPNG4.quantize.stats = function(nimg, i0, i1) {
             var R = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             var m = [0, 0, 0, 0];
             var N = i1 - i0 >> 2;
@@ -6962,7 +6962,7 @@
             R[14] = R[11];
             return { R, m, N };
           };
-          UPNG3.quantize.estats = function(stats) {
+          UPNG4.quantize.estats = function(stats) {
             var R = stats.R, m = stats.m, N = stats.N;
             var m0 = m[0], m1 = m[1], m2 = m[2], m3 = m[3], iN = N == 0 ? 0 : 1 / N;
             var Rj = [
@@ -6983,7 +6983,7 @@
               R[14] - m3 * m2 * iN,
               R[15] - m3 * m3 * iN
             ];
-            var A = Rj, M = UPNG3.M4;
+            var A = Rj, M = UPNG4.M4;
             var b = [0.5, 0.5, 0.5, 0.5], mi = 0, tmi = 0;
             if (N != 0)
               for (var i = 0; i < 10; i++) {
@@ -7006,7 +7006,7 @@
               rgba: (Math.round(255 * q[3]) << 24 | Math.round(255 * q[2] * ia) << 16 | Math.round(255 * q[1] * ia) << 8 | Math.round(255 * q[0] * ia) << 0) >>> 0
             };
           };
-          UPNG3.M4 = {
+          UPNG4.M4 = {
             multVec: function(m, v) {
               return [
                 m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3] * v[3],
@@ -7022,7 +7022,7 @@
               return [a * y[0], a * y[1], a * y[2], a * y[3]];
             }
           };
-          UPNG3.encode.alphaMul = function(img, roundA) {
+          UPNG4.encode.alphaMul = function(img, roundA) {
             var nimg = new Uint8Array(img.length), area = img.length >> 2;
             for (var i = 0; i < area; i++) {
               var qi = i << 2, ia = img[qi + 3];
@@ -7035,7 +7035,7 @@
             }
             return nimg;
           };
-        })(UPNG2, pako);
+        })(UPNG3, pako);
       })();
     }
   });
@@ -7354,6 +7354,7 @@
       chunks.push(value);
       total += value.byteLength;
     }
+    if (chunks.length === 1) return chunks[0];
     const out = new Uint8Array(total);
     let offset = 0;
     for (const chunk of chunks) {
@@ -7397,7 +7398,7 @@
         stream.pipeThrough(new CompressionStream("deflate"))
       );
       return {
-        data: Buffer.from(compressed),
+        data: Buffer.from(compressed.buffer, compressed.byteOffset, compressed.byteLength),
         level: this.headerLevel,
         uncompressedLength: input.length
       };
@@ -7407,7 +7408,7 @@
       const decompressed = await streamThrough2(
         stream.pipeThrough(new DecompressionStream("deflate"))
       );
-      return Buffer.from(decompressed);
+      return Buffer.from(decompressed.buffer, decompressed.byteOffset, decompressed.byteLength);
     }
     decompressWebStream(input) {
       return input.pipeThrough(
@@ -7529,7 +7530,8 @@
   // ../../packages/core/src/surfaces/streaming-png-decoder.ts
   async function decodeStreamingPng(stream) {
     const reader = stream.getReader();
-    let pngBuf = new Uint8Array(0);
+    const input = new ByteQueue();
+    let chunkHeader = null;
     let pngState = "sig";
     let width = 0;
     let height = 0;
@@ -7561,6 +7563,13 @@
     }
     const readyRows = [];
     let pngDone = false;
+    let failure;
+    let wake;
+    const notify = () => {
+      const resolve = wake;
+      wake = void 0;
+      resolve?.();
+    };
     let idatInflate = null;
     let ihdrResolve;
     const ihdrReady = new Promise((r) => {
@@ -7577,22 +7586,33 @@
         const line = unfilterInPlace(row, filterByte, prevLine, fileChannels);
         prevLine = line;
         readyRows.push(line);
+        notify();
       }
     }
     async function parsePng() {
       while (true) {
         if (pngState === "sig") {
-          if (pngBuf.byteLength < 8) return;
-          pngBuf = pngBuf.subarray(8);
+          if (input.length < 8) return;
+          const signature = input.take(8);
+          if (!signature.every((byte, index) => byte === [137, 80, 78, 71, 13, 10, 26, 10][index])) {
+            throw new Error("decodeStreamingPng: invalid PNG signature");
+          }
           pngState = "chunk";
         }
         if (pngState === "chunk") {
-          if (pngBuf.byteLength < 8) return;
-          const len = readUint32BE(pngBuf, 0);
-          if (pngBuf.byteLength < 12 + len) return;
-          const type = String.fromCharCode(pngBuf[4], pngBuf[5], pngBuf[6], pngBuf[7]);
-          const data = pngBuf.subarray(8, 8 + len);
-          pngBuf = pngBuf.subarray(12 + len);
+          if (!chunkHeader) {
+            if (input.length < 8) return;
+            const header = input.take(8);
+            chunkHeader = {
+              length: readUint32BE(header, 0),
+              type: String.fromCharCode(...header.subarray(4, 8))
+            };
+          }
+          const { length: len, type } = chunkHeader;
+          if (input.length < len + 4) return;
+          const data = input.take(len);
+          input.take(4);
+          chunkHeader = null;
           if (type === "IHDR") {
             width = readUint32BE(data, 0);
             height = readUint32BE(data, 4);
@@ -7619,33 +7639,44 @@
       }
     }
     const pumpDone = (async () => {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        pngBuf = concat(pngBuf, value);
-        await parsePng();
-        if (pngState === "done") break;
-      }
-      const handle = idatInflate;
-      if (pngState !== "done" && handle) {
-        try {
-          await handle.writer.close();
-        } catch {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          input.push(value);
+          await parsePng();
+          if (pngState === "done") break;
         }
-        await handle.pump.catch(() => void 0);
+        if (pngState !== "done")
+          throw new Error("decodeStreamingPng: truncated PNG before IEND");
+      } catch (error) {
+        failure = error;
+        const handle = idatInflate;
+        if (handle) await handle.writer.abort(error).catch(() => void 0);
+      } finally {
+        pngDone = true;
+        notify();
+        await reader.cancel().catch(() => void 0);
+        reader.releaseLock();
       }
-      pngDone = true;
     })();
     await Promise.race([ihdrReady, pumpDone]);
-    if (!ihdrSeen) throw new Error("decodeStreamingPng: input ended before PNG IHDR");
+    if (!ihdrSeen) throw failure ?? new Error("decodeStreamingPng: input ended before PNG IHDR");
     const rows = async function* () {
-      while (true) {
-        while (readyRows.length > 0) {
-          yield readyRows.shift();
+      try {
+        while (true) {
+          if (failure) throw failure;
+          const batch = readyRows.splice(0);
+          for (const row of batch) yield row;
+          if (failure) throw failure;
+          if (pngDone && readyRows.length === 0) return;
+          if (readyRows.length === 0)
+            await new Promise((resolve) => {
+              wake = resolve;
+            });
         }
-        if (pngDone) return;
-        await Promise.resolve();
-        await new Promise((r) => setTimeout(r, 0));
+      } finally {
+        if (!pngDone) await reader.cancel().catch(() => void 0);
       }
     }();
     return { width, height, fileChannels, rows };
@@ -7661,6 +7692,7 @@
         onChunk(value);
       }
     })();
+    pump.catch(() => void 0);
     return { writer, pump };
   }
   async function writeChunk(writer, chunk) {
@@ -7691,13 +7723,110 @@
   function readUint32BE(buf, offset) {
     return (buf[offset] << 24 | buf[offset + 1] << 16 | buf[offset + 2] << 8 | buf[offset + 3]) >>> 0;
   }
-  function concat(a, b) {
-    if (a.byteLength === 0) return b;
-    if (b.byteLength === 0) return a;
-    const out = new Uint8Array(a.byteLength + b.byteLength);
-    out.set(a, 0);
-    out.set(b, a.byteLength);
-    return out;
+  var ByteQueue = class {
+    chunks = [];
+    index = 0;
+    length = 0;
+    push(bytes) {
+      if (bytes.length) {
+        this.chunks.push(bytes);
+        this.length += bytes.length;
+      }
+    }
+    take(size) {
+      if (size === 0) return new Uint8Array(0);
+      const head = this.chunks[this.index];
+      let out;
+      if (head.length >= size) {
+        out = head.subarray(0, size);
+        if (head.length === size) this.index++;
+        else this.chunks[this.index] = head.subarray(size);
+      } else {
+        out = new Uint8Array(size);
+        let written = 0;
+        while (written < size) {
+          const chunk = this.chunks[this.index];
+          const count = Math.min(chunk.length, size - written);
+          out.set(chunk.subarray(0, count), written);
+          written += count;
+          if (count === chunk.length) this.index++;
+          else this.chunks[this.index] = chunk.subarray(count);
+        }
+      }
+      this.length -= size;
+      if (this.index === this.chunks.length) {
+        this.chunks = [];
+        this.index = 0;
+      } else if (this.index > 1024) {
+        this.chunks = this.chunks.slice(this.index);
+        this.index = 0;
+      }
+      return out;
+    }
+  };
+
+  // ../../packages/browser/src/surfaces/png.ts
+  var import_upng_js = __toESM(require_UPNG(), 1);
+
+  // ../../packages/browser/src/algorithms/pixel-range-png-base.ts
+  var PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  var CRC_TABLE = (() => {
+    const table = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
+      table[n] = c >>> 0;
+    }
+    return table;
+  })();
+  function crc32(bytes) {
+    let c = 4294967295;
+    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 255] ^ c >>> 8;
+    return (c ^ 4294967295) >>> 0;
+  }
+  function createPngChunk(type, data) {
+    const chunk = Buffer.allocUnsafe(data.byteLength + 12);
+    chunk.writeUInt32BE(data.byteLength, 0);
+    chunk.write(type, 4, 4, "ascii");
+    chunk.set(data, 8);
+    chunk.writeUInt32BE(crc32(chunk.subarray(4, 8 + data.byteLength)), 8 + data.byteLength);
+    return chunk;
+  }
+  function insertTpakChunk(imageBytes, data) {
+    const ihdrEnd = 33;
+    if (imageBytes.length < ihdrEnd || !imageBytes.subarray(0, 8).equals(PNG_SIGNATURE) || imageBytes.readUInt32BE(8) !== 13 || imageBytes.toString("ascii", 12, 16) !== "IHDR") {
+      throw new Error("not a PNG (missing IHDR)");
+    }
+    const chunkLength = data.byteLength + 12;
+    const output = Buffer.allocUnsafe(imageBytes.length + chunkLength);
+    imageBytes.copy(output, 0, 0, ihdrEnd);
+    output.writeUInt32BE(data.byteLength, ihdrEnd);
+    output.write("tpAK", ihdrEnd + 4, "ascii");
+    output.set(data, ihdrEnd + 8);
+    output.writeUInt32BE(
+      crc32(output.subarray(ihdrEnd + 4, ihdrEnd + 8 + data.byteLength)),
+      ihdrEnd + 8 + data.byteLength
+    );
+    imageBytes.copy(output, ihdrEnd + chunkLength, ihdrEnd);
+    return output;
+  }
+  function extractTpakChunk(artifactBytes) {
+    if (artifactBytes.length < 8 || !artifactBytes.subarray(0, 8).equals(PNG_SIGNATURE)) {
+      throw new Error("not a PNG");
+    }
+    let pos = 8;
+    while (pos + 8 <= artifactBytes.length) {
+      const length = artifactBytes.readUInt32BE(pos);
+      const type = artifactBytes.subarray(pos + 4, pos + 8).toString("ascii");
+      if (pos + 12 + length > artifactBytes.length) throw new Error("truncated PNG chunk");
+      if (type === "tpAK") {
+        const data = artifactBytes.subarray(pos + 8, pos + 8 + length);
+        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+      }
+      if (type === "IEND") break;
+      pos = pos + 8 + length + 4;
+    }
+    throw new Error("no tpAK chunk found in PNG");
   }
 
   // ../../packages/browser/src/surfaces/png.ts
@@ -7722,16 +7851,6 @@
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("2D canvas context unavailable");
     return ctx;
-  }
-  function expandRgbToRgba(rgb, width, height) {
-    const out = new Uint8Array(width * height * 4);
-    for (let i = 0, j = 0; i < rgb.length; i += 3, j += 4) {
-      out[j] = rgb[i];
-      out[j + 1] = rgb[i + 1];
-      out[j + 2] = rgb[i + 2];
-      out[j + 3] = 255;
-    }
-    return out;
   }
   async function detectChannelsFromBlob(blob) {
     const head = new Uint8Array(await blob.slice(0, 32).arrayBuffer());
@@ -7792,35 +7911,50 @@
     async readBuffer(buffer) {
       const blob = new Blob([buffer]);
       const fileChannels = await detectChannelsFromBlob(blob);
+      if (fileChannels === 4) {
+        const image = import_upng_js.default.decode(
+          buffer.buffer.slice(
+            buffer.byteOffset,
+            buffer.byteOffset + buffer.byteLength
+          )
+        );
+        return {
+          pixels: new Uint8Array(import_upng_js.default.toRGBA8(image)[0]),
+          width: image.width,
+          height: image.height,
+          fileChannels: 4
+        };
+      }
       const bitmap = await createImageBitmap(blob, BITMAP_OPTS);
-      return bitmapToPixels(bitmap, fileChannels);
+      try {
+        return bitmapToPixels(bitmap, fileChannels);
+      } finally {
+        bitmap.close();
+      }
     }
     async writeBuffer(image) {
       const { pixels, width, height, fileChannels } = image;
-      const canvas = makeCanvas(width, height);
-      const ctx = get2dContext(canvas);
-      const rgba = fileChannels === 4 ? pixels : expandRgbToRgba(pixels, width, height);
-      const clamped = new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, rgba.byteLength);
-      const imageData = new ImageData(clamped, width, height);
-      ctx.putImageData(
-        imageData,
-        0,
-        0
+      const stride = width * fileChannels;
+      if (pixels.byteLength !== stride * height) throw new Error("PNG pixel buffer size mismatch");
+      const scanlines = new Uint8Array((stride + 1) * height);
+      for (let y = 0; y < height; y++)
+        scanlines.set(pixels.subarray(y * stride, (y + 1) * stride), y * (stride + 1) + 1);
+      const compressed = new Uint8Array(
+        await new Response(
+          new Blob([scanlines]).stream().pipeThrough(new CompressionStream("deflate"))
+        ).arrayBuffer()
       );
-      let blob;
-      if ("convertToBlob" in canvas) {
-        blob = await canvas.convertToBlob({ type: "image/png" });
-      } else {
-        blob = await new Promise((resolve, reject) => {
-          ;
-          canvas.toBlob((b) => {
-            if (b) resolve(b);
-            else reject(new Error("canvas.toBlob returned null"));
-          }, "image/png");
-        });
-      }
-      const ab = await blob.arrayBuffer();
-      return Buffer.from(ab);
+      const ihdr = Buffer.alloc(13);
+      ihdr.writeUInt32BE(width, 0);
+      ihdr.writeUInt32BE(height, 4);
+      ihdr[8] = 8;
+      ihdr[9] = fileChannels === 4 ? 6 : 2;
+      return Buffer.concat([
+        Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+        createPngChunk("IHDR", ihdr),
+        createPngChunk("IDAT", compressed),
+        createPngChunk("IEND", new Uint8Array())
+      ]);
     }
   };
   var BrowserStreamingPngSurface = class extends ImageSurface {
@@ -7853,8 +7987,7 @@
     }
     /**
      * "Streaming" PNG only matters on the decode-from-network side. For encode
-     * we produce the same canvas-PNG bytes as the regular surface — the
-     * resulting file is a valid PNG with whatever IDAT framing canvas emits.
+     * we use the same lossless scanline writer as the regular surface.
      */
     async writeBuffer(image) {
       return new BrowserPngSurface().writeBuffer(image);
@@ -7876,11 +8009,11 @@
 
   // ../../packages/browser/src/surfaces/png-upng.ts
   var import_buffer2 = __toESM(require_buffer(), 1);
-  var import_upng_js = __toESM(require_UPNG(), 1);
+  var import_upng_js2 = __toESM(require_UPNG(), 1);
   var browserOnly2 = (method) => new Error(
     `${method}() is not available in the browser surface \u2014 use writeBuffer/readBuffer for byte-level I/O.`
   );
-  function expandRgbToRgba2(rgb, n) {
+  function expandRgbToRgba(rgb, n) {
     const out = new Uint8Array(n * 4);
     for (let i = 0, j = 0; i < n; i += 1, j += 4) {
       out[j] = rgb[i * 3];
@@ -7924,10 +8057,10 @@
     async writeBuffer(image) {
       const { pixels, width, height, fileChannels } = image;
       const n = width * height;
-      const rgba = fileChannels === 4 ? pixels : expandRgbToRgba2(pixels, n);
+      const rgba = fileChannels === 4 ? pixels : expandRgbToRgba(pixels, n);
       const sliced = rgba.slice();
       const buf = sliced.buffer;
-      const png = import_upng_js.default.encode([buf], width, height, 0, void 0, true);
+      const png = import_upng_js2.default.encode([buf], width, height, 0, void 0, true);
       return import_buffer2.Buffer.from(png);
     }
     async readBuffer(buffer) {
@@ -7935,8 +8068,8 @@
         buffer.byteOffset,
         buffer.byteOffset + buffer.byteLength
       );
-      const img = import_upng_js.default.decode(ab);
-      const rgbaFrames = import_upng_js.default.toRGBA8(img);
+      const img = import_upng_js2.default.decode(ab);
+      const rgbaFrames = import_upng_js2.default.toRGBA8(img);
       const rgba = new Uint8Array(rgbaFrames[0]);
       const fileChannels = detectFileChannels(rgba, img.ctype);
       const n = img.width * img.height;
@@ -8018,364 +8151,69 @@
   // ../../packages/browser/src/decode-core.ts
   var import_buffer3 = __toESM(require_buffer(), 1);
 
-  // ../../packages/core/src/pack-format/format-byte.ts
-  var FORMAT_FILE = 1;
-  var FORMAT_PACK = 2;
-  var FORMAT_DIFF = 3;
-  var VALID = /* @__PURE__ */ new Set([FORMAT_FILE, FORMAT_PACK, FORMAT_DIFF]);
-  function writeFormatByte(buf, offset, value) {
-    if (!VALID.has(value)) throw new Error(`unknown format byte: 0x${value.toString(16)}`);
-    buf[offset] = value;
-  }
-  function readFormatByte(buf, offset) {
-    const value = buf[offset];
-    if (!VALID.has(value)) throw new Error(`unknown format byte: 0x${value.toString(16)}`);
-    return value;
-  }
-
-  // ../../packages/core/src/pack-format/manifest.ts
-  var SUPPORTED_VERSION = 1;
-  var enc2 = new TextEncoder();
-  var dec = new TextDecoder("utf-8");
-  function readPackManifest(bytes) {
-    const parsed = JSON.parse(dec.decode(bytes));
-    if (parsed.version !== SUPPORTED_VERSION) {
-      throw new Error(`unsupported manifest version: ${parsed.version}`);
-    }
-    return parsed;
-  }
-  function writeDiffManifest(m) {
-    return enc2.encode(JSON.stringify(m));
-  }
-  function readDiffManifest(bytes) {
-    const parsed = JSON.parse(dec.decode(bytes));
-    if (parsed.version !== SUPPORTED_VERSION) {
-      throw new Error(`unsupported diff manifest version: ${parsed.version}`);
-    }
-    return parsed;
-  }
-
-  // ../../packages/core/src/pack-format/apply-diff.ts
-  var SIG = Uint8Array.of(192, 222, 174, 84);
-  function decodeDiff(bytes) {
-    if (bytes.length < 9 || bytes[0] !== SIG[0] || bytes[1] !== SIG[1] || bytes[2] !== SIG[2] || bytes[3] !== SIG[3]) {
-      throw new Error("decodeDiff: missing tokenpack signature");
-    }
-    const fmt = readFormatByte(bytes, 4);
-    if (fmt !== FORMAT_DIFF) {
-      throw new Error(`decodeDiff: expected diff format (0x03), got 0x${fmt.toString(16)}`);
-    }
-    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    const manifestSize = view.getUint32(5, true);
-    const manifestBytes = bytes.subarray(9, 9 + manifestSize);
-    const manifest = readDiffManifest(manifestBytes);
-    const regionsStart = 9 + manifestSize;
-    return {
-      manifest,
-      regionsStart,
-      bytes,
-      extractRegion(path) {
-        const op = manifest.ops.find(
-          (o) => o.path === path && (o.op === "add" || o.op === "modify" || o.op === "patch")
-        );
-        if (!op || op.offset === void 0 || op.compressedSize === void 0) {
-          throw new Error(`decodeDiff: no add/modify region for path: ${path}`);
-        }
-        const start = regionsStart + op.offset;
-        return bytes.subarray(start, start + op.compressedSize);
-      }
-    };
-  }
-
-  // ../../packages/core/src/pack-format/decode-pack.ts
-  var SIG2 = Uint8Array.of(192, 222, 174, 84);
-  function decodePack(bytes) {
-    if (bytes.length < 9 || bytes[0] !== SIG2[0] || bytes[1] !== SIG2[1] || bytes[2] !== SIG2[2] || bytes[3] !== SIG2[3]) {
-      throw new Error("decodePack: missing tokenpack signature");
-    }
-    const fmt = readFormatByte(bytes, 4);
-    if (fmt !== FORMAT_PACK) {
-      throw new Error(`decodePack: expected pack format (0x02), got 0x${fmt.toString(16)}`);
-    }
-    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    const manifestSize = view.getUint32(5, true);
-    const manifestBytes = bytes.subarray(9, 9 + manifestSize);
-    const manifest = readPackManifest(manifestBytes);
-    const regionsStart = 9 + manifestSize;
-    const fileByPath = new Map(manifest.files.map((file) => [file.path, file]));
-    return {
-      manifest,
-      regionsStart,
-      bytes,
-      extractRegion(path) {
-        const file = fileByPath.get(path);
-        if (!file) throw new Error(`no entry for path: ${path}`);
-        const start = regionsStart + file.offset;
-        return bytes.subarray(start, start + file.compressedSize);
-      }
-    };
-  }
-
-  // ../../packages/core/src/pack-format/encode-file.ts
-  var SIG3 = Uint8Array.of(192, 222, 174, 84);
-  var enc3 = new TextEncoder();
-  function readWrappedFile(bytes) {
-    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    const nameLen = view.getUint16(5, true);
-    const name = new TextDecoder().decode(bytes.subarray(7, 7 + nameLen));
-    const payload = bytes.subarray(7 + nameLen);
-    return { name, payload };
-  }
-
-  // ../../packages/core/src/pack/dir-pack.ts
-  var DirPack = class {
-    constructor(entries, extractOne, extractAllFn, diffToFn, applyDiffFn) {
-      this.extractOne = extractOne;
-      this.extractAllFn = extractAllFn;
-      this.diffToFn = diffToFn;
-      this.applyDiffFn = applyDiffFn;
-      this.entries = entries;
-      this.list = entries.map((e) => e.path);
-    }
-    list;
-    entries;
-    isPack() {
-      return true;
-    }
-    isRouter() {
-      return false;
-    }
-    isDiff() {
-      return false;
-    }
-    async materialize() {
-      throw new Error("DirPack.materialize: not configured (env package must attach runtime support)");
-    }
-    async extract(path) {
-      if (!this.entries.find((e) => e.path === path)) {
-        throw new Error(`no entry for path: ${path}`);
-      }
-      return this.extractOne(path);
-    }
-    async text(path) {
-      return new TextDecoder().decode(await this.extract(path));
-    }
-    async json(path) {
-      return JSON.parse(await this.text(path));
-    }
-    async blob(path) {
-      const bytes = await this.extract(path);
-      return new Blob([bytes]);
-    }
-    async extractAll() {
-      return this.extractAllFn();
-    }
-    async diffTo(other) {
-      if (!this.diffToFn) {
-        throw new Error("DirPack.diffTo: not configured (env package must inject diffToFn)");
-      }
-      return this.diffToFn(this, other);
-    }
-    async apply(diff2) {
-      if (this.applyDiffFn) return this.applyDiffFn(this, diff2);
-      return diff2.apply(this);
-    }
+  // ../../packages/core/src/codecs/types.ts
+  var AbstractCodec = class {
+    /** Tunable options for this codec. Most codecs have no per-instance options. */
+    static optionsSchema = {};
   };
+  function isStreamingCodec(c) {
+    return "decodeChunk" in c && typeof c.decodeChunk === "function";
+  }
 
-  // ../../packages/core/src/pack/diff-pack.ts
-  var DiffPack = class {
-    constructor(entries, diffBytes, decompress) {
-      this.diffBytes = diffBytes;
-      this.decompress = decompress;
-      this.entries = entries;
-      this.list = entries.map((e) => e.path);
-    }
-    list;
-    entries;
-    isPack() {
-      return false;
-    }
-    isRouter() {
-      return false;
-    }
-    isDiff() {
-      return true;
-    }
-    async materialize() {
-      throw new Error("DiffPack.materialize: diff tokens cannot be materialized directly");
-    }
-    async apply(prev) {
-      const decoded = decodeDiff(this.diffBytes);
-      const opsByPath = new Map(decoded.manifest.ops.map((op) => [op.path, op]));
-      const deleted = new Set(
-        decoded.manifest.ops.filter((op) => op.op === "delete").map((op) => op.path)
-      );
-      const renamedFrom = new Map(
-        decoded.manifest.ops.filter((op) => op.op === "rename" && op.fromPath).map((op) => [op.fromPath, op.path])
-      );
-      const entries = buildAppliedEntries(prev.entries, this.entries, deleted, renamedFrom);
-      const extractOne = async (path) => {
-        const op = opsByPath.get(path);
-        if (!op) return prev.extract(path);
-        if (op.op === "rename") return prev.extract(op.fromPath);
-        if (op.op === "delete") throw new Error(`no entry for path: ${path}`);
-        const region = decoded.extractRegion(path);
-        const bytes = await this.decompress(region, op.compressor, {
-          level: op.level,
-          uncompressedLength: op.originalSize
-        });
-        if (op.op !== "patch") return bytes;
-        const base2 = await prev.extract(path);
-        return applyBytePatch(base2, op.patchStart, op.deleteSize, bytes, op.targetSize);
-      };
-      return new DirPack(
-        entries,
-        extractOne,
-        async () => Promise.all(
-          entries.map(async (entry) => ({ path: entry.path, bytes: await extractOne(entry.path) }))
-        )
-      );
-    }
-  };
-  function buildAppliedEntries(prevEntries, diffEntries, deleted, renamedFrom) {
-    const out = [];
-    const seen = /* @__PURE__ */ new Set();
-    const diffByPath = new Map(diffEntries.map((entry) => [entry.path, entry]));
-    for (const entry of prevEntries) {
-      if (deleted.has(entry.path)) continue;
-      const renamedPath = renamedFrom.get(entry.path);
-      if (renamedPath) {
-        out.push({ path: renamedPath, size: entry.size });
-        seen.add(renamedPath);
-        continue;
-      }
-      const diffEntry = diffByPath.get(entry.path);
-      if (diffEntry && diffEntry.op !== "rename" && diffEntry.op !== "delete") {
-        out.push({ path: entry.path, size: diffEntry.size ?? entry.size });
-      } else {
-        out.push(entry);
-      }
-      seen.add(entry.path);
-    }
-    for (const entry of diffEntries) {
-      if (seen.has(entry.path) || !addsEntry(entry.op)) continue;
-      out.push({ path: entry.path, size: entry.size ?? 0 });
-      seen.add(entry.path);
-    }
+  // ../../packages/core/src/crypto.ts
+  var SALT_LEN = 16;
+  var IV_LEN = 12;
+  var TAG_LEN = 16;
+  var KEY_BITS = 256;
+  var PBKDF2_ITER = 1e4;
+  var CRYPTO_OVERHEAD = SALT_LEN + IV_LEN + TAG_LEN;
+  var passwordEncoder = new TextEncoder();
+  var asBuf = (data) => data;
+  async function deriveKey(password, salt) {
+    const baseKey = await globalThis.crypto.subtle.importKey(
+      "raw",
+      asBuf(passwordEncoder.encode(password)),
+      { name: "PBKDF2" },
+      false,
+      ["deriveKey"]
+    );
+    return globalThis.crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt: asBuf(salt), iterations: PBKDF2_ITER, hash: "SHA-256" },
+      baseKey,
+      { name: "AES-GCM", length: KEY_BITS },
+      false,
+      ["encrypt", "decrypt"]
+    );
+  }
+  async function encryptData(data, password) {
+    const salt = globalThis.crypto.getRandomValues(new Uint8Array(SALT_LEN));
+    const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_LEN));
+    const key = await deriveKey(password, salt);
+    const ctAndTag = new Uint8Array(
+      await globalThis.crypto.subtle.encrypt({ name: "AES-GCM", iv: asBuf(iv) }, key, asBuf(data))
+    );
+    const out = new Uint8Array(SALT_LEN + IV_LEN + ctAndTag.length);
+    out.set(salt, 0);
+    out.set(iv, SALT_LEN);
+    out.set(ctAndTag, SALT_LEN + IV_LEN);
     return out;
   }
-  function addsEntry(op) {
-    return op === "add" || op === "modify" || op === "patch";
-  }
-  function applyBytePatch(base2, start, deleteSize, insert, targetSize) {
-    if (start < 0 || deleteSize < 0 || start + deleteSize > base2.length) {
-      throw new Error("DiffPack.apply: invalid patch bounds");
-    }
-    const out = new Uint8Array(base2.length - deleteSize + insert.length);
-    out.set(base2.subarray(0, start), 0);
-    out.set(insert, start);
-    out.set(base2.subarray(start + deleteSize), start + insert.length);
-    if (out.length !== targetSize) {
-      throw new Error(`DiffPack.apply: patch produced ${out.length} bytes, expected ${targetSize}`);
-    }
-    return out;
-  }
-
-  // ../../packages/core/src/pack/file-pack.ts
-  var FilePack = class {
-    constructor(info, load) {
-      this.load = load;
-      this.list = [info.name];
-      this.entries = [{ path: info.name, size: info.size }];
-    }
-    list;
-    entries;
-    isPack() {
-      return false;
-    }
-    isRouter() {
-      return false;
-    }
-    isDiff() {
-      return false;
-    }
-    async materialize() {
-      throw new Error(
-        "FilePack.materialize: not configured (env package must attach runtime support)"
+  async function decryptData(data, password) {
+    if (data.length < CRYPTO_OVERHEAD) throw new Error("Encrypted payload too short");
+    const salt = data.subarray(0, SALT_LEN);
+    const iv = data.subarray(SALT_LEN, SALT_LEN + IV_LEN);
+    const ctAndTag = data.subarray(SALT_LEN + IV_LEN);
+    const key = await deriveKey(password, salt);
+    try {
+      const plaintext = await globalThis.crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: asBuf(iv) },
+        key,
+        asBuf(ctAndTag)
       );
+      return new Uint8Array(plaintext);
+    } catch {
+      throw new Error("Decryption failed \u2014 wrong key or corrupted data");
     }
-    async content() {
-      return this.load();
-    }
-    async text() {
-      return new TextDecoder().decode(await this.load());
-    }
-    async json() {
-      return JSON.parse(await this.text());
-    }
-    async blob() {
-      const bytes = await this.load();
-      return new Blob([bytes]);
-    }
-  };
-
-  // ../../packages/core/src/pack/from-bytes.ts
-  var SIG4 = Uint8Array.of(192, 222, 174, 84);
-  function hasSignature(bytes) {
-    return bytes.length >= 4 && bytes[0] === SIG4[0] && bytes[1] === SIG4[1] && bytes[2] === SIG4[2] && bytes[3] === SIG4[3];
-  }
-  function fromBytes(bytes, opts) {
-    const sigPresent = hasSignature(bytes);
-    const fmt = sigPresent ? readFormatByte(bytes, 4) : FORMAT_FILE;
-    if (fmt === FORMAT_FILE) {
-      if (sigPresent) {
-        const { name, payload } = readWrappedFile(bytes);
-        return new FilePack({ name, size: payload.length }, async () => payload);
-      }
-      return new FilePack({ name: "", size: bytes.length }, async () => bytes);
-    }
-    if (fmt === FORMAT_PACK) {
-      const decoded = decodePack(bytes);
-      const entries = decoded.manifest.files.map((f) => ({ path: f.path, size: f.originalSize }));
-      const fileByPath = new Map(decoded.manifest.files.map((file) => [file.path, file]));
-      const regionFor = (file) => decoded.bytes.subarray(
-        decoded.regionsStart + file.offset,
-        decoded.regionsStart + file.offset + file.compressedSize
-      );
-      return new DirPack(
-        entries,
-        async (path) => {
-          const file = fileByPath.get(path);
-          if (!file) throw new Error(`no entry for path: ${path}`);
-          const region = regionFor(file);
-          return opts.decompress(region, file.compressor, {
-            level: file.level,
-            uncompressedLength: file.originalSize
-          });
-        },
-        async () => Promise.all(
-          decoded.manifest.files.map(async (f) => ({
-            path: f.path,
-            bytes: await opts.decompress(regionFor(f), f.compressor, {
-              level: f.level,
-              uncompressedLength: f.originalSize
-            })
-          }))
-        ),
-        opts.diffTo
-      );
-    }
-    if (fmt === FORMAT_DIFF) {
-      const decoded = decodeDiff(bytes);
-      const entries = decoded.manifest.ops.map((o) => ({
-        path: o.path,
-        op: o.op,
-        size: o.op === "patch" ? o.targetSize : o.originalSize,
-        fromPath: o.fromPath
-      }));
-      return new DiffPack(entries, bytes, opts.decompress);
-    }
-    throw new Error(`fromBytes: unknown format byte 0x${fmt.toString(16)}`);
   }
 
   // ../../packages/core/src/header.ts
@@ -8466,133 +8304,6 @@
       channels: rawChannels === 0 ? 3 : rawChannels,
       preFecLength: (pixels[26] << 24 | pixels[27] << 16 | pixels[28] << 8 | pixels[29]) >>> 0
     };
-  }
-
-  // ../../packages/core/src/algorithms/catalog.ts
-  var AlgorithmCatalog = class {
-    byName = /* @__PURE__ */ new Map();
-    byId = /* @__PURE__ */ new Map();
-    /** Register an algorithm Ctor. Idempotent on duplicate name. */
-    register(Ctor) {
-      if (this.byName.has(Ctor.name)) return;
-      this.byName.set(Ctor.name, Ctor);
-      if (!this.byId.has(Ctor.id)) this.byId.set(Ctor.id, Ctor);
-    }
-    getByName(name) {
-      const Ctor = this.byName.get(name);
-      if (!Ctor) throw new Error(`Unknown algorithm: "${name}"`);
-      return Ctor;
-    }
-    getById(id) {
-      const Ctor = this.byId.get(id);
-      if (!Ctor) throw new Error(`Unknown algorithm id: ${id}`);
-      return Ctor;
-    }
-    list() {
-      return [...this.byName.values()];
-    }
-    /**
-     * Resolve which algorithm should handle a given artifact buffer.
-     * Strategy:
-     *   1. Per-algorithm canHandle (cheap byte-level sniff for plugins).
-     *   2. Ask each registered algorithm's own surface to decode pixels, then
-     *      read the pixel header for the algorithm id.
-     *   3. Throw.
-     */
-    async detectFromBuffer(buffer, ext) {
-      for (const Ctor of this.byName.values()) {
-        try {
-          const probe = new Ctor();
-          if (probe.canHandle(buffer, ext)) return Ctor;
-        } catch {
-        }
-      }
-      if (buffer && buffer.length > 8) {
-        const normalizedExt = ext?.toLowerCase();
-        for (const Ctor of this.byName.values()) {
-          try {
-            const probe = new Ctor();
-            if (normalizedExt && probe.surface.extension !== normalizedExt) continue;
-            if (probe.surface.streamable) continue;
-            const image = await probe.surface.readBuffer(buffer);
-            const id = isCompactToken(image.pixels) ? readCompactHeader(image.pixels).algoId : readHeader(image.pixels).algorithmId;
-            const DetectedCtor = this.byId.get(id);
-            if (DetectedCtor) return DetectedCtor;
-          } catch {
-          }
-        }
-      }
-      throw new Error("no algorithm matched the provided artifact buffer");
-    }
-    clear() {
-      this.byName.clear();
-      this.byId.clear();
-    }
-  };
-
-  // ../../packages/core/src/codecs/types.ts
-  var AbstractCodec = class {
-    /** Tunable options for this codec. Most codecs have no per-instance options. */
-    static optionsSchema = {};
-  };
-  function isStreamingCodec(c) {
-    return "decodeChunk" in c && typeof c.decodeChunk === "function";
-  }
-
-  // ../../packages/core/src/crypto.ts
-  var SALT_LEN = 16;
-  var IV_LEN = 12;
-  var TAG_LEN = 16;
-  var KEY_BITS = 256;
-  var PBKDF2_ITER = 1e4;
-  var CRYPTO_OVERHEAD = SALT_LEN + IV_LEN + TAG_LEN;
-  var passwordEncoder = new TextEncoder();
-  var asBuf = (data) => data;
-  async function deriveKey(password, salt) {
-    const baseKey = await globalThis.crypto.subtle.importKey(
-      "raw",
-      asBuf(passwordEncoder.encode(password)),
-      { name: "PBKDF2" },
-      false,
-      ["deriveKey"]
-    );
-    return globalThis.crypto.subtle.deriveKey(
-      { name: "PBKDF2", salt: asBuf(salt), iterations: PBKDF2_ITER, hash: "SHA-256" },
-      baseKey,
-      { name: "AES-GCM", length: KEY_BITS },
-      false,
-      ["encrypt", "decrypt"]
-    );
-  }
-  async function encryptData(data, password) {
-    const salt = globalThis.crypto.getRandomValues(new Uint8Array(SALT_LEN));
-    const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_LEN));
-    const key = await deriveKey(password, salt);
-    const ctAndTag = new Uint8Array(
-      await globalThis.crypto.subtle.encrypt({ name: "AES-GCM", iv: asBuf(iv) }, key, asBuf(data))
-    );
-    const out = new Uint8Array(SALT_LEN + IV_LEN + ctAndTag.length);
-    out.set(salt, 0);
-    out.set(iv, SALT_LEN);
-    out.set(ctAndTag, SALT_LEN + IV_LEN);
-    return out;
-  }
-  async function decryptData(data, password) {
-    if (data.length < CRYPTO_OVERHEAD) throw new Error("Encrypted payload too short");
-    const salt = data.subarray(0, SALT_LEN);
-    const iv = data.subarray(SALT_LEN, SALT_LEN + IV_LEN);
-    const ctAndTag = data.subarray(SALT_LEN + IV_LEN);
-    const key = await deriveKey(password, salt);
-    try {
-      const plaintext = await globalThis.crypto.subtle.decrypt(
-        { name: "AES-GCM", iv: asBuf(iv) },
-        key,
-        asBuf(ctAndTag)
-      );
-      return new Uint8Array(plaintext);
-    } catch {
-      throw new Error("Decryption failed \u2014 wrong key or corrupted data");
-    }
   }
 
   // ../../packages/core/src/drawers/types.ts
@@ -9324,8 +9035,45 @@
     };
   }
 
+  // ../../packages/core/src/pack-format/format-byte.ts
+  var FORMAT_FILE = 1;
+  var FORMAT_PACK = 2;
+  var FORMAT_DIFF = 3;
+  var VALID = /* @__PURE__ */ new Set([FORMAT_FILE, FORMAT_PACK, FORMAT_DIFF]);
+  function writeFormatByte(buf, offset, value) {
+    if (!VALID.has(value)) throw new Error(`unknown format byte: 0x${value.toString(16)}`);
+    buf[offset] = value;
+  }
+  function readFormatByte(buf, offset) {
+    const value = buf[offset];
+    if (!VALID.has(value)) throw new Error(`unknown format byte: 0x${value.toString(16)}`);
+    return value;
+  }
+
+  // ../../packages/core/src/pack-format/manifest.ts
+  var SUPPORTED_VERSION = 1;
+  var enc2 = new TextEncoder();
+  var dec = new TextDecoder("utf-8");
+  function readPackManifest(bytes) {
+    const parsed = JSON.parse(dec.decode(bytes));
+    if (parsed.version !== SUPPORTED_VERSION) {
+      throw new Error(`unsupported manifest version: ${parsed.version}`);
+    }
+    return parsed;
+  }
+  function writeDiffManifest(m) {
+    return enc2.encode(JSON.stringify(m));
+  }
+  function readDiffManifest(bytes) {
+    const parsed = JSON.parse(dec.decode(bytes));
+    if (parsed.version !== SUPPORTED_VERSION) {
+      throw new Error(`unsupported diff manifest version: ${parsed.version}`);
+    }
+    return parsed;
+  }
+
   // ../../packages/core/src/pack-format/encode-diff.ts
-  var SIG5 = Uint8Array.of(192, 222, 174, 84);
+  var SIG = Uint8Array.of(192, 222, 174, 84);
   function hash(bytes) {
     let h = 2166136261;
     for (let i = 0; i < bytes.length; i++) {
@@ -9434,7 +9182,7 @@
     const manifestBytes = writeDiffManifest(manifest);
     const totalRegionSize = regionBytes.reduce((s, r) => s + r.length, 0);
     const out = new Uint8Array(4 + 1 + 4 + manifestBytes.length + totalRegionSize);
-    out.set(SIG5, 0);
+    out.set(SIG, 0);
     writeFormatByte(out, 4, FORMAT_DIFF);
     new DataView(out.buffer, out.byteOffset, out.byteLength).setUint32(5, manifestBytes.length, true);
     out.set(manifestBytes, 9);
@@ -9919,6 +9667,395 @@
     return Cls;
   }
 
+  // ../../packages/core/src/pack-format/apply-diff.ts
+  var SIG2 = Uint8Array.of(192, 222, 174, 84);
+  function decodeDiff(bytes) {
+    if (bytes.length < 9 || bytes[0] !== SIG2[0] || bytes[1] !== SIG2[1] || bytes[2] !== SIG2[2] || bytes[3] !== SIG2[3]) {
+      throw new Error("decodeDiff: missing tokenpack signature");
+    }
+    const fmt = readFormatByte(bytes, 4);
+    if (fmt !== FORMAT_DIFF) {
+      throw new Error(`decodeDiff: expected diff format (0x03), got 0x${fmt.toString(16)}`);
+    }
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const manifestSize = view.getUint32(5, true);
+    const manifestBytes = bytes.subarray(9, 9 + manifestSize);
+    const manifest = readDiffManifest(manifestBytes);
+    const regionsStart = 9 + manifestSize;
+    return {
+      manifest,
+      regionsStart,
+      bytes,
+      extractRegion(path) {
+        const op = manifest.ops.find(
+          (o) => o.path === path && (o.op === "add" || o.op === "modify" || o.op === "patch")
+        );
+        if (!op || op.offset === void 0 || op.compressedSize === void 0) {
+          throw new Error(`decodeDiff: no add/modify region for path: ${path}`);
+        }
+        const start = regionsStart + op.offset;
+        return bytes.subarray(start, start + op.compressedSize);
+      }
+    };
+  }
+
+  // ../../packages/core/src/pack-format/decode-pack.ts
+  var SIG3 = Uint8Array.of(192, 222, 174, 84);
+  function decodePack(bytes) {
+    if (bytes.length < 9 || bytes[0] !== SIG3[0] || bytes[1] !== SIG3[1] || bytes[2] !== SIG3[2] || bytes[3] !== SIG3[3]) {
+      throw new Error("decodePack: missing tokenpack signature");
+    }
+    const fmt = readFormatByte(bytes, 4);
+    if (fmt !== FORMAT_PACK) {
+      throw new Error(`decodePack: expected pack format (0x02), got 0x${fmt.toString(16)}`);
+    }
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const manifestSize = view.getUint32(5, true);
+    const manifestBytes = bytes.subarray(9, 9 + manifestSize);
+    const manifest = readPackManifest(manifestBytes);
+    const regionsStart = 9 + manifestSize;
+    const fileByPath = new Map(manifest.files.map((file) => [file.path, file]));
+    return {
+      manifest,
+      regionsStart,
+      bytes,
+      extractRegion(path) {
+        const file = fileByPath.get(path);
+        if (!file) throw new Error(`no entry for path: ${path}`);
+        const start = regionsStart + file.offset;
+        return bytes.subarray(start, start + file.compressedSize);
+      }
+    };
+  }
+
+  // ../../packages/core/src/pack-format/encode-file.ts
+  var SIG4 = Uint8Array.of(192, 222, 174, 84);
+  var enc3 = new TextEncoder();
+  function readWrappedFile(bytes) {
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const nameLen = view.getUint16(5, true);
+    const name = new TextDecoder().decode(bytes.subarray(7, 7 + nameLen));
+    const payload = bytes.subarray(7 + nameLen);
+    return { name, payload };
+  }
+
+  // ../../packages/core/src/pack/dir-pack.ts
+  var DirPack = class {
+    constructor(entries, extractOne, extractAllFn, diffToFn, applyDiffFn) {
+      this.extractOne = extractOne;
+      this.extractAllFn = extractAllFn;
+      this.diffToFn = diffToFn;
+      this.applyDiffFn = applyDiffFn;
+      this.entries = entries;
+      this.list = entries.map((e) => e.path);
+    }
+    list;
+    entries;
+    isPack() {
+      return true;
+    }
+    isRouter() {
+      return false;
+    }
+    isDiff() {
+      return false;
+    }
+    async materialize() {
+      throw new Error("DirPack.materialize: not configured (env package must attach runtime support)");
+    }
+    async extract(path) {
+      if (!this.entries.find((e) => e.path === path)) {
+        throw new Error(`no entry for path: ${path}`);
+      }
+      return this.extractOne(path);
+    }
+    async text(path) {
+      return new TextDecoder().decode(await this.extract(path));
+    }
+    async json(path) {
+      return JSON.parse(await this.text(path));
+    }
+    async blob(path) {
+      const bytes = await this.extract(path);
+      return new Blob([bytes]);
+    }
+    async extractAll() {
+      return this.extractAllFn();
+    }
+    async diffTo(other) {
+      if (!this.diffToFn) {
+        throw new Error("DirPack.diffTo: not configured (env package must inject diffToFn)");
+      }
+      return this.diffToFn(this, other);
+    }
+    async apply(diff2) {
+      if (this.applyDiffFn) return this.applyDiffFn(this, diff2);
+      return diff2.apply(this);
+    }
+  };
+
+  // ../../packages/core/src/pack/diff-pack.ts
+  var DiffPack = class {
+    constructor(entries, diffBytes, decompress) {
+      this.diffBytes = diffBytes;
+      this.decompress = decompress;
+      this.entries = entries;
+      this.list = entries.map((e) => e.path);
+    }
+    list;
+    entries;
+    isPack() {
+      return false;
+    }
+    isRouter() {
+      return false;
+    }
+    isDiff() {
+      return true;
+    }
+    async materialize() {
+      throw new Error("DiffPack.materialize: diff tokens cannot be materialized directly");
+    }
+    async apply(prev) {
+      const decoded = decodeDiff(this.diffBytes);
+      const opsByPath = new Map(decoded.manifest.ops.map((op) => [op.path, op]));
+      const deleted = new Set(
+        decoded.manifest.ops.filter((op) => op.op === "delete").map((op) => op.path)
+      );
+      const renamedFrom = new Map(
+        decoded.manifest.ops.filter((op) => op.op === "rename" && op.fromPath).map((op) => [op.fromPath, op.path])
+      );
+      const entries = buildAppliedEntries(prev.entries, this.entries, deleted, renamedFrom);
+      const extractOne = async (path) => {
+        const op = opsByPath.get(path);
+        if (!op) return prev.extract(path);
+        if (op.op === "rename") return prev.extract(op.fromPath);
+        if (op.op === "delete") throw new Error(`no entry for path: ${path}`);
+        const region = decoded.extractRegion(path);
+        const bytes = await this.decompress(region, op.compressor, {
+          level: op.level,
+          uncompressedLength: op.originalSize
+        });
+        if (op.op !== "patch") return bytes;
+        const base2 = await prev.extract(path);
+        return applyBytePatch(base2, op.patchStart, op.deleteSize, bytes, op.targetSize);
+      };
+      return new DirPack(
+        entries,
+        extractOne,
+        async () => Promise.all(
+          entries.map(async (entry) => ({ path: entry.path, bytes: await extractOne(entry.path) }))
+        )
+      );
+    }
+  };
+  function buildAppliedEntries(prevEntries, diffEntries, deleted, renamedFrom) {
+    const out = [];
+    const seen = /* @__PURE__ */ new Set();
+    const diffByPath = new Map(diffEntries.map((entry) => [entry.path, entry]));
+    for (const entry of prevEntries) {
+      if (deleted.has(entry.path)) continue;
+      const renamedPath = renamedFrom.get(entry.path);
+      if (renamedPath) {
+        out.push({ path: renamedPath, size: entry.size });
+        seen.add(renamedPath);
+        continue;
+      }
+      const diffEntry = diffByPath.get(entry.path);
+      if (diffEntry && diffEntry.op !== "rename" && diffEntry.op !== "delete") {
+        out.push({ path: entry.path, size: diffEntry.size ?? entry.size });
+      } else {
+        out.push(entry);
+      }
+      seen.add(entry.path);
+    }
+    for (const entry of diffEntries) {
+      if (seen.has(entry.path) || !addsEntry(entry.op)) continue;
+      out.push({ path: entry.path, size: entry.size ?? 0 });
+      seen.add(entry.path);
+    }
+    return out;
+  }
+  function addsEntry(op) {
+    return op === "add" || op === "modify" || op === "patch";
+  }
+  function applyBytePatch(base2, start, deleteSize, insert, targetSize) {
+    if (start < 0 || deleteSize < 0 || start + deleteSize > base2.length) {
+      throw new Error("DiffPack.apply: invalid patch bounds");
+    }
+    const out = new Uint8Array(base2.length - deleteSize + insert.length);
+    out.set(base2.subarray(0, start), 0);
+    out.set(insert, start);
+    out.set(base2.subarray(start + deleteSize), start + insert.length);
+    if (out.length !== targetSize) {
+      throw new Error(`DiffPack.apply: patch produced ${out.length} bytes, expected ${targetSize}`);
+    }
+    return out;
+  }
+
+  // ../../packages/core/src/pack/file-pack.ts
+  var FilePack = class {
+    constructor(info, load) {
+      this.load = load;
+      this.list = [info.name];
+      this.entries = [{ path: info.name, size: info.size }];
+    }
+    list;
+    entries;
+    isPack() {
+      return false;
+    }
+    isRouter() {
+      return false;
+    }
+    isDiff() {
+      return false;
+    }
+    async materialize() {
+      throw new Error(
+        "FilePack.materialize: not configured (env package must attach runtime support)"
+      );
+    }
+    async content() {
+      return this.load();
+    }
+    async text() {
+      return new TextDecoder().decode(await this.load());
+    }
+    async json() {
+      return JSON.parse(await this.text());
+    }
+    async blob() {
+      const bytes = await this.load();
+      return new Blob([bytes]);
+    }
+  };
+
+  // ../../packages/core/src/pack/from-bytes.ts
+  var SIG5 = Uint8Array.of(192, 222, 174, 84);
+  function hasSignature(bytes) {
+    return bytes.length >= 4 && bytes[0] === SIG5[0] && bytes[1] === SIG5[1] && bytes[2] === SIG5[2] && bytes[3] === SIG5[3];
+  }
+  function fromBytes(bytes, opts) {
+    const sigPresent = hasSignature(bytes);
+    const fmt = sigPresent ? readFormatByte(bytes, 4) : FORMAT_FILE;
+    if (fmt === FORMAT_FILE) {
+      if (sigPresent) {
+        const { name, payload } = readWrappedFile(bytes);
+        return new FilePack({ name, size: payload.length }, async () => payload);
+      }
+      return new FilePack({ name: "", size: bytes.length }, async () => bytes);
+    }
+    if (fmt === FORMAT_PACK) {
+      const decoded = decodePack(bytes);
+      const entries = decoded.manifest.files.map((f) => ({ path: f.path, size: f.originalSize }));
+      const fileByPath = new Map(decoded.manifest.files.map((file) => [file.path, file]));
+      const regionFor = (file) => decoded.bytes.subarray(
+        decoded.regionsStart + file.offset,
+        decoded.regionsStart + file.offset + file.compressedSize
+      );
+      return new DirPack(
+        entries,
+        async (path) => {
+          const file = fileByPath.get(path);
+          if (!file) throw new Error(`no entry for path: ${path}`);
+          const region = regionFor(file);
+          return opts.decompress(region, file.compressor, {
+            level: file.level,
+            uncompressedLength: file.originalSize
+          });
+        },
+        async () => Promise.all(
+          decoded.manifest.files.map(async (f) => ({
+            path: f.path,
+            bytes: await opts.decompress(regionFor(f), f.compressor, {
+              level: f.level,
+              uncompressedLength: f.originalSize
+            })
+          }))
+        ),
+        opts.diffTo
+      );
+    }
+    if (fmt === FORMAT_DIFF) {
+      const decoded = decodeDiff(bytes);
+      const entries = decoded.manifest.ops.map((o) => ({
+        path: o.path,
+        op: o.op,
+        size: o.op === "patch" ? o.targetSize : o.originalSize,
+        fromPath: o.fromPath
+      }));
+      return new DiffPack(entries, bytes, opts.decompress);
+    }
+    throw new Error(`fromBytes: unknown format byte 0x${fmt.toString(16)}`);
+  }
+
+  // ../../packages/core/src/algorithms/catalog.ts
+  var AlgorithmCatalog = class {
+    byName = /* @__PURE__ */ new Map();
+    byId = /* @__PURE__ */ new Map();
+    /** Register an algorithm Ctor. Idempotent on duplicate name. */
+    register(Ctor) {
+      if (this.byName.has(Ctor.name)) return;
+      this.byName.set(Ctor.name, Ctor);
+      if (!this.byId.has(Ctor.id)) this.byId.set(Ctor.id, Ctor);
+    }
+    getByName(name) {
+      const Ctor = this.byName.get(name);
+      if (!Ctor) throw new Error(`Unknown algorithm: "${name}"`);
+      return Ctor;
+    }
+    getById(id) {
+      const Ctor = this.byId.get(id);
+      if (!Ctor) throw new Error(`Unknown algorithm id: ${id}`);
+      return Ctor;
+    }
+    list() {
+      return [...this.byName.values()];
+    }
+    /**
+     * Resolve which algorithm should handle a given artifact buffer.
+     * Strategy:
+     *   1. Per-algorithm canHandle (cheap byte-level sniff for plugins).
+     *   2. Ask each registered algorithm's own surface to decode pixels, then
+     *      read the pixel header for the algorithm id.
+     *   3. Throw.
+     */
+    async detectFromBuffer(buffer, ext) {
+      return (await this.detectWithImage(buffer, ext)).Ctor;
+    }
+    /** Return detection pixels for reuse by the decode pipeline; no global buffer cache. */
+    async detectWithImage(buffer, ext) {
+      for (const Ctor of this.byName.values()) {
+        try {
+          const probe = new Ctor();
+          if (probe.canHandle(buffer, ext)) return { Ctor };
+        } catch {
+        }
+      }
+      if (buffer && buffer.length > 8) {
+        const normalizedExt = ext?.toLowerCase();
+        for (const Ctor of this.byName.values()) {
+          try {
+            const probe = new Ctor();
+            if (normalizedExt && probe.surface.extension !== normalizedExt) continue;
+            if (probe.surface.streamable) continue;
+            const image = await probe.surface.readBuffer(buffer);
+            const id = isCompactToken(image.pixels) ? readCompactHeader(image.pixels).algoId : readHeader(image.pixels).algorithmId;
+            const DetectedCtor = this.byId.get(id);
+            if (DetectedCtor) return { Ctor: DetectedCtor, image };
+          } catch {
+          }
+        }
+      }
+      throw new Error("no algorithm matched the provided artifact buffer");
+    }
+    clear() {
+      this.byName.clear();
+      this.byId.clear();
+    }
+  };
+
   // ../../packages/core/src/surfaces/decoration-renderer.ts
   function renderDecoration(cfg) {
     if (cfg.kind === "data-art") {
@@ -10318,59 +10455,6 @@
   };
   var linearCodec = new LinearCodec();
 
-  // ../../packages/browser/src/algorithms/pixel-range-png-base.ts
-  var PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-  var CRC_TABLE = (() => {
-    const table = new Uint32Array(256);
-    for (let n = 0; n < 256; n++) {
-      let c = n;
-      for (let k = 0; k < 8; k++) c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
-      table[n] = c >>> 0;
-    }
-    return table;
-  })();
-  function crc32(bytes) {
-    let c = 4294967295;
-    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 255] ^ c >>> 8;
-    return (c ^ 4294967295) >>> 0;
-  }
-  function insertTpakChunk(imageBytes, data) {
-    const ihdrEnd = 33;
-    if (imageBytes.length < ihdrEnd || !imageBytes.subarray(0, 8).equals(PNG_SIGNATURE) || imageBytes.readUInt32BE(8) !== 13 || imageBytes.toString("ascii", 12, 16) !== "IHDR") {
-      throw new Error("not a PNG (missing IHDR)");
-    }
-    const chunkLength = data.byteLength + 12;
-    const output = Buffer.allocUnsafe(imageBytes.length + chunkLength);
-    imageBytes.copy(output, 0, 0, ihdrEnd);
-    output.writeUInt32BE(data.byteLength, ihdrEnd);
-    output.write("tpAK", ihdrEnd + 4, "ascii");
-    output.set(data, ihdrEnd + 8);
-    output.writeUInt32BE(
-      crc32(output.subarray(ihdrEnd + 4, ihdrEnd + 8 + data.byteLength)),
-      ihdrEnd + 8 + data.byteLength
-    );
-    imageBytes.copy(output, ihdrEnd + chunkLength, ihdrEnd);
-    return output;
-  }
-  function extractTpakChunk(artifactBytes) {
-    if (artifactBytes.length < 8 || !artifactBytes.subarray(0, 8).equals(PNG_SIGNATURE)) {
-      throw new Error("not a PNG");
-    }
-    let pos = 8;
-    while (pos + 8 <= artifactBytes.length) {
-      const length = artifactBytes.readUInt32BE(pos);
-      const type = artifactBytes.subarray(pos + 4, pos + 8).toString("ascii");
-      if (pos + 12 + length > artifactBytes.length) throw new Error("truncated PNG chunk");
-      if (type === "tpAK") {
-        const data = artifactBytes.subarray(pos + 8, pos + 8 + length);
-        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-      }
-      if (type === "IEND") break;
-      pos = pos + 8 + length + 4;
-    }
-    throw new Error("no tpAK chunk found in PNG");
-  }
-
   // ../../packages/browser/src/algorithms/index.ts
   var LinearPngBrotli = definePixelAlgorithm({
     id: 0,
@@ -10560,9 +10644,10 @@
   }
   async function decodeSourceToPayload(source, options = {}) {
     const buffer = await sourceToBytes(source);
-    const Ctor = await browserAlgorithmCatalog.detectFromBuffer(buffer, ".png");
+    const { Ctor, image } = await browserAlgorithmCatalog.detectWithImage(buffer, ".png");
     const algorithm = new Ctor({ key: options.key });
-    const result = await algorithm.decode(buffer, { key: options.key, ext: ".png" });
+    const decodeOptions = { key: options.key, ext: ".png" };
+    const result = image && algorithm instanceof PixelAlgorithm ? await algorithm.decodeFromImages([image], decodeOptions) : await algorithm.decode(buffer, decodeOptions);
     const bytes = new Uint8Array(result.buffer, result.byteOffset, result.byteLength);
     return { bytes, algorithm };
   }
@@ -10579,7 +10664,7 @@
   }
   async function sourceToBytes(source) {
     if (source instanceof Uint8Array) {
-      return import_buffer3.Buffer.from(source);
+      return import_buffer3.Buffer.from(source.buffer, source.byteOffset, source.byteLength);
     }
     if (source instanceof ArrayBuffer) {
       return import_buffer3.Buffer.from(source);
@@ -10939,7 +11024,7 @@
   }
   async function fetchRangeResponse(url, start, end) {
     const r = await fetch(url, {
-      cache: "no-store",
+      cache: "default",
       credentials: "omit",
       headers: { Range: `bytes=${start}-${end}` },
       mode: "cors"
@@ -10983,6 +11068,7 @@
     }
   }
   function concatBytes(chunks) {
+    if (chunks.length === 1) return chunks[0];
     const total = chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0);
     const out = new Uint8Array(total);
     let offset = 0;
@@ -11559,6 +11645,7 @@
     chunkBytesCache = /* @__PURE__ */ new Map();
     chunkBytesSettled = /* @__PURE__ */ new Set();
     chunkPayloadHandleSettled = /* @__PURE__ */ new Set();
+    fileContentCache = /* @__PURE__ */ new Map();
     bytesCache = /* @__PURE__ */ new Map();
     singleLoadBatches = /* @__PURE__ */ new Map();
     nextBatchId = 0;
@@ -11937,22 +12024,34 @@
       return new Map(entries);
     }
     async startProgressiveLoad(files, mode, options = {}) {
-      const plan = await this.createLoadPlan(files, mode, options);
-      const states = new Map(
-        files.map((file) => [
-          file,
-          {
-            file,
-            pendingSegments: file.segments.length,
-            deferred: createDeferred()
-          }
-        ])
-      );
-      const ready = new Map([...states].map(([file, state]) => [file, state.deferred.promise]));
+      const ready = /* @__PURE__ */ new Map();
+      const states = /* @__PURE__ */ new Map();
+      for (const file of files) {
+        let pending = this.fileContentCache.get(file);
+        if (!pending) {
+          const deferred = createDeferred();
+          pending = deferred.promise;
+          states.set(file, { file, pendingSegments: file.segments.length, deferred });
+          this.fileContentCache.set(file, pending);
+          pending.catch(() => {
+            if (this.fileContentCache.get(file) === pending) this.fileContentCache.delete(file);
+          });
+        }
+        ready.set(file, pending);
+      }
+      const missing = [...states.keys()];
       const done = (async () => {
         try {
+          if (missing.length === 0) return;
+          const plan = await this.createLoadPlan(missing, mode, options);
           if (plan.kind === "whole-chunks") {
-            await this.progressiveWholeChunks(files, plan.chunks, plan.mode, plan.concurrency, states);
+            await this.progressiveWholeChunks(
+              missing,
+              plan.chunks,
+              plan.mode,
+              plan.concurrency,
+              states
+            );
           } else if (plan.kind === "merged-ranges" || plan.kind === "single-merged") {
             await this.progressiveRanges(plan.ranges, plan.mode, plan.concurrency, states);
           } else {

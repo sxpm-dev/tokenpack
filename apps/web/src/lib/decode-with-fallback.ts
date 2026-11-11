@@ -7,7 +7,6 @@
 // `DecompressionStream('br')`), POSTs the bytes to `/api/decode` and rebuilds
 // the Pack from the server response. Same routing rule as encode: pure tools
 // in the libraries, app-layer auto-routing.
-
 import {
   decode,
   type DecodeSource,
@@ -20,6 +19,7 @@ import { fromBytes } from 'tokenpack/pack/from-bytes'
 
 import { smartDecompress } from '@/components/Explorer/utils/smart-decompress'
 import { extensionForBytes, mimeForBytes } from '@/components/Explorer/utils/sniff-format'
+import { isStaticSite } from '@/lib/site-path'
 
 export type DecodeRoute = 'client' | 'server'
 
@@ -45,6 +45,10 @@ export async function decodeWithFallback(
 
     return { pack, metrics: { route: 'client', durationMs } }
   } catch (clientErr) {
+    if (isStaticSite)
+      throw new Error(
+        `This browser cannot decode this file. Try a deflate example or run locally for the server fallback. ${clientErr instanceof Error ? clientErr.message : String(clientErr)}`,
+      )
     const clientMessage = clientErr instanceof Error ? clientErr.message : String(clientErr)
 
     try {

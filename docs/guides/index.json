@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "configuration",
+    "title": "Export and restore a dashboard configuration",
+    "summary": "A support team shares a weekly service dashboard with a colleague. The recipient needs the same filters, columns and thresholds, without copying account credentials."
+  },
+  {
+    "slug": "artifact-data",
+    "title": "Give an interactive artifact its own data package",
+    "summary": "An analyst uses the same expense explorer each month. A colleague needs the November data, currency and saved view, without receiving a new copy of the application."
+  },
+  {
+    "slug": "portable-app",
+    "title": "Package a small standalone HTML application",
+    "summary": "A developer creates an HTML cost calculator with an AI coding assistant and wants another person to inspect the exact built application and its initial inputs."
+  },
+  {
+    "slug": "bug-reproduction",
+    "title": "Share a minimal bug reproduction",
+    "summary": "Support reproduces an invoice rounding error and gives engineering a compact input, expected result and exact reproduction steps."
+  },
+  {
+    "slug": "agent-checkpoint",
+    "title": "Resume work from an explicit agent checkpoint",
+    "summary": "A research agent finishes extracting invoice totals. A second agent in another tool must verify them and write a report without repeating extraction."
+  },
+  {
+    "slug": "editable-recipe",
+    "title": "Keep an exported chart editable",
+    "summary": "An analyst shares a monthly revenue chart and wants a recipient to change the period or color while preserving the underlying values and recipe."
+  },
+  {
+    "slug": "review-snapshot",
+    "title": "Review an exact version of an artifact",
+    "summary": "A team reviews a pricing policy document. The reviewer must see the exact proposal, supporting calculations and comments tied to that revision."
+  },
+  {
+    "slug": "offline-workspace",
+    "title": "Restore a small offline workspace",
+    "summary": "A field worker takes a site inspection template, reference information and a draft report to a location without connectivity."
+  },
+  {
+    "slug": "reference-pack",
+    "title": "Distribute a versioned reference catalog",
+    "summary": "A retail kiosk needs product descriptions and translated labels that can be updated independently of the kiosk application."
+  },
+  {
+    "slug": "web-delivery",
+    "title": "Load selected files through a router",
+    "summary": "A web application has a shared entry and a reports module that is only needed when the user opens Reports. The experiment compares whole delivery with selective file loading."
+  }
+]

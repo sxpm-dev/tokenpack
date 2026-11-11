@@ -1,0 +1,29 @@
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { performance } from 'node:perf_hooks'
+import { decodeRouter, encode, TokenPack } from '@tokenpack/node'
+import { decodeRouter as beforeDecode } from './before-node-router.ts'
+const folder = path.join(import.meta.dirname, 'router-fixture')
+await fs.mkdir(folder, { recursive: true })
+const builder = new TokenPack()
+for(let i=0;i<12;i++) builder.withBuffer(`file-${i}.bin`, Buffer.alloc(100_000, i+1))
+const artifacts = await encode(builder.router({chunkLayout:'source-order',fileCompressor:'deflate-6'}))
+for(const a of artifacts) await fs.writeFile(path.join(folder,a.filename),new Uint8Array(await a.blob.arrayBuffer()))
+const routers = {before:await beforeDecode(path.join(folder,'router.png')),after:await decodeRouter(path.join(folder,'router.png'))}
+const samples:Record<string,number[]> = {before:[],after:[]}
+for(let iteration=-3;iteration<30;iteration++) {
+  for(const name of (iteration%2 ? ['before','after']:['after','before']) as ['before','after']) {
+    const router = routers[name] as any
+    const files = await router.list()
+    const start=performance.now()
+    const result=await router.loadMany(files,false)
+    const ms=performance.now()-start
+    if(result.size!==12) throw new Error('missing files')
+    for(let i=0;i<files.length;i++) {const bytes=result.get(files[i]);if(bytes.length!==100_000 || bytes[0]!==i+1 || bytes.at(-1)!==i+1)throw new Error('invalid bytes')}
+    if(iteration>=0)samples[name].push(ms)
+  }
+}
+const result=Object.fromEntries(Object.entries(samples).map(([k,v])=>{const sorted=[...v].sort((a,b)=>a-b);return [k,{medianMs:(sorted[14]+sorted[15])/2,p95Ms:sorted[28],samples:v}]}))
+await fs.writeFile(path.join(import.meta.dirname,'../router-reuse-probe.json'),JSON.stringify({description:'Isolated Node router implementation comparison; same current decode pipeline in both; repeated loadMany of 12 x 100000-byte files in one instance, 3 warmups + 30 alternating samples. Excludes cold first load.',result},null,2))
+console.log(JSON.stringify(result,(_k,v)=>Array.isArray(v)?undefined:v,2))
+await fs.rm(folder,{recursive:true,force:true})

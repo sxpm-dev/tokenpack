@@ -48,3 +48,6 @@ packages/replay-harness/results
 .env
 .env.*
 !.env.example
+
+# Disposable GitHub Pages static build
+apps/.pages-build/

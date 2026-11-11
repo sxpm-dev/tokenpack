@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "configuration",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "85c2aaec1e07256457f3d4104f38d33311bdbd507bf81d7bc01c0d181b1a86da",
+  "byteLength": 1008,
+  "files": [
+    {
+      "path": "assets/palette.json",
+      "byteLength": 48,
+      "sha256": "9ddefa09551ddf9de34af99e7505d7b13380eb58f4f01e5269217caed230c26a"
+    },
+    {
+      "path": "config.json",
+      "byteLength": 262,
+      "sha256": "a08f93eb56f47a75aa3487d22ceb90c93d3126447b2d7e88492b478778d04be4"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 195,
+      "sha256": "478ee7c8f4da25e804bb8a209994f5367dd1840039b2cade4288a96238bf2d6e"
+    }
+  ]
+}

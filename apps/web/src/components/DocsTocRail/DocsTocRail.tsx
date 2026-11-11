@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 import { DocsTocLinks, type TocItem } from './DocsTocLinks'
 
-const REPO_BASE = 'https://github.com/anthropics/codeart'
+const REPO_BASE = 'https://github.com/sxpm-dev/tokenpack'
 const CONTENT_ROOT = path.join(process.cwd(), 'content')
 
 interface DocsTocRailProps {

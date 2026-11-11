@@ -262,3 +262,21 @@ yarn workspace @tokenpack/browser verify:browser
 ## License
 
 MIT — see [LICENSE](../../LICENSE).
+
+## Runtime reuse and HTTP caching
+
+Buffered decode reuses the pixels read during algorithm detection. Typed-array inputs
+are read through byte views; treat input bytes as immutable while the decoded pack
+is in use (uncompressed payloads may share their backing storage).
+PNG streaming wakes consumers when rows arrive and rejects truncated streams.
+
+`RemoteRangePack.text(paths)` and `.blob(paths)` group adjacent byte ranges and
+preserve the requested order. Duplicate paths are read once. Range requests use
+normal browser HTTP cache semantics and honor the server's cache headers. Use
+versioned URLs or appropriate response cache headers when publishing changed packs.
+
+A router instance shares in-flight and decoded file bytes across single-file,
+multi-file, stream and materialization calls. Rejected loads are evicted so a later
+call can retry. Reuse a router instance for repeated access to an immutable artifact;
+create a new instance when the artifact changes. This cache lives only as long as
+the router instance. Repeated materialization still performs the requested DOM work.

@@ -221,3 +221,10 @@ yarn workspace tokenpack-cli run tokenpack apply-diff <id> diff.png
 ## License
 
 MIT — see [LICENSE](../../LICENSE).
+
+### Router runtime reuse
+
+Reuse a decoded router instance for repeated access to the same immutable artifact.
+Single-file, multi-file and streaming reads share in-flight/decoded file bytes and
+chunk bytes. Failed loads are evicted so a later call can retry. These caches are
+scoped to the router instance; create a new instance when the artifact changes.

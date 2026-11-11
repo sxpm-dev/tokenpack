@@ -45,7 +45,7 @@ export function CallToAction() {
             </Link>
             <a
               className="ml-1 text-[13px] text-tp-muted hover:text-tp-fg"
-              href="https://github.com/anthropics/codeart"
+              href="https://github.com/sxpm-dev/tokenpack"
             >
               Source →
             </a>

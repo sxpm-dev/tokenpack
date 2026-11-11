@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "portable-app",
+  "title": "Package a small standalone HTML application",
+  "synthetic": true,
+  "files": [
+    "app/index.html",
+    "state.json",
+    "README.txt"
+  ]
+}

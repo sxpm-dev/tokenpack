@@ -1,0 +1,4 @@
+→ Bundling @tokenpack/browser for browser target…
+
+✓ Browser-safety check: clean.
+  bundle size: 441.1 KB raw (un-minified, no react/react-dom)

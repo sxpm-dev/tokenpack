@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-checkpoint",
+  "synthetic": true,
+  "algorithm": "pixel-range-none",
+  "compressor": "deflate-6",
+  "sha256": "fdddf912c56e4036ea56b8e583be8684f5b63bc7d8339079ca82f718b2a3de67",
+  "byteLength": 1614,
+  "files": [
+    {
+      "path": "decisions.md",
+      "byteLength": 81,
+      "sha256": "dba3b71119626f43e1e5a72a5bf82be4bf95efe196495c3415bb0456e30d0c85"
+    },
+    {
+      "path": "evidence.csv",
+      "byteLength": 48,
+      "sha256": "eb4407ab2f3054b6659917230e778006fead729d007db5178d4ebed2e285ed73"
+    },
+    {
+      "path": "handoff.md",
+      "byteLength": 187,
+      "sha256": "38a63744943e3ae5948cbbe0b4568c7f71e1fc27facd9e1dbf07f786a6d92cee"
+    },
+    {
+      "path": "manifest.json",
+      "byteLength": 255,
+      "sha256": "88c042b46cd5bc9cd5080f6a071a7931cb419d8faa11286a6c20085b4c553336"
+    },
+    {
+      "path": "outputs/totals.json",
+      "byteLength": 68,
+      "sha256": "b55bca7dc96ad581b2c0f2c44b0246d0687aefaf3eed4283598ce2180eb72401"
+    },
+    {
+      "path": "task.json",
+      "byteLength": 169,
+      "sha256": "a5cddf4255c5bff3e1f66da888515432cf448fa4c3554d8a275b58e3f5e34cc2"
+    }
+  ]
+}

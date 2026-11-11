@@ -1,0 +1,1 @@
+Amounts are integer USD cents. Both rows are included. No tax inference was made.
