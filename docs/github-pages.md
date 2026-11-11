@@ -50,3 +50,11 @@ After building, run `yarn pages:verify` to serve the export on a plain static HT
 server and check deep links, saved data, all ten guide decoders, browser encoding,
 the router planner and file build/explore. Set `PAGES_URL` to the deployed site URL
 (without a trailing slash) to run the same checks against GitHub Pages.
+
+## Initial history import
+
+The initial GitHub import removed historical `dashboard/node_modules/` and
+`dashboard/.next/` artifacts, including a dependency above GitHub's file size limit.
+Current source files were unchanged by this cleanup. Original-to-imported commit IDs
+are recorded in [history-import-map.txt](history-import-map.txt), so commit IDs in older
+benchmark provenance can be resolved. A complete pre-import Git bundle was retained locally.
